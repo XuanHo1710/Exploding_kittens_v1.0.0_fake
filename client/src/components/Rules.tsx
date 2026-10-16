@@ -39,9 +39,9 @@ export default function Rules() {
       <section>
         <h3>🃏 Lá chức năng</h3>
         <div className="rules-grid">
-          {ACTION_TYPES.map((t) => (
+          {ACTION_TYPES.map((t, i) => (
             <div key={t} className="rule-item">
-              <CardView type={t} size="sm" />
+              <CardView type={t} seed={i} size="sm" />
               <div>
                 <b>{CARD_INFO[t].name}</b>
                 <span className="muted">
@@ -56,8 +56,8 @@ export default function Rules() {
       <section>
         <h3>🐱 Mèo thường &amp; combo</h3>
         <div className="cat-row">
-          {CAT_TYPES.map((t) => (
-            <CardView key={t} type={t} size="xs" />
+          {CAT_TYPES.map((t, i) => (
+            <CardView key={t} type={t} seed={i} size="xs" />
           ))}
         </div>
         <ul>
@@ -71,7 +71,6 @@ export default function Rules() {
             <b>5 lá khác tên nhau</b> (lá gì cũng được): lấy 1 lá bất kỳ trong chồng bài đã đánh (trừ Mèo Nổ).
           </li>
         </ul>
-        <p className="muted">Lá Tấn Công đang tạm tắt, sẽ bổ sung lại sau.</p>
       </section>
     </div>
   );

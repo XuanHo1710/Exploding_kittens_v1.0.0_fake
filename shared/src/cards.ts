@@ -48,7 +48,7 @@ export const CARD_INFO: Record<CardType, CardInfo> = {
 /** Bộ bài gốc nhân đôi để đủ cho 8–10 người. Gỡ Bom và Mèo Nổ chia theo số người (xem bên dưới). */
 export const DECK_COUNTS: Record<Exclude<CardType, 'exploding'>, number> = {
   defuse: 12,
-  attack: 0, // tạm bỏ Tấn Công, mốt bổ sung lại thì đổi về 8
+  attack: 8,
   skip: 8,
   favor: 8,
   shuffle: 8,
