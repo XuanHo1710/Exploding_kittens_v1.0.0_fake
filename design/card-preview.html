@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mẫu lá bài Mèo Nổ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Be+Vietnam+Pro:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1d1b1a;
+    --paper: #fffdf7;
+    --bg: #f3ece0;
+    --text: #2a2622;
+    --muted: #7a7166;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Be Vietnam Pro", system-ui, sans-serif;
+    padding: 32px 16px 48px;
+  }
+  h1 { font-family: "Baloo 2", sans-serif; font-size: 34px; margin: 0 0 4px; text-align: center; }
+  .lead { text-align: center; color: var(--muted); margin: 0 0 32px; font-size: 14px; }
+  .sections { display: flex; flex-wrap: wrap; justify-content: center; gap: 36px 56px; max-width: 1180px; margin: 0 auto; }
+  section { margin: 0; }
+  section h2 { font-family: "Baloo 2", sans-serif; font-size: 22px; margin: 0 0 12px; }
+  .row { display: flex; flex-wrap: wrap; gap: 24px; }
+  figure { margin: 0; }
+  figcaption { font-size: 12px; color: var(--muted); margin-top: 8px; text-align: center; }
+
+  /* ---------- lá bài (chuẩn tỉ lệ 3:4) ---------- */
+  .card {
+    width: 240px; height: 320px;
+    aspect-ratio: 3 / 4;
+    background: var(--paper);
+    border-radius: 16px;
+    padding: 9px;
+    box-shadow: 0 2px 0 rgba(0,0,0,.08), 0 10px 24px rgba(60,40,10,.18);
+  }
+  .card.photo { padding: 0; overflow: hidden; }
+  .card.photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .frame {
+    height: 100%;
+    border: 4px solid var(--c);
+    border-radius: 11px;
+    padding: 7px 8px 6px;
+    display: flex; flex-direction: column;
+  }
+  .head { display: flex; align-items: center; gap: 8px; }
+  .icon {
+    width: 34px; height: 34px; flex: none;
+    border-radius: 50%; background: var(--c);
+    display: grid; place-items: center;
+  }
+  .title {
+    font-family: "Baloo 2", sans-serif; font-weight: 800;
+    font-size: 21px; line-height: 1; color: var(--ink); text-transform: uppercase;
+  }
+  .flavor { font-size: 10px; color: var(--muted); font-weight: 600; margin: 4px 0 6px; min-height: 13px; }
+  .panel {
+    flex: 1; min-height: 0;
+    background: var(--panel);
+    border-radius: 10px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .panel svg { flex: 1; min-height: 0; width: 100%; display: block; }
+  .rule {
+    color: #fff; font-size: 10.5px; line-height: 1.35; font-weight: 700;
+    text-align: center; padding: 2px 12px 9px;
+    text-shadow: 0 1px 0 rgba(0,0,0,.25);
+  }
+  .foot {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 8.5px; color: var(--muted); padding-top: 4px; font-weight: 600;
+  }
+  .foot .flip {
+    font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 12px; color: var(--ink);
+    transform: rotate(180deg); text-transform: uppercase;
+  }
+
+  /* bảng màu theo loại lá */
+  .t-bomb   { --c: #23201f; --panel: radial-gradient(circle at 50% 40%, #ffb05c, #d9480f 75%); }
+  .t-defuse { --c: #2f8f3e; --panel: radial-gradient(circle at 50% 40%, #8fd18a, #2f7d3a 80%); }
+  .t-nope   { --c: #d23b2f; --panel: radial-gradient(circle at 50% 40%, #ff8a73, #b3261e 80%); }
+
+  /* mặt sau */
+  .back {
+    background: #23202e;
+    display: grid; place-items: center;
+  }
+  .back .inner {
+    width: 100%; height: 100%;
+    border: 3px dashed rgba(255,210,63,.45); border-radius: 11px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    background: radial-gradient(circle at 50% 42%, #3b3550, #23202e 70%);
+  }
+  .back .logo { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 40px; color: #ffd23f; letter-spacing: 1px; line-height: 1; }
+  .back .sub { font-size: 10px; color: #b8b0d0; letter-spacing: 3px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- Các phần dùng chung: tai + đầu + mũi/râu mèo. Màu lông lấy từ biến --fur -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="ears">
+      <path d="M70 54 L64 20 L96 38 Z" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M130 54 L136 20 L104 38 Z" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M73 46 L69 29 L87 39 Z" fill="#f4a6b8"/>
+      <path d="M127 46 L131 29 L113 39 Z" fill="#f4a6b8"/>
+    </g>
+    <circle id="head" cx="100" cy="72" r="38" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3.5"/>
+    <g id="nose">
+      <path d="M95.5 81 L104.5 81 L100 86.5 Z" fill="#e8798f" stroke="#1d1b1a" stroke-width="2" stroke-linejoin="round"/>
+      <g stroke="#1d1b1a" stroke-width="2" stroke-linecap="round">
+        <path d="M60 82 L78 85"/><path d="M60 93 L78 90"/>
+        <path d="M140 82 L122 85"/><path d="M140 93 L122 90"/>
+      </g>
+    </g>
+  </defs>
+</svg>
+
+<h1>Mẫu lá bài Mèo Nổ</h1>
+<p class="lead">Bản thử phong cách: nét đen dày, màu phẳng, mỗi loại lá một màu khung. Mỗi loại có 2 biến thể hình.</p>
+
+<div class="sections">
+<!-- ================= MÈO NỔ ================= -->
+<section>
+  <h2>💣 Mèo Nổ</h2>
+  <div class="row">
+
+    <figure>
+      <div class="card t-bomb"><div class="frame">
+        <div class="head">
+          <div class="icon"><svg width="22" height="22" viewBox="0 0 22 22"><circle cx="10" cy="13" r="7" fill="#fff"/><path d="M13 7 Q15 2 19 4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="19.5" cy="3.5" r="1.8" fill="#ffd23f"/></svg></div>
+          <div class="title">Mèo Nổ</div>
+        </div>
+        <div class="flavor">Ôm bom như ôm người yêu cũ.</div>
+        <div class="panel">
+          <svg viewBox="0 0 200 170" style="--fur:#f2a65a">
+            <path d="M146 146 C178 144 184 108 162 100" fill="none" stroke="#1d1b1a" stroke-width="13" stroke-linecap="round"/>
+            <path d="M146 146 C178 144 184 108 162 100" fill="none" style="stroke:var(--fur)" stroke-width="7" stroke-linecap="round"/>
+            <ellipse cx="100" cy="142" rx="52" ry="28" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3.5"/>
+            <use href="#ears"/><use href="#head"/>
+            <!-- mặt hoảng -->
+            <circle cx="86" cy="70" r="10" fill="#fff" stroke="#1d1b1a" stroke-width="3"/>
+            <circle cx="114" cy="70" r="10" fill="#fff" stroke="#1d1b1a" stroke-width="3"/>
+            <circle cx="87" cy="72" r="3.5" fill="#1d1b1a"/><circle cx="113" cy="72" r="3.5" fill="#1d1b1a"/>
+            <path d="M75 57 L92 51" stroke="#1d1b1a" stroke-width="3" stroke-linecap="round"/>
+            <path d="M125 57 L108 51" stroke="#1d1b1a" stroke-width="3" stroke-linecap="round"/>
+            <use href="#nose"/>
+            <ellipse cx="100" cy="96" rx="5" ry="6" fill="#1d1b1a"/>
+            <path d="M144 46 C139 55 139 61 144 61 C149 61 149 55 144 46 Z" fill="#8fd3ff" stroke="#1d1b1a" stroke-width="2"/>
+            <!-- bom -->
+            <circle cx="100" cy="143" r="25" fill="#2b2b2b" stroke="#1d1b1a" stroke-width="3.5"/>
+            <ellipse cx="90" cy="133" rx="6" ry="4" fill="#fff" opacity=".45"/>
+            <rect x="92" y="112" width="16" height="9" rx="2" fill="#5a5a5a" stroke="#1d1b1a" stroke-width="2.5"/>
+            <path d="M100 112 C102 100 128 108 141 97" fill="none" stroke="#8b5a2b" stroke-width="3" stroke-linecap="round"/>
+            <polygon points="144,84 147,91 155,92 149,97 151,105 144,100 137,105 139,97 133,92 141,91" fill="#ffd23f" stroke="#e8590c" stroke-width="1.5" stroke-linejoin="round"/>
+            <!-- chân ôm bom -->
+            <ellipse cx="75" cy="140" rx="10" ry="8" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3"/>
+            <ellipse cx="125" cy="140" rx="10" ry="8" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3"/>
+          </svg>
+          <div class="rule">Rút trúng lá này mà không có Gỡ Bom thì bạn bị loại.</div>
+        </div>
+        <div class="foot"><span>MÈO NỔ · bản thử</span><span class="flip">Mèo Nổ</span></div>
+      </div></div>
+      <figcaption>Biến thể A: ôm bom</figcaption>
+    </figure>
+
+    <figure>
+      <div class="card t-bomb"><div class="frame">
+        <div class="head">
+          <div class="icon"><svg width="22" height="22" viewBox="0 0 22 22"><circle cx="10" cy="13" r="7" fill="#fff"/><path d="M13 7 Q15 2 19 4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="19.5" cy="3.5" r="1.8" fill="#ffd23f"/></svg></div>
+          <div class="title">Mèo Nổ</div>
+        </div>
+        <div class="flavor">Bùm. Hết phim.</div>
+        <div class="panel">
+          <svg viewBox="0 0 200 170" style="--fur:#7a7672">
+            <!-- vụ nổ phía sau -->
+            <polygon points="182,88 153.6,110.2 158,146 122.2,141.6 100,170 77.8,141.6 42,146 46.4,110.2 18,88 46.4,65.8 42,30 77.8,34.4 100,6 122.2,34.4 158,30 153.6,65.8" fill="#ffd23f" stroke="#e8590c" stroke-width="3" stroke-linejoin="round"/>
+            <polygon transform="translate(100 88) scale(.6) translate(-100 -88)" points="182,88 153.6,110.2 158,146 122.2,141.6 100,170 77.8,141.6 42,146 46.4,110.2 18,88 46.4,65.8 42,30 77.8,34.4 100,6 122.2,34.4 158,30 153.6,65.8" fill="#fff6c4"/>
+            <ellipse cx="100" cy="142" rx="46" ry="26" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3.5"/>
+            <!-- lông xù -->
+            <path d="M70 56 L74 30 L86 42 L94 20 L103 40 L113 22 L119 42 L130 30 L131 56 Z" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3.5" stroke-linejoin="round"/>
+            <use href="#ears"/><use href="#head"/>
+            <!-- mắt X -->
+            <g stroke="#1d1b1a" stroke-width="4" stroke-linecap="round">
+              <path d="M80 64 L92 76"/><path d="M92 64 L80 76"/>
+              <path d="M108 64 L120 76"/><path d="M120 64 L108 76"/>
+            </g>
+            <ellipse cx="78" cy="88" rx="8" ry="5" fill="#2b2b2b" opacity=".35"/>
+            <ellipse cx="124" cy="60" rx="6" ry="4" fill="#2b2b2b" opacity=".35"/>
+            <use href="#nose"/>
+            <path d="M88 95 Q100 87 112 95 Q100 106 88 95 Z" fill="#1d1b1a"/>
+            <!-- khói -->
+            <g fill="#e2e2e2" stroke="#1d1b1a" stroke-width="2.5">
+              <circle cx="40" cy="152" r="14"/><circle cx="60" cy="160" r="11"/>
+              <circle cx="158" cy="154" r="15"/><circle cx="176" cy="142" r="10"/>
+            </g>
+            <!-- sao chóng mặt -->
+            <g fill="#fff" stroke="#1d1b1a" stroke-width="1.5" stroke-linejoin="round">
+              <polygon points="52,22 54,27 59,27 55,30 57,35 52,32 47,35 49,30 45,27 50,27"/>
+              <polygon points="150,14 152,19 157,19 153,22 155,27 150,24 145,27 147,22 143,19 148,19"/>
+            </g>
+          </svg>
+          <div class="rule">Rút trúng lá này mà không có Gỡ Bom thì bạn bị loại.</div>
+        </div>
+        <div class="foot"><span>MÈO NỔ · bản thử</span><span class="flip">Mèo Nổ</span></div>
+      </div></div>
+      <figcaption>Biến thể B: nổ tung</figcaption>
+    </figure>
+
+  </div>
+</section>
+
+<!-- ================= GỠ BOM ================= -->
+<section>
+  <h2>🧯 Gỡ Bom</h2>
+  <div class="row">
+
+    <figure>
+      <div class="card t-defuse"><div class="frame">
+        <div class="head">
+          <div class="icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="6" cy="17" r="3"/><circle cx="16" cy="17" r="3"/><path d="M8 15 L16 3"/><path d="M14 15 L6 3"/></svg></div>
+          <div class="title">Gỡ Bom</div>
+        </div>
+        <div class="flavor">Dây đỏ hay dây xanh? Cắt bừa đi.</div>
+        <div class="panel">
+          <svg viewBox="0 0 200 170" style="--fur:#f6e7c8">
+            <ellipse cx="114" cy="142" rx="46" ry="27" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3.5"/>
+            <g transform="translate(14 0)">
+              <use href="#ears"/><use href="#head"/>
+              <!-- kính bảo hộ -->
+              <path d="M63 64 L137 64" stroke="#3b3b3b" stroke-width="6"/>
+              <circle cx="86" cy="66" r="13" fill="#bfe9ff" stroke="#1d1b1a" stroke-width="4"/>
+              <circle cx="114" cy="66" r="13" fill="#bfe9ff" stroke="#1d1b1a" stroke-width="4"/>
+              <circle cx="88" cy="68" r="4" fill="#1d1b1a"/><circle cx="112" cy="68" r="4" fill="#1d1b1a"/>
+              <path d="M79 60 Q82 57 86 57" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <path d="M107 60 Q110 57 114 57" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <use href="#nose"/>
+              <path d="M93 94 Q100 98 107 94" stroke="#1d1b1a" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <ellipse cx="106" cy="98" rx="4" ry="5" fill="#ff8fa3" stroke="#1d1b1a" stroke-width="2"/>
+            </g>
+            <!-- bom + dây -->
+            <circle cx="52" cy="143" r="23" fill="#2b2b2b" stroke="#1d1b1a" stroke-width="3.5"/>
+            <ellipse cx="44" cy="134" rx="5" ry="3.5" fill="#fff" opacity=".45"/>
+            <rect x="44" y="114" width="16" height="8" rx="2" fill="#5a5a5a" stroke="#1d1b1a" stroke-width="2.5"/>
+            <path d="M48 114 C40 94 62 86 74 100" stroke="#e63946" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <path d="M56 114 C60 98 80 92 82 112" stroke="#3a86ff" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <!-- kìm -->
+            <path d="M80 104 L72 96" stroke="#9a9a9a" stroke-width="4" stroke-linecap="round"/>
+            <path d="M84 100 L74 94" stroke="#9a9a9a" stroke-width="4" stroke-linecap="round"/>
+            <path d="M82 104 L106 124" stroke="#1d1b1a" stroke-width="9" stroke-linecap="round"/>
+            <path d="M82 104 L106 124" stroke="#e63946" stroke-width="5" stroke-linecap="round"/>
+            <path d="M84 100 L110 118" stroke="#1d1b1a" stroke-width="9" stroke-linecap="round"/>
+            <path d="M84 100 L110 118" stroke="#e63946" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="83" cy="102" r="3" fill="#555" stroke="#1d1b1a" stroke-width="1.5"/>
+            <ellipse cx="111" cy="124" rx="10" ry="8" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3"/>
+          </svg>
+          <div class="rule">Dùng khi rút trúng Mèo Nổ. Bí mật nhét Mèo Nổ lại vào chồng bài, vị trí tuỳ bạn.</div>
+        </div>
+        <div class="foot"><span>MÈO NỔ · bản thử</span><span class="flip">Gỡ Bom</span></div>
+      </div></div>
+      <figcaption>Biến thể A: cắt dây</figcaption>
+    </figure>
+
+    <figure>
+      <div class="card t-defuse"><div class="frame">
+        <div class="head">
+          <div class="icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="6" cy="17" r="3"/><circle cx="16" cy="17" r="3"/><path d="M8 15 L16 3"/><path d="M14 15 L6 3"/></svg></div>
+          <div class="title">Gỡ Bom</div>
+        </div>
+        <div class="flavor">Tưới cây, tiện tay tưới bom.</div>
+        <div class="panel">
+          <svg viewBox="0 0 200 170" style="--fur:#9aa0a6">
+            <g transform="translate(30 0)">
+              <ellipse cx="100" cy="142" rx="44" ry="27" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3.5"/>
+              <use href="#ears"/><use href="#head"/>
+              <!-- mắt cười -->
+              <path d="M78 72 Q86 63 94 72" stroke="#1d1b1a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+              <path d="M106 72 Q114 63 122 72" stroke="#1d1b1a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+              <ellipse cx="76" cy="84" rx="6" ry="3.5" fill="#ff9fb2" opacity=".8"/>
+              <ellipse cx="124" cy="84" rx="6" ry="3.5" fill="#ff9fb2" opacity=".8"/>
+              <use href="#nose"/>
+              <path d="M92 93 Q100 101 108 93" stroke="#1d1b1a" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </g>
+            <!-- tay -->
+            <path d="M136 126 L98 112" stroke="#1d1b1a" stroke-width="15" stroke-linecap="round"/>
+            <path d="M136 126 L98 112" style="stroke:var(--fur)" stroke-width="9" stroke-linecap="round"/>
+            <!-- bình tưới -->
+            <g transform="rotate(-25 78 110)">
+              <path d="M64 112 L38 104" stroke="#1d1b1a" stroke-width="9" stroke-linecap="round"/>
+              <path d="M64 112 L38 104" stroke="#4fa3d1" stroke-width="5" stroke-linecap="round"/>
+              <circle cx="37" cy="103" r="5" fill="#4fa3d1" stroke="#1d1b1a" stroke-width="2.5"/>
+              <path d="M70 98 Q80 82 90 98" stroke="#1d1b1a" stroke-width="3.5" fill="none"/>
+              <rect x="62" y="97" width="32" height="26" rx="4" fill="#4fa3d1" stroke="#1d1b1a" stroke-width="3.5"/>
+              <path d="M66 104 L90 104" stroke="#fff" stroke-width="2" opacity=".5"/>
+            </g>
+            <ellipse cx="97" cy="111" rx="9" ry="7" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3"/>
+            <!-- nước -->
+            <g stroke="#bfe9ff" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 4">
+              <path d="M36 124 L31 136"/><path d="M41 125 L39 138"/><path d="M46 124 L47 136"/>
+            </g>
+            <!-- bom tắt ngòi -->
+            <circle cx="38" cy="154" r="15" fill="#2b2b2b" stroke="#1d1b1a" stroke-width="3"/>
+            <ellipse cx="33" cy="149" rx="4" ry="2.5" fill="#fff" opacity=".45"/>
+            <rect x="32" y="136" width="12" height="6" rx="2" fill="#5a5a5a" stroke="#1d1b1a" stroke-width="2"/>
+            <path d="M38 136 C38 131 30 132 26 128" stroke="#8b5a2b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <g fill="#e2e2e2" stroke="#1d1b1a" stroke-width="1.5">
+              <circle cx="22" cy="124" r="4"/><circle cx="17" cy="117" r="3"/><circle cx="14" cy="110" r="2"/>
+            </g>
+          </svg>
+          <div class="rule">Dùng khi rút trúng Mèo Nổ. Bí mật nhét Mèo Nổ lại vào chồng bài, vị trí tuỳ bạn.</div>
+        </div>
+        <div class="foot"><span>MÈO NỔ · bản thử</span><span class="flip">Gỡ Bom</span></div>
+      </div></div>
+      <figcaption>Biến thể B: tưới tắt ngòi</figcaption>
+    </figure>
+
+  </div>
+</section>
+
+<!-- ================= NOPE ================= -->
+<section>
+  <h2>✋ Nope</h2>
+  <div class="row">
+
+    <figure>
+      <div class="card t-nope"><div class="frame">
+        <div class="head">
+          <div class="icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M5.5 16.5 L16.5 5.5"/></svg></div>
+          <div class="title">Nope</div>
+        </div>
+        <div class="flavor">Không. Chỉ đơn giản là không.</div>
+        <div class="panel">
+          <svg viewBox="0 0 200 170" style="--fur:#efe9df">
+            <ellipse cx="104" cy="142" rx="48" ry="27" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3.5"/>
+            <g transform="translate(4 0)">
+              <use href="#ears"/><use href="#head"/>
+              <!-- mắt chán đời -->
+              <ellipse cx="86" cy="70" rx="10" ry="8" fill="#ffd84d" stroke="#1d1b1a" stroke-width="3"/>
+              <ellipse cx="114" cy="70" rx="10" ry="8" fill="#ffd84d" stroke="#1d1b1a" stroke-width="3"/>
+              <ellipse cx="86" cy="72" rx="2" ry="4.5" fill="#1d1b1a"/><ellipse cx="114" cy="72" rx="2" ry="4.5" fill="#1d1b1a"/>
+              <path d="M76 70 A10 8 0 0 1 96 70 Z" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3" stroke-linejoin="round"/>
+              <path d="M104 70 A10 8 0 0 1 124 70 Z" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3" stroke-linejoin="round"/>
+              <use href="#nose"/>
+              <path d="M92 95 L108 95" stroke="#1d1b1a" stroke-width="3" stroke-linecap="round"/>
+            </g>
+            <!-- tay giơ lên chặn -->
+            <path d="M80 130 L56 100" stroke="#1d1b1a" stroke-width="17" stroke-linecap="round"/>
+            <path d="M80 130 L56 100" style="stroke:var(--fur)" stroke-width="11" stroke-linecap="round"/>
+            <ellipse cx="52" cy="92" rx="17" ry="16" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3.5"/>
+            <ellipse cx="52" cy="97" rx="7" ry="5.5" fill="#f4a6b8"/>
+            <g fill="#f4a6b8"><circle cx="41" cy="87" r="3.5"/><circle cx="48" cy="81" r="3.5"/><circle cx="57" cy="81" r="3.5"/><circle cx="63" cy="87" r="3.5"/></g>
+            <!-- bong bóng thoại -->
+            <rect x="140" y="8" width="54" height="26" rx="12" fill="#fff" stroke="#1d1b1a" stroke-width="3"/>
+            <path d="M150 33 L146 44 L160 33" fill="#fff" stroke="#1d1b1a" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M151 32 L159 32" stroke="#fff" stroke-width="4"/>
+            <text x="167" y="26.5" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="15" fill="#1d1b1a">NOPE.</text>
+          </svg>
+          <div class="rule">Chặn mọi hành động trừ Mèo Nổ và Gỡ Bom. Đánh được bất cứ lúc nào, kể cả ngoài lượt.</div>
+        </div>
+        <div class="foot"><span>MÈO NỔ · bản thử</span><span class="flip">Nope</span></div>
+      </div></div>
+      <figcaption>Biến thể A: giơ tay chặn</figcaption>
+    </figure>
+
+    <figure>
+      <div class="card t-nope"><div class="frame">
+        <div class="head">
+          <div class="icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M5.5 16.5 L16.5 5.5"/></svg></div>
+          <div class="title">Nope</div>
+        </div>
+        <div class="flavor">Kính đen vào, nói không với tất cả.</div>
+        <div class="panel">
+          <svg viewBox="0 0 200 170" style="--fur:#c98a5a">
+            <text x="100" y="40" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="56" fill="#fff" opacity=".16">NOPE</text>
+            <ellipse cx="100" cy="142" rx="50" ry="28" style="fill:var(--fur)" stroke="#1d1b1a" stroke-width="3.5"/>
+            <!-- sọc mèo mướp -->
+            <g stroke="#9c6238" stroke-width="4" stroke-linecap="round"><path d="M64 136 L72 132"/><path d="M136 136 L128 132"/></g>
+            <use href="#ears"/><use href="#head"/>
+            <g stroke="#9c6238" stroke-width="4" stroke-linecap="round"><path d="M92 38 L94 48"/><path d="M100 36 L100 47"/><path d="M108 38 L106 48"/></g>
+            <!-- kính đen -->
+            <path d="M70 62 H96 V69 Q96 80 84 80 Q70 80 70 69 Z" fill="#141414" stroke="#1d1b1a" stroke-width="2"/>
+            <path d="M104 62 H130 V69 Q130 80 116 80 Q104 80 104 69 Z" fill="#141414" stroke="#1d1b1a" stroke-width="2"/>
+            <path d="M96 65 L104 65" stroke="#141414" stroke-width="3"/>
+            <path d="M75 66 L81 66" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+            <path d="M109 66 L115 66" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+            <use href="#nose"/>
+            <path d="M91 95 Q101 99 110 90" stroke="#1d1b1a" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <!-- khoanh tay -->
+            <path d="M68 128 L126 142" stroke="#1d1b1a" stroke-width="17" stroke-linecap="round"/>
+            <path d="M68 128 L126 142" style="stroke:var(--fur)" stroke-width="11" stroke-linecap="round"/>
+            <path d="M132 128 L74 142" stroke="#1d1b1a" stroke-width="17" stroke-linecap="round"/>
+            <path d="M132 128 L74 142" style="stroke:var(--fur)" stroke-width="11" stroke-linecap="round"/>
+          </svg>
+          <div class="rule">Chặn mọi hành động trừ Mèo Nổ và Gỡ Bom. Đánh được bất cứ lúc nào, kể cả ngoài lượt.</div>
+        </div>
+        <div class="foot"><span>MÈO NỔ · bản thử</span><span class="flip">Nope</span></div>
+      </div></div>
+      <figcaption>Biến thể B: kính đen khoanh tay</figcaption>
+    </figure>
+
+  </div>
+</section>
+
+<!-- ================= MẶT SAU ================= -->
+<section>
+  <h2>🂠 Mặt sau</h2>
+  <div class="row">
+    <figure>
+      <div class="card back"><div class="inner">
+        <svg width="150" height="130" viewBox="0 0 200 170" style="--fur:#f2a65a">
+          <path d="M100 34 C100 20 116 16 120 6" fill="none" stroke="#8b5a2b" stroke-width="4" stroke-linecap="round"/>
+          <polygon points="122,-6 125,1 133,2 127,7 129,15 122,10 115,15 117,7 111,2 119,1" fill="#ffd23f" stroke="#e8590c" stroke-width="1.5" stroke-linejoin="round" transform="translate(0 8)"/>
+          <use href="#ears"/><use href="#head"/>
+          <circle cx="86" cy="70" r="6" fill="#1d1b1a"/><circle cx="114" cy="70" r="6" fill="#1d1b1a"/>
+          <circle cx="88" cy="68" r="2" fill="#fff"/><circle cx="116" cy="68" r="2" fill="#fff"/>
+          <use href="#nose"/>
+          <path d="M92 92 Q96 96 100 92 Q104 96 108 92" stroke="#1d1b1a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="logo">MÈO NỔ</div>
+        <div class="sub">ĐỪNG RÚT BỪA</div>
+      </div></div>
+      <figcaption>Mặt sau dùng chung</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ================= BỘ ẢNH GỐC CHUẨN 3:4 (DATABASE/) ================= -->
+<section style="width:100%">
+  <h2>🃏 Bộ ảnh gốc chuẩn 3:4 trong database/ (720×960)</h2>
+  <div class="row">
+    <figure><div class="card photo"><img src="../database/Exploding-Kitten-Nuclear-Bombs.jpg" alt="Mèo Nổ"></div><figcaption>Mèo Nổ (exploding)</figcaption></figure>
+    <figure><div class="card photo"><img src="../database/Defuse-Via-Mauling-a-Baby.jpg" alt="Gỡ Bom"></div><figcaption>Gỡ Bom (defuse)</figcaption></figure>
+    <figure><div class="card photo"><img src="../database/Attack-Thousand-Year-Back-Hair.jpg" alt="Tấn Công"></div><figcaption>Tấn Công (attack)</figcaption></figure>
+    <figure><div class="card photo"><img src="../database/Skip-Evade-Dirty-Sasquatch-Underpants.jpg" alt="Bỏ Lượt"></div><figcaption>Bỏ Lượt (skip)</figcaption></figure>
+    <figure><div class="card photo"><img src="../database/Favor-Get-Enslaved-by-Party-Squirrels.jpg" alt="Xin Bài"></div><figcaption>Xin Bài (favor)</figcaption></figure>
+    <figure><div class="card photo"><img src="../database/Shuffle-Discover-You-Have-a-Toilet-Werewolf.jpg" alt="Xáo Bài"></div><figcaption>Xáo Bài (shuffle)</figcaption></figure>
+    <figure><div class="card photo"><img src="../database/See-the-Future-Fear-Upon-a-Unicorn-Enchilada.jpg" alt="Xem Trước"></div><figcaption>Xem Trước (see_future)</figcaption></figure>
+    <figure><div class="card photo"><img src="../database/Nope-Put-on-Your-Necktie-of-Nope.jpg" alt="Nope"></div><figcaption>Nope (nope)</figcaption></figure>
+    <figure><div class="card photo"><img src="../database/Hairy-Potato-Cat.jpg" alt="Mèo Khoai Tây Lông"></div><figcaption>Mèo Khoai Tây Lông (cat_potato)</figcaption></figure>
+    <figure><div class="card photo"><img src="../database/Cattermelon.jpg" alt="Mèo Dưa Hấu"></div><figcaption>Mèo Dưa Hấu (cat_melon)</figcaption></figure>
+    <figure><div class="card photo"><img src="../database/Shy-Bladder-Cat.jpg" alt="Mèo Mót Tè"></div><figcaption>Mèo Mót Tè (cat_bladder)</figcaption></figure>
+    <figure><div class="card photo"><img src="../database/Cats-Schrodinger.jpg" alt="Mèo Schrödinger"></div><figcaption>Mèo Schrödinger (cat_schrodinger)</figcaption></figure>
+    <figure><div class="card photo"><img src="../database/Beard-Cat.jpg" alt="Mèo Râu Dê"></div><figcaption>Mèo Râu Dê (cat_beard)</figcaption></figure>
+  </div>
+</section>
+</div>
+
+</body>
+</html>

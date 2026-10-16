@@ -1,0 +1,1045 @@
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import {
+  CARD_INFO,
+  EMOTES,
+  NOPE_WINDOW_MS,
+  QUICK_EMOTES,
+  THROWABLES,
+  PROMPT_MS,
+  TURN_MS,
+  type ActionKind,
+  type Card,
+  type CardType,
+  type Emote,
+  type GameFx,
+  type PrivateNotice,
+  type PublicPlayer,
+  type RoomView,
+} from '../../../shared/src';
+import { CardBack } from '../art/CatAvatar';
+import PlayerAvatar from '../art/PlayerAvatar';
+import CardView from './CardView';
+import Modal from './Modal';
+import { sfx } from '../sfx';
+import { flyCard, flyClone, flyEmoji, seatEl } from '../fx';
+import PlayWizard, { type WizardResult } from './PlayWizard';
+import ChatPanel, { useChatState, type ChatTab, type RoomChat } from './ChatPanel';
+
+interface Props {
+  view: RoomView;
+  meId: string;
+  emit: (event: string, payload?: unknown) => void;
+  notice: PrivateNotice | null;
+  onCloseNotice: () => void;
+  /** Lá vừa lấy được / bị mất */
+  reveal?: (PrivateNotice & { key: number }) | null;
+  onCloseReveal?: () => void;
+  /** Sự kiện hiệu ứng từ server */
+  fx?: { id: number; fx: GameFx } | null;
+  /** Biểu cảm / ném đồ */
+  emote?: { id: number; e: Emote } | null;
+  /** Chat real-time của phòng */
+  chat?: RoomChat;
+}
+
+const NO_CHAT: RoomChat = { messages: [], typing: {}, send: () => {}, onTyping: () => {} };
+const CHAT_OPEN_KEY = 'meono.chatOpen';
+function loadChatOpen() {
+  try {
+    const v = localStorage.getItem(CHAT_OPEN_KEY);
+    return v === null ? window.innerWidth >= 1280 : v === '1';
+  } catch {
+    return window.innerWidth >= 1280;
+  }
+}
+
+const SINGLE: CardType[] = ['attack', 'skip', 'favor', 'shuffle', 'see_future'];
+
+/** Thứ tự xếp bài "theo loại": lá cứu mạng → lá chặn → lá chức năng → mèo (cùng loại đứng cạnh nhau) */
+const SORT_ORDER: CardType[] = [
+  'defuse',
+  'nope',
+  'skip',
+  'attack',
+  'favor',
+  'shuffle',
+  'see_future',
+  'cat_potato',
+  'cat_melon',
+  'cat_bladder',
+  'cat_schrodinger',
+  'cat_beard',
+  'exploding',
+];
+const sortIds = (cards: Card[]) =>
+  cards
+    .map((c, i) => ({ c, i }))
+    .sort((a, b) => SORT_ORDER.indexOf(a.c.type) - SORT_ORDER.indexOf(b.c.type) || a.i - b.i)
+    .map((x) => x.c.id);
+
+/** Xáo bài kiểu thật: chia đôi → 2 nửa tách ra → rơi xen kẽ vào giữa → vuốt gọn (2 lượt) */
+function riffle(container: HTMLElement | null) {
+  if (!container || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cards = [...container.children] as HTMLElement[];
+  const n = cards.length;
+  const half = n / 2;
+  const R = 760; // 1 lượt xáo
+  const rounds = 2;
+  const D = R * rounds;
+  cards.forEach((el, i) => {
+    const left = i < half;
+    const side = left ? -1 : 1;
+    const k = left ? i : i - half;
+    const order = left ? 2 * k : 2 * k + 1; // thứ tự rơi xen kẽ trái/phải
+    const frames: Keyframe[] = [];
+    for (let r = 0; r < rounds; r++) {
+      const t0 = r * R;
+      const stack = `translate(0px, ${-order * 1.2}px) rotate(0deg)`;
+      const out = `translate(${side * 62}%, ${-6 - k * 2}px) rotate(${side * 12}deg)`;
+      const drop = t0 + (0.42 + order * 0.035) * R;
+      frames.push({ offset: t0 / D, transform: r === 0 ? `translate(0px, ${-i * 1.2}px)` : stack });
+      frames.push({ offset: (t0 + 0.24 * R) / D, transform: out });
+      frames.push({ offset: drop / D, transform: out });
+      frames.push({ offset: Math.min((drop + 0.1 * R) / D, (t0 + R) / D), transform: stack });
+    }
+    frames.push({ offset: 1, transform: `translate(0px, ${-i * 1.2}px)` });
+    frames.sort((a, b) => (a.offset as number) - (b.offset as number));
+    el.animate(frames, { duration: D, easing: 'ease-in-out', fill: 'both' });
+  });
+}
+
+/** Cùng luật với server: đoán kiểu đánh từ các lá đang chọn */
+function detectKind(types: CardType[]): ActionKind | null {
+  if (types.length === 1 && SINGLE.includes(types[0])) return types[0] as ActionKind;
+  const same = types.every((t) => t === types[0]);
+  if ((types.length === 2 || types.length === 3) && same && CARD_INFO[types[0]].isCat) {
+    return types.length === 2 ? 'pair' : 'triple';
+  }
+  if (types.length === 5 && new Set(types).size === 5) return 'five';
+  return null;
+}
+
+const KIND_LABEL: Record<ActionKind, string> = {
+  attack: 'Tấn Công',
+  skip: 'Bỏ Lượt',
+  favor: 'Xin Bài',
+  shuffle: 'Xáo Bài',
+  see_future: 'Xem Trước',
+  pair: 'Đôi mèo',
+  triple: 'Bộ ba mèo',
+  five: '5 lá khác loại',
+};
+
+function useNow() {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(t);
+  }, []);
+  return now;
+}
+
+/** Thông báo lớn giữa màn hình khi có người nổ / gỡ bom / thắng */
+/** Các dòng nhật ký mới kể từ lần trước (dựa vào logTotal vì server chỉ giữ 40 dòng gần nhất) */
+function freshLines(log: string[], total: number, seen: { current: number }) {
+  const added = total - seen.current;
+  seen.current = total;
+  return added > 0 ? log.slice(-Math.min(added, log.length)) : [];
+}
+
+function useAnnouncement(log: string[], total: number) {
+  const [msg, setMsg] = useState<{ text: string; tone: string } | null>(null);
+  const seen = useRef(total);
+  useEffect(() => {
+    const fresh = freshLines(log, total, seen);
+    const hit = [...fresh].reverse().find((l) => /NỔ TUNG|GỠ BOM|thắng/.test(l));
+    if (!hit) return;
+    const tone = hit.includes('NỔ TUNG') ? 'boom' : hit.includes('thắng') ? 'win' : 'defuse';
+    sfx(tone);
+    setMsg({ text: hit.replace(/^[^\p{L}]+/u, ''), tone });
+    const t = setTimeout(() => setMsg(null), 2600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [total]);
+  return msg;
+}
+
+/** Bình luận nổi trên bàn: vài dòng diễn biến mới nhất, tự mờ sau vài giây */
+function useFeed(log: string[], total: number) {
+  const [feed, setFeed] = useState<{ id: number; text: string; tone: string }[]>([]);
+  const seen = useRef(total);
+  const seq = useRef(0);
+  useEffect(() => {
+    const items = freshLines(log, total, seen)
+      .slice(-4)
+      .map((text) => ({ id: ++seq.current, text, tone: /NỔ TUNG/.test(text) ? 'boom' : /GỠ BOM|thắng/.test(text) ? 'good' : '' }));
+    if (!items.length) return;
+    setFeed((f) => [...f, ...items].slice(-4));
+    items.forEach((it) => window.setTimeout(() => setFeed((f) => f.filter((x) => x.id !== it.id)), 7000));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [total]);
+  return feed;
+}
+
+/** Vòng đếm ngược quanh avatar */
+function Ring({ progress, children, active, tone = 'turn' }: { progress: number; children: ReactNode; active: boolean; tone?: string }) {
+  return (
+    <div className={`ring${active ? ' active' : ''} tone-${tone}`} style={{ ['--p' as string]: Math.max(0, Math.min(1, progress)) } as CSSProperties}>
+      {children}
+    </div>
+  );
+}
+
+export default function GameBoard({ view, meId, emit, notice, onCloseNotice, reveal, onCloseReveal, fx, emote, chat = NO_CHAT }: Props) {
+  const now = useNow();
+  const announce = useAnnouncement(view.log, view.logTotal);
+  const feed = useFeed(view.log, view.logTotal);
+  const [chatOpen, setChatOpenState] = useState(loadChatOpen);
+  const [chatTab, setChatTab] = useState<ChatTab>('chat');
+  const setChatOpen = (open: boolean, tab?: ChatTab) => {
+    setChatOpenState(open);
+    if (tab) setChatTab(tab);
+    try {
+      localStorage.setItem(CHAT_OPEN_KEY, open ? '1' : '0');
+    } catch {
+      /* tuỳ chọn hiển thị */
+    }
+  };
+  const { typingNames, unread } = useChatState(chat, view.players, meId, chatOpen && chatTab === 'chat');
+  // Tin chat mới: hiện bong bóng ngay trên avatar người gửi vài giây
+  const [chatPops, setChatPops] = useState<Record<string, { id: number; text: string }>>({});
+  const lastChatId = useRef(chat.messages.at(-1)?.id ?? 0);
+  useEffect(() => {
+    const fresh = chat.messages.filter((m) => m.id > lastChatId.current);
+    lastChatId.current = chat.messages.at(-1)?.id ?? lastChatId.current;
+    fresh.forEach((m) => {
+      const text = m.text.length > 70 ? m.text.slice(0, 68) + '…' : m.text;
+      setChatPops((p) => ({ ...p, [m.from]: { id: m.id, text } }));
+      if (m.from !== meId) sfx('pop');
+      window.setTimeout(
+        () =>
+          setChatPops((p) => {
+            if (p[m.from]?.id !== m.id) return p;
+            const next = { ...p };
+            delete next[m.from];
+            return next;
+          }),
+        4500,
+      );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chat.messages.length]);
+  // Biểu cảm: emoji nảy trên avatar, ném đồ vào người khác
+  const [pops, setPops] = useState<Record<string, { emoji: string; id: number; kind: 'emote' | 'hit' }>>({});
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [throwItem, setThrowItem] = useState<string | null>(null);
+  const avatarEl = (pid: string) => document.querySelector(`[data-avatar="${CSS.escape(pid)}"]`) ?? seatEl(pid);
+  useEffect(() => {
+    if (!emote) return;
+    const { e, id } = emote;
+    const show = (pid: string, kind: 'emote' | 'hit') => {
+      setPops((p) => ({ ...p, [pid]: { emoji: e.emoji, id, kind } }));
+      window.setTimeout(
+        () =>
+          setPops((p) => {
+            if (p[pid]?.id !== id) return p;
+            const next = { ...p };
+            delete next[pid];
+            return next;
+          }),
+        kind === 'hit' ? 2000 : 2600,
+      );
+    };
+    if (e.to) {
+      const to = e.to;
+      flyEmoji(avatarEl(e.from), avatarEl(to), e.emoji, () => {
+        sfx('splat');
+        show(to, 'hit');
+      });
+    } else {
+      sfx('pop');
+      show(e.from, 'emote');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [emote?.id]);
+  useEffect(() => {
+    if (!pickerOpen) return;
+    const close = (ev: PointerEvent) => {
+      if (!(ev.target as HTMLElement).closest('.emote-picker, .emote-btn')) setPickerOpen(false);
+    };
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [pickerOpen]);
+  const sendEmote = (emoji: string) => {
+    emit('room:emote', { emoji });
+    setPickerOpen(false);
+  };
+  const throwAt = (to: string) => {
+    if (!throwItem) return;
+    emit('room:emote', { emoji: throwItem, to });
+    setThrowItem(null);
+  };
+  const riffleRef = useRef<HTMLSpanElement>(null);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [targetId, setTargetId] = useState('');
+  const [wizardOpen, setWizardOpen] = useState(false);
+  /** Chế độ chọn nhiều lá (combo 5 lá khác loại); mặc định bấm lá là đánh luôn như UNO */
+  const [comboMode, setComboMode] = useState(false);
+  const playZoneRef = useRef<HTMLDivElement>(null);
+  const [giveId, setGiveId] = useState<string | null>(null);
+  const [bombPos, setBombPos] = useState(0);
+  const [shuffling, setShuffling] = useState<string | null>(null);
+  const [shake, setShake] = useState(false);
+  const [bubbles, setBubbles] = useState<Record<string, string>>({});
+  const deckRef = useRef<HTMLButtonElement>(null);
+  const discardRef = useRef<HTMLDivElement>(null);
+  const handRef = useRef<HTMLDivElement>(null);
+  const [handW, setHandW] = useState(0);
+  useEffect(() => {
+    const el = handRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => setHandW(entry.contentRect.width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const secs = (deadline?: number) => (deadline ? Math.max(0, Math.ceil((deadline - now) / 1000)) : 0);
+  const left = (deadline: number | undefined, total: number) => (deadline ? (deadline - now) / total : 0);
+  const avatarOf = (id?: string) => view.players.find((p) => p.id === id)?.avatar;
+  const nameOf = (id?: string) => (id === meId ? 'Bạn' : (view.players.find((p) => p.id === id)?.name ?? '?'));
+
+  const me = view.players.find((p) => p.id === meId);
+  const alive = !!me?.alive;
+  const myTurn = view.currentPlayerId === meId;
+  const { pending, waiting, lastPlay } = view;
+  const giving = waiting?.kind === 'favor_give' && waiting.playerId === meId;
+  const placing = waiting?.kind === 'defuse_place' && waiting.playerId === meId;
+  const canDraw = alive && myTurn && !pending && !waiting && view.phase === 'playing';
+
+  const handIds = new Set(view.hand.map((c) => c.id));
+  // Xếp bài trên tay: giữ thứ tự hiện tại, lá mới nằm cuối; bấm "Xếp bài" thì trượt về đúng loại
+  const [order, setOrder] = useState<string[]>(() => sortIds(view.hand));
+  const byId = new Map(view.hand.map((c) => [c.id, c]));
+  const hand = [...order.filter((id) => byId.has(id)), ...view.hand.filter((c) => !order.includes(c.id)).map((c) => c.id)].map((id) => byId.get(id)!);
+  const flipFrom = useRef<Map<string, DOMRect> | null>(null);
+  const sortHand = () => {
+    const next = sortIds(hand);
+    if (next.join() === hand.map((c) => c.id).join()) {
+      sfx('deny');
+      return;
+    }
+    const before = new Map<string, DOMRect>();
+    handRef.current?.querySelectorAll<HTMLElement>('[data-cid]').forEach((el) => before.set(el.dataset.cid!, el.getBoundingClientRect()));
+    flipFrom.current = before;
+    sfx('shuffle');
+    setOrder(next);
+  };
+  useLayoutEffect(() => {
+    const before = flipFrom.current;
+    if (!before || !handRef.current) return;
+    flipFrom.current = null;
+    handRef.current.querySelectorAll<HTMLElement>('[data-cid]').forEach((el, idx) => {
+      const a = before.get(el.dataset.cid!);
+      if (!a) return;
+      const b = el.getBoundingClientRect();
+      const dx = a.left - b.left;
+      const dy = a.top - b.top;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+      el.animate(
+        [{ translate: `${dx}px ${dy}px` }, { translate: `${dx / 2}px ${dy / 2 - 46}px`, offset: 0.5 }, { translate: '0px 0px' }],
+        { duration: 520, delay: idx * 30, easing: 'cubic-bezier(0.3, 0.8, 0.3, 1)', fill: 'backwards' },
+      );
+    });
+  }, [order]);
+  // Lá mới vào tay: gắn nhãn "MỚI" vài giây để không lạc sau khi tự xếp
+  const [fresh, setFresh] = useState<Set<string>>(new Set());
+  const knownIds = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    const ids = view.hand.map((c) => c.id);
+    if (knownIds.current) {
+      const added = ids.filter((id) => !knownIds.current!.has(id));
+      if (added.length) {
+        setFresh((f) => new Set([...f, ...added]));
+        window.setTimeout(() => setFresh((f) => new Set([...f].filter((id) => !added.includes(id)))), 3500);
+      }
+    }
+    knownIds.current = new Set(ids);
+  }, [view.hand]);
+  const sel = selected.filter((id) => handIds.has(id));
+  const selCards = view.hand.filter((c) => sel.includes(c.id));
+  const kind = detectKind(selCards.map((c) => c.type));
+  const needsTarget = kind === 'favor' || kind === 'pair' || kind === 'triple';
+  const targets = view.players.filter((p) => p.alive && p.id !== meId && p.handCount > 0);
+  const needsWizard = needsTarget || kind === 'five';
+  const countOf = (t: CardType) => view.hand.filter((c) => c.type === t).length;
+  const myActionTime = alive && myTurn && !pending && !waiting && view.phase === 'playing';
+  /** Lá sáng = bấm là đánh được ngay */
+  const isPlayable = (c: Card) => {
+    if (!alive || view.phase !== 'playing' || waiting) return false;
+    if (pending) return c.type === 'nope';
+    if (!myActionTime) return false;
+    if (SINGLE.includes(c.type)) return c.type !== 'favor' || targets.length > 0;
+    if (CARD_INFO[c.type].isCat) return countOf(c.type) >= 2 && targets.length > 0;
+    return false;
+  };
+  const nopeCard = view.hand.find((c) => c.type === 'nope');
+  const canPlay = alive && myTurn && !pending && !waiting && !!kind;
+
+  useEffect(() => {
+    if (placing && waiting?.kind === 'defuse_place') setBombPos((p) => Math.min(p, waiting.deckCount));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placing]);
+
+  // Âm thanh: tới lượt mình, có người đánh bài, có người Nope, bị xin bài
+  const prev = useRef({ myTurn, playId: lastPlay?.id, nopes: lastPlay?.nopers.length ?? 0, giving, deck: view.deckCount });
+  useEffect(() => {
+    const p = prev.current;
+    if (myTurn && !p.myTurn && view.phase === 'playing') sfx('turn');
+    else if (giving && !p.giving) sfx('turn');
+    if (lastPlay && lastPlay.id !== p.playId) sfx('play');
+    else if (lastPlay && lastPlay.nopers.length > p.nopes) sfx('nope');
+    else if (view.deckCount < p.deck) sfx('draw');
+    prev.current = { myTurn, playId: lastPlay?.id, nopes: lastPlay?.nopers.length ?? 0, giving, deck: view.deckCount };
+  }, [myTurn, giving, lastPlay, view.deckCount, view.phase]);
+
+  // Hiệu ứng từ server: lá bay, xáo bài, rung bàn…
+  const showBubble = (pid: string, text: string, ms = 2400) => {
+    setBubbles((b) => ({ ...b, [pid]: text }));
+    window.setTimeout(() => setBubbles((b) => ({ ...b, [pid]: b[pid] === text ? '' : b[pid] })), ms);
+  };
+  useEffect(() => {
+    if (!fx) return;
+    const f = fx.fx;
+    const deck = deckRef.current;
+    switch (f.type) {
+      case 'draw':
+        flyCard(deck, seatEl(f.playerId));
+        break;
+      case 'shuffle':
+        sfx('shuffle');
+        setShuffling(nameOf(f.playerId));
+        window.requestAnimationFrame(() => riffle(riffleRef.current));
+        window.setTimeout(() => setShuffling(null), 1650);
+        break;
+      case 'future':
+        if (f.playerId !== meId) showBubble(f.playerId, '🔮 đang xem trước');
+        break;
+      case 'transfer': {
+        const from = f.from === 'discard' ? discardRef.current : seatEl(f.from);
+        flyCard(from, seatEl(f.to));
+        if (f.from !== 'discard') showBubble(f.from, '−1 lá', 1800);
+        showBubble(f.to, '+1 lá', 1800);
+        break;
+      }
+      case 'insert':
+        flyCard(seatEl(f.playerId), deck);
+        if (f.playerId !== meId) showBubble(f.playerId, '🤫 nhét bom lại');
+        break;
+      case 'explode':
+        setShake(true);
+        window.setTimeout(() => setShake(false), 700);
+        break;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fx?.id]);
+
+  const lastPlayId = useRef(lastPlay?.id);
+  useEffect(() => {
+    if (!lastPlay || lastPlay.id === lastPlayId.current) return;
+    lastPlayId.current = lastPlay.id;
+    if (lastPlay.actorId !== meId) {
+      lastPlay.cards.forEach((_, i) => flyCard(seatEl(lastPlay.actorId), playZoneRef.current, { delay: i * 90 }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastPlay?.id]);
+  const nopeCount = lastPlay?.nopers.length ?? 0;
+  const lastNopes = useRef(nopeCount);
+  useEffect(() => {
+    if (nopeCount > lastNopes.current && lastPlay) {
+      const who = lastPlay.nopers[nopeCount - 1];
+      if (who !== meId) flyCard(seatEl(who), playZoneRef.current);
+    }
+    lastNopes.current = nopeCount;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nopeCount]);
+
+  // Lá vừa lấy được / bị mất: tự ẩn sau vài giây
+  useEffect(() => {
+    if (!reveal) return;
+    sfx(reveal.kind === 'lost' ? 'nope' : 'defuse');
+    const t = window.setTimeout(() => onCloseReveal?.(), 3200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reveal?.key]);
+
+  // Đối thủ xếp theo chiều kim đồng hồ bắt đầu từ người ngồi sau mình
+  const myIdx = Math.max(0, view.players.findIndex((p) => p.id === meId));
+  const opponents = [...view.players.slice(myIdx + 1), ...view.players.slice(0, myIdx)];
+  const span = Math.min(200, 60 + opponents.length * 24);
+  const crowded = opponents.length > 5;
+
+  /** Bay các lá của mình ra giữa bàn rồi gửi lên server */
+  const flyOut = (ids: string[]) =>
+    ids.forEach((id, i) => flyClone(handRef.current?.querySelector(`[data-cid="${id}"]`) ?? null, playZoneRef.current, i * 70));
+
+  const clickCard = (card: Card) => {
+    if (!comboMode) {
+      if (!isPlayable(card)) {
+        sfx('deny');
+        return;
+      }
+      if (card.type === 'nope') {
+        flyOut([card.id]);
+        sfx('nope');
+        emit('game:play', { cardIds: [card.id] });
+        return;
+      }
+      if (CARD_INFO[card.type].isCat) {
+        // mèo: lấy đôi (gồm lá vừa bấm) rồi mở hộp thoại chọn người
+        const same = view.hand.filter((c) => c.type === card.type && c.id !== card.id);
+        setSelected([card.id, same[0].id]);
+        setWizardOpen(true);
+        return;
+      }
+      setSelected([card.id]);
+      if (card.type === 'favor') {
+        setWizardOpen(true);
+        return;
+      }
+      flyOut([card.id]);
+      sfx('play');
+      emit('game:play', { cardIds: [card.id] });
+      setSelected([]);
+      return;
+    }
+    const on = sel.includes(card.id);
+    sfx(on ? 'unselect' : 'select');
+    setSelected((s) => (on ? s.filter((id) => id !== card.id) : [...s.filter((id) => handIds.has(id)), card.id]));
+  };
+
+  const send = (r: WizardResult = {}) => {
+    sfx('play');
+    flyOut(sel);
+    emit('game:play', { cardIds: sel, ...r });
+    setComboMode(false);
+    setSelected([]);
+    setWizardOpen(false);
+    setTargetId('');
+  };
+  // Lá cần chọn người / chọn lá thì mở hộp thoại, còn lại đánh luôn
+  const play = () => (needsWizard ? setWizardOpen(true) : send());
+
+  const leave = () => {
+    if (view.phase === 'ended' || !alive || window.confirm('Rời phòng giữa ván sẽ bị tính là thua. Chắc chưa?')) emit('room:leave');
+  };
+
+  // ---------- dòng trạng thái của mình ----------
+  let status: ReactNode;
+  let statusTone = '';
+  if (view.phase === 'ended') {
+    status = view.winnerId === meId ? '🏆 Bạn thắng!' : `🏆 ${nameOf(view.winnerId)} thắng!`;
+  } else if (!alive) {
+    status = '💀 Bạn đã nổ. Ngồi xem tiếp nhé!';
+  } else if (giving && waiting?.kind === 'favor_give') {
+    status = `🙏 ${nameOf(waiting.toId)} xin bài: bấm 1 lá để đưa (${secs(waiting.deadline)}s)`;
+    statusTone = 'warn';
+  } else if (waiting) {
+    status =
+      waiting.kind === 'defuse_place'
+        ? `🧯 ${nameOf(waiting.playerId)} đang lén nhét Mèo Nổ lại…`
+        : `🙏 Đợi ${nameOf(waiting.playerId)} chọn bài đưa cho ${nameOf(waiting.toId)}…`;
+  } else if (pending) {
+    status = nopeCard ? 'Có người vừa đánh bài: muốn chặn thì bấm NOPE!' : 'Đang chờ xem có ai Nope không…';
+  } else if (myTurn) {
+    status = (
+      <>
+        <b>Lượt của bạn</b>
+        {view.turnsRemaining > 1 && <> (còn {view.turnsRemaining} lượt)</>}: đánh bài hoặc rút để kết thúc lượt
+      </>
+    );
+    statusTone = 'go';
+  } else {
+    status = (
+      <>
+        Đang tới lượt <b>{nameOf(view.currentPlayerId)}</b>
+      </>
+    );
+  }
+
+  const seatProgress = (p: PublicPlayer) => {
+    if (waiting?.playerId === p.id) return { active: true, progress: left(waiting.deadline, PROMPT_MS), tone: 'wait' };
+    if (p.id === view.currentPlayerId && !pending && !waiting) return { active: true, progress: left(view.turnDeadline, TURN_MS), tone: 'turn' };
+    if (p.id === view.currentPlayerId) return { active: true, progress: 1, tone: 'turn' };
+    return { active: false, progress: 0, tone: 'turn' };
+  };
+
+  // Bài trên tay: đủ chỗ thì tách nhau, chật thì xếp chồng vừa khung
+  const n = view.hand.length;
+  const cardW = handRef.current?.querySelector<HTMLElement>('.card')?.offsetWidth ?? 120;
+  const overlap = n > 1 && handW ? Math.min(cardW * 0.72, Math.max(-12, (n * cardW - (handW - 24)) / (n - 1))) : -12;
+
+  return (
+    <div className={`game${chatOpen ? ' with-chat' : ''}`}>
+      {/* ================= BÀN CHƠI ================= */}
+      <div className={`arena${shake ? ' shake' : ''}`}>
+        <div className="felt" />
+
+        <div className={`seats${crowded ? ' crowded' : ''}`}>
+          {opponents.map((p, i) => {
+            const a = ((270 - span / 2 + (span * (i + 0.5)) / opponents.length) * Math.PI) / 180;
+            const ring = seatProgress(p);
+            const isTarget = needsTarget && targetId === p.id;
+            const pickable = needsTarget && canPlay && targets.some((t) => t.id === p.id);
+            return (
+              <div
+                key={p.id}
+                className={['seat', Math.cos(a) > 0.25 ? 'bubble-left' : 'bubble-right', !p.alive && 'dead', !p.connected && 'offline', isTarget && 'targeted', pickable && 'pickable'].filter(Boolean).join(' ')}
+                style={{ ['--x' as string]: (Math.cos(a) * 44).toFixed(2), ['--y' as string]: (Math.sin(a) * 40).toFixed(2) } as CSSProperties}
+                data-pid={p.id}
+                onClick={
+                  throwItem
+                    ? () => throwAt(p.id)
+                    : pickable
+                      ? () => {
+                          setTargetId(p.id);
+                          setWizardOpen(true);
+                        }
+                      : undefined
+                }
+              >
+                <span className={`avatar-wrap${throwItem ? ' throwable' : ''}`} data-avatar={p.id}>
+                  <Ring {...ring}>
+                    <PlayerAvatar id={p.id} avatar={p.avatar} size={58} dead={!p.alive} />
+                  </Ring>
+                  {pops[p.id] && (
+                    <span key={pops[p.id].id} className={`emote-pop ${pops[p.id].kind}`}>
+                      {pops[p.id].emoji}
+                    </span>
+                  )}
+                  {chatPops[p.id] && (
+                    <span key={`c${chatPops[p.id].id}`} className="chat-pop">
+                      {chatPops[p.id].text}
+                    </span>
+                  )}
+                </span>
+                <div className="seat-name">
+                  {p.id === view.hostId && <span title="Chủ phòng">👑</span>}
+                  {p.name}
+                </div>
+                <div className="seat-cards">
+                  {p.alive ? (
+                    <>
+                      <span className="mini-backs">
+                        {Array.from({ length: Math.min(p.handCount, 5) }, (_, k) => (
+                          <span key={k} className="mini-back" style={{ ['--k' as string]: k } as CSSProperties} />
+                        ))}
+                      </span>
+                      <span className="seat-count">{p.handCount}</span>
+                    </>
+                  ) : (
+                    <span className="seat-dead">đã nổ</span>
+                  )}
+                </div>
+                {isTarget && <span className="target-tag">🎯 mục tiêu</span>}
+                {lastPlay?.nopers.at(-1) === p.id && pending && <span className="nope-bubble">NOPE!</span>}
+                {bubbles[p.id] && <span className="seat-bubble">{bubbles[p.id]}</span>}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="table-center">
+          {/* chồng bài */}
+          <button
+            ref={deckRef}
+            className={`deck${canDraw ? ' can-draw' : ''}${shuffling ? ' shuffling' : ''}`}
+            disabled={!canDraw}
+            onClick={() => emit('game:draw')}
+            title="Rút bài"
+          >
+            <span className="riffle" aria-hidden="true" ref={riffleRef}>
+              {Array.from({ length: 12 }, (_, k) => (
+                <span key={k} />
+              ))}
+            </span>
+            <span className="deck-stack" />
+            <span className="deck-stack s2" />
+            <CardBack count={view.deckCount} />
+            {canDraw && <span className="deck-label">RÚT BÀI</span>}
+          </button>
+
+          {/* bài vừa đánh */}
+          <div className="play-zone" ref={playZoneRef}>
+            {lastPlay ? (
+              <div className="last-play" key={lastPlay.id}>
+                <div className="lp-head">
+                  <PlayerAvatar id={lastPlay.actorId} avatar={avatarOf(lastPlay.actorId)} size={26} />
+                  <span>
+                    <b>{nameOf(lastPlay.actorId)}</b> đánh {KIND_LABEL[lastPlay.kind]}
+                    {lastPlay.targetId && <> → {nameOf(lastPlay.targetId)}</>}
+                  </span>
+                </div>
+                <div className={`lp-cards n${Math.min(lastPlay.cards.length, 5)}`}>
+                  {lastPlay.cards.map((t, i) => (
+                    <CardView key={i} type={t} seed={lastPlay.cardIds?.[i] ?? `${lastPlay.id}-${i}`} size="md" style={{ ['--i' as string]: i - (lastPlay.cards.length - 1) / 2 } as CSSProperties} />
+                  ))}
+                  {lastPlay.nopers.map((id, i) => (
+                    <div key={`n${i}`} className="lp-nope" style={{ ['--n' as string]: i } as CSSProperties}>
+                      <CardView type="nope" seed={lastPlay.nopeCardIds?.[i] ?? `nope-${lastPlay.id}-${i}`} size="sm" />
+                      <span className="lp-noper">{nameOf(id)}</span>
+                    </div>
+                  ))}
+                </div>
+                {pending ? (
+                  <div className="lp-pending">
+                    <div className="nope-timer">
+                      <span style={{ width: `${Math.max(0, left(pending.deadline, NOPE_WINDOW_MS)) * 100}%` }} />
+                    </div>
+                    <span className={pending.nopeCount % 2 ? 'tag bad' : 'tag'}>
+                      {pending.nopeCount % 2 ? '✋ Đang bị Nope' : pending.nopeCount ? '↩️ Nope bị Nope lại' : '⏳ Chờ Nope'} · {secs(pending.deadline)}s
+                    </span>
+                    {alive && nopeCard && (
+                      <button className="nope-btn" onClick={() => emit('game:play', { cardIds: [nopeCard.id] })}>
+                        ✋ NOPE!
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <span className={`tag ${lastPlay.result === 'noped' ? 'bad' : 'good'}`}>
+                    {lastPlay.result === 'noped' ? '✋ Đã bị Nope' : '✓ Đã có hiệu lực'}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="play-empty">Chưa ai đánh lá nào</div>
+            )}
+          </div>
+
+          {/* chồng bài bỏ */}
+          <div className="discard" ref={discardRef}>
+            {view.discardTop ? <CardView type={view.discardTop} seed={view.discardTopId} size="md" /> : <div className="empty-slot">bài bỏ</div>}
+            <span className="pile-label">Bài bỏ</span>
+          </div>
+        </div>
+
+        {/* bình luận nổi trên bàn */}
+        <div className="feed" aria-live="polite">
+          {feed.map((f) => (
+            <div key={f.id} className={`feed-item ${f.tone}`}>
+              {f.text}
+            </div>
+          ))}
+        </div>
+        {!chatOpen && (
+          <div className="arena-tools">
+            <button className="icon-btn" onClick={() => setChatOpen(true, 'chat')} title="Mở chat">
+              💬 <span className="hide-sm">Chat</span>
+              {unread > 0 && <span className="badge">{unread}</span>}
+            </button>
+            <button className="icon-btn" onClick={() => setChatOpen(true, 'log')} title="Xem toàn bộ diễn biến">
+              📜 <span className="hide-sm">Diễn biến</span>
+            </button>
+          </div>
+        )}
+
+        {throwItem && (
+          <div className="throw-hint">
+            Bấm vào avatar để ném <span className="throw-emoji">{throwItem}</span>
+            <button className="ghost" onClick={() => setThrowItem(null)}>
+              Huỷ
+            </button>
+          </div>
+        )}
+
+        {announce && <div className={`announce ${announce.tone}`}>{announce.text}</div>}
+        {shuffling && <div className="announce shuffle">🔀 {shuffling === 'Bạn' ? 'Bạn' : shuffling} xáo bài!</div>}
+
+        {view.phase === 'ended' && (
+          <div className="ended">
+            <PlayerAvatar id={view.winnerId ?? 'none'} avatar={avatarOf(view.winnerId)} size={120} />
+            <h2>🏆 {view.winnerId === meId ? 'Bạn thắng!' : `${nameOf(view.winnerId)} thắng!`}</h2>
+            {view.hostId === meId ? (
+              <button className="primary big" onClick={() => emit('game:restart')}>
+                Chơi lại
+              </button>
+            ) : (
+              <p className="muted">Đợi chủ phòng mở ván mới…</p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ================= KHU CỦA MÌNH ================= */}
+      <div className={`my-area${myTurn ? ' my-turn' : ''}`} data-pid={meId}>
+        <div className="quick-emotes" role="toolbar" aria-label="Biểu cảm nhanh">
+          {QUICK_EMOTES.map((e) => (
+            <button key={e} onClick={() => sendEmote(e)} title={`Thả ${e}`}>
+              {e}
+            </button>
+          ))}
+          <button className={`emote-btn more${pickerOpen ? ' on' : ''}`} onClick={() => setPickerOpen((o) => !o)} title="Thêm biểu cảm / ném đồ">
+            ⋯
+          </button>
+        </div>
+        <div className="my-bar">
+          <span className="avatar-wrap" data-avatar={meId}>
+            <Ring {...(me ? seatProgress(me) : { active: false, progress: 0 })}>
+              <PlayerAvatar id={meId} avatar={me?.avatar} size={52} dead={!alive} />
+            </Ring>
+            {pops[meId] && (
+              <span key={pops[meId].id} className={`emote-pop ${pops[meId].kind}`}>
+                {pops[meId].emoji}
+              </span>
+            )}
+            {chatPops[meId] && (
+              <span key={`c${chatPops[meId].id}`} className="chat-pop mine">
+                {chatPops[meId].text}
+              </span>
+            )}
+          </span>
+          <div className={`my-status ${statusTone}`}>
+            <div>{status}</div>
+            {myTurn && !pending && !waiting && <div className="muted small">Còn {secs(view.turnDeadline)}s</div>}
+          </div>
+
+          <div className="my-actions">
+            {!comboMode && myActionTime && <span className="hint-chip">👆 Bấm lá sáng để đánh · bấm chồng bài để rút</span>}
+            {!comboMode && pending && alive && nopeCard && <span className="hint-chip nope">✋ Bấm lá Nope để chặn!</span>}
+            {comboMode && (
+              <>
+                <span className="kind-chip">{kind ? KIND_LABEL[kind] : `Đã chọn ${sel.length} lá`}</span>
+                {!kind && sel.length > 0 && <span className="muted small">Chọn 5 lá khác tên nhau (hoặc 2–3 lá mèo giống nhau)</span>}
+                <button className="primary" disabled={!canPlay} onClick={play}>
+                  {needsTarget ? 'Chọn người →' : kind === 'five' ? 'Chọn lá →' : 'Đánh ra'}
+                </button>
+              </>
+            )}
+            {myActionTime && (
+              <button
+                className={comboMode ? 'secondary on' : 'secondary'}
+                onClick={() => {
+                  setComboMode((m) => !m);
+                  setSelected([]);
+                }}
+                title="Chọn nhiều lá để đánh combo"
+              >
+                {comboMode ? '✕ Thôi chọn nhiều' : '🃏 Chọn nhiều lá'}
+              </button>
+            )}
+            {sel.length > 0 && (
+              <button className="ghost" onClick={() => setSelected([])}>
+                Bỏ chọn
+              </button>
+            )}
+            {canDraw && (
+              <button className="secondary" onClick={() => emit('game:draw')}>
+                🂠 Rút bài
+              </button>
+            )}
+            {view.hand.length > 1 && (
+              <button className="secondary" onClick={sortHand} title="Xếp bài theo loại: lá cùng loại đứng cạnh nhau">
+                🗂️ Xếp bài
+              </button>
+            )}
+            <button className="ghost leave" onClick={leave}>
+              Rời phòng
+            </button>
+          </div>
+        </div>
+
+        {pickerOpen && (
+          <div className="emote-picker" role="dialog" aria-label="Biểu cảm">
+            <div className="emote-title">Thả biểu cảm</div>
+            <div className="emote-grid">
+              {EMOTES.map((e) => (
+                <button key={e} onClick={() => sendEmote(e)}>
+                  {e}
+                </button>
+              ))}
+            </div>
+            <div className="emote-title">Ném vào ai đó 😈</div>
+            <div className="emote-grid throw">
+              {THROWABLES.map((e) => (
+                <button
+                  key={e}
+                  onClick={() => {
+                    setThrowItem(e);
+                    setPickerOpen(false);
+                  }}
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        <div ref={handRef} className="hand" style={{ ['--overlap' as string]: `${overlap}px` } as CSSProperties}>
+          {hand.map((c, i) => (
+            <CardView
+              key={c.id}
+              cid={c.id}
+              type={c.type}
+              seed={c.id}
+              size="lg"
+              className={`${comboMode || !(myActionTime || pending) ? '' : isPlayable(c) ? 'playable' : 'dim'}${fresh.has(c.id) ? ' fresh' : ''}`}
+              selected={comboMode && sel.includes(c.id)}
+              onClick={alive ? () => clickCard(c) : undefined}
+              style={{ ['--i' as string]: i - (hand.length - 1) / 2 } as CSSProperties}
+            />
+          ))}
+          {!view.hand.length && <span className="muted">Không còn lá nào trên tay.</span>}
+        </div>
+      </div>
+
+      {chatOpen && (
+        <div className="chat-col">
+          <ChatPanel
+            messages={chat.messages}
+            meId={meId}
+            typingNames={typingNames}
+            onSend={chat.send}
+            onTyping={chat.onTyping}
+            tab={chatTab}
+            onTab={setChatTab}
+            unread={unread}
+            onClose={() => setChatOpen(false)}
+            log={view.log}
+            logTotal={view.logTotal}
+          />
+        </div>
+      )}
+
+      {/* ================= HỘP THOẠI ================= */}
+      {placing && waiting?.kind === 'defuse_place' && (
+        <Modal title="🧯 Gỡ bom thành công!" width={480}>
+          <p>
+            Bí mật nhét Mèo Nổ lại vào chồng bài. Còn <b>{secs(waiting.deadline)}s</b>, hết giờ sẽ nhét ngẫu nhiên.
+          </p>
+          <div className="bomb-track">
+            {Array.from({ length: Math.min(waiting.deckCount, 24) + 1 }, (_, i) => {
+              const pos = waiting.deckCount <= 24 ? i : Math.round((i / 24) * waiting.deckCount);
+              return (
+                <button
+                  key={i}
+                  className={pos === bombPos ? 'slot on' : 'slot'}
+                  onClick={() => {
+                    sfx('tap');
+                    setBombPos(pos);
+                  }}
+                  title={`Vị trí ${pos + 1}`}
+                >
+                  {pos === bombPos ? '💣' : ''}
+                </button>
+              );
+            })}
+          </div>
+          <input type="range" min={0} max={waiting.deckCount} value={bombPos} onChange={(e) => setBombPos(Number(e.target.value))} />
+          <p className="center bomb-pos">
+            {bombPos === 0 ? '⬆ Trên cùng: người kế tiếp rút trúng ngay!' : bombPos === waiting.deckCount ? '⬇ Dưới cùng' : `Lá thứ ${bombPos + 1} từ trên xuống`}
+          </p>
+          <div className="seg">
+            <button className={bombPos === 0 ? 'on' : ''} onClick={() => setBombPos(0)}>
+              Trên cùng
+            </button>
+            <button onClick={() => setBombPos(Math.floor(Math.random() * (waiting.deckCount + 1)))}>Ngẫu nhiên</button>
+            <button className={bombPos === waiting.deckCount ? 'on' : ''} onClick={() => setBombPos(waiting.deckCount)}>
+              Dưới cùng
+            </button>
+          </div>
+          <div className="modal-actions">
+            <button className="primary big" onClick={() => emit('game:place', { position: bombPos })}>
+              💣 Nhét vào
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {wizardOpen && kind && canPlay && (
+        <PlayWizard
+          kind={kind}
+          cards={selCards}
+          targets={targets}
+          discardTypes={view.discardTypes}
+          initialTarget={targetId}
+          comboSwitch={
+            !comboMode && (kind === 'pair' || kind === 'triple') && countOf(selCards[0].type) >= 3
+              ? (to) => {
+                  const same = view.hand.filter((c) => c.type === selCards[0].type).map((c) => c.id);
+                  setSelected(same.slice(0, to === 'triple' ? 3 : 2));
+                }
+              : undefined
+          }
+          onCancel={() => {
+            setWizardOpen(false);
+            setTargetId('');
+            if (!comboMode) setSelected([]);
+          }}
+          onConfirm={send}
+        />
+      )}
+
+      {giving && waiting?.kind === 'favor_give' && (
+        <Modal title={`🙏 ${nameOf(waiting.toId)} xin bài bạn`} width={760}>
+          <p>
+            Chọn <b>1 lá</b> để đưa cho {nameOf(waiting.toId)}. Còn <b>{secs(waiting.deadline)}s</b>, hết giờ sẽ đưa ngẫu nhiên.
+          </p>
+          <div className="give-grid">
+            {hand.map((c) => (
+              <button key={c.id} className={`wiz-card${giveId === c.id ? ' on' : ''}`} onClick={() => setGiveId(c.id)}>
+                <CardView type={c.type} seed={c.id} size="md" preview={false} />
+                <span>{CARD_INFO[c.type].name}</span>
+              </button>
+            ))}
+          </div>
+          <div className="modal-actions">
+            <button
+              className="primary big"
+              disabled={!giveId || !view.hand.some((c) => c.id === giveId)}
+              onClick={() => {
+                emit('game:give', { cardId: giveId });
+                setGiveId(null);
+              }}
+            >
+              Đưa lá này
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {reveal && (
+        <div className={`reveal ${reveal.kind}`} key={reveal.key} onClick={onCloseReveal}>
+          <div className="reveal-box">
+            <div className="reveal-title">{reveal.kind === 'lost' ? '😿 Bạn bị lấy mất' : '😺 Bạn nhận được'}</div>
+            {reveal.cards.map((t, i) => (
+              <CardView key={i} type={t} seed={reveal.cardIds?.[i]} size="xl" preview={false} />
+            ))}
+            <div className="reveal-text">{reveal.text}</div>
+          </div>
+        </div>
+      )}
+
+      {notice && (
+        <Modal title="🔮 Tương lai của chồng bài" width={620}>
+          <p className="muted">{notice.text}</p>
+          <div className="future">
+            {notice.cards.length ? (
+              notice.cards.map((t, i) => (
+                <div key={i} className="future-item" style={{ animationDelay: `${i * 0.12}s` }}>
+                  <span className="future-pos">{i + 1}</span>
+                  <CardView type={t} seed={notice.cardIds?.[i] ?? i} size="xl" />
+                </div>
+              ))
+            ) : (
+              <p>Chồng bài trống.</p>
+            )}
+          </div>
+          <div className="modal-actions">
+            <button className="primary big" onClick={onCloseNotice}>
+              Đã xem
+            </button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
