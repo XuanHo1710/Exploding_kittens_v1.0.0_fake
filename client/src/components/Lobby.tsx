@@ -1,4 +1,5 @@
-import { MAX_PLAYERS, MIN_PLAYERS, type RoomView } from '../../../shared/src';
+import { BET_OPTIONS, MAX_PLAYERS, MIN_PLAYERS, type AccountInfo, type RoomView } from '../../../shared/src';
+import { fmtCoins } from './Dock';
 import PlayerAvatar from '../art/PlayerAvatar';
 import ChatPanel, { useChatState, type RoomChat } from './ChatPanel';
 
@@ -7,14 +8,17 @@ interface Props {
   meId: string;
   emit: (event: string, payload?: unknown) => void;
   chat?: RoomChat;
+  account?: AccountInfo | null;
 }
 
 const NO_CHAT: RoomChat = { messages: [], typing: {}, send: () => {}, onTyping: () => {} };
 
-export default function Lobby({ view, meId, emit, chat = NO_CHAT }: Props) {
+export default function Lobby({ view, meId, emit, chat = NO_CHAT, account }: Props) {
   const { typingNames, unread } = useChatState(chat, view.players, meId, true);
   const isHost = view.hostId === meId;
   const online = view.players.filter((p) => p.connected).length;
+  const bet = view.bet;
+  const poor = bet > 0 ? view.players.filter((p) => p.connected && (p.coins ?? 0) < bet) : [];
   const empty = Math.max(0, MAX_PLAYERS - view.players.length);
   return (
     <div className="center-screen">
@@ -39,6 +43,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT }: Props) {
                 {p.name}
               </span>
               <span className="muted small">{p.id === meId ? 'bạn' : p.connected ? 'sẵn sàng' : 'mất kết nối'}</span>
+              {p.coins !== undefined && <span className={`seat-coins${bet > 0 && p.coins < bet ? ' low' : ''}`}>🪙 {fmtCoins(p.coins)}</span>}
             </div>
           ))}
           {Array.from({ length: empty }, (_, i) => (
@@ -48,6 +53,27 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT }: Props) {
             </div>
           ))}
         </div>
+        <div className="bet-box">
+          <div className="bet-head">
+            <b>💰 Cược mỗi người</b>
+            <span className="muted small">{isHost ? 'Chủ phòng chọn' : 'Chủ phòng đang chọn'}</span>
+          </div>
+          <div className="bet-chips">
+            {BET_OPTIONS.map((b) => (
+              <button key={b} className={`bet-chip${b === bet ? ' on' : ''}`} disabled={!isHost} onClick={() => emit('room:bet', { amount: b })}>
+                {b === 0 ? 'Miễn phí' : `${fmtCoins(b)} xu`}
+              </button>
+            ))}
+          </div>
+          <p className="bet-note">
+            {bet === 0
+              ? 'Chơi vui, không mất xu.'
+              : `Hũ ${fmtCoins(bet * online)} xu – người sống sót cuối cùng ăn hết 🏆`}
+            {bet > 0 && account && account.coins < bet && <span className="bad-text"> · Bạn thiếu xu, vào Hồ sơ nhận 500 xu/ngày nhé.</span>}
+          </p>
+          {poor.length > 0 && <p className="bad-text small">Không đủ xu: {poor.map((p) => p.name).join(', ')}</p>}
+        </div>
+
         <div className="lobby-actions">
           <button className="ghost" onClick={() => emit('room:leave')}>
             Rời phòng

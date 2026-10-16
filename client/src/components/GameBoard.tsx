@@ -24,6 +24,7 @@ import { sfx } from '../sfx';
 import { flyCard, flyClone, flyEmoji, seatEl } from '../fx';
 import PlayWizard, { type WizardResult } from './PlayWizard';
 import ChatPanel, { useChatState, type ChatTab, type RoomChat } from './ChatPanel';
+import { Brand, fmtCoins } from './Dock';
 
 interface Props {
   view: RoomView;
@@ -40,6 +41,8 @@ interface Props {
   emote?: { id: number; e: Emote } | null;
   /** Chat real-time của phòng */
   chat?: RoomChat;
+  /** Thanh điều khiển (thay header) – đặt ở góc phải trên bàn */
+  dock?: ReactNode;
 }
 
 const NO_CHAT: RoomChat = { messages: [], typing: {}, send: () => {}, onTyping: () => {} };
@@ -152,9 +155,9 @@ function useAnnouncement(log: string[], total: number) {
   const seen = useRef(total);
   useEffect(() => {
     const fresh = freshLines(log, total, seen);
-    const hit = [...fresh].reverse().find((l) => /NỔ TUNG|GỠ BOM|thắng/.test(l));
+    const hit = [...fresh].reverse().find((l) => /NỔ TUNG|GỠ BOM|🏆|ăn hũ/.test(l));
     if (!hit) return;
-    const tone = hit.includes('NỔ TUNG') ? 'boom' : hit.includes('thắng') ? 'win' : 'defuse';
+    const tone = hit.includes('NỔ TUNG') ? 'boom' : /🏆|ăn hũ/.test(hit) ? 'win' : 'defuse';
     sfx(tone);
     setMsg({ text: hit.replace(/^[^\p{L}]+/u, ''), tone });
     const t = setTimeout(() => setMsg(null), 2600);
@@ -181,9 +184,6 @@ function useFeed(log: string[], total: number) {
   return feed;
 }
 
-/** Vòng đếm ngược quanh avatar */
-function Ring({ progress, children, active, tone = 'turn' }: { progress: number; children: ReactNode; active: boolean; tone?: string }) {
-  return (
 /** Emoji bay lên trên avatar (nhiều cái cùng lúc) + combo đếm số lần */
 function Floaters({
   list,
@@ -212,13 +212,16 @@ function Floaters({
   );
 }
 
+/** Vòng đếm ngược quanh avatar */
+function Ring({ progress, children, active, tone = 'turn' }: { progress: number; children: ReactNode; active: boolean; tone?: string }) {
+  return (
     <div className={`ring${active ? ' active' : ''} tone-${tone}`} style={{ ['--p' as string]: Math.max(0, Math.min(1, progress)) } as CSSProperties}>
       {children}
     </div>
   );
 }
 
-export default function GameBoard({ view, meId, emit, notice, onCloseNotice, reveal, onCloseReveal, fx, emote, chat = NO_CHAT }: Props) {
+export default function GameBoard({ view, meId, emit, notice, onCloseNotice, reveal, onCloseReveal, fx, emote, chat = NO_CHAT, dock }: Props) {
   const now = useNow();
   const announce = useAnnouncement(view.log, view.logTotal);
   const feed = useFeed(view.log, view.logTotal);
@@ -766,17 +769,23 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
             </div>
           ))}
         </div>
-        {!chatOpen && (
-          <div className="arena-tools">
-            <button className="icon-btn" onClick={() => setChatOpen(true, 'chat')} title="Mở chat">
-              💬 <span className="hide-sm">Chat</span>
-              {unread > 0 && <span className="badge">{unread}</span>}
-            </button>
-            <button className="icon-btn" onClick={() => setChatOpen(true, 'log')} title="Xem toàn bộ diễn biến">
-              📜 <span className="hide-sm">Diễn biến</span>
-            </button>
-          </div>
-        )}
+        <div className="arena-tools">
+          <Brand code={view.code} />
+          {view.pot > 0 && view.phase === 'playing' && <span className="pot-chip">💰 Hũ {fmtCoins(view.pot)} xu</span>}
+          {!chatOpen && (
+            <>
+              <button className="icon-btn" onClick={() => setChatOpen(true, 'chat')} title="Mở chat">
+                💬 <span className="hide-sm">Chat</span>
+                {unread > 0 && <span className="badge">{unread}</span>}
+              </button>
+              <button className="icon-btn" onClick={() => setChatOpen(true, 'log')} title="Xem toàn bộ diễn biến">
+                📜 <span className="hide-sm">Diễn biến</span>
+              </button>
+            </>
+          )}
+        </div>
+        <div className="arena-dock">{dock}</div>
+
 
         {throwItem && (
           <div className="throw-hint">
@@ -794,6 +803,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
           <div className="ended">
             <PlayerAvatar id={view.winnerId ?? 'none'} avatar={avatarOf(view.winnerId)} size={120} />
             <h2>🏆 {view.winnerId === meId ? 'Bạn thắng!' : `${nameOf(view.winnerId)} thắng!`}</h2>
+            {view.pot > 0 && <div className="prize">+{fmtCoins(view.pot)} xu 🪙</div>}
             {view.hostId === meId ? (
               <button className="primary big" onClick={() => emit('game:restart')}>
                 Chơi lại

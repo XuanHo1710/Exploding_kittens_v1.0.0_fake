@@ -112,6 +112,8 @@ export default function Demo() {
           : undefined,
     winnerId: scene === 'ended' ? 'me' : undefined,
     logTotal: 5,
+    bet: 100,
+    pot: 600,
     log: ['Bắt đầu! 6 người, 5 Mèo Nổ trong chồng bài.', 'Tuấn đánh Xáo Bài.', '💥 Minh rút trúng Mèo Nổ và NỔ TUNG!', 'aloalo đánh đôi mèo, rút bài của xuânho.', 'dsa NOPE!'],
   };
   return (
