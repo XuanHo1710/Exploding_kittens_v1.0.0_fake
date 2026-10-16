@@ -19,6 +19,8 @@ import {
   GameFx,
   PrivateNotice,
   RoomView,
+  SHUFFLE_STYLES,
+  ShuffleStyle,
 } from '../../../shared/src';
 
 export class GameError extends Error {}
@@ -42,6 +44,7 @@ interface Pending {
   targetId?: string;
   namedType?: CardType;
   discardType?: CardType;
+  shuffleStyle?: ShuffleStyle;
   cards: CardType[];
   nopeCount: number;
   deadline: number;
@@ -283,6 +286,7 @@ export class Game {
         targetId: target?.id,
         namedType: req.namedType,
         discardType: req.discardType,
+        shuffleStyle: req.shuffleStyle && SHUFFLE_STYLES[req.shuffleStyle] ? req.shuffleStyle : 'riffle',
         cards: types,
         nopeCount: 0,
         deadline: Date.now() + NOPE_WINDOW_MS,
@@ -445,8 +449,9 @@ export class Game {
         break;
       case 'shuffle':
         shuffle(this.deck);
-        this.hooks.fx(this, { type: 'shuffle', playerId: actor.id });
-        this.addLog('Chồng bài đã được xáo.');
+        const style = pd.shuffleStyle ?? 'riffle';
+        this.hooks.fx(this, { type: 'shuffle', playerId: actor.id, style });
+        this.addLog(`${SHUFFLE_STYLES[style].emoji} ${actor.name} xáo bài kiểu ${SHUFFLE_STYLES[style].name}.`);
         break;
       case 'see_future': {
         this.hooks.fx(this, { type: 'future', playerId: actor.id });

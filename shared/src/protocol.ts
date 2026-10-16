@@ -98,6 +98,14 @@ export interface RoomView {
   pot: number;
 }
 
+/** Kiểu xáo bài: kết quả đều ngẫu nhiên hoàn toàn, chỉ khác hiệu ứng */
+export type ShuffleStyle = 'riffle' | 'overhand' | 'pile';
+export const SHUFFLE_STYLES: Record<ShuffleStyle, { name: string; emoji: string; desc: string }> = {
+  riffle: { name: 'Riffle', emoji: '🌀', desc: 'Tách đôi chồng bài, đan 2 nửa vào nhau như dân chuyên.' },
+  overhand: { name: 'Xáo tay', emoji: '🤲', desc: 'Bốc từng tập nhỏ từ dưới lên trên, xáo kiểu bàn nhậu.' },
+  pile: { name: 'Chia đống', emoji: '🃏', desc: 'Chia bài ra 4 đống rồi gom lại theo thứ tự ngẫu nhiên.' },
+};
+
 export interface PlayRequest {
   cardIds: string[];
   targetId?: string;
@@ -105,6 +113,8 @@ export interface PlayRequest {
   namedType?: CardType;
   /** 5 lá khác loại: lá muốn lấy từ chồng bài bỏ */
   discardType?: CardType;
+  /** Xáo Bài: kiểu xáo */
+  shuffleStyle?: ShuffleStyle;
 }
 
 export interface PrivateNotice {
@@ -117,7 +127,7 @@ export interface PrivateNotice {
 /** Sự kiện hiệu ứng gửi cho cả phòng (để mọi người thấy chuyện gì vừa xảy ra) */
 export type GameFx =
   | { type: 'draw'; playerId: string }
-  | { type: 'shuffle'; playerId: string }
+  | { type: 'shuffle'; playerId: string; style: ShuffleStyle }
   | { type: 'future'; playerId: string }
   | { type: 'transfer'; from: string; to: string; via: 'favor' | 'pair' | 'triple' | 'five' }
   | { type: 'insert'; playerId: string }

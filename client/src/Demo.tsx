@@ -69,7 +69,7 @@ export default function Demo() {
   useEffect(() => {
     const seq: GameFx[] =
       scene === 'shuffle'
-        ? [{ type: 'shuffle', playerId: 'p2' }]
+        ? [{ type: 'shuffle', playerId: 'p2', style: (qs.get('sh') as 'riffle' | 'overhand' | 'pile') || 'riffle' }]
         : scene === 'explode'
           ? [{ type: 'draw', playerId: 'p2' }, { type: 'explode', playerId: 'p2' }]
           : scene === 'reveal'
@@ -119,10 +119,6 @@ export default function Demo() {
   return (
     <SettingsContext.Provider value={settings}>
       <div className="app">
-        <header className="topbar">
-          <span className="logo">💣 Mèo Nổ</span>
-          <span className="room-tag">Demo: {scene}</span>
-        </header>
         <GameBoard view={view} meId="me" emit={(e, p) => {
             console.log('[demo emit]', e, p);
             if (e === 'room:emote') setEmote({ id: Date.now(), e: { from: 'me', ...(p as { emoji: string; to?: string }) } });

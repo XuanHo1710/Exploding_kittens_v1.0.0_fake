@@ -113,6 +113,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         targetId: body.targetId,
         namedType: body.namedType,
         discardType: body.discardType,
+        shuffleStyle: body.shuffleStyle,
       });
     });
   }
