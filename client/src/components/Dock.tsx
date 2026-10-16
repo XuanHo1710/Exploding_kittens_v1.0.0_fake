@@ -28,9 +28,6 @@ export default function Dock({ settings, update, identity, account, online, onRu
       <button className="dock-btn" onClick={onRules} title="Luật chơi">
         📖
       </button>
-      <button className="dock-btn" onClick={() => update({ cardStyle: settings.cardStyle === 'vector' ? 'photo' : 'vector' })} title={settings.cardStyle === 'vector' ? 'Đang dùng bài vẽ – đổi sang ảnh gốc' : 'Đang dùng ảnh gốc – đổi sang bài vẽ'}>
-        🃏
-      </button>
       <button className="dock-btn" onClick={() => update({ sound: !settings.sound })} title={settings.sound ? 'Tắt âm thanh' : 'Bật âm thanh'}>
         {settings.sound ? '🔊' : '🔇'}
       </button>
