@@ -3,7 +3,8 @@
  * Thông tin lưu trong localStorage (identity), ảnh lưu ở server: /avatars/<file>
  */
 import { useRef, useState } from 'react';
-import type { Identity } from '../../../shared/src';
+import type { AccountInfo, Identity } from '../../../shared/src';
+import { fmtCoins } from './Dock';
 import PlayerAvatar from '../art/PlayerAvatar';
 import Modal from './Modal';
 
@@ -35,11 +36,14 @@ async function toSquareDataUrl(file: File, size = 256): Promise<string> {
 
 interface Props {
   identity: Identity;
+  account: AccountInfo | null;
+  onDaily: () => void;
+  onLogout: () => void;
   onSave: (patch: { name: string; avatar?: string }) => void;
   onClose: () => void;
 }
 
-export default function ProfileModal({ identity, onSave, onClose }: Props) {
+export default function ProfileModal({ identity, account, onDaily, onLogout, onSave, onClose }: Props) {
   const [name, setName] = useState(identity.name);
   const [avatar, setAvatar] = useState<string | undefined>(identity.avatar);
   const [seeds, setSeeds] = useState(randomSeeds);
@@ -88,9 +92,25 @@ export default function ProfileModal({ identity, onSave, onClose }: Props) {
             Tên hiển thị
           </label>
           <input id="profile-name" maxLength={20} value={name} onChange={(e) => setName(e.target.value)} />
-          <span className="muted small">Lưu trên trình duyệt này · ID: {identity.playerId.slice(0, 8)}…</span>
+          <span className="muted small">Đăng nhập máy khác bằng tên này + mã PIN</span>
         </div>
       </div>
+
+      {account && (
+        <section className="wallet">
+          <div className="wallet-main">
+            <span className="wallet-label">Ví xu</span>
+            <span className="wallet-coins">🪙 {fmtCoins(account.coins)}</span>
+            <span className="muted small">
+              Đã chơi {account.games} ván · thắng {account.wins}
+              {account.games > 0 && ` (${Math.round((account.wins / account.games) * 100)}%)`}
+            </span>
+          </div>
+          <button className={account.canClaimDaily ? 'primary' : 'secondary'} disabled={!account.canClaimDaily} onClick={onDaily}>
+            {account.canClaimDaily ? '🎁 Nhận 500 xu hôm nay' : '✓ Hôm nay nhận rồi'}
+          </button>
+        </section>
+      )}
 
       <section className="profile-section">
         <div className="profile-section-head">
@@ -124,6 +144,9 @@ export default function ProfileModal({ identity, onSave, onClose }: Props) {
       </section>
 
       <div className="modal-actions">
+        <button className="ghost logout" onClick={onLogout} title="Xoá thông tin trên trình duyệt này (đăng nhập lại bằng tên + PIN)">
+          ↩ Đăng xuất
+        </button>
         <button className="ghost" onClick={onClose}>
           Huỷ
         </button>

@@ -13,7 +13,12 @@ export function loadIdentity(): Identity | null {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) ?? 'null');
     if (raw?.playerId && raw?.name) {
-      return { playerId: raw.playerId, name: raw.name, avatar: isValidAvatar(raw.avatar) ? raw.avatar : undefined };
+      return {
+        playerId: raw.playerId,
+        name: raw.name,
+        avatar: isValidAvatar(raw.avatar) ? raw.avatar : undefined,
+        token: typeof raw.token === 'string' ? raw.token : undefined,
+      };
     }
   } catch {
     /* localStorage hỏng hoặc bị chặn */
@@ -42,3 +47,19 @@ export function updateIdentity(prev: Identity, patch: Partial<Pick<Identity, 'na
     name: (patch.name ?? prev.name).trim().slice(0, 20) || prev.name,
   });
 }
+
+/** Lưu sau khi tạo tài khoản / đăng nhập bằng PIN */
+export function saveAccountIdentity(acc: { playerId: string; name: string; avatar?: string }, token: string): Identity {
+  return persist({ playerId: acc.playerId, name: acc.name, avatar: acc.avatar, token });
+}
+
+/** Đăng xuất: xoá thông tin trên trình duyệt này */
+export function clearIdentity() {
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    /* bỏ qua */
+  }
+}
+
+export { genId };

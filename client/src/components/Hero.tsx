@@ -17,7 +17,7 @@ export default function Landing({ children }: { children: ReactNode }) {
         <p className="landing-sub">Rút bài, né bom, Nope bạn bè. Chơi ngay trên trình duyệt.</p>
         <div className="landing-chips">
           <span>👥 2–10 người</span>
-          <span>⚡ Không cần đăng ký</span>
+          <span>🔐 Tên + PIN là xong</span>
           <span>📱 Chơi được trên điện thoại</span>
         </div>
       </div>
