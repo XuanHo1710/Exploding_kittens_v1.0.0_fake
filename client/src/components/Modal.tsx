@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { sfx } from '../sfx';
+import { hidePreview } from './CardPreview';
 
 interface Props {
   title: ReactNode;
@@ -13,6 +14,7 @@ export default function Modal({ title, children, onClose, width = 440 }: Props) 
   const [nudge, setNudge] = useState(false);
 
   useEffect(() => {
+    hidePreview();
     document.body.classList.add('no-scroll');
     return () => document.body.classList.remove('no-scroll');
   }, []);

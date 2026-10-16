@@ -2,7 +2,7 @@
  * Giữ chuột (hoặc nhấn giữ trên điện thoại) vào lá bài → phóng to + giải thích luật bên cạnh.
  * CardView gắn trigger, App/Demo render <CardPreviewLayer /> đúng 1 lần.
  */
-import { useLayoutEffect, useRef, useState, useSyncExternalStore, type PointerEvent as RPointerEvent, type MouseEvent as RMouseEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type PointerEvent as RPointerEvent, type MouseEvent as RMouseEvent } from 'react';
 import { CARD_INFO, DECK_COUNTS, type CardType } from '../../../shared/src';
 import CardView from './CardView';
 
@@ -27,6 +27,9 @@ const store = {
   },
 };
 
+/** Tắt bảng xem trước (khi mở hộp thoại, bấm chuột…) */
+export const hidePreview = () => store.set(null);
+
 const HOVER_MS = 350;
 const PRESS_MS = 420;
 
@@ -36,11 +39,17 @@ export function usePreviewTrigger(type: CardType, seed: string | number | undefi
   const timer = useRef<number | undefined>(undefined);
   const longPressed = useRef(false);
 
-  const show = (el: Element) => store.set({ type, seed, rect: el.getBoundingClientRect(), owner });
+  // lá trong hộp thoại thì không phóng to (tránh che nút); lá đã biến mất thì không hiện nữa
+  const show = (el: Element) => {
+    if (!el.isConnected || el.closest('.modal, .reveal, .throw-menu')) return;
+    store.set({ type, seed, rect: el.getBoundingClientRect(), owner });
+  };
   const hide = () => {
     clearTimeout(timer.current);
     if (store.get()?.owner === owner) store.set(null);
   };
+  // lá bị gỡ khỏi màn hình (đánh ra, bị lấy…) trong lúc đang xem → tắt bảng, không để kẹt
+  useEffect(() => hide, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!enabled) return {};
   return {
@@ -133,9 +142,13 @@ export function CardPreviewLayer() {
     const close = () => store.set(null);
     window.addEventListener('scroll', close, true);
     window.addEventListener('keydown', close);
+    window.addEventListener('pointerdown', close, true);
+    window.addEventListener('blur', close);
     return () => {
       window.removeEventListener('scroll', close, true);
       window.removeEventListener('keydown', close);
+      window.removeEventListener('pointerdown', close, true);
+      window.removeEventListener('blur', close);
     };
   }, [p]);
 
