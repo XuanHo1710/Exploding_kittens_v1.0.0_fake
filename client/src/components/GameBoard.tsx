@@ -15,6 +15,8 @@ import {
   type PrivateNotice,
   type PublicPlayer,
   type RoomView,
+  type ShuffleStyle,
+  SHUFFLE_STYLES,
 } from '../../../shared/src';
 import { CardBack } from '../art/CatAvatar';
 import PlayerAvatar from '../art/PlayerAvatar';
@@ -111,6 +113,64 @@ function riffle(container: HTMLElement | null) {
   });
 }
 
+/** Xáo tay (overhand): bốc từng tập nhỏ từ dưới đưa lên trên, 4 lượt */
+function overhand(container: HTMLElement | null) {
+  if (!container || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cards = [...container.children] as HTMLElement[];
+  const n = cards.length;
+  const R = 380;
+  const rounds = 4;
+  const D = R * rounds;
+  // mỗi lượt chọn 1 tập liền nhau ngẫu nhiên
+  const chunks = Array.from({ length: rounds }, () => {
+    const size = 3 + Math.floor(Math.random() * 3);
+    const start = Math.floor(Math.random() * (n - size));
+    return [start, start + size] as const;
+  });
+  cards.forEach((el, i) => {
+    const frames: Keyframe[] = [{ offset: 0, transform: `translate(0, ${-i * 1.2}px)` }];
+    chunks.forEach(([a, b], r) => {
+      const t0 = (r * R) / D;
+      const t1 = ((r + 1) * R) / D;
+      if (i >= a && i < b) {
+        frames.push({ offset: t0 + 0.02, transform: `translate(0, ${-i * 1.2}px) rotate(0deg)` });
+        frames.push({ offset: t0 + (0.4 * R) / D, transform: `translate(${(r % 2 ? -1 : 1) * 46}%, -60%) rotate(${r % 2 ? -10 : 10}deg)` });
+        frames.push({ offset: t1 - 0.01, transform: `translate(0, ${-(n + i) * 1.2}px) rotate(0deg)` });
+      }
+    });
+    frames.push({ offset: 1, transform: `translate(0, ${-i * 1.2}px)` });
+    el.animate(frames, { duration: D, easing: 'ease-in-out', fill: 'both' });
+  });
+}
+
+/** Chia đống (pile): chia từng lá ra 4 đống rồi gom lại */
+function pileShuffle(container: HTMLElement | null) {
+  if (!container || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cards = [...container.children] as HTMLElement[];
+  const piles = [-120, -40, 40, 120];
+  const D = 1600;
+  const order = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+  cards.forEach((el, i) => {
+    const pile = i % 4;
+    const deal = (0.05 + i * 0.045) * D;
+    const gather = (0.7 + order.indexOf(pile) * 0.06) * D;
+    const at = `translate(${piles[pile]}%, ${-Math.floor(i / 4) * 3}px) rotate(${(pile - 1.5) * 4}deg)`;
+    el.animate(
+      [
+        { offset: 0, transform: `translate(0, ${-i * 1.2}px)` },
+        { offset: deal / D, transform: `translate(0, ${-i * 1.2}px)` },
+        { offset: Math.min(deal / D + 0.08, gather / D - 0.01), transform: at },
+        { offset: gather / D, transform: at },
+        { offset: Math.min(gather / D + 0.12, 1), transform: `translate(0, ${-i * 1.2}px)` },
+        { offset: 1, transform: `translate(0, ${-i * 1.2}px)` },
+      ],
+      { duration: D, easing: 'ease-in-out', fill: 'both' },
+    );
+  });
+}
+
+const SHUFFLE_ANIM: Record<ShuffleStyle, (c: HTMLElement | null) => void> = { riffle, overhand, pile: pileShuffle };
+
 /** Cùng luật với server: đoán kiểu đánh từ các lá đang chọn */
 function detectKind(types: CardType[]): ActionKind | null {
   if (types.length === 1 && SINGLE.includes(types[0])) return types[0] as ActionKind;
@@ -184,12 +244,14 @@ function useFeed(log: string[], total: number) {
   return feed;
 }
 
+type FloatKind = 'emote' | 'hit' | 'blast' | 'shard';
+
 /** Emoji bay lên trên avatar (nhiều cái cùng lúc) + combo đếm số lần */
 function Floaters({
   list,
   combo,
 }: {
-  list?: { id: number; emoji: string; kind: 'emote' | 'hit'; dx: number; rot: number; dur: number }[];
+  list?: { id: number; emoji: string; kind: FloatKind; dx: number; dy?: number; rot: number; dur: number }[];
   combo?: { emoji: string; count: number; at: number };
 }) {
   return (
@@ -198,7 +260,7 @@ function Floaters({
         <span
           key={f.id}
           className={`emote-pop ${f.kind}`}
-          style={{ ['--dx' as string]: `${f.dx}px`, ['--rot' as string]: `${f.rot}deg`, animationDuration: `${f.dur}ms` } as CSSProperties}
+          style={{ ['--dx' as string]: `${f.dx}px`, ['--dy' as string]: `${f.dy ?? 0}px`, ['--rot' as string]: `${f.rot}deg`, animationDuration: `${f.dur}ms` } as CSSProperties}
         >
           {f.emoji}
         </span>
@@ -262,28 +324,48 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   }, [chat.messages.length]);
   // Biểu cảm: emoji nảy trên avatar, ném đồ vào người khác
   // Mỗi lần thả là 1 emoji bay lên riêng (bấm nhiều thì hiện liên tục, chồng nhiều cái như livestream)
-  type Floater = { id: number; emoji: string; kind: 'emote' | 'hit'; dx: number; rot: number; dur: number };
+  type Floater = { id: number; emoji: string; kind: FloatKind; dx: number; dy?: number; rot: number; dur: number };
   const [pops, setPops] = useState<Record<string, Floater[]>>({});
   // Bấm liên tục cùng 1 emoji → hiện combo "😂 ×7"
   const [combos, setCombos] = useState<Record<string, { emoji: string; count: number; at: number }>>({});
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [throwItem, setThrowItem] = useState<string | null>(null);
+  /** Menu ném đồ đang mở trên avatar của người này */
+  const [throwMenu, setThrowMenu] = useState<string | null>(null);
+  const [shaking, setShaking] = useState<Record<string, number>>({});
+  /** Đánh Xáo Bài: chọn kiểu xáo */
+  const [shufflePick, setShufflePick] = useState<string[] | null>(null);
+  const [leaveAsk, setLeaveAsk] = useState(false);
   const avatarEl = (pid: string) => document.querySelector(`[data-avatar="${CSS.escape(pid)}"]`) ?? seatEl(pid);
   useEffect(() => {
     if (!emote) return;
     const { e, id } = emote;
+    let seq = 0;
+    const add = (pid: string, f: Omit<Floater, 'id'>) => {
+      const fid = id * 100 + seq++;
+      setPops((p) => ({ ...p, [pid]: [...(p[pid] ?? []), { ...f, id: fid }].slice(-24) }));
+      window.setTimeout(() => setPops((p) => ({ ...p, [pid]: (p[pid] ?? []).filter((x) => x.id !== fid) })), f.dur);
+    };
+    /** Trúng đòn: món đồ dính mặt + nổ 💥 + mảnh văng + avatar rung */
+    const hitFx = (pid: string) => {
+      const bomb = e.emoji === '💣';
+      sfx(bomb ? 'boom' : 'splat');
+      add(pid, { emoji: bomb ? '💥' : e.emoji, kind: bomb ? 'blast' : 'hit', dx: 0, rot: 0, dur: bomb ? 900 : 2000 });
+      const shards = bomb ? ['🔥', '💥', '✨', '💨', '🔥', '✨'] : [e.emoji, e.emoji, e.emoji];
+      shards.forEach((em, k) => {
+        const ang = (Math.PI * 2 * k) / shards.length + Math.random() * 0.6;
+        const dist = bomb ? 60 + Math.random() * 30 : 34 + Math.random() * 16;
+        add(pid, { emoji: em, kind: 'shard', dx: Math.round(Math.cos(ang) * dist), dy: Math.round(Math.sin(ang) * dist), rot: Math.round((Math.random() - 0.5) * 300), dur: 800 });
+      });
+      setShaking((h) => ({ ...h, [pid]: (h[pid] ?? 0) + 1 }));
+      window.setTimeout(() => setShaking((h) => ({ ...h, [pid]: Math.max(0, (h[pid] ?? 1) - 1) })), 600);
+    };
     const show = (pid: string, kind: 'emote' | 'hit') => {
-      const f: Floater = {
-        id,
-        emoji: e.emoji,
-        kind,
-        dx: kind === 'hit' ? 0 : Math.round((Math.random() - 0.5) * 70),
-        rot: Math.round((Math.random() - 0.5) * 40),
-        dur: kind === 'hit' ? 2000 : 1700 + Math.round(Math.random() * 600),
-      };
-      setPops((p) => ({ ...p, [pid]: [...(p[pid] ?? []), f].slice(-14) }));
-      window.setTimeout(() => setPops((p) => ({ ...p, [pid]: (p[pid] ?? []).filter((x) => x.id !== id) })), f.dur);
-      if (kind === 'emote') {
+      if (kind === 'hit') {
+        hitFx(pid);
+        return;
+      }
+      add(pid, { emoji: e.emoji, kind, dx: Math.round((Math.random() - 0.5) * 70), rot: Math.round((Math.random() - 0.5) * 40), dur: 1700 + Math.round(Math.random() * 600) });
+      {
         const now = Date.now();
         setCombos((c) => {
           const prev = c[pid];
@@ -295,10 +377,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
     };
     if (e.to) {
       const to = e.to;
-      flyEmoji(avatarEl(e.from), avatarEl(to), e.emoji, () => {
-        sfx('splat');
-        show(to, 'hit');
-      });
+      flyEmoji(avatarEl(e.from), avatarEl(to), e.emoji, () => show(to, 'hit'));
     } else {
       sfx('pop');
       show(e.from, 'emote');
@@ -317,11 +396,20 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
     emit('room:emote', { emoji });
     setPickerOpen(false);
   };
-  const throwAt = (to: string) => {
-    if (!throwItem) return;
-    emit('room:emote', { emoji: throwItem, to });
-    setThrowItem(null);
-  };
+  const throwAt = (to: string, emoji: string) => emit('room:emote', { emoji, to });
+  useEffect(() => {
+    if (!throwMenu) return;
+    const close = (ev: PointerEvent) => {
+      if (!(ev.target as HTMLElement).closest('.throw-menu, .avatar-wrap')) setThrowMenu(null);
+    };
+    const esc = (ev: KeyboardEvent) => ev.key === 'Escape' && setThrowMenu(null);
+    document.addEventListener('pointerdown', close);
+    document.addEventListener('keydown', esc);
+    return () => {
+      document.removeEventListener('pointerdown', close);
+      document.removeEventListener('keydown', esc);
+    };
+  }, [throwMenu]);
   const riffleRef = useRef<HTMLSpanElement>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [targetId, setTargetId] = useState('');
@@ -458,12 +546,14 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       case 'draw':
         flyCard(deck, seatEl(f.playerId));
         break;
-      case 'shuffle':
+      case 'shuffle': {
+        const st = SHUFFLE_STYLES[f.style] ? f.style : 'riffle';
         sfx('shuffle');
-        setShuffling(nameOf(f.playerId));
-        window.requestAnimationFrame(() => riffle(riffleRef.current));
-        window.setTimeout(() => setShuffling(null), 1650);
+        setShuffling(`${SHUFFLE_STYLES[st].emoji} ${nameOf(f.playerId)} xáo bài kiểu ${SHUFFLE_STYLES[st].name}!`);
+        window.requestAnimationFrame(() => SHUFFLE_ANIM[st](riffleRef.current));
+        window.setTimeout(() => setShuffling(null), 1700);
         break;
+      }
       case 'future':
         if (f.playerId !== meId) showBubble(f.playerId, '🔮 đang xem trước');
         break;
@@ -544,6 +634,10 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         setWizardOpen(true);
         return;
       }
+      if (card.type === 'shuffle') {
+        setShufflePick([card.id]);
+        return;
+      }
       setSelected([card.id]);
       if (card.type === 'favor') {
         setWizardOpen(true);
@@ -569,12 +663,19 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
     setWizardOpen(false);
     setTargetId('');
   };
-  // Lá cần chọn người / chọn lá thì mở hộp thoại, còn lại đánh luôn
-  const play = () => (needsWizard ? setWizardOpen(true) : send());
-
-  const leave = () => {
-    if (view.phase === 'ended' || !alive || window.confirm('Rời phòng giữa ván sẽ bị tính là thua. Chắc chưa?')) emit('room:leave');
+  // Lá cần chọn người / chọn lá thì mở hộp thoại, Xáo Bài chọn kiểu xáo, còn lại đánh luôn
+  const play = () => (needsWizard ? setWizardOpen(true) : kind === 'shuffle' ? setShufflePick(sel) : send());
+  const playShuffle = (style: ShuffleStyle) => {
+    if (!shufflePick) return;
+    flyOut(shufflePick);
+    sfx('play');
+    emit('game:play', { cardIds: shufflePick, shuffleStyle: style });
+    setShufflePick(null);
+    setSelected([]);
+    setComboMode(false);
   };
+
+  const leave = () => (view.phase === 'ended' || !alive ? emit('room:leave') : setLeaveAsk(true));
 
   // ---------- dòng trạng thái của mình ----------
   let status: ReactNode;
@@ -636,21 +737,25 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
             return (
               <div
                 key={p.id}
-                className={['seat', Math.cos(a) > 0.25 ? 'bubble-left' : 'bubble-right', !p.alive && 'dead', !p.connected && 'offline', isTarget && 'targeted', pickable && 'pickable'].filter(Boolean).join(' ')}
+                className={['seat', throwMenu === p.id && 'menu-on', Math.cos(a) > 0.25 ? 'bubble-left' : 'bubble-right', !p.alive && 'dead', !p.connected && 'offline', isTarget && 'targeted', pickable && 'pickable'].filter(Boolean).join(' ')}
                 style={{ ['--x' as string]: (Math.cos(a) * 44).toFixed(2), ['--y' as string]: (Math.sin(a) * 40).toFixed(2) } as CSSProperties}
                 data-pid={p.id}
                 onClick={
-                  throwItem
-                    ? () => throwAt(p.id)
-                    : pickable
-                      ? () => {
-                          setTargetId(p.id);
-                          setWizardOpen(true);
-                        }
-                      : undefined
+                  pickable
+                    ? () => {
+                        setTargetId(p.id);
+                        setWizardOpen(true);
+                      }
+                    : undefined
                 }
               >
-                <span className={`avatar-wrap${throwItem ? ' throwable' : ''}`} data-avatar={p.id}>
+                <span
+                  className={`avatar-wrap${pickable ? '' : ' throwable'}${throwMenu === p.id ? ' menu-open' : ''}${shaking[p.id] ? ' got-hit' : ''}`}
+                  data-avatar={p.id}
+                  onClick={pickable ? undefined : () => setThrowMenu((m) => (m === p.id ? null : p.id))}
+                  title={pickable ? undefined : `Ném gì đó vào ${p.name} 😈`}
+                >
+                  {!pickable && <span className="throw-hover">🎯</span>}
                   <Ring {...ring}>
                     <PlayerAvatar id={p.id} avatar={p.avatar} size={58} dead={!p.alive} />
                   </Ring>
@@ -661,6 +766,19 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                     </span>
                   )}
                 </span>
+                {throwMenu === p.id && (
+                  <div className="throw-menu" role="menu" aria-label={`Ném vào ${p.name}`}>
+                    <div className="throw-menu-title">Ném vào {p.name} 😈</div>
+                    <div className="throw-menu-grid">
+                      {THROWABLES.map((t) => (
+                        <button key={t} onClick={() => throwAt(p.id, t)} title={t === '💣' ? 'Ném bom (nổ to!)' : `Ném ${t}`}>
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="throw-menu-tip">Bấm liên tục để ném nhiều 🔁</div>
+                  </div>
+                )}
                 <div className="seat-name">
                   {p.id === view.hostId && <span title="Chủ phòng">👑</span>}
                   {p.name}
@@ -771,6 +889,9 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         </div>
         <div className="arena-tools">
           <Brand code={view.code} />
+          <button className="icon-btn exit-btn" onClick={leave} title="Thoát trận">
+            🚪 <span className="hide-sm">Thoát trận</span>
+          </button>
           {view.pot > 0 && view.phase === 'playing' && <span className="pot-chip">💰 Hũ {fmtCoins(view.pot)} xu</span>}
           {!chatOpen && (
             <>
@@ -787,17 +908,9 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         <div className="arena-dock">{dock}</div>
 
 
-        {throwItem && (
-          <div className="throw-hint">
-            Bấm vào avatar để ném <span className="throw-emoji">{throwItem}</span>
-            <button className="ghost" onClick={() => setThrowItem(null)}>
-              Huỷ
-            </button>
-          </div>
-        )}
 
         {announce && <div className={`announce ${announce.tone}`}>{announce.text}</div>}
-        {shuffling && <div className="announce shuffle">🔀 {shuffling === 'Bạn' ? 'Bạn' : shuffling} xáo bài!</div>}
+        {shuffling && <div className="announce shuffle">{shuffling}</div>}
 
         {view.phase === 'ended' && (
           <div className="ended">
@@ -828,7 +941,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
           </button>
         </div>
         <div className="my-bar">
-          <span className="avatar-wrap" data-avatar={meId}>
+          <span className={`avatar-wrap${shaking[meId] ? ' got-hit' : ''}`} data-avatar={meId}>
             <Ring {...(me ? seatProgress(me) : { active: false, progress: 0 })}>
               <PlayerAvatar id={meId} avatar={me?.avatar} size={52} dead={!alive} />
             </Ring>
@@ -883,9 +996,6 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                 🗂️ Xếp bài
               </button>
             )}
-            <button className="ghost leave" onClick={leave}>
-              Rời phòng
-            </button>
           </div>
         </div>
 
@@ -899,20 +1009,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                 </button>
               ))}
             </div>
-            <div className="emote-title">Ném vào ai đó 😈</div>
-            <div className="emote-grid throw">
-              {THROWABLES.map((e) => (
-                <button
-                  key={e}
-                  onClick={() => {
-                    setThrowItem(e);
-                    setPickerOpen(false);
-                  }}
-                >
-                  {e}
-                </button>
-              ))}
-            </div>
+            <div className="emote-tip">😈 Muốn ném đồ? Bấm vào avatar người đó.</div>
           </div>
         )}
         <div ref={handRef} className="hand" style={{ ['--overlap' as string]: `${overlap}px` } as CSSProperties}>
@@ -952,6 +1049,56 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       )}
 
       {/* ================= HỘP THOẠI ================= */}
+      {leaveAsk && (
+        <Modal title="🚪 Thoát trận?" width={420}>
+          <p>
+            Ván đang diễn ra, thoát bây giờ sẽ bị tính là <b>thua</b>
+            {view.pot > 0 && <> và mất số xu đã cược</>}.
+          </p>
+          <div className="modal-actions">
+            <button className="ghost" onClick={() => setLeaveAsk(false)}>
+              Ở lại chơi
+            </button>
+            <button
+              className="primary big danger"
+              onClick={() => {
+                setLeaveAsk(false);
+                emit('room:leave');
+              }}
+            >
+              Thoát trận
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {shufflePick && (
+        <Modal title="🔀 Xáo bài kiểu nào?" width={640}>
+          <p className="muted">Kiểu nào cũng xáo ngẫu nhiên hoàn toàn, chỉ khác cách cả bàn nhìn thấy bạn xáo 😎</p>
+          <div className="shuffle-options">
+            {(Object.keys(SHUFFLE_STYLES) as ShuffleStyle[]).map((st) => (
+              <button key={st} className={`shuffle-opt so-${st}`} onClick={() => playShuffle(st)}>
+                <span className="so-anim" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                <b>
+                  {SHUFFLE_STYLES[st].emoji} {SHUFFLE_STYLES[st].name}
+                </b>
+                <span className="muted small">{SHUFFLE_STYLES[st].desc}</span>
+              </button>
+            ))}
+          </div>
+          <div className="modal-actions">
+            <button className="ghost" onClick={() => setShufflePick(null)}>
+              Huỷ
+            </button>
+          </div>
+        </Modal>
+      )}
+
       {placing && waiting?.kind === 'defuse_place' && (
         <Modal title="🧯 Gỡ bom thành công!" width={480}>
           <p>
