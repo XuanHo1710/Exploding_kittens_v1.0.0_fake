@@ -50,7 +50,14 @@ Server phục vụ luôn giao diện đã build, chỉ cần mở 1 cổng.
 | Tranh vector lá bài, avatar mèo | `client/src/art/` |
 | Màu nền sáng / tối | đầu file `client/src/styles.css` |
 
-## Người chơi & avatar
+## Tài khoản, xu & avatar
+
+- Đăng nhập bằng **tên + mã PIN 4–6 số** (không cần email). PIN được băm (scrypt), sai 5 lần khoá 60 giây.
+- Dữ liệu tài khoản lưu ở file JSON **`server/data/db.json`** (đã gitignore) – như một database cục bộ:
+  `accounts[playerId] = { name, avatar, pinHash, pinSalt, tokens, coins, games, wins, lastDaily, … }`.
+  Muốn xem / sao lưu chỉ cần mở hoặc copy file này.
+- **Xu ảo** (không phải tiền thật): tài khoản mới 1.000 xu, nhận thêm 500 xu mỗi ngày trong Hồ sơ.
+  Chủ phòng chọn mức cược; bắt đầu ván mỗi người góp vào hũ, người thắng ăn cả hũ.
 
 - Thông tin người chơi lưu ở localStorage `meono.identity`: `{ playerId, name, avatar, updatedAt }`.
 - `avatar` là `cat:<seed>` (mèo vẽ sẵn) hoặc `/avatars/<file>` (ảnh đã tải lên).
