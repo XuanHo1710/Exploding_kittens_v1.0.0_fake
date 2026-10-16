@@ -39,19 +39,24 @@ export default function ChatPanel({ messages, meId, typingNames, onSend, onTypin
   const inputRef = useRef<HTMLInputElement>(null);
   const lastTyping = useRef(0);
 
-  const scrollToBottom = (smooth = false) => {
+  /** Nhảy thẳng xuống tin mới nhất (không hiệu ứng trượt) – như Zalo */
+  const scrollToBottom = () => {
     const el = listRef.current;
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    if (el) el.scrollTop = el.scrollHeight;
   };
-  // tin mới: đang ở cuối thì tự cuộn, đang xem tin cũ thì hiện nút "Tin mới"
+  // mở chat / đổi tab: luôn đứng ở cuối
+  useLayoutEffect(() => {
+    if (tab === 'chat') {
+      scrollToBottom();
+      setAtBottom(true);
+    }
+  }, [tab]);
+  // tin mới: đang ở cuối (hoặc mình gửi) thì giữ ở cuối, đang xem tin cũ thì hiện nút "Tin mới"
   useLayoutEffect(() => {
     const last = messages.at(-1);
-    if (atBottom || last?.from === meId) scrollToBottom(true);
+    if (atBottom || last?.from === meId) scrollToBottom();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length]);
-  useEffect(() => {
-    if (tab === 'chat') requestAnimationFrame(() => scrollToBottom());
-  }, [tab]);
 
   const send = (t: string) => {
     const v = t.trim();
@@ -136,7 +141,7 @@ export default function ChatPanel({ messages, meId, typingNames, onSend, onTypin
             })}
           </div>
           {!atBottom && (
-            <button className="chat-new" onClick={() => scrollToBottom(true)}>
+            <button className="chat-new" onClick={scrollToBottom}>
               ↓ Tin mới
             </button>
           )}

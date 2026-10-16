@@ -328,7 +328,8 @@ button.card:not(:disabled):active { transform: scale(0.96) !important; }
 .arena { grid-area: arena; position: relative; min-height: 380px; min-width: 0; }
 .my-area { grid-area: me; }
 .game.with-chat { grid-template-columns: minmax(0, 1fr) 330px; grid-template-areas: 'arena chat' 'me chat'; }
-.chat-col { grid-area: chat; min-height: 0; display: flex; }
+/* contain: size → số tin nhắn không làm cột chat (và cả lưới) cao lên; tin cuộn bên trong */
+.chat-col { grid-area: chat; min-height: 0; display: flex; contain: size; }
 
 /* bàn nỉ */
 .felt {
@@ -624,7 +625,7 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
 .chat-tabs button { flex: 1; background: none; padding: 8px 6px; font-weight: 700; font-size: 13px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; justify-content: center; }
 .chat-tabs button.on { background: var(--surface-2); color: var(--text); }
 .chat-tabs .chat-close { flex: none; width: 36px; padding: 0; }
-.chat-list { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 12px 4px; display: flex; flex-direction: column; gap: 2px; scroll-behavior: smooth; }
+.chat-list { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 12px 4px; display: flex; flex-direction: column; gap: 2px; overflow-anchor: none; }
 .msg { display: flex; gap: 8px; align-items: flex-end; margin-top: 8px; animation: msg-in 0.22s ease-out; }
 .msg.grouped { margin-top: 2px; }
 .msg.mine { justify-content: flex-end; }
@@ -713,7 +714,9 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
 
 /* phòng chờ + chat */
 .lobby-wrap { display: flex; gap: 16px; align-items: stretch; max-width: 100%; }
-.lobby-chat { width: 330px; display: flex; min-height: 420px; }
+/* contain: size → chiều cao khung chat KHÔNG phụ thuộc số tin nhắn: luôn cao bằng khung phòng chờ,
+   danh sách tin cuộn bên trong (trước đây chat dài ra kéo giãn cả trang) */
+.lobby-chat { width: 330px; display: flex; min-height: 420px; contain: size; }
 @media (max-width: 1020px) {
   .floating-top { position: absolute; }
   .lobby-wrap { flex-direction: column; width: 640px; }
