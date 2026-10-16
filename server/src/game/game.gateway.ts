@@ -13,11 +13,13 @@ import type { Server, Socket } from 'socket.io';
 import { isValidAvatar, type PlayRequest } from '../../../shared/src';
 import { GameError } from './game';
 import { RoomsService } from './rooms.service';
+import { AccountsService } from '../store/accounts.service';
 
 interface SocketData {
   playerId: string;
   name: string;
   avatar?: string;
+  token?: string;
 }
 
 /** Không có đăng nhập: client tự sinh playerId (lưu localStorage) và gửi kèm tên khi kết nối */
@@ -26,7 +28,7 @@ function parseIdentity(auth: unknown): SocketData | null {
   const playerId = typeof a.playerId === 'string' ? a.playerId.trim() : '';
   const name = typeof a.name === 'string' ? a.name.trim().slice(0, 20) : '';
   if (!/^[\w-]{8,64}$/.test(playerId) || !name) return null;
-  return { playerId, name, avatar: isValidAvatar(a.avatar) ? a.avatar : undefined };
+  return { playerId, name, avatar: isValidAvatar(a.avatar) ? a.avatar : undefined, token: typeof a.token === 'string' ? a.token.slice(0, 100) : undefined };
 }
 
 @WebSocketGateway({ cors: { origin: true } })
@@ -35,7 +37,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @WebSocketServer() server: Server;
 
-  constructor(private readonly rooms: RoomsService) {}
+  constructor(
+    private readonly rooms: RoomsService,
+    private readonly accounts: AccountsService,
+  ) {}
 
   afterInit(server: Server) {
     this.rooms.bind(server);
@@ -50,6 +55,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     client.data = id;
     client.join(`p:${id.playerId}`);
+    // có tài khoản + token đúng → dùng tên/avatar trong tài khoản, được dùng xu
+    const acc = this.accounts.verify(id.playerId, id.token);
+    this.rooms.setVerified(id.playerId, !!acc);
+    this.rooms.pushAccount(id.playerId);
     if (!this.rooms.connected(id.playerId, id.name, id.avatar)) client.emit('state', null);
   }
 
@@ -77,7 +86,17 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('game:start')
   start(@ConnectedSocket() c: Socket) {
-    this.handle(c, (me) => this.game(me).start(me.playerId));
+    this.handle(c, (me) => this.rooms.startGame(me.playerId));
+  }
+
+  @SubscribeMessage('room:bet')
+  bet(@ConnectedSocket() c: Socket, @MessageBody() body: { amount: number }) {
+    this.handle(c, (me) => this.rooms.setBet(me.playerId, Number(body?.amount)));
+  }
+
+  @SubscribeMessage('account:daily')
+  daily(@ConnectedSocket() c: Socket) {
+    this.handle(c, (me) => this.rooms.claimDaily(me.playerId));
   }
 
   @SubscribeMessage('game:restart')
@@ -106,7 +125,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('player:update')
   updateProfile(@ConnectedSocket() c: Socket, @MessageBody() body: { name?: string; avatar?: string }) {
     this.handle(c, (me) => {
-      const next = parseIdentity({ playerId: me.playerId, name: body?.name, avatar: body?.avatar });
+      const next = parseIdentity({ playerId: me.playerId, name: body?.name, avatar: body?.avatar, token: me.token });
       if (!next) throw new GameError('Tên không hợp lệ.');
       c.data = next;
       this.rooms.updateProfile(next.playerId, next.name, next.avatar);

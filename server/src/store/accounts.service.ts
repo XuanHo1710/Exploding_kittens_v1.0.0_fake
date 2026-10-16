@@ -17,6 +17,10 @@ export class AccountsService {
 
   constructor(private readonly db: DbService) {}
 
+  get(playerId: string) {
+    return this.db.account(playerId);
+  }
+
   info(a: Account): AccountInfo {
     return { playerId: a.playerId, name: a.name, avatar: a.avatar, coins: a.coins, games: a.games, wins: a.wins, canClaimDaily: a.lastDaily !== today() };
   }

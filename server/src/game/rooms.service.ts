@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { randomInt } from 'crypto';
 import type { Server } from 'socket.io';
-import { CHAT_MAX_LEN, EMOTES, THROWABLES, type ChatMessage, type Emote } from '../../../shared/src';
+import { BET_OPTIONS, CHAT_MAX_LEN, EMOTES, THROWABLES, type ChatMessage, type Emote } from '../../../shared/src';
+import { AccountsService } from '../store/accounts.service';
 import { Game, GameError, GameHooks } from './game';
 
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -12,6 +13,10 @@ export class RoomsService {
   /** playerId → mã phòng đang ở */
   private playerRoom = new Map<string, string>();
   private server: Server;
+  /** Người chơi đã đăng nhập bằng PIN (socket có token đúng) → được dùng xu */
+  private verified = new Set<string>();
+
+  constructor(private readonly accounts: AccountsService) {}
 
   private hooks: GameHooks = {
     changed: (game) => this.broadcast(game),
@@ -77,6 +82,73 @@ export class RoomsService {
     game.players.forEach((p) => this.server.to(`p:${p.id}`).emit('emote', e));
   }
 
+  // ---------- tài khoản & xu ----------
+
+  setVerified(playerId: string, ok: boolean) {
+    if (ok) this.verified.add(playerId);
+    else this.verified.delete(playerId);
+  }
+
+  /** Gửi số xu / thống kê mới nhất cho người chơi */
+  pushAccount(playerId: string) {
+    const acc = this.verified.has(playerId) ? this.accounts.get(playerId) : undefined;
+    this.server.to(`p:${playerId}`).emit('account', acc ? this.accounts.info(acc) : null);
+  }
+
+  claimDaily(playerId: string) {
+    if (!this.verified.has(playerId)) throw new GameError('Đăng nhập bằng PIN để nhận xu nhé.');
+    if (!this.accounts.claimDaily(playerId)) throw new GameError('Hôm nay bạn nhận rồi, mai quay lại nhé 😉');
+    this.pushAccount(playerId);
+    const game = this.roomOf(playerId);
+    if (game) this.broadcast(game);
+  }
+
+  setBet(playerId: string, amount: number) {
+    const game = this.roomOf(playerId);
+    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
+    if (game.hostId !== playerId) throw new GameError('Chỉ chủ phòng mới chọn mức cược.');
+    if (game.phase !== 'lobby') throw new GameError('Ván đang chơi, không đổi cược được.');
+    if (!(BET_OPTIONS as readonly number[]).includes(amount)) throw new GameError('Mức cược không hợp lệ.');
+    game.bet = amount;
+    this.broadcast(game);
+  }
+
+  /** Bắt đầu ván: có cược thì kiểm tra đủ xu → bắt đầu → trừ xu mọi người vào hũ */
+  startGame(playerId: string) {
+    const game = this.roomOf(playerId);
+    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
+    const bet = game.bet;
+    if (bet > 0 && game.hostId === playerId && game.phase === 'lobby') {
+      const players = game.players.filter((p) => p.connected);
+      const noAcc = players.filter((p) => !this.verified.has(p.id));
+      if (noAcc.length) throw new GameError(`Ván có cược: ${noAcc.map((p) => p.name).join(', ')} chưa có tài khoản PIN.`);
+      const poor = players.filter((p) => (this.accounts.get(p.id)?.coins ?? 0) < bet);
+      if (poor.length) throw new GameError(`Không đủ ${bet} xu: ${poor.map((p) => p.name).join(', ')}.`);
+    }
+    game.start(playerId);
+    if (bet > 0) {
+      for (const p of game.players) this.accounts.addCoins(p.id, -bet, 'game');
+      game.pot = bet * game.players.length;
+      game.paid = false;
+      game.note(`💰 Mỗi người cược ${bet} xu – hũ ${game.pot} xu cho người thắng!`);
+    } else {
+      for (const p of game.players) this.accounts.addCoins(p.id, 0, 'game');
+    }
+    game.players.forEach((p) => this.pushAccount(p.id));
+    this.broadcast(game);
+  }
+
+  /** Hết ván: trả hũ cho người thắng (1 lần) */
+  private payout(game: Game) {
+    if (game.phase !== 'ended' || game.paid) return;
+    game.paid = true;
+    const w = game.winner();
+    if (!w) return;
+    this.accounts.addCoins(w, game.pot, 'win');
+    if (game.pot > 0) game.note(`💰 ${game.players.find((p) => p.id === w)?.name} ăn hũ ${game.pot} xu!`);
+    this.pushAccount(w);
+  }
+
   bind(server: Server) {
     this.server = server;
   }
@@ -130,6 +202,10 @@ export class RoomsService {
   }
 
   updateProfile(playerId: string, name: string, avatar?: string) {
+    if (this.verified.has(playerId)) {
+      this.accounts.updateProfile(playerId, name, avatar);
+      this.pushAccount(playerId);
+    }
     this.roomOf(playerId)?.updateProfile(playerId, name, avatar);
   }
 
@@ -138,8 +214,12 @@ export class RoomsService {
   }
 
   private broadcast(game: Game) {
+    this.payout(game);
+    const coins = new Map(game.players.map((p) => [p.id, this.verified.has(p.id) ? this.accounts.get(p.id)?.coins : undefined]));
     for (const p of game.players) {
-      this.server.to(`p:${p.id}`).emit('state', game.viewFor(p.id));
+      const view = game.viewFor(p.id);
+      view.players = view.players.map((x) => ({ ...x, coins: coins.get(x.id) }));
+      this.server.to(`p:${p.id}`).emit('state', view);
     }
     this.cleanup(game);
   }
