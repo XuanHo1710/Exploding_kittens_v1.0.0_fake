@@ -137,7 +137,7 @@ export type GameFx =
 /** Biểu cảm thả trên ghế mình */
 export const EMOTES = ['😂', '🤣', '😜', '😏', '🤡', '😱', '😭', '💀', '🔥', '👏', '🙏', '😤', '🫵', '🤫', '😴', '🐱'] as const;
 /** Đồ ném vào người khác */
-export const THROWABLES = ['🍅', '🥚', '🩴', '💩', '🐟', '💣', '🌹', '💋'] as const;
+export const THROWABLES = ['🍅', '🥚', '🧱', '🩴', '💩', '🐟', '💣', '🌹', '💋'] as const;
 
 export interface Emote {
   from: string;

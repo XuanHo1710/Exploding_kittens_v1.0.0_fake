@@ -1,5 +1,5 @@
 /** Âm thanh tổng hợp bằng WebAudio, không cần file âm thanh */
-export type Sfx = 'pop' | 'splat' | 'shuffle' | 'tap' | 'select' | 'unselect' | 'play' | 'draw' | 'nope' | 'boom' | 'defuse' | 'turn' | 'win' | 'deny';
+export type Sfx = 'crack' | 'thud' | 'kiss' | 'pop' | 'splat' | 'shuffle' | 'tap' | 'select' | 'unselect' | 'play' | 'draw' | 'nope' | 'boom' | 'defuse' | 'turn' | 'win' | 'deny';
 
 let ctx: AudioContext | null = null;
 let muted = false;
@@ -60,6 +60,21 @@ export function sfx(name: Sfx) {
     switch (name) {
       case 'pop':
         tone(500, 0.12, { type: 'sine', gain: 0.09, slide: 2.2 });
+        break;
+      case 'crack':
+        [0, 40, 75].forEach((d) => setTimeout(() => noise(0.04, 0.3, 6000), d));
+        setTimeout(() => noise(0.2, 0.2, 900), 90);
+        vibrate(40);
+        break;
+      case 'thud':
+        tone(70, 0.35, { type: 'sine', gain: 0.35, slide: 0.5 });
+        noise(0.18, 0.4, 400);
+        setTimeout(() => noise(0.5, 0.12, 2500), 120);
+        vibrate([90, 40, 60]);
+        break;
+      case 'kiss':
+        tone(900, 0.12, { type: 'sine', gain: 0.08, slide: 1.6 });
+        tone(1300, 0.15, { type: 'sine', gain: 0.06, delay: 0.1 });
         break;
       case 'splat':
         noise(0.25, 0.35, 700);
