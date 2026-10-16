@@ -184,6 +184,34 @@ function useFeed(log: string[], total: number) {
 /** Vòng đếm ngược quanh avatar */
 function Ring({ progress, children, active, tone = 'turn' }: { progress: number; children: ReactNode; active: boolean; tone?: string }) {
   return (
+/** Emoji bay lên trên avatar (nhiều cái cùng lúc) + combo đếm số lần */
+function Floaters({
+  list,
+  combo,
+}: {
+  list?: { id: number; emoji: string; kind: 'emote' | 'hit'; dx: number; rot: number; dur: number }[];
+  combo?: { emoji: string; count: number; at: number };
+}) {
+  return (
+    <>
+      {list?.map((f) => (
+        <span
+          key={f.id}
+          className={`emote-pop ${f.kind}`}
+          style={{ ['--dx' as string]: `${f.dx}px`, ['--rot' as string]: `${f.rot}deg`, animationDuration: `${f.dur}ms` } as CSSProperties}
+        >
+          {f.emoji}
+        </span>
+      ))}
+      {combo && combo.count > 1 && (
+        <span key={`${combo.emoji}${combo.count}`} className="emote-combo">
+          {combo.emoji} ×{combo.count}
+        </span>
+      )}
+    </>
+  );
+}
+
     <div className={`ring${active ? ' active' : ''} tone-${tone}`} style={{ ['--p' as string]: Math.max(0, Math.min(1, progress)) } as CSSProperties}>
       {children}
     </div>
@@ -230,7 +258,11 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chat.messages.length]);
   // Biểu cảm: emoji nảy trên avatar, ném đồ vào người khác
-  const [pops, setPops] = useState<Record<string, { emoji: string; id: number; kind: 'emote' | 'hit' }>>({});
+  // Mỗi lần thả là 1 emoji bay lên riêng (bấm nhiều thì hiện liên tục, chồng nhiều cái như livestream)
+  type Floater = { id: number; emoji: string; kind: 'emote' | 'hit'; dx: number; rot: number; dur: number };
+  const [pops, setPops] = useState<Record<string, Floater[]>>({});
+  // Bấm liên tục cùng 1 emoji → hiện combo "😂 ×7"
+  const [combos, setCombos] = useState<Record<string, { emoji: string; count: number; at: number }>>({});
   const [pickerOpen, setPickerOpen] = useState(false);
   const [throwItem, setThrowItem] = useState<string | null>(null);
   const avatarEl = (pid: string) => document.querySelector(`[data-avatar="${CSS.escape(pid)}"]`) ?? seatEl(pid);
@@ -238,17 +270,25 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
     if (!emote) return;
     const { e, id } = emote;
     const show = (pid: string, kind: 'emote' | 'hit') => {
-      setPops((p) => ({ ...p, [pid]: { emoji: e.emoji, id, kind } }));
-      window.setTimeout(
-        () =>
-          setPops((p) => {
-            if (p[pid]?.id !== id) return p;
-            const next = { ...p };
-            delete next[pid];
-            return next;
-          }),
-        kind === 'hit' ? 2000 : 2600,
-      );
+      const f: Floater = {
+        id,
+        emoji: e.emoji,
+        kind,
+        dx: kind === 'hit' ? 0 : Math.round((Math.random() - 0.5) * 70),
+        rot: Math.round((Math.random() - 0.5) * 40),
+        dur: kind === 'hit' ? 2000 : 1700 + Math.round(Math.random() * 600),
+      };
+      setPops((p) => ({ ...p, [pid]: [...(p[pid] ?? []), f].slice(-14) }));
+      window.setTimeout(() => setPops((p) => ({ ...p, [pid]: (p[pid] ?? []).filter((x) => x.id !== id) })), f.dur);
+      if (kind === 'emote') {
+        const now = Date.now();
+        setCombos((c) => {
+          const prev = c[pid];
+          const count = prev && prev.emoji === e.emoji && now - prev.at < 1500 ? prev.count + 1 : 1;
+          return { ...c, [pid]: { emoji: e.emoji, count, at: now } };
+        });
+        window.setTimeout(() => setCombos((c) => (c[pid] && Date.now() - c[pid].at >= 1500 ? (({ [pid]: _, ...rest }) => rest)(c) : c)), 1600);
+      }
     };
     if (e.to) {
       const to = e.to;
@@ -611,11 +651,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                   <Ring {...ring}>
                     <PlayerAvatar id={p.id} avatar={p.avatar} size={58} dead={!p.alive} />
                   </Ring>
-                  {pops[p.id] && (
-                    <span key={pops[p.id].id} className={`emote-pop ${pops[p.id].kind}`}>
-                      {pops[p.id].emoji}
-                    </span>
-                  )}
+                  <Floaters list={pops[p.id]} combo={combos[p.id]} />
                   {chatPops[p.id] && (
                     <span key={`c${chatPops[p.id].id}`} className="chat-pop">
                       {chatPops[p.id].text}
@@ -786,11 +822,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
             <Ring {...(me ? seatProgress(me) : { active: false, progress: 0 })}>
               <PlayerAvatar id={meId} avatar={me?.avatar} size={52} dead={!alive} />
             </Ring>
-            {pops[meId] && (
-              <span key={pops[meId].id} className={`emote-pop ${pops[meId].kind}`}>
-                {pops[meId].emoji}
-              </span>
-            )}
+            <Floaters list={pops[meId]} combo={combos[meId]} />
             {chatPops[meId] && (
               <span key={`c${chatPops[meId].id}`} className="chat-pop mine">
                 {chatPops[meId].text}

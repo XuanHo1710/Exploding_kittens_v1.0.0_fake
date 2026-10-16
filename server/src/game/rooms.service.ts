@@ -24,7 +24,8 @@ export class RoomsService {
     },
   };
 
-  private lastEmote = new Map<string, number>();
+  /** Biểu cảm cho bấm dồn dập: tối đa 8 cái liền, hồi 6 cái/giây (chống spam vô hạn) */
+  private emoteBucket = new Map<string, { tokens: number; at: number }>();
   /** Chat theo phòng: giữ 100 tin gần nhất */
   private chats = new Map<string, ChatMessage[]>();
   private chatSeq = 0;
@@ -62,12 +63,16 @@ export class RoomsService {
     const game = this.roomOf(playerId);
     if (!game) return;
     const now = Date.now();
-    if (now - (this.lastEmote.get(playerId) ?? 0) < 700) return;
+    const b = this.emoteBucket.get(playerId) ?? { tokens: 8, at: now };
+    b.tokens = Math.min(8, b.tokens + ((now - b.at) / 1000) * 6);
+    b.at = now;
+    if (b.tokens < 1) return;
     const isThrow = !!to;
     const allowed: readonly string[] = isThrow ? THROWABLES : EMOTES;
     if (!allowed.includes(emoji)) return;
     if (isThrow && (to === playerId || !game.players.some((p) => p.id === to))) return;
-    this.lastEmote.set(playerId, now);
+    b.tokens -= 1;
+    this.emoteBucket.set(playerId, b);
     const e: Emote = { from: playerId, emoji, to };
     game.players.forEach((p) => this.server.to(`p:${p.id}`).emit('emote', e));
   }

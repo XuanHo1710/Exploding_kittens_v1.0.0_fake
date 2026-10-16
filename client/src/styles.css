@@ -664,9 +664,9 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
 .avatar-wrap.throwable { cursor: crosshair; }
 .avatar-wrap.throwable .ring { box-shadow: 0 0 0 3px var(--bad), 0 0 16px rgba(224, 49, 49, 0.5); animation: shake 0.8s ease-in-out infinite; }
 .emote-pop {
-  position: absolute; left: 50%; top: -6px; z-index: 6; pointer-events: none;
-  font-size: 40px; line-height: 1; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-  animation: emote-up 2.6s ease-out forwards;
+  position: absolute; left: 50%; top: -4px; z-index: 6; pointer-events: none;
+  font-size: 36px; line-height: 1; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+  animation: emote-float 2s cubic-bezier(0.25, 0.7, 0.3, 1) forwards;
 }
 .emote-pop.hit { top: 50%; font-size: 46px; animation: emote-hit 2s ease-out forwards; }
 .emote-btn { font-size: 18px; }
@@ -731,6 +731,12 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
 .wiz-target:hover { border-color: var(--border); transform: translateY(-2px); }
 .wiz-target.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
 .wiz-target .avatar { border-radius: 50%; }
+.emote-combo {
+  position: absolute; right: -18px; top: -10px; z-index: 7; pointer-events: none; white-space: nowrap;
+  background: linear-gradient(180deg, #ff6b6b, #e03131); color: #fff; font-weight: 900; font-size: 13px;
+  padding: 2px 8px; border-radius: 999px; box-shadow: 0 4px 10px rgba(224, 49, 49, 0.4);
+  animation: combo-pop 0.3s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
 .wiz-name { font-weight: 800; }
 .wiz-check {
   position: absolute; top: 6px; right: 8px; width: 24px; height: 24px; border-radius: 50%;
@@ -751,6 +757,13 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
 }
 .bad-text { color: var(--bad); font-weight: 700; }
 
+@keyframes emote-float {
+  0% { transform: translate(-50%, 16px) scale(0.3) rotate(0deg); opacity: 0; }
+  12% { transform: translate(calc(-50% + var(--dx) * 0.2), -10px) scale(1.2) rotate(calc(var(--rot) * 0.3)); opacity: 1; }
+  60% { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--dx)), -110px) scale(0.85) rotate(var(--rot)); opacity: 0; }
+}
+@keyframes combo-pop { from { transform: scale(1.8); } }
 /* lá vừa lấy được / bị mất */
 /* không che bàn: nằm lệch phải phía trên, không chặn bấm (vẫn Nope được) */
 .reveal { position: fixed; top: 76px; right: 24px; z-index: 65; pointer-events: none; animation: fade 0.15s; }
