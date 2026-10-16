@@ -80,6 +80,7 @@ export default function Demo() {
   const now = Date.now();
   const players = NAMES.slice(0, n).map((name, i) => ({
     id: i === 0 ? 'me' : `p${i}`,
+    avatar: i === 0 ? qs.get('av') || undefined : undefined,
     name,
     connected: i !== 4,
     alive: scene === 'dead' ? i !== 0 : i !== 3,

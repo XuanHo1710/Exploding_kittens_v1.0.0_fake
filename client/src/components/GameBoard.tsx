@@ -244,14 +244,77 @@ function useFeed(log: string[], total: number) {
   return feed;
 }
 
-type FloatKind = 'emote' | 'hit' | 'blast' | 'shard';
+type FloatKind = 'emote' | 'hit' | 'blast' | 'shard' | 'impact' | 'splat' | 'yolk' | 'drop' | 'shell' | 'crack' | 'bounce' | 'dizzy' | 'heart';
+
+/** Vệt văng (cà chua, phân…) – hình loang có răng cưa + vài chấm */
+const SPLAT_PATH =
+  'M50 16 C58 4 68 20 63 29 C75 22 88 30 77 42 C93 44 91 59 77 61 C88 73 75 86 63 75 C63 91 46 93 44 79 C33 89 18 81 27 68 C10 66 10 51 25 49 C13 38 23 24 36 31 C33 17 43 12 50 16 Z';
+
+function HitArt({ kind, v }: { kind: FloatKind; v?: string }) {
+  if (kind === 'splat') {
+    return (
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d={SPLAT_PATH} />
+        <circle cx="14" cy="22" r="5" />
+        <circle cx="88" cy="20" r="4" />
+        <circle cx="90" cy="82" r="5" />
+        <circle cx="10" cy="84" r="3.5" />
+        {v === 'tomato' && (
+          <g fill="#ffe08a" opacity=".9">
+            <ellipse cx="44" cy="44" rx="3" ry="2" />
+            <ellipse cx="58" cy="52" rx="3" ry="2" transform="rotate(40 58 52)" />
+            <ellipse cx="48" cy="60" rx="3" ry="2" transform="rotate(-30 48 60)" />
+          </g>
+        )}
+        <ellipse cx="38" cy="36" rx="9" ry="5" fill="#fff" opacity=".35" />
+      </svg>
+    );
+  }
+  if (kind === 'yolk') {
+    return (
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d={SPLAT_PATH} fill="#fffdf4" stroke="#e9e1c8" strokeWidth="1.5" />
+        <circle cx="52" cy="50" r="17" fill="#ffb703" />
+        <circle cx="52" cy="50" r="17" fill="url(#yolkShine)" />
+        <ellipse cx="46" cy="44" rx="5" ry="3" fill="#fff" opacity=".7" />
+        <defs>
+          <radialGradient id="yolkShine" cx="40%" cy="35%" r="70%">
+            <stop offset="0" stopColor="#ffd166" />
+            <stop offset="1" stopColor="#f48c06" stopOpacity=".6" />
+          </radialGradient>
+        </defs>
+      </svg>
+    );
+  }
+  if (kind === 'crack') {
+    return (
+      <svg viewBox="0 0 100 100" aria-hidden="true" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <g stroke="#1d1b1a" strokeWidth="4.5" opacity=".55">
+          <path d="M52 48 L40 32 L44 20 L36 8" />
+          <path d="M52 48 L68 36 L82 34 L94 24" />
+          <path d="M52 48 L62 64 L58 78 L66 94" />
+          <path d="M52 48 L34 58 L20 56 L8 66" />
+          <path d="M40 32 L28 30" />
+          <path d="M62 64 L76 70" />
+        </g>
+        <g stroke="#fff" strokeWidth="2">
+          <path d="M52 48 L40 32 L44 20 L36 8" />
+          <path d="M52 48 L68 36 L82 34 L94 24" />
+          <path d="M52 48 L62 64 L58 78 L66 94" />
+          <path d="M52 48 L34 58 L20 56 L8 66" />
+        </g>
+      </svg>
+    );
+  }
+  return null;
+}
 
 /** Emoji bay lên trên avatar (nhiều cái cùng lúc) + combo đếm số lần */
 function Floaters({
   list,
   combo,
 }: {
-  list?: { id: number; emoji: string; kind: FloatKind; dx: number; dy?: number; rot: number; dur: number }[];
+  list?: { id: number; emoji: string; kind: FloatKind; dx: number; dy?: number; rot: number; dur: number; v?: string; delay?: number }[];
   combo?: { emoji: string; count: number; at: number };
 }) {
   return (
@@ -259,10 +322,18 @@ function Floaters({
       {list?.map((f) => (
         <span
           key={f.id}
-          className={`emote-pop ${f.kind}`}
-          style={{ ['--dx' as string]: `${f.dx}px`, ['--dy' as string]: `${f.dy ?? 0}px`, ['--rot' as string]: `${f.rot}deg`, animationDuration: `${f.dur}ms` } as CSSProperties}
+          className={`emote-pop ${f.kind}${f.v ? ` v-${f.v}` : ''}`}
+          style={
+            {
+              ['--dx' as string]: `${f.dx}px`,
+              ['--dy' as string]: `${f.dy ?? 0}px`,
+              ['--rot' as string]: `${f.rot}deg`,
+              animationDuration: `${f.dur}ms`,
+              animationDelay: f.delay ? `${f.delay}ms` : undefined,
+            } as CSSProperties
+          }
         >
-          {f.emoji}
+          {f.kind === 'splat' || f.kind === 'yolk' || f.kind === 'crack' ? <HitArt kind={f.kind} v={f.v} /> : f.emoji}
         </span>
       ))}
       {combo && combo.count > 1 && (
@@ -324,7 +395,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   }, [chat.messages.length]);
   // Biểu cảm: emoji nảy trên avatar, ném đồ vào người khác
   // Mỗi lần thả là 1 emoji bay lên riêng (bấm nhiều thì hiện liên tục, chồng nhiều cái như livestream)
-  type Floater = { id: number; emoji: string; kind: FloatKind; dx: number; dy?: number; rot: number; dur: number };
+  type Floater = { id: number; emoji: string; kind: FloatKind; dx: number; dy?: number; rot: number; dur: number; v?: string; delay?: number };
   const [pops, setPops] = useState<Record<string, Floater[]>>({});
   // Bấm liên tục cùng 1 emoji → hiện combo "😂 ×7"
   const [combos, setCombos] = useState<Record<string, { emoji: string; count: number; at: number }>>({});
@@ -342,22 +413,84 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
     let seq = 0;
     const add = (pid: string, f: Omit<Floater, 'id'>) => {
       const fid = id * 100 + seq++;
-      setPops((p) => ({ ...p, [pid]: [...(p[pid] ?? []), { ...f, id: fid }].slice(-24) }));
-      window.setTimeout(() => setPops((p) => ({ ...p, [pid]: (p[pid] ?? []).filter((x) => x.id !== fid) })), f.dur);
+      setPops((p) => ({ ...p, [pid]: [...(p[pid] ?? []), { ...f, id: fid }].slice(-60) }));
+      window.setTimeout(() => setPops((p) => ({ ...p, [pid]: (p[pid] ?? []).filter((x) => x.id !== fid) })), f.dur + (f.delay ?? 0));
     };
     /** Trúng đòn: món đồ dính mặt + nổ 💥 + mảnh văng + avatar rung */
-    const hitFx = (pid: string) => {
-      const bomb = e.emoji === '💣';
-      sfx(bomb ? 'boom' : 'splat');
-      add(pid, { emoji: bomb ? '💥' : e.emoji, kind: bomb ? 'blast' : 'hit', dx: 0, rot: 0, dur: bomb ? 900 : 2000 });
-      const shards = bomb ? ['🔥', '💥', '✨', '💨', '🔥', '✨'] : [e.emoji, e.emoji, e.emoji];
-      shards.forEach((em, k) => {
-        const ang = (Math.PI * 2 * k) / shards.length + Math.random() * 0.6;
-        const dist = bomb ? 60 + Math.random() * 30 : 34 + Math.random() * 16;
-        add(pid, { emoji: em, kind: 'shard', dx: Math.round(Math.cos(ang) * dist), dy: Math.round(Math.sin(ang) * dist), rot: Math.round((Math.random() - 0.5) * 300), dur: 800 });
-      });
+    const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+    /** Giọt văng có trọng lực: bắn ra rồi rơi xuống */
+    const drops = (pid: string, n: number, v: string, spread = 46) => {
+      for (let k = 0; k < n; k++) {
+        const ang = rnd(-Math.PI, 0) + rnd(-0.4, 0.4);
+        add(pid, { emoji: '', kind: 'drop', v, dx: Math.round(Math.cos(ang) * rnd(spread * 0.5, spread)), dy: Math.round(rnd(30, 70)), rot: Math.round(rnd(4, 9)), dur: 900, delay: 60 });
+      }
+    };
+    const shake = (pid: string, ms = 600) => {
       setShaking((h) => ({ ...h, [pid]: (h[pid] ?? 0) + 1 }));
-      window.setTimeout(() => setShaking((h) => ({ ...h, [pid]: Math.max(0, (h[pid] ?? 1) - 1) })), 600);
+      window.setTimeout(() => setShaking((h) => ({ ...h, [pid]: Math.max(0, (h[pid] ?? 1) - 1) })), ms);
+    };
+    /** Trúng đòn: mỗi món một kiểu vỡ / văng cho sinh động */
+    const hitFx = (pid: string) => {
+      const em = e.emoji;
+      switch (em) {
+        case '💣': {
+          sfx('boom');
+          add(pid, { emoji: '💥', kind: 'blast', dx: 0, rot: 0, dur: 900 });
+          ['🔥', '💥', '✨', '💨', '🔥', '✨'].forEach((x, k) => {
+            const ang = (Math.PI * 2 * k) / 6 + rnd(0, 0.6);
+            const dist = rnd(60, 90);
+            add(pid, { emoji: x, kind: 'shard', dx: Math.round(Math.cos(ang) * dist), dy: Math.round(Math.sin(ang) * dist), rot: Math.round(rnd(-150, 150)), dur: 800 });
+          });
+          shake(pid);
+          return;
+        }
+        case '🍅':
+        case '💩': {
+          const v = em === '🍅' ? 'tomato' : 'poop';
+          sfx('splat');
+          add(pid, { emoji: em, kind: 'impact', dx: 0, rot: 0, dur: 220 });
+          add(pid, { emoji: '', kind: 'splat', v, dx: 0, rot: Math.round(rnd(0, 360)), dur: 2600, delay: 120 });
+          drops(pid, 8, v);
+          if (em === '💩') ['🪰', '🪰'].forEach((x, k) => add(pid, { emoji: x, kind: 'dizzy', dx: k ? 18 : -18, rot: 0, dur: 2200, delay: 300 + k * 200 }));
+          shake(pid, 400);
+          return;
+        }
+        case '🥚': {
+          sfx('crack');
+          add(pid, { emoji: '🥚', kind: 'impact', dx: 0, rot: 0, dur: 200 });
+          add(pid, { emoji: '🥚', kind: 'shell', v: 'l', dx: -34, dy: 26, rot: -70, dur: 700, delay: 120 });
+          add(pid, { emoji: '🥚', kind: 'shell', v: 'r', dx: 34, dy: 30, rot: 80, dur: 700, delay: 120 });
+          add(pid, { emoji: '', kind: 'yolk', dx: 0, rot: Math.round(rnd(0, 360)), dur: 3000, delay: 140 });
+          drops(pid, 5, 'egg', 34);
+          shake(pid, 350);
+          return;
+        }
+        case '🧱': {
+          sfx('thud');
+          add(pid, { emoji: '🧱', kind: 'bounce', dx: Math.round(rnd(-40, 40)), rot: Math.round(rnd(-200, 200)), dur: 1100 });
+          add(pid, { emoji: '', kind: 'crack', dx: 0, rot: Math.round(rnd(0, 360)), dur: 2200, delay: 60 });
+          ['💨', '💨', '💨'].forEach((x, k) => add(pid, { emoji: x, kind: 'shard', dx: (k - 1) * 46, dy: Math.round(rnd(10, 30)), rot: 0, dur: 900, delay: 80 }));
+          ['💫', '⭐', '💫'].forEach((x, k) => add(pid, { emoji: x, kind: 'dizzy', dx: 0, rot: k * 120, dur: 1800, delay: 250 }));
+          shake(pid, 800);
+          return;
+        }
+        case '🌹':
+        case '💋': {
+          sfx('kiss');
+          add(pid, { emoji: em, kind: 'hit', dx: 0, rot: 0, dur: 1600 });
+          ['💕', '💖', '💗', '💞', '💓'].forEach((x, k) => add(pid, { emoji: x, kind: 'heart', dx: Math.round(rnd(-40, 40)), rot: Math.round(rnd(-25, 25)), dur: 1600, delay: k * 90 }));
+          return;
+        }
+        default: {
+          sfx('splat');
+          add(pid, { emoji: em, kind: 'hit', dx: 0, rot: 0, dur: 2000 });
+          [em, em, em].forEach((x, k) => {
+            const ang = (Math.PI * 2 * k) / 3 + rnd(0, 0.6);
+            add(pid, { emoji: x, kind: 'shard', dx: Math.round(Math.cos(ang) * 40), dy: Math.round(Math.sin(ang) * 40), rot: Math.round(rnd(-150, 150)), dur: 800 });
+          });
+          shake(pid);
+        }
+      }
     };
     const show = (pid: string, kind: 'emote' | 'hit') => {
       if (kind === 'hit') {
@@ -387,7 +520,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   useEffect(() => {
     if (!pickerOpen) return;
     const close = (ev: PointerEvent) => {
-      if (!(ev.target as HTMLElement).closest('.emote-picker, .emote-btn')) setPickerOpen(false);
+      if (!(ev.target as Element | null)?.closest?.('.emote-picker, .emote-btn')) setPickerOpen(false);
     };
     document.addEventListener('pointerdown', close);
     return () => document.removeEventListener('pointerdown', close);
@@ -397,10 +530,23 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
     setPickerOpen(false);
   };
   const throwAt = (to: string, emoji: string) => emit('room:emote', { emoji, to });
+  // Rê chuột vào avatar là hiện menu ném; rời khỏi ghế (avatar + menu) một chút thì tự đóng
+  const closeTimer = useRef<number | undefined>(undefined);
+  const hoverOpen = (pid: string) => (e: React.PointerEvent) => {
+    if (e.pointerType !== 'mouse') return;
+    clearTimeout(closeTimer.current);
+    setThrowMenu(pid);
+  };
+  const hoverStay = () => clearTimeout(closeTimer.current);
+  const hoverLeave = (e: React.PointerEvent) => {
+    if (e.pointerType !== 'mouse') return;
+    clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setThrowMenu(null), 280);
+  };
   useEffect(() => {
     if (!throwMenu) return;
     const close = (ev: PointerEvent) => {
-      if (!(ev.target as HTMLElement).closest('.throw-menu, .avatar-wrap')) setThrowMenu(null);
+      if (!(ev.target as Element | null)?.closest?.('.throw-ring, .avatar-wrap')) setThrowMenu(null);
     };
     const esc = (ev: KeyboardEvent) => ev.key === 'Escape' && setThrowMenu(null);
     document.addEventListener('pointerdown', close);
@@ -425,14 +571,26 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   const deckRef = useRef<HTMLButtonElement>(null);
   const discardRef = useRef<HTMLDivElement>(null);
   const handRef = useRef<HTMLDivElement>(null);
-  const [handW, setHandW] = useState(0);
+  const [handBox, setHandBox] = useState({ w: 0, cw: 120 });
   useEffect(() => {
     const el = handRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(([entry]) => setHandW(entry.contentRect.width));
+    const measure = () => {
+      const card = el.querySelector<HTMLElement>('.card');
+      setHandBox((b) => {
+        const w = el.clientWidth - parseFloat(getComputedStyle(el).paddingLeft) - parseFloat(getComputedStyle(el).paddingRight);
+        const cw = card?.offsetWidth || b.cw;
+        return b.w === w && b.cw === cw ? b : { w, cw };
+      });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
     ro.observe(el);
+    const first = el.querySelector('.card');
+    if (first) ro.observe(first);
     return () => ro.disconnect();
-  }, []);
+  }, [view.hand.length]);
+  const handW = handBox.w;
 
   const secs = (deadline?: number) => (deadline ? Math.max(0, Math.ceil((deadline - now) / 1000)) : 0);
   const left = (deadline: number | undefined, total: number) => (deadline ? (deadline - now) / total : 0);
@@ -628,12 +786,17 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         return;
       }
       if (CARD_INFO[card.type].isCat) {
-        // mèo: lấy đôi (gồm lá vừa bấm) rồi mở hộp thoại chọn người
-        const same = view.hand.filter((c) => c.type === card.type && c.id !== card.id);
-        setSelected([card.id, same[0].id]);
-        setWizardOpen(true);
+        // mèo: bấm để nhấc lên / hạ xuống; đủ 2–3 lá cùng loại thì bấm nút "Đánh đôi / bộ ba"
+        const on = sel.includes(card.id);
+        sfx(on ? 'unselect' : 'select');
+        setSelected((s) => {
+          const same = s.filter((id) => byId.get(id)?.type === card.type);
+          if (on) return same.filter((id) => id !== card.id);
+          return [...same, card.id].slice(-3);
+        });
         return;
       }
+      setSelected([]);
       if (card.type === 'shuffle') {
         setShufflePick([card.id]);
         return;
@@ -719,7 +882,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
 
   // Bài trên tay: đủ chỗ thì tách nhau, chật thì xếp chồng vừa khung
   const n = view.hand.length;
-  const cardW = handRef.current?.querySelector<HTMLElement>('.card')?.offsetWidth ?? 120;
+  const cardW = handBox.cw;
   const overlap = n > 1 && handW ? Math.min(cardW * 0.72, Math.max(-12, (n * cardW - (handW - 24)) / (n - 1))) : -12;
 
   return (
@@ -740,6 +903,8 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                 className={['seat', throwMenu === p.id && 'menu-on', Math.cos(a) > 0.25 ? 'bubble-left' : 'bubble-right', !p.alive && 'dead', !p.connected && 'offline', isTarget && 'targeted', pickable && 'pickable'].filter(Boolean).join(' ')}
                 style={{ ['--x' as string]: (Math.cos(a) * 44).toFixed(2), ['--y' as string]: (Math.sin(a) * 40).toFixed(2) } as CSSProperties}
                 data-pid={p.id}
+                onPointerEnter={pickable ? undefined : hoverStay}
+                onPointerLeave={pickable ? undefined : hoverLeave}
                 onClick={
                   pickable
                     ? () => {
@@ -752,8 +917,8 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                 <span
                   className={`avatar-wrap${pickable ? '' : ' throwable'}${throwMenu === p.id ? ' menu-open' : ''}${shaking[p.id] ? ' got-hit' : ''}`}
                   data-avatar={p.id}
+                  onPointerEnter={pickable ? undefined : hoverOpen(p.id)}
                   onClick={pickable ? undefined : () => setThrowMenu((m) => (m === p.id ? null : p.id))}
-                  title={pickable ? undefined : `Ném gì đó vào ${p.name} 😈`}
                 >
                   {!pickable && <span className="throw-hover">🎯</span>}
                   <Ring {...ring}>
@@ -765,20 +930,25 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                       {chatPops[p.id].text}
                     </span>
                   )}
+                  {throwMenu === p.id && (
+                    <span className="throw-ring" role="menu" aria-label={`Ném vào ${p.name}`} onClick={(e) => e.stopPropagation()}>
+                      {THROWABLES.map((t, k) => {
+                        const ang = (-90 + (360 / THROWABLES.length) * k) * (Math.PI / 180);
+                        return (
+                          <button
+                            key={t}
+                            className={t === '💣' ? 'bomb' : ''}
+                            style={{ ['--tx' as string]: Math.cos(ang).toFixed(3), ['--ty' as string]: Math.sin(ang).toFixed(3), ['--k' as string]: k } as CSSProperties}
+                            onClick={() => throwAt(p.id, t)}
+                            aria-label={t === '💣' ? 'Ném bom' : `Ném ${t}`}
+                          >
+                            {t}
+                          </button>
+                        );
+                      })}
+                    </span>
+                  )}
                 </span>
-                {throwMenu === p.id && (
-                  <div className="throw-menu" role="menu" aria-label={`Ném vào ${p.name}`}>
-                    <div className="throw-menu-title">Ném vào {p.name} 😈</div>
-                    <div className="throw-menu-grid">
-                      {THROWABLES.map((t) => (
-                        <button key={t} onClick={() => throwAt(p.id, t)} title={t === '💣' ? 'Ném bom (nổ to!)' : `Ném ${t}`}>
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="throw-menu-tip">Bấm liên tục để ném nhiều 🔁</div>
-                  </div>
-                )}
                 <div className="seat-name">
                   {p.id === view.hostId && <span title="Chủ phòng">👑</span>}
                   {p.name}
@@ -958,7 +1128,13 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
           </div>
 
           <div className="my-actions">
-            {!comboMode && myActionTime && <span className="hint-chip">👆 Bấm lá sáng để đánh · bấm chồng bài để rút</span>}
+            {!comboMode && myActionTime && (kind === 'pair' || kind === 'triple') && (
+              <button className="primary big play-combo" onClick={() => setWizardOpen(true)}>
+                ▶ {kind === 'pair' ? 'Đánh đôi' : 'Đánh bộ ba'} ({sel.length} lá)
+              </button>
+            )}
+            {!comboMode && myActionTime && !kind && sel.length === 1 && <span className="hint-chip">🐱 Chọn thêm 1 lá mèo giống vậy để đánh đôi</span>}
+            {!comboMode && myActionTime && !sel.length && <span className="hint-chip">👆 Bấm lá sáng để đánh · bấm chồng bài để rút</span>}
             {!comboMode && pending && alive && nopeCard && <span className="hint-chip nope">✋ Bấm lá Nope để chặn!</span>}
             {comboMode && (
               <>
@@ -1021,8 +1197,8 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
               seed={c.id}
               size="lg"
               className={`${comboMode || !(myActionTime || pending) ? '' : isPlayable(c) ? 'playable' : 'dim'}${fresh.has(c.id) ? ' fresh' : ''}`}
-              selected={comboMode && sel.includes(c.id)}
-              onClick={alive ? () => clickCard(c) : undefined}
+              selected={sel.includes(c.id)}
+              onClick={alive && (comboMode || isPlayable(c)) ? () => clickCard(c) : undefined}
               style={{ ['--i' as string]: i - (hand.length - 1) / 2 } as CSSProperties}
             />
           ))}

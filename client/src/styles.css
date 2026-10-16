@@ -342,6 +342,7 @@ button.card:not(:disabled):active { transform: scale(0.96) !important; }
 /* ghế đối thủ quanh bàn */
 .seats { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
 .seat.menu-on { z-index: 30; }
+.seat.menu-on .chat-pop, .seat.menu-on .throw-hover { display: none; }
 .seat {
   position: absolute;
   left: calc(50% + var(--x) * 1%);
@@ -795,17 +796,36 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
 .avatar-wrap.throwable:hover .throw-hover, .avatar-wrap.menu-open .throw-hover { opacity: 1; transform: scale(1); }
 .avatar-wrap.throwable:hover > .ring, .avatar-wrap.menu-open > .ring { transform: scale(1.06); box-shadow: 0 0 0 3px var(--accent-2); }
 .avatar-wrap > .ring { transition: transform 0.15s; }
-.throw-menu {
-  position: absolute; top: calc(100% - 26px); left: 50%; transform: translateX(-50%); z-index: 20; width: 214px;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 8px 10px 8px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3); animation: pop 0.16s ease-out;
+/* vòng tròn món ném xoè quanh avatar */
+.throw-ring {
+  --r: 64px; --b: 40px;
+  position: absolute; left: 50%; top: 50%; z-index: 20;
+  width: calc(var(--r) * 2 + var(--b) + 8px); height: calc(var(--r) * 2 + var(--b) + 8px);
+  transform: translate(-50%, -50%); border-radius: 50%;
+  /* vòng mờ nối avatar với các nút để rê chuột không bị hụt */
+  background: radial-gradient(circle, transparent 34%, color-mix(in srgb, var(--surface) 22%, transparent) 35%, transparent 72%);
 }
-.throw-menu-title { font-size: 12px; font-weight: 800; color: var(--muted); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.throw-menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
-.throw-menu-grid button { font-size: 26px; padding: 4px 0; border-radius: 12px; background: var(--surface-2); line-height: 1.15; }
-.throw-menu-grid button:hover { transform: translateY(-3px) scale(1.15); background: color-mix(in srgb, var(--bad) 14%, var(--surface)); }
-.throw-menu-grid button:active { transform: scale(0.85); }
-.throw-menu-tip { font-size: 11px; color: var(--muted); margin-top: 6px; text-align: center; }
+.throw-ring button {
+  position: absolute; left: 50%; top: 50%; width: var(--b); height: var(--b); padding: 0; border-radius: 50%;
+  display: grid; place-items: center; font-size: 22px; line-height: 1;
+  background: var(--surface); border: 1px solid var(--border); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+  transform: translate(calc(-50% + var(--tx) * var(--r)), calc(-50% + var(--ty) * var(--r)));
+  animation: ring-out 0.26s cubic-bezier(0.3, 1.6, 0.5, 1) both; animation-delay: calc(var(--k) * 22ms);
+  transition: transform 0.15s cubic-bezier(0.3, 1.6, 0.5, 1), background 0.15s;
+}
+.throw-ring button:hover {
+  transform: translate(calc(-50% + var(--tx) * var(--r)), calc(-50% + var(--ty) * var(--r))) scale(1.28);
+  background: color-mix(in srgb, var(--bad) 16%, var(--surface)); z-index: 2;
+}
+.throw-ring button:active { transform: translate(calc(-50% + var(--tx) * var(--r)), calc(-50% + var(--ty) * var(--r))) scale(0.85); }
+.throw-ring button.bomb { background: linear-gradient(180deg, #ffe066, #ff922b); border-color: #e8590c; }
+@keyframes ring-out {
+  from { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+}
+@media (max-height: 680px), (max-width: 760px) {
+  .throw-ring { --r: 52px; --b: 34px; }
+  .throw-ring button { font-size: 18px; }
+}
 .emote-tip { font-size: 12px; color: var(--muted); padding-top: 4px; }
 
 /* trúng đòn: avatar rung, nổ 💥, mảnh văng */
@@ -826,6 +846,72 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
 @keyframes shard {
   0% { transform: translate(-50%, -50%) scale(0.4) rotate(0); opacity: 1; }
   100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1) rotate(var(--rot)); opacity: 0; }
+}
+
+/* ====== hiệu ứng trúng đòn theo từng món ====== */
+.emote-pop.impact, .emote-pop.splat, .emote-pop.yolk, .emote-pop.drop, .emote-pop.shell,
+.emote-pop.crack, .emote-pop.bounce { top: 50%; }
+.emote-pop.impact { font-size: 50px; animation: impact 0.22s ease-in forwards; }
+.emote-pop.splat, .emote-pop.yolk, .emote-pop.crack { width: 86px; height: 86px; filter: none; }
+.emote-pop.splat svg, .emote-pop.yolk svg, .emote-pop.crack svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.emote-pop.splat { --splat: #e03131; animation: splat 2.6s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+.emote-pop.splat.v-poop { --splat: #7a4a1d; }
+.emote-pop.splat svg { fill: var(--splat); filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25)); }
+.emote-pop.yolk { width: 74px; height: 74px; animation: yolk 3s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+.emote-pop.crack { width: 70px; height: 70px; animation: crack 2.2s ease-out both; }
+.emote-pop.drop {
+  width: 8px; height: 10px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #e03131; filter: none;
+  animation: drop 0.9s cubic-bezier(0.3, 0.1, 0.6, 1) both;
+}
+.emote-pop.drop.v-poop { background: #7a4a1d; }
+.emote-pop.drop.v-egg { background: #ffb703; width: 7px; height: 9px; }
+.emote-pop.shell { font-size: 34px; animation: shard 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+.emote-pop.shell.v-l { clip-path: polygon(0 0, 56% 0, 44% 22%, 58% 46%, 42% 70%, 54% 100%, 0 100%); }
+.emote-pop.shell.v-r { clip-path: polygon(56% 0, 100% 0, 100% 100%, 54% 100%, 42% 70%, 58% 46%, 44% 22%); }
+.emote-pop.bounce { font-size: 42px; animation: bounce 1.1s cubic-bezier(0.3, 0.2, 0.6, 1) both; }
+.emote-pop.dizzy { top: -8px; font-size: 18px; filter: none; animation: dizzy 1.8s linear both; }
+.emote-pop.heart { top: 20%; font-size: 24px; animation: emote-float 1.6s ease-out both; }
+@keyframes impact {
+  0% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(0.7, 0.45); opacity: 0; }
+}
+@keyframes splat {
+  0% { transform: translate(-50%, -50%) rotate(var(--rot)) scale(0.2); opacity: 0; }
+  8% { transform: translate(-50%, -50%) rotate(var(--rot)) scale(1.18); opacity: 0.96; }
+  16% { transform: translate(-50%, -50%) rotate(var(--rot)) scale(1); }
+  70% { transform: translate(-50%, -44%) rotate(var(--rot)) scale(1, 1.06); opacity: 0.92; }
+  100% { transform: translate(-50%, -30%) rotate(var(--rot)) scale(0.96, 1.16); opacity: 0; }
+}
+@keyframes yolk {
+  0% { transform: translate(-50%, -50%) rotate(var(--rot)) scale(0.2); opacity: 0; }
+  10% { transform: translate(-50%, -50%) rotate(var(--rot)) scale(1.12); opacity: 1; }
+  18% { transform: translate(-50%, -50%) rotate(var(--rot)) scale(1); }
+  80% { transform: translate(-50%, -32%) rotate(var(--rot)) scale(0.96, 1.18); opacity: 1; }
+  100% { transform: translate(-50%, -16%) rotate(var(--rot)) scale(0.9, 1.3); opacity: 0; }
+}
+@keyframes crack {
+  0% { transform: translate(-50%, -50%) rotate(var(--rot)) scale(0.4); opacity: 0; }
+  8% { transform: translate(-50%, -50%) rotate(var(--rot)) scale(1.15); opacity: 1; }
+  15% { transform: translate(-50%, -50%) rotate(var(--rot)) scale(1); }
+  80% { opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--rot)) scale(1); opacity: 0; }
+}
+@keyframes drop {
+  0% { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+  35% { transform: translate(calc(-50% + var(--dx) * 0.7), calc(-50% - 26px)) scale(1); opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.8, 1.2); opacity: 0; }
+}
+@keyframes bounce {
+  0% { transform: translate(-50%, -50%) scale(1.35); }
+  12% { transform: translate(-50%, -50%) scale(0.85, 1.1); }
+  42% { transform: translate(calc(-50% + var(--dx) * 0.5), -130%) rotate(calc(var(--rot) * 0.4)); }
+  100% { transform: translate(calc(-50% + var(--dx)), 240%) rotate(var(--rot)); opacity: 0; }
+}
+@keyframes dizzy {
+  0% { transform: translateX(-50%) rotate(var(--rot)) translateX(28px) scale(0.6); opacity: 0; }
+  12% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateX(-50%) rotate(calc(var(--rot) + 720deg)) translateX(28px) scale(1); opacity: 0; }
 }
 
 /* ====== chọn kiểu xáo ====== */
@@ -872,6 +958,12 @@ button.primary.danger { background: linear-gradient(180deg, #ff6b6b, #e03131); c
   padding: 1px 8px; border-radius: 999px; box-shadow: var(--shadow-card); animation: pop 0.25s ease-out;
 }
 .hand > .card.fresh { animation: deal 0.45s cubic-bezier(0.2, 1.3, 0.4, 1); }
+
+/* lá chưa đánh được: khoá hẳn (không nhấc, không bấm) */
+.hand > div.card { cursor: not-allowed; }
+.hand > div.card.dim { transform: rotate(calc(var(--i) * 2deg)) translateY(calc(var(--i) * var(--i) * 0.6px)) !important; }
+/* nút đánh đôi / bộ ba */
+.play-combo { animation: glow 1.2s ease-in-out infinite; }
 
 /* hộp thoại đánh bài nhiều bước */
 .wiz-cards { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -1089,6 +1181,9 @@ button.primary.danger { background: linear-gradient(180deg, #ff6b6b, #e03131); c
   }
 }
 @media (min-width: 761px) and (max-width: 1100px) {
+  .arena-tools .hide-sm { display: none; }
+  .arena-tools { flex-wrap: nowrap; max-width: none; }
+  .arena-tools .pot-chip { font-size: 12px; padding: 4px 10px; }
   .hint-chip { display: none; }
   .feed { max-width: 46%; }
 }
@@ -1097,7 +1192,12 @@ button.primary.danger { background: linear-gradient(180deg, #ff6b6b, #e03131); c
   .game { padding: 8px; grid-template-rows: auto auto; height: auto; }
   .feed { position: static; max-width: none; align-items: center; }
   .feed-item { align-self: center; }
-  .arena-tools { position: static; align-self: flex-start; }
+  .arena-tools { position: static; align-self: stretch; max-width: none; order: -2; }
+  .arena-dock { position: static; align-self: flex-end; order: -1; }
+  /* 6 icon nhanh: nằm gọn trên đầu khu của mình, không đè lên gì */
+  .quick-emotes { position: static; transform: none; margin: 0 auto 8px; width: fit-content; max-width: 100%; }
+  .quick-emotes button { width: 38px; height: 38px; font-size: 22px; }
+  .emote-picker { bottom: auto; top: 56px; }
   .discard { display: none; }
   .arena { min-height: 0; display: flex; flex-direction: column; gap: 10px; }
   .felt { display: none; }
