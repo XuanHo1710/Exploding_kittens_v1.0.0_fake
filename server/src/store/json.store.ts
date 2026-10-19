@@ -7,6 +7,8 @@ export const ACCOUNT_STORE = Symbol('ACCOUNT_STORE');
 
 export interface AccountStore {
   readonly kind: 'local' | 'google-drive';
+  /** Bản sao cục bộ khi dùng Drive (mặc định server/data/db.json); test truyền thư mục tạm */
+  readonly cacheFile?: string;
   read(): Promise<{ content: string; version: string }>;
   write(content: string, expectedVersion: string): Promise<string>;
 }

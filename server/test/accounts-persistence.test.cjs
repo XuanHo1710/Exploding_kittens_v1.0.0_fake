@@ -250,3 +250,119 @@ test('Drive configuration errors never silently select local storage', () => {
     }
   }
 });
+
+// ---------- Chế độ Google Drive: Drive là nơi lưu chính, phải xác nhận trước khi báo thành công ----------
+
+/** Drive giả: version tăng mỗi lần ghi, ghi với version cũ thì CONFLICT (giống DriveJsonStore). */
+class FakeDriveStore {
+  kind = 'google-drive';
+  constructor(cacheDir, content = '{"version":1,"accounts":{}}') {
+    this.cacheFile = join(cacheDir, 'db.json');
+    this.content = content;
+    this.version = '10';
+    this.writes = 0;
+    this.failure = undefined;
+  }
+  async read() { return { content: this.content, version: this.version }; }
+  async write(content, version) {
+    this.writes++;
+    if (this.failure) { const f = this.failure; if (!f.sticky) this.failure = undefined; throw f; }
+    if (version !== this.version) throw Object.assign(new Error('conflict'), { code: 'CONFLICT' });
+    this.content = content;
+    this.version = String(Number(this.version) + 1);
+    return this.version;
+  }
+  /** Server khác ghi thẳng lên Drive */
+  external(mutate) {
+    const db = JSON.parse(this.content);
+    mutate(db);
+    this.content = JSON.stringify(db, null, 2);
+    this.version = String(Number(this.version) + 1);
+  }
+}
+
+const driveFixture = async (content) => {
+  const dir = mkdtempSync(join(tmpdir(), 'meono-drive-'));
+  const store = new FakeDriveStore(dir, content);
+  const { db, accounts } = await fixture(store);
+  return { dir, store, db, accounts };
+};
+
+test('drive: first registration succeeds only after Drive confirms; a failed write is rolled back', async () => {
+  const { dir, store, db, accounts } = await driveFixture();
+  try {
+    store.failure = Object.assign(new Error('403'), { code: 'PERMISSION' });
+    await assert.rejects(register(accounts), (e) => e.getStatus() === 503);
+    assert.equal(db.account('player-001'), undefined);
+    assert.deepEqual(JSON.parse(store.content).accounts, {});
+    // thử lại: lần này Drive nhận
+    const auth = await register(accounts);
+    assert.equal(auth.account.coins, 1000);
+    assert.equal(JSON.parse(store.content).accounts['player-001'].name, 'Mèo Một');
+    // bản sao cục bộ chỉ chứa dữ liệu Drive đã xác nhận
+    assert.equal(JSON.parse(readFileSync(store.cacheFile, 'utf8')).accounts['player-001'].name, 'Mèo Một');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('drive: CONFLICT from another server reloads Drive and re-runs the change (no lost accounts, names stay unique)', async () => {
+  const { dir, store, accounts } = await driveFixture();
+  try {
+    await register(accounts, 'player-001', 'Mèo Một');
+    // server khác tạo "Mèo Hai" ngay lúc này
+    const other = parseDb(store.content).accounts['player-001'];
+    store.external((db) => { db.accounts['other-0002'] = { ...other, playerId: 'other-0002', name: 'Mèo Hai', nameKey: 'mèo hai' }; });
+    const auth = await register(accounts, 'player-003', 'Mèo Ba');
+    assert.equal(auth.account.name, 'Mèo Ba');
+    assert.deepEqual(Object.keys(JSON.parse(store.content).accounts).sort(), ['other-0002', 'player-001', 'player-003']);
+    // tên do server khác vừa tạo cũng bị chặn trùng
+    store.external((db) => { db.accounts['other-0004'] = { ...other, playerId: 'other-0004', name: 'Mèo Tư', nameKey: 'mèo tư' }; });
+    await assert.rejects(register(accounts, 'player-005', 'mèo tư'), (e) => e.getStatus() === 409);
+    assert.equal(JSON.parse(store.content).accounts['player-005'], undefined);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('drive: startup uploads local-only accounts and keeps the local file when Drive rejects', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'meono-drive-'));
+  try {
+    const seed = new FakeDriveStore(dir);
+    const { accounts } = await fixture(seed);
+    await register(accounts, 'local-0001', 'Mèo Cũ');
+    const localContent = readFileSync(seed.cacheFile, 'utf8');
+    // Drive mới, trống; Drive từ chối ghi → giữ nguyên file cục bộ
+    const failing = new FakeDriveStore(dir);
+    failing.failure = Object.assign(new Error('offline'), { code: 'UNAVAILABLE', sticky: true });
+    const a = await fixture(failing);
+    assert.equal(a.db.account('local-0001'), undefined);
+    assert.equal(readFileSync(seed.cacheFile, 'utf8'), localContent);
+    // Drive hoạt động → tài khoản cục bộ được đưa lên và chỉ có hiệu lực sau khi Drive xác nhận
+    const ok = new FakeDriveStore(dir);
+    const b = await fixture(ok);
+    assert.equal(b.db.account('local-0001').name, 'Mèo Cũ');
+    assert.equal(JSON.parse(ok.content).accounts['local-0001'].name, 'Mèo Cũ');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('drive: an uncertain write blocks, then the next change reloads Drive and continues', async () => {
+  const { dir, store, db, accounts } = await driveFixture();
+  try {
+    await register(accounts, 'player-001', 'Mèo Một');
+    // upload thật ra ĐÃ tới Drive nhưng mất phản hồi
+    const realWrite = store.write.bind(store);
+    store.write = async (content, version) => { await realWrite(content, version); throw Object.assign(new Error('lost'), { code: 'WRITE_UNCERTAIN', uncertain: true }); };
+    await assert.rejects(accounts.claimDaily('player-001'), (e) => e.getStatus() === 503);
+    store.write = realWrite;
+    // thao tác kế tiếp tự đọc lại Drive: thấy xu ngày đã được nhận (không cộng 2 lần)
+    assert.equal(await accounts.claimDaily('player-001'), false);
+    assert.equal(db.account('player-001').coins, 1500);
+    const auth = await register(accounts, 'player-002', 'Mèo Hai');
+    assert.equal(auth.account.name, 'Mèo Hai');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

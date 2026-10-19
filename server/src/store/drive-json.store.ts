@@ -151,7 +151,9 @@ export class DriveJsonStore {
         if (current.version !== expectedVersion && current.checksum !== this.lastCommittedChecksum) {
           throw new DriveStoreError('CONFLICT', 'Google Drive data changed during upload. Restart after resolving the conflict.', true);
         }
-        if (attempt < this.retries) {
+        // Upload có thể đã tới Drive nhưng mất phản hồi: KHÔNG gửi lại (gói đến muộn có thể đè dữ liệu mới hơn).
+        // DbService sẽ đọc lại Drive để biết kết quả thật.
+        if (attempt < this.retries && !error.uncertain) {
           await this.backoff(attempt);
           continue;
         }

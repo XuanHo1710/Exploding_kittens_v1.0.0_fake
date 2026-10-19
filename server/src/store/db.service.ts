@@ -23,6 +23,11 @@ export interface Account {
 export interface DbShape {
   version: 1;
   accounts: Record<string, Account>;
+  /**
+   * Mã các thao tác xu đã áp dụng (thu cược, hoàn xu, trả thưởng) → thời điểm.
+   * Thử lại sau lỗi "không rõ kết quả" sẽ không cộng/trừ lần thứ hai.
+   */
+  ops?: Record<string, number>;
 }
 
 export const DB_FILE = join(__dirname, '..', '..', '..', '..', 'data', 'db.json');
@@ -40,6 +45,12 @@ export function parseDb(content: string): DbShape {
   const db = value as DbShape;
   if (db.version !== 1 || !db.accounts || typeof db.accounts !== 'object' || Array.isArray(db.accounts)) {
     throw new Error('Cần JSON dạng { "version": 1, "accounts": {} }.');
+  }
+  if (db.ops !== undefined) {
+    if (!db.ops || typeof db.ops !== 'object' || Array.isArray(db.ops)) throw new Error('JSON chứa danh sách thao tác không hợp lệ.');
+    for (const [id, at] of Object.entries(db.ops)) {
+      if (!/^[\w:.-]{1,100}$/.test(id) || !Number.isSafeInteger(at) || at < 0) throw new Error('JSON chứa danh sách thao tác không hợp lệ.');
+    }
   }
   const names = new Set<string>();
   for (const [id, acc] of Object.entries(db.accounts)) {
@@ -68,34 +79,54 @@ export class DbService implements OnModuleInit, OnModuleDestroy {
   private stopping = false;
   private blocked = false;
   private queue: Promise<void> = Promise.resolve();
-  private driveDirty = false;
-  private driveSyncing: Promise<void> | null = null;
-  private driveRetryTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(@Inject(ACCOUNT_STORE) private readonly store: AccountStore) {}
+
+  private get cacheFile() {
+    return this.store.cacheFile ?? DB_FILE;
+  }
 
   async onModuleInit() {
     // Nest đợi hook hoàn thành trước app.listen(): không nhận đăng ký với DB chưa tải.
     const loaded = await this.store.read();
     this.data = parseDb(loaded.content);
     this.version = loaded.version;
-    let mergedFromLocal = false;
-    if (this.store.kind === 'google-drive' && existsSync(DB_FILE)) {
-      try {
-        const localDb = parseDb(readFileSync(DB_FILE, 'utf8'));
-        mergedFromLocal = this.mergeAccounts(this.data, localDb);
-      } catch {
-        // Bỏ qua nếu bản cache cục bộ cũ không hợp lệ
-      }
+    let keepLocalFile = false;
+    if (this.store.kind === 'google-drive' && existsSync(this.cacheFile)) {
+      keepLocalFile = await this.importLocalAccounts();
     }
     this.ready = true;
-    const currentContent = JSON.stringify(this.data, null, 2);
-    this.cache(currentContent, !mergedFromLocal);
-    if (mergedFromLocal) {
-      this.logger.log('Đã tự động gộp dữ liệu mới hơn từ bản lưu cục bộ và đồng bộ lên Google Drive.');
-      this.scheduleDriveSync();
-    }
+    if (!keepLocalFile) this.cache(JSON.stringify(this.data, null, 2), true);
     this.logger.log(`Đã tải ${Object.keys(this.data.accounts).length} tài khoản từ ${this.store.kind}.`);
+  }
+
+  /**
+   * Bản JSON cục bộ có tài khoản chưa có trên Drive (vd: dữ liệu từ thời chạy chế độ local):
+   * đưa lên Drive và CHỜ Drive xác nhận. Trả về true nếu phải giữ nguyên file cục bộ (chưa đưa lên được).
+   */
+  private async importLocalAccounts(): Promise<boolean> {
+    let localDb: DbShape;
+    try {
+      localDb = parseDb(readFileSync(this.cacheFile, 'utf8'));
+    } catch {
+      this.logger.warn('Bản JSON cục bộ không hợp lệ, bỏ qua (file được giữ lại bản sao trước khi ghi đè).');
+      return false;
+    }
+    const merged = structuredClone(this.data);
+    const { added, skipped } = this.mergeAccounts(merged, localDb);
+    if (skipped.length) this.logger.warn(`Không gộp ${skipped.length} tài khoản cục bộ vì trùng tên với tài khoản khác trên Drive: ${skipped.join(', ')}`);
+    if (!added) return false;
+    const content = JSON.stringify(merged, null, 2);
+    try {
+      this.version = await this.store.write(content, this.version);
+      this.data = merged;
+      this.logger.log(`Đã đưa ${added} tài khoản từ bản lưu cục bộ lên Google Drive.`);
+      return false;
+    } catch (error) {
+      if ((error as { uncertain?: boolean }).uncertain) this.blocked = true;
+      this.logger.warn('Chưa đưa được tài khoản cục bộ lên Google Drive; giữ nguyên file cục bộ, lần khởi động sau sẽ thử lại.');
+      return true;
+    }
   }
 
   account(playerId: string): Account | undefined {
@@ -111,122 +142,93 @@ export class DbService implements OnModuleInit, OnModuleDestroy {
     return acc ? structuredClone(acc) : undefined;
   }
 
-  /** Tự động lưu tức thì và đồng bộ nền lên Google Drive (hoặc ghi trực tiếp khi ở chế độ local). */
+  /**
+   * Mọi thay đổi chỉ có hiệu lực SAU KHI nơi lưu chính (Google Drive hoặc file local) xác nhận.
+   * Drive bị server khác ghi trước (CONFLICT): tải bản mới nhất rồi chạy lại thao tác trên đó,
+   * nên các kiểm tra (trùng tên, đủ xu…) luôn dựa trên dữ liệu thật.
+   */
   transaction<T>(mutate: (draft: DbShape) => T): Promise<T> {
     if (this.stopping) return Promise.reject(this.unavailable());
     const operation = this.queue.then(async () => {
       this.assertReady();
-      if (this.blocked) throw this.unavailable();
-      const draft = structuredClone(this.data);
-      const result = mutate(draft);
-      const content = JSON.stringify(draft, null, 2);
-      parseDb(content);
-      if (content === JSON.stringify(this.data, null, 2)) return structuredClone(result);
+      if (this.blocked) await this.recover();
+      for (let attempt = 0; ; attempt += 1) {
+        const draft = structuredClone(this.data);
+        const result = mutate(draft);
+        const content = JSON.stringify(draft, null, 2);
+        parseDb(content);
+        if (content === JSON.stringify(this.data, null, 2)) return structuredClone(result);
 
-      if (this.store.kind === 'google-drive') {
-        // Tự động lưu ngay lập tức vào bộ nhớ + file cục bộ data/db.json và đồng bộ ngầm lên Google Drive
+        let nextVersion: string;
+        try {
+          nextVersion = await this.store.write(content, this.version);
+        } catch (error) {
+          const failure = error as { code?: string; uncertain?: boolean };
+          if (this.store.kind === 'google-drive' && failure.code === 'CONFLICT' && !failure.uncertain && attempt < 2) {
+            try {
+              await this.reload();
+              continue;
+            } catch {
+              // không tải lại được: rơi xuống nhánh khoá bên dưới
+            }
+          }
+          if (failure.uncertain || failure.code === 'CONFLICT') this.blocked = true;
+          this.logger.error(this.blocked
+            ? 'Chưa xác định được dữ liệu trên nơi lưu chính; tạm khoá ghi, thao tác kế tiếp sẽ tải lại dữ liệu trước khi ghi.'
+            : 'Không ghi được dữ liệu tài khoản. Thay đổi chưa được xác nhận.');
+          throw this.unavailable();
+        }
+        this.version = nextVersion;
         this.data = draft;
         this.cache(content);
-        this.scheduleDriveSync();
         return structuredClone(result);
       }
-
-      let nextVersion: string;
-      try {
-        nextVersion = await this.store.write(content, this.version);
-      } catch (error) {
-        const failure = error as { code?: string; uncertain?: boolean };
-        if (failure.uncertain || failure.code === 'CONFLICT') this.blocked = true;
-        this.logger.error(this.blocked
-          ? 'Đã khóa cập nhật tài khoản để tránh ghi đè dữ liệu chưa xác định. Hãy khởi động lại server sau khi kiểm tra dữ liệu.'
-          : 'Không ghi được dữ liệu tài khoản. Thay đổi chưa được xác nhận.');
-        throw this.unavailable();
-      }
-      this.version = nextVersion;
-      this.data = draft;
-      this.cache(content);
-      return structuredClone(result);
     });
     // Một thao tác bị từ chối không làm hỏng toàn bộ hàng đợi.
     this.queue = operation.then(() => undefined, () => undefined);
     return operation;
   }
 
-  private mergeAccounts(target: DbShape, incoming: DbShape): boolean {
-    let changed = false;
-    const usedNames = new Map<string, string>();
-    for (const [id, acc] of Object.entries(target.accounts)) {
-      usedNames.set(acc.nameKey, id);
-    }
-    for (const [id, acc] of Object.entries(incoming.accounts)) {
-      const existing = target.accounts[id];
-      if (!existing) {
-        if (!usedNames.has(acc.nameKey)) {
-          target.accounts[id] = structuredClone(acc);
-          usedNames.set(acc.nameKey, id);
-          changed = true;
-        }
-      } else if (acc.updatedAt > existing.updatedAt) {
-        const nameOwner = usedNames.get(acc.nameKey);
-        if (!nameOwner || nameOwner === id) {
-          usedNames.delete(existing.nameKey);
-          target.accounts[id] = structuredClone(acc);
-          usedNames.set(acc.nameKey, id);
-          changed = true;
-        }
-      }
-    }
-    return changed;
+  /** Tải lại dữ liệu đã xác nhận trên nơi lưu chính (bỏ mọi giả định trong RAM). */
+  private async reload() {
+    const remote = await this.store.read();
+    this.data = parseDb(remote.content);
+    this.version = remote.version;
+    this.cache(JSON.stringify(this.data, null, 2));
   }
 
-  private scheduleDriveSync() {
-    if (this.store.kind !== 'google-drive') return;
-    this.driveDirty = true;
-    if (this.driveRetryTimer) {
-      clearTimeout(this.driveRetryTimer);
-      this.driveRetryTimer = null;
+  /** Sau lỗi không rõ kết quả: Drive tự phục hồi bằng cách đọc lại; local giữ nguyên khoá (phải khởi động lại). */
+  private async recover() {
+    if (this.store.kind !== 'google-drive') throw this.unavailable();
+    try {
+      await this.reload();
+      this.blocked = false;
+      this.logger.log('Đã tải lại dữ liệu từ Google Drive, mở khoá ghi.');
+    } catch {
+      throw this.unavailable();
     }
-    if (this.driveSyncing) return;
-    this.driveSyncing = (async () => {
-      while (this.driveDirty && !this.stopping) {
-        this.driveDirty = false;
-        const snapshot = JSON.stringify(this.data, null, 2);
-        try {
-          this.version = await this.store.write(snapshot, this.version);
-        } catch (error) {
-          const failure = error as { code?: string };
-          if (failure.code === 'CONFLICT') {
-            try {
-              const remote = await this.store.read();
-              const remoteDb = parseDb(remote.content);
-              this.version = remote.version;
-              this.mergeAccounts(this.data, remoteDb);
-              const mergedContent = JSON.stringify(this.data, null, 2);
-              this.cache(mergedContent);
-              this.version = await this.store.write(mergedContent, this.version);
-              continue;
-            } catch (retryErr) {
-              this.logger.warn('Tự động đồng bộ lại Google Drive chưa hoàn tất, sẽ thử lại sau.', retryErr);
-            }
-          } else {
-            this.logger.warn('Tự động lưu lên Google Drive tạm hoãn, dữ liệu đã an toàn ở bản lưu cục bộ và sẽ tự thử lại.');
-          }
-          this.driveDirty = true;
-          if (!this.stopping) {
-            this.driveRetryTimer = setTimeout(() => {
-              this.driveRetryTimer = null;
-              this.scheduleDriveSync();
-            }, 3000);
-          }
-          break;
-        }
+  }
+
+  private mergeAccounts(target: DbShape, incoming: DbShape): { added: number; skipped: string[] } {
+    let added = 0;
+    const skipped: string[] = [];
+    const usedNames = new Map<string, string>();
+    for (const [id, acc] of Object.entries(target.accounts)) usedNames.set(acc.nameKey, id);
+    for (const [id, acc] of Object.entries(incoming.accounts)) {
+      const existing = Object.hasOwn(target.accounts, id) ? target.accounts[id] : undefined;
+      const nameOwner = usedNames.get(acc.nameKey);
+      if (nameOwner && nameOwner !== id) {
+        if (!existing || acc.updatedAt > existing.updatedAt) skipped.push(acc.name);
+        continue;
       }
-    })().finally(() => {
-      this.driveSyncing = null;
-      if (this.driveDirty && !this.stopping && !this.driveRetryTimer) {
-        this.scheduleDriveSync();
+      if (!existing || acc.updatedAt > existing.updatedAt) {
+        if (existing) usedNames.delete(existing.nameKey);
+        target.accounts[id] = structuredClone(acc);
+        usedNames.set(acc.nameKey, id);
+        added += 1;
       }
-    });
+    }
+    return { added, skipped };
   }
 
   private assertReady() {
@@ -240,17 +242,17 @@ export class DbService implements OnModuleInit, OnModuleDestroy {
   private cache(content: string, preserveExisting = false) {
     if (this.store.kind !== 'google-drive') return;
     try {
-      mkdirSync(dirname(DB_FILE), { recursive: true });
-      if (preserveExisting && existsSync(DB_FILE)) {
-        const previous = readFileSync(DB_FILE, 'utf8');
+      mkdirSync(dirname(this.cacheFile), { recursive: true });
+      if (preserveExisting && existsSync(this.cacheFile)) {
+        const previous = readFileSync(this.cacheFile, 'utf8');
         if (previous !== content) {
-          writeFileSync(`${DB_FILE}.before-drive-${Date.now()}-${process.pid}.json`, previous, { mode: 0o600, flag: 'wx' });
+          writeFileSync(`${this.cacheFile}.before-drive-${Date.now()}-${process.pid}.json`, previous, { mode: 0o600, flag: 'wx' });
           this.logger.warn('Đã giữ riêng bản JSON cục bộ trước khi tải dữ liệu Drive.');
         }
       }
-      const tmp = `${DB_FILE}.tmp`;
+      const tmp = `${this.cacheFile}.tmp`;
       writeFileSync(tmp, content, { mode: 0o600 });
-      renameSync(tmp, DB_FILE);
+      renameSync(tmp, this.cacheFile);
     } catch {
       // Drive đã xác nhận: lỗi bản sao cục bộ không biến một giao dịch đã ghi thành thất bại.
       this.logger.warn('Đã lưu nhưng không cập nhật được bản sao cục bộ.');
@@ -259,11 +261,6 @@ export class DbService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy() {
     this.stopping = true;
-    if (this.driveRetryTimer) {
-      clearTimeout(this.driveRetryTimer);
-      this.driveRetryTimer = null;
-    }
     await this.queue;
-    if (this.driveSyncing) await this.driveSyncing;
   }
 }
