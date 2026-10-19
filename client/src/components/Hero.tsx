@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { KeyRound, Smartphone, Users } from 'lucide-react';
 import CardView from './CardView';
 
 /** Bố cục màn chào: bên trái quạt bài + tên game, bên phải là khung thao tác */
@@ -16,9 +17,15 @@ export default function Landing({ children }: { children: ReactNode }) {
         </h1>
         <p className="landing-sub">Rút bài, né bom, Nope bạn bè. Chơi ngay trên trình duyệt.</p>
         <div className="landing-chips">
-          <span>👥 2–10 người</span>
-          <span>🔐 Tên + PIN là xong</span>
-          <span>📱 Chơi được trên điện thoại</span>
+          <span>
+            <Users size={15} /> 2–10 người
+          </span>
+          <span>
+            <KeyRound size={15} /> Tên + PIN là xong
+          </span>
+          <span>
+            <Smartphone size={15} /> Chơi được trên điện thoại
+          </span>
         </div>
       </div>
       <div className="landing-panel">{children}</div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
 import type { Identity } from '../../../shared/src';
 import { loginAccount, registerAccount } from '../api';
 import { genId, saveAccountIdentity } from '../identity';
@@ -48,10 +49,10 @@ export default function Login({ identity, onAuth }: Props) {
       >
         <div className="seg auth-tabs">
           <button type="button" className={mode === 'create' ? 'on' : ''} onClick={() => setMode('create')}>
-            {legacy ? 'Đặt mã PIN' : 'Tạo tài khoản'}
+            <UserPlus size={15} /> {legacy ? 'Đặt mã PIN' : 'Tạo tài khoản'}
           </button>
           <button type="button" className={mode === 'login' ? 'on' : ''} onClick={() => setMode('login')}>
-            Đã có tài khoản
+            <LogIn size={15} /> Đã có tài khoản
           </button>
         </div>
 
@@ -60,7 +61,7 @@ export default function Login({ identity, onAuth }: Props) {
             ? 'Nhập tên và mã PIN để lấy lại xu, avatar trên máy này.'
             : legacy
               ? 'Đặt mã PIN ngắn để giữ xu và đăng nhập ở máy khác.'
-              : 'Chỉ cần tên + mã PIN 4–6 số. Tặng ngay 1.000 xu 🎁'}
+              : 'Chỉ cần tên + mã PIN 4–6 số. Tặng ngay 1.000 xu khởi đầu.'}
         </p>
 
         <label className="field">
@@ -81,8 +82,14 @@ export default function Login({ identity, onAuth }: Props) {
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
             />
-            <button type="button" className="icon-btn" onClick={() => setShowPin((v) => !v)} title={showPin ? 'Ẩn PIN' : 'Hiện PIN'}>
-              {showPin ? '🙈' : '👁'}
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setShowPin((v) => !v)}
+              title={showPin ? 'Ẩn PIN' : 'Hiện PIN'}
+              aria-label={showPin ? 'Ẩn PIN' : 'Hiện PIN'}
+            >
+              {showPin ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
         </label>

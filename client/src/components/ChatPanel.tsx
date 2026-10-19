@@ -1,10 +1,11 @@
 /**
- * Cột bên phải: 💬 Chat real-time + 📜 Diễn biến.
+ * Cột bên phải: Chat real-time + Diễn biến.
  * - Tin của mình bên phải, người khác bên trái kèm avatar
  * - Enter để gửi, bảng emoji chèn vào tin, 6 emoji gửi nhanh
- * - "… đang gõ", nút "Tin mới ↓" khi đang cuộn lên xem tin cũ
+ * - "… đang gõ", nút "Tin mới" khi đang cuộn lên xem tin cũ
  */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { ArrowDown, MessageSquare, Pencil, ScrollText, Send, Smile, X } from 'lucide-react';
 import { CHAT_MAX_LEN, QUICK_EMOTES, type ChatMessage } from '../../../shared/src';
 import PlayerAvatar from '../art/PlayerAvatar';
 
@@ -26,7 +27,7 @@ interface Props {
 }
 
 const EMOJI_PICK = ['😀', '😂', '🤣', '😅', '🥲', '😎', '🤔', '🙄', '😬', '😱', '😭', '😤', '🤡', '💀', '🥳', '😴', '🤫', '🫵', '👍', '👎', '👏', '🙏', '🔥', '❤️', '💣', '🐱', '🙈', '💩'];
-const STARTERS = ['Chào cả nhà 👋', 'Ai cầm Nope vậy? 🤔', 'Sắp nổ rồi 😱', 'GG 👏'];
+const STARTERS = ['Chào cả nhà', 'Ai cầm Nope vậy?', 'Sắp nổ rồi!', 'GG!'];
 
 const time = (at: number) => new Date(at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 const emojiOnly = (t: string) => /^(\p{Extended_Pictographic}|️|‍|\s)+$/u.test(t) && [...t.replace(/\s/g, '')].length <= 6;
@@ -39,7 +40,7 @@ export default function ChatPanel({ messages, meId, typingNames, onSend, onTypin
   const inputRef = useRef<HTMLInputElement>(null);
   const lastTyping = useRef(0);
 
-  /** Nhảy thẳng xuống tin mới nhất (không hiệu ứng trượt) – như Zalo */
+  /** Nhảy thẳng xuống tin mới nhất (không hiệu ứng trượt) */
   const scrollToBottom = () => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
@@ -83,16 +84,16 @@ export default function ChatPanel({ messages, meId, typingNames, onSend, onTypin
     <aside className="chat-panel">
       <div className="chat-tabs">
         <button className={tab === 'chat' ? 'on' : ''} onClick={() => onTab('chat')}>
-          💬 Chat {unread > 0 && tab !== 'chat' && <span className="badge">{unread}</span>}
+          <MessageSquare size={15} /> Chat {unread > 0 && tab !== 'chat' && <span className="badge">{unread}</span>}
         </button>
         {log && (
           <button className={tab === 'log' ? 'on' : ''} onClick={() => onTab('log')}>
-            📜 Diễn biến
+            <ScrollText size={15} /> Diễn biến
           </button>
         )}
         {onClose && (
           <button className="chat-close" onClick={onClose} aria-label="Thu gọn" title="Thu gọn">
-            ✕
+            <X size={16} />
           </button>
         )}
       </div>
@@ -109,7 +110,9 @@ export default function ChatPanel({ messages, meId, typingNames, onSend, onTypin
           >
             {!messages.length && (
               <div className="chat-empty">
-                <div className="chat-empty-emoji">💬</div>
+                <div className="chat-empty-icon">
+                  <MessageSquare size={32} strokeWidth={1.6} />
+                </div>
                 <p>Chưa có tin nhắn nào. Mở lời trước đi!</p>
                 <div className="chat-starters">
                   {STARTERS.map((s) => (
@@ -142,10 +145,16 @@ export default function ChatPanel({ messages, meId, typingNames, onSend, onTypin
           </div>
           {!atBottom && (
             <button className="chat-new" onClick={scrollToBottom}>
-              ↓ Tin mới
+              <ArrowDown size={13} /> Tin mới
             </button>
           )}
-          <div className="chat-typing">{typingNames.length > 0 && <>✍️ {typingNames.join(', ')} đang gõ…</>}</div>
+          <div className="chat-typing">
+            {typingNames.length > 0 && (
+              <>
+                <Pencil size={11} className="inline-icon" /> {typingNames.join(', ')} đang gõ…
+              </>
+            )}
+          </div>
 
           <div className="chat-quick">
             {QUICK_EMOTES.map((e) => (
@@ -170,8 +179,14 @@ export default function ChatPanel({ messages, meId, typingNames, onSend, onTypin
               send(text);
             }}
           >
-            <button type="button" className={`chat-emoji-btn${pickOpen ? ' on' : ''}`} onClick={() => setPickOpen((o) => !o)} title="Chèn emoji">
-              😊
+            <button
+              type="button"
+              className={`chat-emoji-btn${pickOpen ? ' on' : ''}`}
+              onClick={() => setPickOpen((o) => !o)}
+              title="Chèn emoji"
+              aria-label="Chèn emoji"
+            >
+              <Smile size={18} />
             </button>
             <input
               ref={inputRef}
@@ -187,8 +202,8 @@ export default function ChatPanel({ messages, meId, typingNames, onSend, onTypin
                 }
               }}
             />
-            <button type="submit" className="chat-send" disabled={!text.trim()} title="Gửi">
-              ➤
+            <button type="submit" className="chat-send" disabled={!text.trim()} title="Gửi" aria-label="Gửi">
+              <Send size={16} />
             </button>
           </form>
         </>

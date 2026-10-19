@@ -3,6 +3,7 @@
  * Thông tin lưu trong localStorage (identity), ảnh lưu ở server: /avatars/<file>
  */
 import { useRef, useState } from 'react';
+import { Check, Coins, Gift, LogOut, RefreshCw, Upload, User } from 'lucide-react';
 import type { AccountInfo, Identity } from '../../../shared/src';
 import { fmtCoins } from './Dock';
 import PlayerAvatar from '../art/PlayerAvatar';
@@ -39,7 +40,7 @@ interface Props {
   account: AccountInfo | null;
   onDaily: () => void;
   onLogout: () => void;
-  onSave: (patch: { name: string; avatar?: string }) => void;
+  onSave: (patch: { name: string; avatar?: string }) => Promise<void>;
   onClose: () => void;
 }
 
@@ -48,11 +49,12 @@ export default function ProfileModal({ identity, account, onDaily, onLogout, onS
   const [avatar, setAvatar] = useState<string | undefined>(identity.avatar);
   const [seeds, setSeeds] = useState(randomSeeds);
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   const upload = async (file?: File) => {
-    if (!file) return;
+    if (!file || saving) return;
     setError('');
     if (!file.type.startsWith('image/')) {
       setError('Chọn file ảnh (jpg, png, webp…) nhé.');
@@ -80,18 +82,31 @@ export default function ProfileModal({ identity, account, onDaily, onLogout, onS
   const options = [undefined, ...seeds.map((s) => `cat:${s}`)];
   const changed = name.trim() !== identity.name || avatar !== identity.avatar;
 
+  const save = async () => {
+    if (saving || uploading || !name.trim() || !changed) return;
+    setSaving(true);
+    setError('');
+    try {
+      await onSave({ name: name.trim(), avatar });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Không lưu được hồ sơ. Vui lòng thử lại.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <Modal title="🐱 Hồ sơ của bạn" onClose={onClose} width={560}>
+    <Modal title={<span className="modal-title-icon"><User size={19} /> Hồ sơ của bạn</span>} onClose={saving ? undefined : onClose} width={560}>
       <div className="profile-head">
         <div className="profile-preview">
-          <PlayerAvatar id={identity.playerId} avatar={avatar} size={104} />
+          <PlayerAvatar id={identity.playerId} avatar={avatar} size={96} />
           {uploading && <span className="profile-uploading">Đang tải…</span>}
         </div>
         <div className="profile-name">
           <label className="muted small" htmlFor="profile-name">
             Tên hiển thị
           </label>
-          <input id="profile-name" maxLength={20} value={name} onChange={(e) => setName(e.target.value)} />
+          <input id="profile-name" maxLength={20} value={name} disabled={saving} onChange={(e) => setName(e.target.value)} />
           <span className="muted small">Đăng nhập máy khác bằng tên này + mã PIN</span>
         </div>
       </div>
@@ -100,33 +115,43 @@ export default function ProfileModal({ identity, account, onDaily, onLogout, onS
         <section className="wallet">
           <div className="wallet-main">
             <span className="wallet-label">Ví xu</span>
-            <span className="wallet-coins">🪙 {fmtCoins(account.coins)}</span>
+            <span className="wallet-coins">
+              <Coins size={24} className="inline-icon" /> {fmtCoins(account.coins)}
+            </span>
             <span className="muted small">
               Đã chơi {account.games} ván · thắng {account.wins}
               {account.games > 0 && ` (${Math.round((account.wins / account.games) * 100)}%)`}
             </span>
           </div>
-          <button className={account.canClaimDaily ? 'primary' : 'secondary'} disabled={!account.canClaimDaily} onClick={onDaily}>
-            {account.canClaimDaily ? '🎁 Nhận 500 xu hôm nay' : '✓ Hôm nay nhận rồi'}
+          <button className={account.canClaimDaily ? 'primary' : 'secondary'} disabled={saving || !account.canClaimDaily} onClick={onDaily}>
+            {account.canClaimDaily ? (
+              <>
+                <Gift size={16} /> Nhận 500 xu hôm nay
+              </>
+            ) : (
+              <>
+                <Check size={16} /> Hôm nay nhận rồi
+              </>
+            )}
           </button>
         </section>
       )}
 
       <section className="profile-section">
         <div className="profile-section-head">
-          <h3>Chọn mèo</h3>
-          <button className="ghost" onClick={() => setSeeds(randomSeeds())}>
-            🎲 Kiểu khác
+          <h3>Chọn biểu tượng</h3>
+          <button className="ghost" disabled={saving} onClick={() => setSeeds(randomSeeds())}>
+            <RefreshCw size={14} /> Đổi mẫu khác
           </button>
         </div>
         <div className="avatar-grid">
           {options.map((a) => (
-            <button key={a ?? 'default'} className={`avatar-opt${a === avatar ? ' on' : ''}`} onClick={() => setAvatar(a)} title={a ? 'Mèo ngẫu nhiên' : 'Mèo mặc định'}>
+            <button key={a ?? 'default'} className={`avatar-opt${a === avatar ? ' on' : ''}`} disabled={saving} onClick={() => setAvatar(a)} title={a ? 'Biểu tượng ngẫu nhiên' : 'Biểu tượng mặc định'}>
               <PlayerAvatar id={identity.playerId} avatar={a} size={52} />
             </button>
           ))}
           {avatar?.startsWith('/avatars/') && (
-            <button className="avatar-opt on" title="Ảnh của bạn">
+            <button className="avatar-opt on" disabled={saving} title="Ảnh của bạn">
               <PlayerAvatar id={identity.playerId} avatar={avatar} size={52} />
             </button>
           )}
@@ -135,23 +160,24 @@ export default function ProfileModal({ identity, account, onDaily, onLogout, onS
 
       <section className="profile-section">
         <h3>Hoặc dùng ảnh của bạn</h3>
-        <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => upload(e.target.files?.[0])} />
-        <button className="secondary" disabled={uploading} onClick={() => fileRef.current?.click()}>
-          📷 {uploading ? 'Đang tải ảnh…' : 'Tải ảnh lên'}
+        <input ref={fileRef} type="file" accept="image/*" hidden disabled={saving || uploading} onChange={(e) => upload(e.target.files?.[0])} />
+        <button className="secondary" disabled={saving || uploading} onClick={() => fileRef.current?.click()}>
+          <Upload size={16} /> {uploading ? 'Đang tải ảnh…' : 'Tải ảnh lên'}
         </button>
         <span className="muted small"> Ảnh tự cắt vuông, thu nhỏ còn 256px.</span>
-        {error && <p className="bad-text">{error}</p>}
       </section>
 
+      {error && <p className="bad-text" role="alert">{error}</p>}
+
       <div className="modal-actions">
-        <button className="ghost logout" onClick={onLogout} title="Xoá thông tin trên trình duyệt này (đăng nhập lại bằng tên + PIN)">
-          ↩ Đăng xuất
+        <button className="ghost logout" disabled={saving} onClick={onLogout} title="Xoá thông tin trên trình duyệt này (đăng nhập lại bằng tên + PIN)">
+          <LogOut size={16} /> Đăng xuất
         </button>
-        <button className="ghost" onClick={onClose}>
+        <button className="ghost" disabled={saving} onClick={onClose}>
           Huỷ
         </button>
-        <button className="primary big" disabled={!name.trim() || uploading || !changed} onClick={() => onSave({ name: name.trim(), avatar })}>
-          Lưu
+        <button className="primary big" disabled={!name.trim() || uploading || saving || !changed} onClick={save}>
+          {saving ? 'Đang lưu…' : 'Lưu'}
         </button>
       </div>
     </Modal>
