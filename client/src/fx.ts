@@ -28,6 +28,40 @@ export function flyCard(from: Element | null, to: Element | null, opts: { delay?
   anim.oncancel = () => el.remove();
 }
 
+/** Hiệu ứng đặc biệt khi lấy/cướp lá bài từ người này sang người kia: lá bài lớn + nhãn tên rõ ràng */
+export function flyTransferCard(
+  from: Element | null,
+  to: Element | null,
+  opts: { fromName: string; toName: string; via?: string } = { fromName: '', toName: '' },
+) {
+  if (!from || !to || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const a = center(from);
+  const b = center(to);
+  const el = document.createElement('div');
+  el.className = 'fly-card fly-transfer-card';
+  const badge = document.createElement('span');
+  badge.className = 'fly-transfer-badge';
+  badge.textContent = `🎴 ${opts.fromName} ➔ ${opts.toName}`;
+  el.appendChild(badge);
+  document.body.appendChild(el);
+
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const tilt = dx >= 0 ? 14 : -14;
+  const anim = el.animate(
+    [
+      { transform: `translate(${a.x}px, ${a.y}px) translate(-50%, -50%) scale(0.75) rotate(0deg)`, opacity: 0 },
+      { transform: `translate(${a.x}px, ${a.y - 28}px) translate(-50%, -50%) scale(1.22) rotate(${-tilt * 0.6}deg)`, opacity: 1, offset: 0.22 },
+      { transform: `translate(${a.x + dx * 0.5}px, ${a.y + dy * 0.5 - 88}px) translate(-50%, -50%) scale(1.36) rotate(${tilt}deg)`, opacity: 1, offset: 0.58 },
+      { transform: `translate(${b.x}px, ${b.y}px) translate(-50%, -50%) scale(0.92) rotate(0deg)`, opacity: 0.95, offset: 0.92 },
+      { transform: `translate(${b.x}px, ${b.y}px) translate(-50%, -50%) scale(0.6) rotate(0deg)`, opacity: 0 },
+    ],
+    { duration: 1350, easing: 'cubic-bezier(0.22, 0.8, 0.26, 1)', fill: 'both' },
+  );
+  anim.onfinish = () => el.remove();
+  anim.oncancel = () => el.remove();
+}
+
 /** Tìm phần tử đại diện cho 1 người chơi (ghế đối thủ hoặc khu của mình) */
 export function seatEl(playerId: string) {
   return document.querySelector(`[data-pid="${CSS.escape(playerId)}"]`);

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { setMuted } from './sfx';
 
 export type Theme = 'light' | 'dark';
-export type CardStyle = 'vector' | 'photo';
+export type CardStyle = 'photo';
 export interface Settings {
   theme: Theme;
   cardStyle: CardStyle;
@@ -14,7 +14,10 @@ const KEY = 'meono.settings.v2';
 function load(): Settings {
   const fallback: Settings = { theme: 'light', cardStyle: 'photo', sound: true };
   try {
-    return { ...fallback, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') };
+    const saved = JSON.parse(localStorage.getItem(KEY) ?? '{}');
+    const theme: Theme = saved.theme === 'dark' ? 'dark' : 'light';
+    const sound = typeof saved.sound === 'boolean' ? saved.sound : true;
+    return { theme, cardStyle: 'photo', sound };
   } catch {
     return fallback;
   }

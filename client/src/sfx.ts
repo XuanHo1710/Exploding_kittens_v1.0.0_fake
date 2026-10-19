@@ -10,7 +10,7 @@ export function setMuted(m: boolean) {
 
 function ac() {
   if (!ctx) ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-  if (ctx.state === 'suspended') void ctx.resume();
+  if (ctx.state === 'suspended') void ctx.resume().catch(() => {});
   return ctx;
 }
 
@@ -31,19 +31,24 @@ function tone(freq: number, dur: number, opts: { type?: OscillatorType; gain?: n
 }
 
 function noise(dur: number, gain = 0.3, lowpass = 900) {
-  const c = ac();
-  const buf = c.createBuffer(1, Math.floor(c.sampleRate * dur), c.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length) ** 2;
-  const src = c.createBufferSource();
-  const f = c.createBiquadFilter();
-  const g = c.createGain();
-  f.type = 'lowpass';
-  f.frequency.value = lowpass;
-  g.gain.value = gain;
-  src.buffer = buf;
-  src.connect(f).connect(g).connect(c.destination);
-  src.start();
+  if (muted) return;
+  try {
+    const c = ac();
+    const buf = c.createBuffer(1, Math.floor(c.sampleRate * dur), c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length) ** 2;
+    const src = c.createBufferSource();
+    const f = c.createBiquadFilter();
+    const g = c.createGain();
+    f.type = 'lowpass';
+    f.frequency.value = lowpass;
+    g.gain.value = gain;
+    src.buffer = buf;
+    src.connect(f).connect(g).connect(c.destination);
+    src.start();
+  } catch {
+    /* AudioContext chưa sẵn sàng */
+  }
 }
 
 function vibrate(p: number | number[]) {
