@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import './config';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { mkdirSync } from 'fs';
@@ -9,11 +10,14 @@ async function bootstrap() {
   mkdirSync(AVATAR_DIR, { recursive: true });
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useBodyParser('json', { limit: '2mb' });
-  // tắt server (Ctrl+C, khởi động lại) thì ghi nốt db.json trước khi thoát
+  // Đợi các giao dịch tài khoản đang ghi trước khi tắt server.
   app.enableShutdownHooks();
   app.enableCors();
   const port = Number(process.env.PORT) || 3001;
   await app.listen(port, '0.0.0.0');
   console.log(`🐱💣 Mèo Nổ server chạy ở http://localhost:${port}`);
 }
-bootstrap();
+bootstrap().catch(() => {
+  console.error('Không khởi động được backend. Kiểm tra cấu hình và kết nối nơi lưu tài khoản.');
+  process.exitCode = 1;
+});

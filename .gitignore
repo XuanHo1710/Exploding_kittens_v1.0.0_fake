@@ -2,5 +2,10 @@ node_modules/
 dist/
 *.log
 .env
+.env.*.tmp
+.env.local
+credentials*.json
+client_secret*.json
+service-account*.json
 uploads/
 data/

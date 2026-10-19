@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AccountsService } from './accounts.service';
 
-/** Tài khoản bằng tên + mã PIN ngắn (dữ liệu lưu ở server/data/db.json) */
+/** Tài khoản bằng tên + PIN; chỉ trả thành công sau khi nơi lưu chính xác nhận. */
 @Controller('api/account')
 export class AccountController {
   constructor(private readonly accounts: AccountsService) {}

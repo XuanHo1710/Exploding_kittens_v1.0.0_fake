@@ -4,7 +4,8 @@ import { join } from 'path';
 import { GameGateway } from './game/game.gateway';
 import { RoomsService } from './game/rooms.service';
 import { AVATAR_DIR, AvatarController } from './avatar/avatar.controller';
-import { DbService } from './store/db.service';
+import { DB_FILE, DbService } from './store/db.service';
+import { ACCOUNT_STORE, createAccountStore } from './store/json.store';
 import { AccountsService } from './store/accounts.service';
 import { AccountController } from './store/account.controller';
 
@@ -18,6 +19,9 @@ import { AccountController } from './store/account.controller';
     ),
   ],
   controllers: [AvatarController, AccountController],
-  providers: [DbService, AccountsService, RoomsService, GameGateway],
+  providers: [
+    { provide: ACCOUNT_STORE, useFactory: () => createAccountStore(DB_FILE) },
+    DbService, AccountsService, RoomsService, GameGateway,
+  ],
 })
 export class AppModule {}

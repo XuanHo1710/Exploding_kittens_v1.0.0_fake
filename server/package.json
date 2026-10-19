@@ -4,7 +4,10 @@
   "scripts": {
     "dev": "tsc-watch -p tsconfig.json --onSuccess \"node dist/server/src/main.js\"",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/server/src/main.js"
+    "start": "node dist/server/src/main.js",
+    "test": "npm run build && node --test test/*.test.cjs",
+    "drive:setup": "node scripts/setup-google-drive.cjs",
+    "drive:import": "node scripts/import-google-drive.cjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.2.7",
@@ -13,12 +16,15 @@
     "@nestjs/platform-socket.io": "^11.2.7",
     "@nestjs/serve-static": "^5.0.5",
     "@nestjs/websockets": "^11.2.7",
+    "dotenv": "^18.0.8",
+    "google-auth-library": "^11.3.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "socket.io-client": "^4.8.4",
     "tsc-watch": "^6.3.1",
     "typescript": "^5.9.3"
   }
