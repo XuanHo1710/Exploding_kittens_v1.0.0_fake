@@ -24,14 +24,20 @@ function fixture(t) {
   const data = new Map([HOST, PEER, OTHER].map((playerId, i) => [playerId, {
     playerId, name: `Player ${i + 1}`, coins: 1000, games: 0, wins: 0,
   }]));
+  const ops = new Set();
   const accounts = {
     data,
+    ops,
     get: (id) => data.has(id) ? structuredClone(data.get(id)) : undefined,
     info: (account) => structuredClone(account),
     verify: (id, token) => token === 'valid' ? accounts.get(id) : undefined,
-    async chargeGame(ids, bet) {
+    async chargeGame(ids, bet, opId) {
       calls.charge.push({ ids: [...ids], bet });
       if (hooks.charge) await hooks.charge(ids, bet);
+      if (opId) {
+        if (ops.has(opId)) return;
+        ops.add(opId);
+      }
       for (const id of ids) {
         const account = data.get(id);
         if (!account) continue;
@@ -39,9 +45,13 @@ function fixture(t) {
         account.games++;
       }
     },
-    async refundGame(ids, bet) {
-      calls.refund.push({ ids: [...ids], bet });
+    async refundGame(ids, bet, opId, chargeOpId) {
+      // giống AccountsService: chỉ hoàn khi khoản thu tương ứng đã thật sự được ghi, và chỉ một lần
+      const applied = !(chargeOpId && !ops.has(chargeOpId)) && !(opId && ops.has(opId));
+      calls.refund.push({ ids: [...ids], bet, applied });
       if (hooks.refund) await hooks.refund(ids, bet);
+      if (!applied) return false;
+      if (opId) ops.add(opId);
       for (const id of ids) {
         const account = data.get(id);
         if (!account) continue;
@@ -146,7 +156,8 @@ test('a rejected charge leaves the lobby and all account balances unchanged', as
   assert.equal(game.pot, 0);
   assert.equal(accounts.get(HOST).coins, 1000);
   assert.equal(accounts.get(PEER).games, 0);
-  assert.equal(calls.refund.length, 0);
+  // có thể thử hoàn xu (phòng khi lần thu thật ra đã được ghi) nhưng không hoàn gì vì chưa thu
+  assert.ok(calls.refund.every((r) => !r.applied));
   assert.ok(game.players.every((p) => p.hand.length === 0));
   assert.doesNotThrow(() => rooms.setBet(HOST, 50));
 });
@@ -169,7 +180,7 @@ test('refunds the entire bulk charge if a prior lobby timer changes participants
   gate.resolve();
   await rejected;
   assert.equal(game.phase, 'lobby');
-  assert.deepEqual(calls.refund, [{ ids: [HOST, PEER], bet: 100 }]);
+  assert.deepEqual(calls.refund, [{ ids: [HOST, PEER], bet: 100, applied: true }]);
   assert.equal(accounts.get(HOST).coins, 1000);
   assert.equal(accounts.get(PEER).coins, 1000);
   assert.equal(accounts.get(HOST).games, 0);

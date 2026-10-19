@@ -53,28 +53,36 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       client.disconnect(true);
       return;
     }
+    // Chỉ nhận socket có token tài khoản đúng: không ai mạo danh được playerId (công khai trong phòng) của người khác
     const acc = this.accounts.verify(id.playerId, id.token);
-    if (this.accounts.get(id.playerId) && !acc) {
-      client.emit('toast', 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại bằng PIN.');
+    if (!acc) {
+      client.emit('toast', this.accounts.get(id.playerId) ? 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại bằng PIN.' : 'Đăng nhập bằng PIN để vào chơi nhé.');
       client.disconnect(true);
       return;
     }
-    if (acc) {
-      id.name = acc.name;
-      id.avatar = acc.avatar;
-    }
+    id.name = acc.name;
+    id.avatar = acc.avatar;
     client.data = id;
     client.join(`p:${id.playerId}`);
-    this.rooms.setVerified(id.playerId, !!acc);
+    this.rooms.setVerified(id.playerId, true);
     this.rooms.pushAccount(id.playerId);
-    if (!this.rooms.connected(id.playerId, id.name, id.avatar)) client.emit('state', null);
+    try {
+      if (!this.rooms.connected(id.playerId, id.name, id.avatar)) client.emit('state', null);
+    } catch (error) {
+      // Lỗi khi khôi phục phòng không được làm sập cả server
+      this.logger.error('Không khôi phục được phòng khi kết nối lại', error);
+      client.emit('state', null);
+    }
   }
 
   async handleDisconnect(client: Socket) {
     const { playerId } = (client.data ?? {}) as Partial<SocketData>;
     if (!playerId) return;
     const others = await this.server.in(`p:${playerId}`).fetchSockets();
-    if (others.length === 0) this.rooms.disconnected(playerId);
+    if (others.length === 0) {
+      this.rooms.disconnected(playerId);
+      this.rooms.forget(playerId);
+    }
   }
 
   @SubscribeMessage('room:create')
@@ -208,7 +216,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return this.handle(c, (me) => this.game(me).giveFavor(me.playerId, String(body?.cardId)));
   }
 
-  @SubscribeMessage('game:alter')
+  @SubscribeMessage('game:steal')
+  steal(@ConnectedSocket() c: Socket, @MessageBody() body: { index: number }) {
+    return this.handle(c, (me) => this.game(me).pickSteal(me.playerId, Number(body?.index)));
+  }
+
+    @SubscribeMessage('game:alter')
   alter(@ConnectedSocket() c: Socket, @MessageBody() body: { cardIds: string[] }) {
     return this.handle(c, (me) => {
       if (!Array.isArray(body?.cardIds)) throw new GameError('Thứ tự lá bài không hợp lệ.');
@@ -257,7 +270,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       const me = client.data as SocketData;
       if (!me?.playerId) throw new GameError('Thiếu thông tin người chơi.');
-      if (this.accounts.get(me.playerId) && !this.accounts.verify(me.playerId, me.token)) {
+      if (!this.accounts.verify(me.playerId, me.token)) {
         client.emit('toast', 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại bằng PIN.');
         client.disconnect(true);
         return;

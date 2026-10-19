@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { randomInt } from 'crypto';
+import { randomInt, randomUUID } from 'crypto';
 import type { Server } from 'socket.io';
 import { BET_OPTIONS, CHAT_MAX_LEN, EMOTES, THROWABLES, normalizeRoomRules, roomDeckSummary, type ChatMessage, type Emote, type RoomRules } from '../../../shared/src';
+import { RateLimiter } from '../rate-limit';
 import { AccountsService } from '../store/accounts.service';
 import { Game, GameError, GameHooks } from './game';
 
@@ -13,9 +14,11 @@ export class RoomsService {
   private rooms = new Map<string, Game>();
   private starting = new Set<Game>();
   private deferredConnections = new Map<Game, Map<string, boolean>>();
-  private refunds = new Map<Game, { playerIds: string[]; bet: number }>();
+  private refunds = new Map<Game, { playerIds: string[]; bet: number; chargeOp: string; refundOp: string }>();
   private payouts = new Map<Game, Promise<void>>();
   private failedPayouts = new Set<Game>();
+  /** Trả thưởng lỗi: tự thử lại (cùng mã thao tác nên không trả 2 lần) */
+  private payoutRetry = new Map<Game, NodeJS.Timeout>();
   /** playerId → mã phòng đang ở */
   private playerRoom = new Map<string, string>();
   private server: Server;
@@ -32,6 +35,11 @@ export class RoomsService {
       if (this.playerRoom.get(playerId) !== code) return;
       this.playerRoom.delete(playerId);
       this.server.to(`p:${playerId}`).emit('state', null);
+      // bị xoá khỏi phòng khi đã thoát hẳn (vd. chơi lại sau khi rời ván): dọn dữ liệu tạm luôn
+      this.server.in(`p:${playerId}`).fetchSockets().then(
+        (sockets) => { if (!sockets.length) this.forget(playerId); },
+        () => undefined,
+      );
     },
   };
 
@@ -40,7 +48,18 @@ export class RoomsService {
   /** Chat theo phòng: giữ 100 tin gần nhất */
   private chats = new Map<string, ChatMessage[]>();
   private chatSeq = 0;
-  private lastChat = new Map<string, number>();
+  private chatLimit = new RateLimiter(1, 400);
+  private typingLimit = new RateLimiter(1, 1000);
+  private profileLimit = new RateLimiter(3, 10_000);
+
+  /** Người chơi không còn socket nào và không ở phòng nào: xoá dữ liệu tạm theo người (giữ bộ nhớ có giới hạn) */
+  forget(playerId: string) {
+    if (this.playerRoom.has(playerId)) return;
+    this.verified.delete(playerId);
+    this.emoteBucket.delete(playerId);
+    this.chatLimit.forget(playerId);
+    this.typingLimit.forget(playerId);
+  }
 
   chat(playerId: string, raw: string) {
     const game = this.roomOf(playerId);
@@ -49,8 +68,7 @@ export class RoomsService {
     const text = String(raw ?? '').replace(/\s+/g, ' ').trim().slice(0, CHAT_MAX_LEN);
     if (!text) return;
     const now = Date.now();
-    if (now - (this.lastChat.get(playerId) ?? 0) < 400) throw new GameError('Gõ chậm thôi nào 😅');
-    this.lastChat.set(playerId, now);
+    if (!this.chatLimit.hit(playerId, now)) throw new GameError('Gõ chậm thôi nào 😅');
     const msg: ChatMessage = { id: ++this.chatSeq, from: playerId, name: me.name, avatar: me.avatar, text, at: now };
     const list = [...(this.chats.get(game.code) ?? []), msg].slice(-100);
     this.chats.set(game.code, list);
@@ -59,7 +77,7 @@ export class RoomsService {
 
   typing(playerId: string) {
     const game = this.roomOf(playerId);
-    if (!game) return;
+    if (!game || !this.typingLimit.hit(playerId)) return;
     game.players.filter((p) => p.id !== playerId).forEach((p) => this.server.to(`p:${p.id}`).emit('typing', { from: playerId }));
   }
 
@@ -141,13 +159,15 @@ export class RoomsService {
     if (game.hostId !== playerId) throw new GameError('Chỉ chủ phòng mới bắt đầu được.');
     if (game.phase !== 'lobby') throw new GameError('Ván đã bắt đầu rồi.');
     this.starting.add(game);
-    let charged = false;
+    let attempted = false;
     let playerIds: string[] = [];
     let bet = game.bet;
+    const round = randomUUID();
+    const chargeOp = `charge:${round}`;
     try {
       const refund = this.refunds.get(game);
       if (refund) {
-        await this.accounts.refundGame(refund.playerIds, refund.bet);
+        await this.accounts.refundGame(refund.playerIds, refund.bet, refund.refundOp, refund.chargeOp);
         this.refunds.delete(game);
         game.pot = 0;
         refund.playerIds.forEach((id) => this.pushAccount(id));
@@ -163,8 +183,13 @@ export class RoomsService {
         if (poor.length) throw new GameError(`Không đủ ${bet} xu: ${poor.map((p) => p.name).join(', ')}.`);
       }
       playerIds = players.map((p) => p.id);
-      await this.accounts.chargeGame(playerIds, bet);
-      charged = true;
+      if (bet > 0) {
+        attempted = true;
+        await this.accounts.chargeGame(playerIds, bet, chargeOp);
+      } else {
+        // Ván miễn phí: chỉ cộng số ván đã chơi; lưu lỗi không chặn việc bắt đầu
+        void this.accounts.chargeGame(playerIds, 0, chargeOp).catch(() => this.logger.warn('Chưa lưu được số ván của ván miễn phí.'));
+      }
       // A grace-period timer created before this request can still change the lobby.
       const currentIds = game.players.filter((p) => p.connected).map((p) => p.id);
       if (game.hostId !== playerId || game.phase !== 'lobby' || currentIds.length !== playerIds.length || currentIds.some((id, i) => id !== playerIds[i])) {
@@ -172,15 +197,18 @@ export class RoomsService {
       }
       game.pot = bet * playerIds.length;
       game.paid = false;
+      game.roundId = round;
       game.start(playerId);
       if (bet > 0) game.note(`💰 Mỗi người cược ${bet} xu – hũ ${game.pot} xu cho người thắng!`);
       game.players.forEach((p) => this.pushAccount(p.id));
       this.broadcast(game);
     } catch (error) {
-      if (charged && game.phase === 'lobby') {
-        this.refunds.set(game, { playerIds, bet });
+      // Kể cả khi lần thu báo lỗi "không rõ kết quả": hoàn xu chỉ áp dụng nếu khoản thu thật sự đã được ghi
+      if (attempted && game.phase === 'lobby') {
+        const entry = { playerIds, bet, chargeOp, refundOp: `refund:${round}` };
+        this.refunds.set(game, entry);
         try {
-          await this.accounts.refundGame(playerIds, bet);
+          await this.accounts.refundGame(entry.playerIds, entry.bet, entry.refundOp, entry.chargeOp);
           this.refunds.delete(game);
           game.pot = 0;
           playerIds.forEach((id) => this.pushAccount(id));
@@ -218,10 +246,11 @@ export class RoomsService {
       return Promise.resolve();
     }
     const pot = game.pot;
+    const opId = game.roundId ? `payout:${game.roundId}` : undefined;
     const settlement = (async () => {
       try {
         if (hasCustomPayouts) {
-          await this.accounts.rewardPayouts(game.payouts, game.winners());
+          await this.accounts.rewardPayouts(game.payouts, game.winners(), opId);
           game.paid = true;
           this.failedPayouts.delete(game);
           if (pot > 0) {
@@ -234,7 +263,7 @@ export class RoomsService {
           game.players.forEach((p) => this.pushAccount(p.id));
           this.broadcast(game);
         } else if (w) {
-          const rewarded = await this.accounts.rewardWinner(w, pot);
+          const rewarded = await this.accounts.rewardWinner(w, pot, opId);
           if (!rewarded && pot > 0) throw new Error('Không tìm thấy tài khoản người thắng.');
           game.paid = true;
           this.failedPayouts.delete(game);
@@ -243,9 +272,16 @@ export class RoomsService {
           this.broadcast(game);
         }
       } catch (error) {
+        if (pot === 0 && !hasCustomPayouts) {
+          // Ván miễn phí: chỉ là thống kê thắng, không giữ phòng vì lỗi lưu
+          game.paid = true;
+          this.logger.warn('Chưa lưu được thống kê thắng của ván miễn phí.');
+          return;
+        }
         this.failedPayouts.add(game);
         this.logger.error('Không lưu được phần thưởng của ván', error);
-        const message = 'Chưa lưu được xu thưởng. Chủ phòng hãy bấm chơi lại để thử lưu lại.';
+        this.schedulePayoutRetry(game);
+        const message = 'Chưa lưu được xu thưởng, hệ thống sẽ tự thử lại. Chủ phòng cũng có thể bấm chơi lại để thử ngay.';
         game.players.forEach((p) => this.server.to(`p:${p.id}`).emit('toast', message));
         throw new GameError(message);
       } finally {
@@ -255,6 +291,16 @@ export class RoomsService {
     })();
     this.payouts.set(game, settlement);
     return settlement;
+  }
+
+  private schedulePayoutRetry(game: Game) {
+    if (this.payoutRetry.has(game)) return;
+    this.payoutRetry.set(game, setTimeout(() => {
+      this.payoutRetry.delete(game);
+      if (game.paid || game.phase !== 'ended') return;
+      this.failedPayouts.delete(game);
+      void this.payout(game).catch(() => undefined);
+    }, 20_000));
   }
 
   bind(server: Server) {
@@ -340,12 +386,21 @@ export class RoomsService {
     const game = this.roomOf(playerId);
     if (!game) return false;
     if (this.starting.has(game) || this.refunds.has(game)) this.deferConnection(game, playerId, true);
-    else game.addPlayer(playerId, name, avatar);
+    else {
+      try {
+        game.addPlayer(playerId, name, avatar);
+      } catch {
+        // vd: đã rời ván đang chơi → không còn thuộc phòng này
+        this.playerRoom.delete(playerId);
+        return false;
+      }
+    }
     this.sendChatHistory(playerId);
     return true;
   }
 
   async updateProfile(playerId: string, name: string, avatar?: string) {
+    if (!this.profileLimit.hit(playerId)) throw new GameError('Đổi hồ sơ chậm thôi nào 😅');
     let profile: { name: string; avatar?: string } = { name, avatar };
     if (this.verified.has(playerId)) {
       const account = await this.accounts.updateProfile(playerId, name, avatar);
@@ -394,6 +449,8 @@ export class RoomsService {
       this.chats.delete(game.code);
       this.deferredConnections.delete(game);
       this.failedPayouts.delete(game);
+      clearTimeout(this.payoutRetry.get(game));
+      this.payoutRetry.delete(game);
     }
   }
 }
