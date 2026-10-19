@@ -1,13 +1,97 @@
 import type { Card, CardType } from './cards';
+import type { BlackjackEval, PlayingCard, TienLenCombo } from './playing-cards';
+import type { RoomRules } from './room-rules';
 
 export type Phase = 'lobby' | 'playing' | 'ended';
 
+export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len';
+
+export const GAME_MODES: Record<
+  GameMode,
+  { name: string; shortName: string; emoji: string; minPlayers: number; maxPlayers: number; desc: string }
+> = {
+  exploding_kittens: {
+    name: 'Mèo Nổ (Exploding Kittens)',
+    shortName: 'Mèo Nổ',
+    emoji: '🐱💣',
+    minPlayers: 2,
+    maxPlayers: 10,
+    desc: 'Tránh Mèo Nổ, dùng Gỡ Bom, Nope và 29 lá chức năng để sống sót cuối cùng.',
+  },
+  blackjack_21: {
+    name: 'Rút Bài 21 (Xì Dách)',
+    shortName: 'Xì Dách 21',
+    emoji: '🃏21',
+    minPlayers: 2,
+    maxPlayers: 8,
+    desc: 'Bài Tây 52 lá: Rút bài sát 21 điểm, săn Xì Bàng, Xì Dách, Ngũ Linh, cược xu & nhân đôi!',
+  },
+  tien_len: {
+    name: 'Tiến Lên Miền Nam (4 Người)',
+    shortName: 'Tiến Lên',
+    emoji: '🎴♠️',
+    minPlayers: 2,
+    maxPlayers: 4,
+    desc: 'Bài Tây 52 lá chuẩn 4 người (13 lá/người): Đánh Sảnh, Đôi thông, Tứ Quý chặt Heo ăn xu!',
+  },
+};
+
+export interface BlackjackPlayerView {
+  playerId: string;
+  isDealer: boolean;
+  status: 'playing' | 'stood' | 'busted' | 'revealed';
+  handCount: number;
+  /** Chỉ hiện bài thật khi là chính mình, hoặc khi đã bị xét bài / kết thúc ván */
+  cards?: PlayingCard[];
+  eval?: BlackjackEval;
+  doubled?: boolean;
+  betAmount: number;
+  outcome?: 'win' | 'lose' | 'push';
+  outcomeText?: string;
+  coinDelta?: number;
+}
+
+export interface BlackjackRoomView {
+  dealerId: string;
+  deckCount: number;
+  hand: PlayingCard[];
+  myEval: BlackjackEval;
+  players: BlackjackPlayerView[];
+}
+
+export interface TienLenRoomView {
+  hand: PlayingCard[];
+  tableCombo?: TienLenCombo;
+  lastActorId?: string;
+  passedIds: string[];
+  firstTurnOfMatch: boolean;
+  mustIncludeLowest?: string;
+  chopLog?: string;
+  instantWinText?: string;
+  finishOrder: string[];
+}
+
 export type ActionKind =
   | 'attack'
+  | 'targeted_attack'
+  | 'personal_attack'
   | 'skip'
-  | 'favor'
+  | 'super_skip'
+  | 'reverse'
+  | 'draw_bottom'
+  | 'catomic_bomb'
+  | 'swap_top_bottom'
+  | 'bury'
+  | 'garbage_collection'
   | 'shuffle'
   | 'see_future'
+  | 'alter_future'
+  | 'share_future'
+  | 'dig_deeper'
+  | 'favor'
+  | 'mark'
+  | 'grave_robber'
+  | 'clone'
   | 'pair'
   | 'triple'
   | 'five';
@@ -18,6 +102,10 @@ export interface PublicPlayer {
   connected: boolean;
   alive: boolean;
   handCount: number;
+  /** Đã rời phòng hoặc bị kích giữa ván */
+  left?: boolean;
+  /** Đã đồng ý phiên bản luật hiện tại trong phòng chờ. Chủ phòng tự đồng ý. */
+  ready?: boolean;
   /** "cat:<seed>" = mèo vẽ sẵn, "/avatars/<file>" = ảnh đã tải lên */
   avatar?: string;
   /** Số xu (chỉ có khi người chơi đã có tài khoản) */
@@ -55,7 +143,8 @@ export interface PendingView {
 /** Game đang đợi một người làm gì đó */
 export type WaitingView =
   | { kind: 'defuse_place'; playerId: string; deckCount: number; deadline: number }
-  | { kind: 'favor_give'; playerId: string; toId: string; deadline: number };
+  | { kind: 'favor_give'; playerId: string; toId: string; deadline: number }
+  | { kind: 'alter_future'; playerId: string; count: number; cards?: Card[]; deadline: number };
 
 /** Lần đánh bài gần nhất, hiện ở giữa bàn cho mọi người cùng thấy */
 export interface LastPlay {
@@ -74,6 +163,9 @@ export interface LastPlay {
 
 export interface RoomView {
   code: string;
+  gameMode: GameMode;
+  rules: RoomRules;
+  rulesVersion: number;
   phase: Phase;
   hostId: string;
   players: PublicPlayer[];
@@ -96,6 +188,12 @@ export interface RoomView {
   /** Mức cược mỗi người (xu) và hũ của ván đang chơi */
   bet: number;
   pot: number;
+  /** Trạng thái riêng cho Xì Dách 21 */
+  blackjack?: BlackjackRoomView;
+  /** Trạng thái riêng cho Tiến Lên Miền Nam */
+  tienLen?: TienLenRoomView;
+  /** Thưởng xu từng người sau ván */
+  payouts?: Record<string, number>;
 }
 
 /** Kiểu xáo bài: kết quả đều ngẫu nhiên hoàn toàn, chỉ khác hiệu ứng */
