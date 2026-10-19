@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 320" width="240" height="320">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f8f9fc"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="236" height="316" rx="18" fill="url(#bg)" stroke="#d0d5dd" stroke-width="3"/>
+  <rect x="12" y="12" width="216" height="296" rx="12" fill="none" stroke="#181a24" stroke-opacity="0.14" stroke-width="1.5"/>
+  <!-- Top-left index -->
+  <text x="28" y="42" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="30" fill="#181a24">A</text>
+  <text x="28" y="68" text-anchor="middle" font-size="24" fill="#181a24">♠</text>
+  <!-- Bottom-right index -->
+  <g transform="rotate(180 212 266)">
+    <text x="212" y="256" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="30" fill="#181a24">A</text>
+    <text x="212" y="282" text-anchor="middle" font-size="24" fill="#181a24">♠</text>
+  </g>
+  
+  <circle cx="120" cy="160" r="56" fill="#181a24" fill-opacity="0.08" stroke="#181a24" stroke-opacity="0.25" stroke-width="2"/>
+  <text x="120" y="164" text-anchor="middle" dominant-baseline="central" font-size="96" fill="#181a24">♠</text>
+</svg>

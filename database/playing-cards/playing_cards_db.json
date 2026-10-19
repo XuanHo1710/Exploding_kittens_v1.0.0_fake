@@ -1,0 +1,1049 @@
+{
+  "version": "1.0.0",
+  "description": "Bộ cơ sở dữ liệu 52 lá Bài Tây chuẩn cho Rút Bài 21 (Xì Dách) và Tiến Lên Miền Nam (4 người)",
+  "totalCards": 52,
+  "suits": [
+    {
+      "id": "spades",
+      "prefix": "Spd",
+      "symbol": "♠",
+      "nameVi": "Bích",
+      "color": "black",
+      "hex": "#181a24",
+      "accent": "#3b4254",
+      "tlSuitOrder": 0
+    },
+    {
+      "id": "clubs",
+      "prefix": "Clb",
+      "symbol": "♣",
+      "nameVi": "Chuồn",
+      "color": "black",
+      "hex": "#181a24",
+      "accent": "#2b3440",
+      "tlSuitOrder": 1
+    },
+    {
+      "id": "diamonds",
+      "prefix": "Dia",
+      "symbol": "♦",
+      "nameVi": "Rô",
+      "color": "red",
+      "hex": "#d92626",
+      "accent": "#f03e3e",
+      "tlSuitOrder": 2
+    },
+    {
+      "id": "hearts",
+      "prefix": "Hrt",
+      "symbol": "♥",
+      "nameVi": "Cơ",
+      "color": "red",
+      "hex": "#e02424",
+      "accent": "#ff4d4d",
+      "tlSuitOrder": 3
+    }
+  ],
+  "ranks": [
+    {
+      "rank": "3",
+      "nameVi": "Ba",
+      "bjValues": [
+        3
+      ],
+      "tlRankOrder": 0
+    },
+    {
+      "rank": "4",
+      "nameVi": "Bốn",
+      "bjValues": [
+        4
+      ],
+      "tlRankOrder": 1
+    },
+    {
+      "rank": "5",
+      "nameVi": "Năm",
+      "bjValues": [
+        5
+      ],
+      "tlRankOrder": 2
+    },
+    {
+      "rank": "6",
+      "nameVi": "Sáu",
+      "bjValues": [
+        6
+      ],
+      "tlRankOrder": 3
+    },
+    {
+      "rank": "7",
+      "nameVi": "Bảy",
+      "bjValues": [
+        7
+      ],
+      "tlRankOrder": 4
+    },
+    {
+      "rank": "8",
+      "nameVi": "Tám",
+      "bjValues": [
+        8
+      ],
+      "tlRankOrder": 5
+    },
+    {
+      "rank": "9",
+      "nameVi": "Chín",
+      "bjValues": [
+        9
+      ],
+      "tlRankOrder": 6
+    },
+    {
+      "rank": "10",
+      "nameVi": "Mười",
+      "bjValues": [
+        10
+      ],
+      "tlRankOrder": 7
+    },
+    {
+      "rank": "J",
+      "nameVi": "Bồi (J)",
+      "bjValues": [
+        10
+      ],
+      "tlRankOrder": 8
+    },
+    {
+      "rank": "Q",
+      "nameVi": "Đầm (Q)",
+      "bjValues": [
+        10
+      ],
+      "tlRankOrder": 9
+    },
+    {
+      "rank": "K",
+      "nameVi": "Già (K)",
+      "bjValues": [
+        10
+      ],
+      "tlRankOrder": 10
+    },
+    {
+      "rank": "A",
+      "nameVi": "Át (Xì)",
+      "bjValues": [
+        1,
+        10,
+        11
+      ],
+      "tlRankOrder": 11
+    },
+    {
+      "rank": "2",
+      "nameVi": "Heo (2)",
+      "bjValues": [
+        2
+      ],
+      "tlRankOrder": 12
+    }
+  ],
+  "cards": [
+    {
+      "code": "Spd-3",
+      "suit": "spades",
+      "suitSymbol": "♠",
+      "suitNameVi": "Bích",
+      "rank": "3",
+      "rankNameVi": "Ba",
+      "nameVi": "Ba Bích",
+      "color": "black",
+      "blackjackValues": [
+        3
+      ],
+      "tienLenRankOrder": 0,
+      "tienLenSuitOrder": 0,
+      "tienLenPower": 0,
+      "image": "/playing-cards/Spd-3.svg"
+    },
+    {
+      "code": "Clb-3",
+      "suit": "clubs",
+      "suitSymbol": "♣",
+      "suitNameVi": "Chuồn",
+      "rank": "3",
+      "rankNameVi": "Ba",
+      "nameVi": "Ba Chuồn",
+      "color": "black",
+      "blackjackValues": [
+        3
+      ],
+      "tienLenRankOrder": 0,
+      "tienLenSuitOrder": 1,
+      "tienLenPower": 1,
+      "image": "/playing-cards/Clb-3.svg"
+    },
+    {
+      "code": "Dia-3",
+      "suit": "diamonds",
+      "suitSymbol": "♦",
+      "suitNameVi": "Rô",
+      "rank": "3",
+      "rankNameVi": "Ba",
+      "nameVi": "Ba Rô",
+      "color": "red",
+      "blackjackValues": [
+        3
+      ],
+      "tienLenRankOrder": 0,
+      "tienLenSuitOrder": 2,
+      "tienLenPower": 2,
+      "image": "/playing-cards/Dia-3.svg"
+    },
+    {
+      "code": "Hrt-3",
+      "suit": "hearts",
+      "suitSymbol": "♥",
+      "suitNameVi": "Cơ",
+      "rank": "3",
+      "rankNameVi": "Ba",
+      "nameVi": "Ba Cơ",
+      "color": "red",
+      "blackjackValues": [
+        3
+      ],
+      "tienLenRankOrder": 0,
+      "tienLenSuitOrder": 3,
+      "tienLenPower": 3,
+      "image": "/playing-cards/Hrt-3.svg"
+    },
+    {
+      "code": "Spd-4",
+      "suit": "spades",
+      "suitSymbol": "♠",
+      "suitNameVi": "Bích",
+      "rank": "4",
+      "rankNameVi": "Bốn",
+      "nameVi": "Bốn Bích",
+      "color": "black",
+      "blackjackValues": [
+        4
+      ],
+      "tienLenRankOrder": 1,
+      "tienLenSuitOrder": 0,
+      "tienLenPower": 4,
+      "image": "/playing-cards/Spd-4.svg"
+    },
+    {
+      "code": "Clb-4",
+      "suit": "clubs",
+      "suitSymbol": "♣",
+      "suitNameVi": "Chuồn",
+      "rank": "4",
+      "rankNameVi": "Bốn",
+      "nameVi": "Bốn Chuồn",
+      "color": "black",
+      "blackjackValues": [
+        4
+      ],
+      "tienLenRankOrder": 1,
+      "tienLenSuitOrder": 1,
+      "tienLenPower": 5,
+      "image": "/playing-cards/Clb-4.svg"
+    },
+    {
+      "code": "Dia-4",
+      "suit": "diamonds",
+      "suitSymbol": "♦",
+      "suitNameVi": "Rô",
+      "rank": "4",
+      "rankNameVi": "Bốn",
+      "nameVi": "Bốn Rô",
+      "color": "red",
+      "blackjackValues": [
+        4
+      ],
+      "tienLenRankOrder": 1,
+      "tienLenSuitOrder": 2,
+      "tienLenPower": 6,
+      "image": "/playing-cards/Dia-4.svg"
+    },
+    {
+      "code": "Hrt-4",
+      "suit": "hearts",
+      "suitSymbol": "♥",
+      "suitNameVi": "Cơ",
+      "rank": "4",
+      "rankNameVi": "Bốn",
+      "nameVi": "Bốn Cơ",
+      "color": "red",
+      "blackjackValues": [
+        4
+      ],
+      "tienLenRankOrder": 1,
+      "tienLenSuitOrder": 3,
+      "tienLenPower": 7,
+      "image": "/playing-cards/Hrt-4.svg"
+    },
+    {
+      "code": "Spd-5",
+      "suit": "spades",
+      "suitSymbol": "♠",
+      "suitNameVi": "Bích",
+      "rank": "5",
+      "rankNameVi": "Năm",
+      "nameVi": "Năm Bích",
+      "color": "black",
+      "blackjackValues": [
+        5
+      ],
+      "tienLenRankOrder": 2,
+      "tienLenSuitOrder": 0,
+      "tienLenPower": 8,
+      "image": "/playing-cards/Spd-5.svg"
+    },
+    {
+      "code": "Clb-5",
+      "suit": "clubs",
+      "suitSymbol": "♣",
+      "suitNameVi": "Chuồn",
+      "rank": "5",
+      "rankNameVi": "Năm",
+      "nameVi": "Năm Chuồn",
+      "color": "black",
+      "blackjackValues": [
+        5
+      ],
+      "tienLenRankOrder": 2,
+      "tienLenSuitOrder": 1,
+      "tienLenPower": 9,
+      "image": "/playing-cards/Clb-5.svg"
+    },
+    {
+      "code": "Dia-5",
+      "suit": "diamonds",
+      "suitSymbol": "♦",
+      "suitNameVi": "Rô",
+      "rank": "5",
+      "rankNameVi": "Năm",
+      "nameVi": "Năm Rô",
+      "color": "red",
+      "blackjackValues": [
+        5
+      ],
+      "tienLenRankOrder": 2,
+      "tienLenSuitOrder": 2,
+      "tienLenPower": 10,
+      "image": "/playing-cards/Dia-5.svg"
+    },
+    {
+      "code": "Hrt-5",
+      "suit": "hearts",
+      "suitSymbol": "♥",
+      "suitNameVi": "Cơ",
+      "rank": "5",
+      "rankNameVi": "Năm",
+      "nameVi": "Năm Cơ",
+      "color": "red",
+      "blackjackValues": [
+        5
+      ],
+      "tienLenRankOrder": 2,
+      "tienLenSuitOrder": 3,
+      "tienLenPower": 11,
+      "image": "/playing-cards/Hrt-5.svg"
+    },
+    {
+      "code": "Spd-6",
+      "suit": "spades",
+      "suitSymbol": "♠",
+      "suitNameVi": "Bích",
+      "rank": "6",
+      "rankNameVi": "Sáu",
+      "nameVi": "Sáu Bích",
+      "color": "black",
+      "blackjackValues": [
+        6
+      ],
+      "tienLenRankOrder": 3,
+      "tienLenSuitOrder": 0,
+      "tienLenPower": 12,
+      "image": "/playing-cards/Spd-6.svg"
+    },
+    {
+      "code": "Clb-6",
+      "suit": "clubs",
+      "suitSymbol": "♣",
+      "suitNameVi": "Chuồn",
+      "rank": "6",
+      "rankNameVi": "Sáu",
+      "nameVi": "Sáu Chuồn",
+      "color": "black",
+      "blackjackValues": [
+        6
+      ],
+      "tienLenRankOrder": 3,
+      "tienLenSuitOrder": 1,
+      "tienLenPower": 13,
+      "image": "/playing-cards/Clb-6.svg"
+    },
+    {
+      "code": "Dia-6",
+      "suit": "diamonds",
+      "suitSymbol": "♦",
+      "suitNameVi": "Rô",
+      "rank": "6",
+      "rankNameVi": "Sáu",
+      "nameVi": "Sáu Rô",
+      "color": "red",
+      "blackjackValues": [
+        6
+      ],
+      "tienLenRankOrder": 3,
+      "tienLenSuitOrder": 2,
+      "tienLenPower": 14,
+      "image": "/playing-cards/Dia-6.svg"
+    },
+    {
+      "code": "Hrt-6",
+      "suit": "hearts",
+      "suitSymbol": "♥",
+      "suitNameVi": "Cơ",
+      "rank": "6",
+      "rankNameVi": "Sáu",
+      "nameVi": "Sáu Cơ",
+      "color": "red",
+      "blackjackValues": [
+        6
+      ],
+      "tienLenRankOrder": 3,
+      "tienLenSuitOrder": 3,
+      "tienLenPower": 15,
+      "image": "/playing-cards/Hrt-6.svg"
+    },
+    {
+      "code": "Spd-7",
+      "suit": "spades",
+      "suitSymbol": "♠",
+      "suitNameVi": "Bích",
+      "rank": "7",
+      "rankNameVi": "Bảy",
+      "nameVi": "Bảy Bích",
+      "color": "black",
+      "blackjackValues": [
+        7
+      ],
+      "tienLenRankOrder": 4,
+      "tienLenSuitOrder": 0,
+      "tienLenPower": 16,
+      "image": "/playing-cards/Spd-7.svg"
+    },
+    {
+      "code": "Clb-7",
+      "suit": "clubs",
+      "suitSymbol": "♣",
+      "suitNameVi": "Chuồn",
+      "rank": "7",
+      "rankNameVi": "Bảy",
+      "nameVi": "Bảy Chuồn",
+      "color": "black",
+      "blackjackValues": [
+        7
+      ],
+      "tienLenRankOrder": 4,
+      "tienLenSuitOrder": 1,
+      "tienLenPower": 17,
+      "image": "/playing-cards/Clb-7.svg"
+    },
+    {
+      "code": "Dia-7",
+      "suit": "diamonds",
+      "suitSymbol": "♦",
+      "suitNameVi": "Rô",
+      "rank": "7",
+      "rankNameVi": "Bảy",
+      "nameVi": "Bảy Rô",
+      "color": "red",
+      "blackjackValues": [
+        7
+      ],
+      "tienLenRankOrder": 4,
+      "tienLenSuitOrder": 2,
+      "tienLenPower": 18,
+      "image": "/playing-cards/Dia-7.svg"
+    },
+    {
+      "code": "Hrt-7",
+      "suit": "hearts",
+      "suitSymbol": "♥",
+      "suitNameVi": "Cơ",
+      "rank": "7",
+      "rankNameVi": "Bảy",
+      "nameVi": "Bảy Cơ",
+      "color": "red",
+      "blackjackValues": [
+        7
+      ],
+      "tienLenRankOrder": 4,
+      "tienLenSuitOrder": 3,
+      "tienLenPower": 19,
+      "image": "/playing-cards/Hrt-7.svg"
+    },
+    {
+      "code": "Spd-8",
+      "suit": "spades",
+      "suitSymbol": "♠",
+      "suitNameVi": "Bích",
+      "rank": "8",
+      "rankNameVi": "Tám",
+      "nameVi": "Tám Bích",
+      "color": "black",
+      "blackjackValues": [
+        8
+      ],
+      "tienLenRankOrder": 5,
+      "tienLenSuitOrder": 0,
+      "tienLenPower": 20,
+      "image": "/playing-cards/Spd-8.svg"
+    },
+    {
+      "code": "Clb-8",
+      "suit": "clubs",
+      "suitSymbol": "♣",
+      "suitNameVi": "Chuồn",
+      "rank": "8",
+      "rankNameVi": "Tám",
+      "nameVi": "Tám Chuồn",
+      "color": "black",
+      "blackjackValues": [
+        8
+      ],
+      "tienLenRankOrder": 5,
+      "tienLenSuitOrder": 1,
+      "tienLenPower": 21,
+      "image": "/playing-cards/Clb-8.svg"
+    },
+    {
+      "code": "Dia-8",
+      "suit": "diamonds",
+      "suitSymbol": "♦",
+      "suitNameVi": "Rô",
+      "rank": "8",
+      "rankNameVi": "Tám",
+      "nameVi": "Tám Rô",
+      "color": "red",
+      "blackjackValues": [
+        8
+      ],
+      "tienLenRankOrder": 5,
+      "tienLenSuitOrder": 2,
+      "tienLenPower": 22,
+      "image": "/playing-cards/Dia-8.svg"
+    },
+    {
+      "code": "Hrt-8",
+      "suit": "hearts",
+      "suitSymbol": "♥",
+      "suitNameVi": "Cơ",
+      "rank": "8",
+      "rankNameVi": "Tám",
+      "nameVi": "Tám Cơ",
+      "color": "red",
+      "blackjackValues": [
+        8
+      ],
+      "tienLenRankOrder": 5,
+      "tienLenSuitOrder": 3,
+      "tienLenPower": 23,
+      "image": "/playing-cards/Hrt-8.svg"
+    },
+    {
+      "code": "Spd-9",
+      "suit": "spades",
+      "suitSymbol": "♠",
+      "suitNameVi": "Bích",
+      "rank": "9",
+      "rankNameVi": "Chín",
+      "nameVi": "Chín Bích",
+      "color": "black",
+      "blackjackValues": [
+        9
+      ],
+      "tienLenRankOrder": 6,
+      "tienLenSuitOrder": 0,
+      "tienLenPower": 24,
+      "image": "/playing-cards/Spd-9.svg"
+    },
+    {
+      "code": "Clb-9",
+      "suit": "clubs",
+      "suitSymbol": "♣",
+      "suitNameVi": "Chuồn",
+      "rank": "9",
+      "rankNameVi": "Chín",
+      "nameVi": "Chín Chuồn",
+      "color": "black",
+      "blackjackValues": [
+        9
+      ],
+      "tienLenRankOrder": 6,
+      "tienLenSuitOrder": 1,
+      "tienLenPower": 25,
+      "image": "/playing-cards/Clb-9.svg"
+    },
+    {
+      "code": "Dia-9",
+      "suit": "diamonds",
+      "suitSymbol": "♦",
+      "suitNameVi": "Rô",
+      "rank": "9",
+      "rankNameVi": "Chín",
+      "nameVi": "Chín Rô",
+      "color": "red",
+      "blackjackValues": [
+        9
+      ],
+      "tienLenRankOrder": 6,
+      "tienLenSuitOrder": 2,
+      "tienLenPower": 26,
+      "image": "/playing-cards/Dia-9.svg"
+    },
+    {
+      "code": "Hrt-9",
+      "suit": "hearts",
+      "suitSymbol": "♥",
+      "suitNameVi": "Cơ",
+      "rank": "9",
+      "rankNameVi": "Chín",
+      "nameVi": "Chín Cơ",
+      "color": "red",
+      "blackjackValues": [
+        9
+      ],
+      "tienLenRankOrder": 6,
+      "tienLenSuitOrder": 3,
+      "tienLenPower": 27,
+      "image": "/playing-cards/Hrt-9.svg"
+    },
+    {
+      "code": "Spd-10",
+      "suit": "spades",
+      "suitSymbol": "♠",
+      "suitNameVi": "Bích",
+      "rank": "10",
+      "rankNameVi": "Mười",
+      "nameVi": "Mười Bích",
+      "color": "black",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 7,
+      "tienLenSuitOrder": 0,
+      "tienLenPower": 28,
+      "image": "/playing-cards/Spd-10.svg"
+    },
+    {
+      "code": "Clb-10",
+      "suit": "clubs",
+      "suitSymbol": "♣",
+      "suitNameVi": "Chuồn",
+      "rank": "10",
+      "rankNameVi": "Mười",
+      "nameVi": "Mười Chuồn",
+      "color": "black",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 7,
+      "tienLenSuitOrder": 1,
+      "tienLenPower": 29,
+      "image": "/playing-cards/Clb-10.svg"
+    },
+    {
+      "code": "Dia-10",
+      "suit": "diamonds",
+      "suitSymbol": "♦",
+      "suitNameVi": "Rô",
+      "rank": "10",
+      "rankNameVi": "Mười",
+      "nameVi": "Mười Rô",
+      "color": "red",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 7,
+      "tienLenSuitOrder": 2,
+      "tienLenPower": 30,
+      "image": "/playing-cards/Dia-10.svg"
+    },
+    {
+      "code": "Hrt-10",
+      "suit": "hearts",
+      "suitSymbol": "♥",
+      "suitNameVi": "Cơ",
+      "rank": "10",
+      "rankNameVi": "Mười",
+      "nameVi": "Mười Cơ",
+      "color": "red",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 7,
+      "tienLenSuitOrder": 3,
+      "tienLenPower": 31,
+      "image": "/playing-cards/Hrt-10.svg"
+    },
+    {
+      "code": "Spd-J",
+      "suit": "spades",
+      "suitSymbol": "♠",
+      "suitNameVi": "Bích",
+      "rank": "J",
+      "rankNameVi": "Bồi (J)",
+      "nameVi": "Bồi (J) Bích",
+      "color": "black",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 8,
+      "tienLenSuitOrder": 0,
+      "tienLenPower": 32,
+      "image": "/playing-cards/Spd-J.svg"
+    },
+    {
+      "code": "Clb-J",
+      "suit": "clubs",
+      "suitSymbol": "♣",
+      "suitNameVi": "Chuồn",
+      "rank": "J",
+      "rankNameVi": "Bồi (J)",
+      "nameVi": "Bồi (J) Chuồn",
+      "color": "black",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 8,
+      "tienLenSuitOrder": 1,
+      "tienLenPower": 33,
+      "image": "/playing-cards/Clb-J.svg"
+    },
+    {
+      "code": "Dia-J",
+      "suit": "diamonds",
+      "suitSymbol": "♦",
+      "suitNameVi": "Rô",
+      "rank": "J",
+      "rankNameVi": "Bồi (J)",
+      "nameVi": "Bồi (J) Rô",
+      "color": "red",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 8,
+      "tienLenSuitOrder": 2,
+      "tienLenPower": 34,
+      "image": "/playing-cards/Dia-J.svg"
+    },
+    {
+      "code": "Hrt-J",
+      "suit": "hearts",
+      "suitSymbol": "♥",
+      "suitNameVi": "Cơ",
+      "rank": "J",
+      "rankNameVi": "Bồi (J)",
+      "nameVi": "Bồi (J) Cơ",
+      "color": "red",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 8,
+      "tienLenSuitOrder": 3,
+      "tienLenPower": 35,
+      "image": "/playing-cards/Hrt-J.svg"
+    },
+    {
+      "code": "Spd-Q",
+      "suit": "spades",
+      "suitSymbol": "♠",
+      "suitNameVi": "Bích",
+      "rank": "Q",
+      "rankNameVi": "Đầm (Q)",
+      "nameVi": "Đầm (Q) Bích",
+      "color": "black",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 9,
+      "tienLenSuitOrder": 0,
+      "tienLenPower": 36,
+      "image": "/playing-cards/Spd-Q.svg"
+    },
+    {
+      "code": "Clb-Q",
+      "suit": "clubs",
+      "suitSymbol": "♣",
+      "suitNameVi": "Chuồn",
+      "rank": "Q",
+      "rankNameVi": "Đầm (Q)",
+      "nameVi": "Đầm (Q) Chuồn",
+      "color": "black",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 9,
+      "tienLenSuitOrder": 1,
+      "tienLenPower": 37,
+      "image": "/playing-cards/Clb-Q.svg"
+    },
+    {
+      "code": "Dia-Q",
+      "suit": "diamonds",
+      "suitSymbol": "♦",
+      "suitNameVi": "Rô",
+      "rank": "Q",
+      "rankNameVi": "Đầm (Q)",
+      "nameVi": "Đầm (Q) Rô",
+      "color": "red",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 9,
+      "tienLenSuitOrder": 2,
+      "tienLenPower": 38,
+      "image": "/playing-cards/Dia-Q.svg"
+    },
+    {
+      "code": "Hrt-Q",
+      "suit": "hearts",
+      "suitSymbol": "♥",
+      "suitNameVi": "Cơ",
+      "rank": "Q",
+      "rankNameVi": "Đầm (Q)",
+      "nameVi": "Đầm (Q) Cơ",
+      "color": "red",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 9,
+      "tienLenSuitOrder": 3,
+      "tienLenPower": 39,
+      "image": "/playing-cards/Hrt-Q.svg"
+    },
+    {
+      "code": "Spd-K",
+      "suit": "spades",
+      "suitSymbol": "♠",
+      "suitNameVi": "Bích",
+      "rank": "K",
+      "rankNameVi": "Già (K)",
+      "nameVi": "Già (K) Bích",
+      "color": "black",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 10,
+      "tienLenSuitOrder": 0,
+      "tienLenPower": 40,
+      "image": "/playing-cards/Spd-K.svg"
+    },
+    {
+      "code": "Clb-K",
+      "suit": "clubs",
+      "suitSymbol": "♣",
+      "suitNameVi": "Chuồn",
+      "rank": "K",
+      "rankNameVi": "Già (K)",
+      "nameVi": "Già (K) Chuồn",
+      "color": "black",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 10,
+      "tienLenSuitOrder": 1,
+      "tienLenPower": 41,
+      "image": "/playing-cards/Clb-K.svg"
+    },
+    {
+      "code": "Dia-K",
+      "suit": "diamonds",
+      "suitSymbol": "♦",
+      "suitNameVi": "Rô",
+      "rank": "K",
+      "rankNameVi": "Già (K)",
+      "nameVi": "Già (K) Rô",
+      "color": "red",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 10,
+      "tienLenSuitOrder": 2,
+      "tienLenPower": 42,
+      "image": "/playing-cards/Dia-K.svg"
+    },
+    {
+      "code": "Hrt-K",
+      "suit": "hearts",
+      "suitSymbol": "♥",
+      "suitNameVi": "Cơ",
+      "rank": "K",
+      "rankNameVi": "Già (K)",
+      "nameVi": "Già (K) Cơ",
+      "color": "red",
+      "blackjackValues": [
+        10
+      ],
+      "tienLenRankOrder": 10,
+      "tienLenSuitOrder": 3,
+      "tienLenPower": 43,
+      "image": "/playing-cards/Hrt-K.svg"
+    },
+    {
+      "code": "Spd-A",
+      "suit": "spades",
+      "suitSymbol": "♠",
+      "suitNameVi": "Bích",
+      "rank": "A",
+      "rankNameVi": "Át (Xì)",
+      "nameVi": "Át (Xì) Bích",
+      "color": "black",
+      "blackjackValues": [
+        1,
+        10,
+        11
+      ],
+      "tienLenRankOrder": 11,
+      "tienLenSuitOrder": 0,
+      "tienLenPower": 44,
+      "image": "/playing-cards/Spd-A.svg"
+    },
+    {
+      "code": "Clb-A",
+      "suit": "clubs",
+      "suitSymbol": "♣",
+      "suitNameVi": "Chuồn",
+      "rank": "A",
+      "rankNameVi": "Át (Xì)",
+      "nameVi": "Át (Xì) Chuồn",
+      "color": "black",
+      "blackjackValues": [
+        1,
+        10,
+        11
+      ],
+      "tienLenRankOrder": 11,
+      "tienLenSuitOrder": 1,
+      "tienLenPower": 45,
+      "image": "/playing-cards/Clb-A.svg"
+    },
+    {
+      "code": "Dia-A",
+      "suit": "diamonds",
+      "suitSymbol": "♦",
+      "suitNameVi": "Rô",
+      "rank": "A",
+      "rankNameVi": "Át (Xì)",
+      "nameVi": "Át (Xì) Rô",
+      "color": "red",
+      "blackjackValues": [
+        1,
+        10,
+        11
+      ],
+      "tienLenRankOrder": 11,
+      "tienLenSuitOrder": 2,
+      "tienLenPower": 46,
+      "image": "/playing-cards/Dia-A.svg"
+    },
+    {
+      "code": "Hrt-A",
+      "suit": "hearts",
+      "suitSymbol": "♥",
+      "suitNameVi": "Cơ",
+      "rank": "A",
+      "rankNameVi": "Át (Xì)",
+      "nameVi": "Át (Xì) Cơ",
+      "color": "red",
+      "blackjackValues": [
+        1,
+        10,
+        11
+      ],
+      "tienLenRankOrder": 11,
+      "tienLenSuitOrder": 3,
+      "tienLenPower": 47,
+      "image": "/playing-cards/Hrt-A.svg"
+    },
+    {
+      "code": "Spd-2",
+      "suit": "spades",
+      "suitSymbol": "♠",
+      "suitNameVi": "Bích",
+      "rank": "2",
+      "rankNameVi": "Heo (2)",
+      "nameVi": "Heo (2) Bích",
+      "color": "black",
+      "blackjackValues": [
+        2
+      ],
+      "tienLenRankOrder": 12,
+      "tienLenSuitOrder": 0,
+      "tienLenPower": 48,
+      "image": "/playing-cards/Spd-2.svg"
+    },
+    {
+      "code": "Clb-2",
+      "suit": "clubs",
+      "suitSymbol": "♣",
+      "suitNameVi": "Chuồn",
+      "rank": "2",
+      "rankNameVi": "Heo (2)",
+      "nameVi": "Heo (2) Chuồn",
+      "color": "black",
+      "blackjackValues": [
+        2
+      ],
+      "tienLenRankOrder": 12,
+      "tienLenSuitOrder": 1,
+      "tienLenPower": 49,
+      "image": "/playing-cards/Clb-2.svg"
+    },
+    {
+      "code": "Dia-2",
+      "suit": "diamonds",
+      "suitSymbol": "♦",
+      "suitNameVi": "Rô",
+      "rank": "2",
+      "rankNameVi": "Heo (2)",
+      "nameVi": "Heo (2) Rô",
+      "color": "red",
+      "blackjackValues": [
+        2
+      ],
+      "tienLenRankOrder": 12,
+      "tienLenSuitOrder": 2,
+      "tienLenPower": 50,
+      "image": "/playing-cards/Dia-2.svg"
+    },
+    {
+      "code": "Hrt-2",
+      "suit": "hearts",
+      "suitSymbol": "♥",
+      "suitNameVi": "Cơ",
+      "rank": "2",
+      "rankNameVi": "Heo (2)",
+      "nameVi": "Heo (2) Cơ",
+      "color": "red",
+      "blackjackValues": [
+        2
+      ],
+      "tienLenRankOrder": 12,
+      "tienLenSuitOrder": 3,
+      "tienLenPower": 51,
+      "image": "/playing-cards/Hrt-2.svg"
+    }
+  ]
+}
