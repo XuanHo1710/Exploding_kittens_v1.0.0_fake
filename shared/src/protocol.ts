@@ -23,8 +23,8 @@ export const GAME_MODES: Record<
     shortName: 'Xì Dách 21',
     emoji: '🃏21',
     minPlayers: 2,
-    maxPlayers: 8,
-    desc: 'Bài Tây 52 lá: Rút bài sát 21 điểm, săn Xì Bàng, Xì Dách, Ngũ Linh, cược xu & nhân đôi!',
+    maxPlayers: 10,
+    desc: 'Bài Tây 52 lá: Rút bài sát 21 điểm, ăn thua với Nhà Cái – Xì Bàng ăn ×3, Xì Dách & Ngũ Linh ăn ×2!',
   },
   tien_len: {
     name: 'Tiến Lên Miền Nam (4 Người)',
@@ -144,7 +144,9 @@ export interface PendingView {
 export type WaitingView =
   | { kind: 'defuse_place'; playerId: string; deckCount: number; deadline: number }
   | { kind: 'favor_give'; playerId: string; toId: string; deadline: number }
-  | { kind: 'alter_future'; playerId: string; count: number; cards?: Card[]; deadline: number };
+  | { kind: 'alter_future'; playerId: string; count: number; cards?: Card[]; deadline: number }
+  /** Cướp Nhắm / Đôi: người cướp chọn 1 trong `count` lá úp của đối phương */
+  | { kind: 'steal_pick'; playerId: string; targetId: string; via: 'mark' | 'pair'; count: number; deadline: number };
 
 /** Lần đánh bài gần nhất, hiện ở giữa bàn cho mọi người cùng thấy */
 export interface LastPlay {
@@ -158,7 +160,7 @@ export interface LastPlay {
   /** Những người đã đánh Nope, theo thứ tự */
   nopers: string[];
   nopeCardIds: string[];
-  result?: 'done' | 'noped';
+  result?: 'done' | 'noped' | 'cancelled';
 }
 
 export interface RoomView {
@@ -227,7 +229,7 @@ export type GameFx =
   | { type: 'draw'; playerId: string }
   | { type: 'shuffle'; playerId: string; style: ShuffleStyle }
   | { type: 'future'; playerId: string }
-  | { type: 'transfer'; from: string; to: string; via: 'favor' | 'pair' | 'triple' | 'five' }
+  | { type: 'transfer'; from: string; to: string; via: 'favor' | 'pair' | 'triple' | 'five' | 'mark' }
   | { type: 'insert'; playerId: string }
   | { type: 'defuse'; playerId: string }
   | { type: 'explode'; playerId: string };

@@ -581,6 +581,8 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   const [comboMode, setComboMode] = useState(false);
   const playZoneRef = useRef<HTMLDivElement>(null);
   const [giveId, setGiveId] = useState<string | null>(null);
+  /** Lá úp đang chọn khi cướp bài (vị trí trong hàng lá úp) */
+  const [stealIdx, setStealIdx] = useState<number | null>(null);
   const [bombPos, setBombPos] = useState(0);
   const [shuffling, setShuffling] = useState<string | null>(null);
   const [transferBanner, setTransferBanner] = useState<string | null>(null);
@@ -626,6 +628,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   const giving = waiting?.kind === 'favor_give' && waiting.playerId === meId;
   const placing = waiting?.kind === 'defuse_place' && waiting.playerId === meId;
   const altering = waiting?.kind === 'alter_future' && waiting.playerId === meId && !!waiting.cards?.length;
+  const stealing = waiting?.kind === 'steal_pick' && waiting.playerId === meId;
   const canDraw = alive && myTurn && !pending && !waiting && view.phase === 'playing';
 
   const alterKey = waiting?.kind === 'alter_future' && waiting.cards ? waiting.cards.map((c) => c.id).join(',') : '';
@@ -701,7 +704,10 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   }, [view.hand]);
   const sel = selected.filter((id) => handIds.has(id));
   const selCards = view.hand.filter((c) => sel.includes(c.id));
-  const kind = detectPlayKind(selCards.map((c) => c.type), rules);
+  // Nhân Bản đánh lẻ mang hiệu ứng của lá chức năng vừa có hiệu lực (server kiểm tra lại)
+  const cloneKind: ActionKind = view.lastPlay?.result === 'done' ? view.lastPlay.kind : 'clone';
+  const rawKind = detectPlayKind(selCards.map((c) => c.type), rules);
+  const kind = rawKind === 'clone' ? cloneKind : rawKind;
   const needsTarget = kind === 'favor' || kind === 'targeted_attack' || kind === 'mark' || kind === 'pair' || kind === 'triple';
   const needsDiscard = kind === 'five' || kind === 'grave_robber';
   const aliveOpponents = view.players.filter((p) => p.alive && p.id !== meId);
@@ -753,6 +759,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       if (c.type === 'favor' || c.type === 'mark') return handTargets.length > 0;
       if (c.type === 'targeted_attack') return aliveOpponents.length > 0;
       if (c.type === 'grave_robber') return view.discardTypes.length > 0;
+      if (c.type === 'clone') return cloneKind !== 'clone' || canComboType(c.type);
       return true;
     }
     return canComboType(c.type);
@@ -773,6 +780,9 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   }, [placing]);
 
   // Âm thanh: tới lượt mình, có người đánh bài, có người Nope, bị xin bài
+  useEffect(() => {
+    if (!stealing) setStealIdx(null);
+  }, [stealing]);
   const prev = useRef({ myTurn, playId: lastPlay?.id, nopes: lastPlay?.nopers.length ?? 0, giving, deck: view.deckCount });
   useEffect(() => {
     const p = prev.current;
@@ -798,7 +808,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         flyCard(deck, seatEl(f.playerId));
         break;
       case 'shuffle': {
-        const st = SHUFFLE_STYLES[f.style] ? f.style : 'riffle';
+        const st = typeof f.style === 'string' && Object.hasOwn(SHUFFLE_STYLES, f.style) ? f.style : 'riffle';
         sfx('shuffle');
         setShuffling(`${nameOf(f.playerId)} xáo bài kiểu ${SHUFFLE_STYLES[st].name}!`);
         window.requestAnimationFrame(() => SHUFFLE_ANIM[st](riffleRef.current));
@@ -890,7 +900,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         emit('game:play', { cardIds: [card.id] });
         return;
       }
-      if (CARD_INFO[card.type].isCat || !SINGLE.includes(card.type)) {
+      if (CARD_INFO[card.type].isCat || !SINGLE.includes(card.type) || (card.type === 'clone' && sel.length > 0)) {
         // bài ghép cặp (mèo, mèo đa năng hoặc bài khác khi comboScope='any'): bấm để nhấc lên / hạ xuống
         const on = sel.includes(card.id);
         sfx(on ? 'unselect' : 'select');
@@ -903,12 +913,13 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         return;
       }
       setSelected([]);
-      if (card.type === 'shuffle') {
+      const effective = card.type === 'clone' ? cloneKind : card.type;
+      if (effective === 'shuffle') {
         setShufflePick([card.id]);
         return;
       }
       setSelected([card.id]);
-      if (card.type === 'favor' || card.type === 'targeted_attack' || card.type === 'mark' || card.type === 'grave_robber') {
+      if (effective === 'favor' || effective === 'targeted_attack' || effective === 'mark' || effective === 'grave_robber') {
         setWizardOpen(true);
         return;
       }
@@ -968,6 +979,13 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       </span>
     );
     statusTone = 'warn';
+  } else if (stealing && waiting?.kind === 'steal_pick') {
+    status = (
+      <span className="status-row">
+        <Crosshair size={16} className="inline-icon" /> Chọn 1 lá úp trên tay {nameOf(waiting.targetId)} để cướp ({secs(waiting.deadline)}s)
+      </span>
+    );
+    statusTone = 'go';
   } else if (altering && waiting?.kind === 'alter_future') {
     status = (
       <span className="status-row">
@@ -984,6 +1002,11 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       ) : waiting.kind === 'alter_future' ? (
         <span className="status-row">
           <Wand2 size={16} className="inline-icon" /> {nameOf(waiting.playerId)} đang sắp xếp {waiting.count} lá trên cùng…
+        </span>
+      ) : waiting.kind === 'steal_pick' ? (
+        <span className="status-row">
+          <Crosshair size={16} className="inline-icon" />{' '}
+          {waiting.targetId === meId ? `${nameOf(waiting.playerId)} đang bốc 1 lá úp trên tay bạn…` : `${nameOf(waiting.playerId)} đang bốc 1 lá úp của ${nameOf(waiting.targetId)}…`}
         </span>
       ) : (
         <span className="status-row">
@@ -1040,11 +1063,13 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
             const isTarget = needsTarget && targetId === p.id;
             const pickable = needsTarget && canPlay && targets.some((t) => t.id === p.id);
             const isStealing =
-              (pending && pending.actorId === p.id && !!pending.targetId && ['favor', 'pair', 'triple'].includes(pending.kind)) ||
-              (waiting?.kind === 'favor_give' && waiting.toId === p.id);
+              (pending && pending.actorId === p.id && !!pending.targetId && ['favor', 'mark', 'pair', 'triple'].includes(pending.kind)) ||
+              (waiting?.kind === 'favor_give' && waiting.toId === p.id) ||
+              (waiting?.kind === 'steal_pick' && waiting.playerId === p.id);
             const isVictim =
-              (pending && pending.targetId === p.id && ['favor', 'pair', 'triple'].includes(pending.kind)) ||
-              (waiting?.kind === 'favor_give' && waiting.playerId === p.id);
+              (pending && pending.targetId === p.id && ['favor', 'mark', 'pair', 'triple'].includes(pending.kind)) ||
+              (waiting?.kind === 'favor_give' && waiting.playerId === p.id) ||
+              (waiting?.kind === 'steal_pick' && waiting.targetId === p.id);
             return (
               <div
                 key={p.id}
@@ -1075,7 +1100,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                     : undefined
                 }
               >
-                {view.hostId === meId && !p.left && (
+                {view.hostId === meId && !p.left && view.phase === 'lobby' && (
                   <button
                     type="button"
                     className="seat-kick-btn"
@@ -1172,7 +1197,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                 )}
                 {isStealing && (
                   <span className="steal-tag thief">
-                    🤏 Đang lấy bài của {nameOf(pending?.targetId ?? (waiting?.kind === 'favor_give' ? waiting.playerId : undefined))}
+                    🤏 Đang lấy bài của {nameOf(pending?.targetId ?? (waiting?.kind === 'favor_give' ? waiting.playerId : waiting?.kind === 'steal_pick' ? waiting.targetId : undefined))}
                   </span>
                 )}
                 {lastPlay?.nopers.at(-1) === p.id && pending && <span className="nope-bubble">NOPE!</span>}
@@ -1259,10 +1284,14 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                     )}
                   </div>
                 ) : (
-                  <span className={`tag ${lastPlay.result === 'noped' ? 'bad' : 'good'}`}>
+                  <span className={`tag ${lastPlay.result === 'noped' || lastPlay.result === 'cancelled' ? 'bad' : 'good'}`}>
                     {lastPlay.result === 'noped' ? (
                       <>
                         <Ban size={12} className="inline-icon" /> Đã bị Nope
+                      </>
+                    ) : lastPlay.result === 'cancelled' ? (
+                      <>
+                        <Ban size={12} className="inline-icon" /> Không còn tác dụng
                       </>
                     ) : (
                       <>
@@ -1678,6 +1707,36 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
               }}
             >
               Đưa lá này
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {stealing && waiting?.kind === 'steal_pick' && (
+        <Modal title={<span className="modal-title-icon"><Crosshair size={19} /> Cướp bài của {nameOf(waiting.targetId)}</span>} width={760}>
+          <p>
+            Bài của {nameOf(waiting.targetId)} đã được <b>úp xuống và xáo vị trí</b>: chọn <b>1 lá</b>, trúng lá ngon là của bạn! Còn{' '}
+            <b>{secs(waiting.deadline)}s</b>, hết giờ sẽ bốc ngẫu nhiên.
+          </p>
+          <div className="give-grid steal-grid">
+            {Array.from({ length: waiting.count }, (_, i) => (
+              <button key={i} className={`wiz-card steal-card${stealIdx === i ? ' on' : ''}`} onClick={() => setStealIdx(i)} aria-label={`Lá úp số ${i + 1}`}>
+                <CardBack />
+                <span>Lá {i + 1}</span>
+              </button>
+            ))}
+          </div>
+          <div className="modal-actions">
+            <button
+              className="primary big"
+              disabled={stealIdx === null || stealIdx >= waiting.count}
+              onClick={() => {
+                sfx('play');
+                emit('game:steal', { index: stealIdx });
+                setStealIdx(null);
+              }}
+            >
+              <Crosshair size={16} /> Cướp lá này
             </button>
           </div>
         </Modal>

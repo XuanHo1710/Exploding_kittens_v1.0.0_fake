@@ -104,7 +104,7 @@ const HOW: Record<CardType, string> = {
   draw_bottom: 'Trong lượt của bạn: bấm lá này để rút 1 lá dưới ĐÁY chồng bài thay vì lá trên cùng, rồi kết thúc 1 lượt ngay.',
   catomic_bomb: 'Trong lượt của bạn: bấm lá này để gom TẤT CẢ Mèo Nổ trong chồng rút đặt ngửa lên ĐẦU chồng bài, xáo phần còn lại và kết thúc 1 lượt không cần rút!',
   swap_top_bottom: 'Trong lượt của bạn: bấm lá này để tráo đổi vị trí lá trên cùng và lá dưới đáy chồng bài (chưa kết thúc lượt, cực hợp khi đi kèm Rút Đáy).',
-  bury: 'Trong lượt của bạn: bấm lá này để rút lá trên cùng rồi bí mật chôn 1 lá bài vào lại chồng rút, kết thúc 1 lượt.',
+  bury: 'Trong lượt của bạn: bấm lá này để bí mật xem lá trên cùng rồi chôn nó vào giữa chồng rút (không kích nổ), kết thúc 1 lượt.',
   garbage_collection: 'Trong lượt của bạn: bấm lá này để buộc mọi người còn sống bỏ 1 lá trên tay vào lại chồng bài rồi xáo đều.',
   shuffle: 'Trong lượt của bạn: bấm lá này rồi chọn kiểu xáo bài để đảo ngẫu nhiên vị trí Mèo Nổ trong chồng rút.',
   see_future: '', // Filled from the room's preview count below.
@@ -112,10 +112,10 @@ const HOW: Record<CardType, string> = {
   share_future: '', // Filled from the room's preview count below.
   dig_deeper: 'Trong lượt của bạn: bấm lá này để đào sâu né Mèo Nổ nếu lá đầu là bom và rút bài kết thúc 1 lượt.',
   favor: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người chơi có bài. Người đó tự chọn 1 lá trên tay đưa cho bạn.',
-  mark: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người chơi để đánh dấu và bí mật soi 1 lá ngẫu nhiên trên tay họ.',
+  mark: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người chơi rồi tự bốc 1 lá trong bài úp (đã xáo vị trí) của họ về tay bạn.',
   grave_robber: 'Trong lượt của bạn: bấm lá này rồi chọn 1 lá bài bất kỳ đang nằm trong chồng bài bỏ để lấy về tay.',
   nope: '', // Filled from the room's Nope window and chaining setting below.
-  clone: 'Lá đại diện đa năng: dùng kèm các lá mèo để ghép thành Đôi (2 lá) hoặc Bộ ba (3 lá) cướp bài đối thủ.',
+  clone: 'Đánh lẻ để sao chép hiệu ứng lá chức năng vừa có hiệu lực; hoặc dùng kèm các lá mèo để ghép thành Đôi (2 lá) / Bộ ba (3 lá) cướp bài đối thủ.',
   feral_cat: 'Mèo Hoang đa năng: ghép chung với bất kỳ lá mèo nào khác để tạo thành Đôi (2 lá) hoặc Bộ ba (3 lá) cướp bài.',
   cat_potato: '',
   cat_melon: '',
@@ -128,11 +128,11 @@ function howToPlay(type: CardType, rules: RoomRules) {
   if (type === 'defuse') text = `Game tự dùng khi bạn rút trúng Mèo Nổ, sau đó ${rules.bombPlacement === 'choose' ? 'bạn chọn vị trí nhét bom lại' : 'bom được nhét lại ở vị trí ngẫu nhiên'}.`;
   if (type === 'see_future') text = `Trong lượt của bạn: bấm lá để bí mật xem tối đa ${rules.futureCount} lá trên cùng.`;
   if (type === 'alter_future') text = `Trong lượt của bạn: bấm lá để xem và sắp xếp tối đa ${rules.futureCount} lá trên cùng (tự động đẩy Mèo Nổ xuống dưới cho bạn).`;
-  if (type === 'share_future') text = `Trong lượt của bạn: bấm lá để xem tối đa ${rules.futureCount} lá trên cùng và chia sẻ cho người chơi kế tiếp cùng biết.`;
+  if (type === 'share_future') text = `Trong lượt của bạn: bấm lá để xem và sắp xếp tối đa ${rules.futureCount} lá trên cùng rồi chia sẻ cho người chơi kế tiếp cùng biết.`;
   if (type === 'nope') text = `Khi có người đánh bài, bấm lá này hoặc nút NOPE! trong ${rules.nopeSeconds} giây, kể cả ngoài lượt. ${rules.nopeChain ? 'Bạn có thể Nope lại một lá Nope.' : 'Mỗi hành động chỉ được Nope một lần.'}`;
   const canMatch = CARD_INFO[type].isCat || (rules.comboScope === 'any' && type !== 'exploding');
   const combos: string[] = [];
-  if (canMatch && rules.allowPair) combos.push('2 lá cùng loại (hoặc ghép với Mèo Hoang / Sao Chép) để cướp ngẫu nhiên 1 lá');
+  if (canMatch && rules.allowPair) combos.push('2 lá cùng loại (hoặc ghép với Mèo Hoang / Sao Chép) để bốc 1 lá úp của đối thủ');
   if (canMatch && rules.allowTriple) combos.push('3 lá cùng loại (hoặc ghép với Mèo Hoang / Sao Chép) để đòi đúng lá muốn');
   if (type !== 'exploding' && rules.allowFive) combos.push('5 lá khác loại để lấy 1 lá trong chồng bài bỏ');
   if (combos.length) text += `${text ? ' ' : ''}Combo được phép: ${combos.join('; ')}. Dùng “Chọn nhiều lá” để chọn combo.`;

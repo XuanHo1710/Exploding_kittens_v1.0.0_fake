@@ -1066,6 +1066,9 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 }
 .wiz-card:hover:not(:disabled) { border-color: var(--accent); }
 .wiz-card.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.steal-card .card-back-box { width: 84px; --w: 84px; transition: transform 0.15s; }
+.steal-card:hover .card-back-box, .steal-card.on .card-back-box { transform: translateY(-4px) rotate(-2deg); }
+.steal-card.on .card-back-box { box-shadow: 0 0 0 3px var(--accent), var(--shadow-card); }
 .wiz-summary {
   background: var(--surface-2); border-left: 3px solid var(--accent); border-radius: 8px;
   padding: 10px 14px; font-weight: 600;

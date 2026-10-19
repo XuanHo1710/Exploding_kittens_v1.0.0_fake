@@ -34,8 +34,8 @@ interface Props {
 const TARGET_HINT: Partial<Record<ActionKind, string>> = {
   favor: 'Người bạn chọn sẽ phải tự chọn 1 lá trên tay đưa cho bạn.',
   targeted_attack: 'Người bạn chọn sẽ lập tức phải chơi 2 lượt (hoặc cộng dồn lượt bạn đang nợ).',
-  mark: 'Bạn sẽ đánh dấu và bí mật soi 1 lá ngẫu nhiên trên tay người này.',
-  pair: 'Bạn sẽ rút ngẫu nhiên 1 lá trên tay người này.',
+  mark: 'Bài của người này sẽ được úp và xáo vị trí, bạn tự bốc 1 lá về tay.',
+  pair: 'Bài của người này sẽ được úp và xáo vị trí, bạn tự bốc 1 lá về tay.',
   triple: 'Chọn người, rồi gọi tên lá bạn muốn. Họ có lá đó thì phải đưa.',
 };
 
@@ -48,7 +48,7 @@ export default function PlayWizard({ kind, cards, targets, discardTypes, initial
   let title: ReactNode = 'Đánh bài';
   if (kind === 'favor') title = <span className="modal-title-icon"><HandHeart size={19} /> Xin Bài</span>;
   else if (kind === 'targeted_attack') title = <span className="modal-title-icon"><Crosshair size={19} /> Tấn Công Chỉ Định</span>;
-  else if (kind === 'mark') title = <span className="modal-title-icon"><Target size={19} /> Đánh Dấu</span>;
+  else if (kind === 'mark') title = <span className="modal-title-icon"><Target size={19} /> Cướp Nhắm</span>;
   else if (kind === 'grave_robber') title = <span className="modal-title-icon"><Skull size={19} /> Trộm Mộ</span>;
   else if (kind === 'pair') title = <span className="modal-title-icon"><Cat size={19} /> Đôi{rules.comboScope === 'cats' ? ' mèo' : ''}</span>;
   else if (kind === 'triple') title = <span className="modal-title-icon"><Cat size={19} /> Bộ ba{rules.comboScope === 'cats' ? ' mèo' : ''}</span>;
@@ -66,8 +66,8 @@ export default function PlayWizard({ kind, cards, targets, discardTypes, initial
   let summary = '';
   if (kind === 'favor') summary = target ? `${target.name} sẽ chọn 1 lá đưa cho bạn` : 'Chọn người để xin bài';
   else if (kind === 'targeted_attack') summary = target ? `Chỉ định ${target.name} phải chơi lượt kế tiếp` : 'Chọn người để tấn công chỉ định';
-  else if (kind === 'mark') summary = target ? `Soi 1 lá ngẫu nhiên trên tay ${target.name}` : 'Chọn người để đánh dấu';
-  else if (kind === 'pair') summary = target ? `Rút ngẫu nhiên 1 lá của ${target.name}` : 'Chọn người để rút bài';
+  else if (kind === 'mark') summary = target ? `Bốc 1 lá úp của ${target.name}` : 'Chọn người để cướp bài';
+  else if (kind === 'pair') summary = target ? `Bốc 1 lá úp của ${target.name}` : 'Chọn người để rút bài';
   else if (kind === 'triple')
     summary = !target ? 'Chọn người để đòi bài' : !namedType ? `Đòi ${target.name} lá gì?` : `Đòi ${target.name} đưa ${CARD_INFO[namedType].name}`;
   else if (needsDiscard) summary = discardType ? `Lấy ${CARD_INFO[discardType].name} từ chồng bài bỏ` : 'Chọn lá muốn lấy từ chồng bài bỏ';
@@ -84,7 +84,7 @@ export default function PlayWizard({ kind, cards, targets, discardTypes, initial
       {comboSwitch && (
         <div className="seg">
           <button className={kind === 'pair' ? 'on' : ''} disabled={!rules.allowPair} onClick={() => comboSwitch('pair')}>
-            <Cat size={15} /> Đôi: cướp ngẫu nhiên
+            <Cat size={15} /> Đôi: bốc 1 lá úp
           </button>
           <button className={kind === 'triple' ? 'on' : ''} disabled={!rules.allowTriple} onClick={() => comboSwitch('triple')}>
             <Cat size={15} /> Bộ ba: đòi đúng lá

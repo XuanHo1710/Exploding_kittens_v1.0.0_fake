@@ -203,10 +203,10 @@ export const CARD_INFO: Record<CardType, CardInfo> = {
   mark: {
     name: 'Cướp Nhắm',
     code: 'Mrk',
-    short: 'Cướp ngẫu nhiên 1 lá bài từ tay 1 người chơi.',
+    short: 'Bốc 1 lá úp từ tay 1 người chơi.',
     emoji: '🏷️',
     color: '#343a40',
-    desc: 'Chọn 1 người chơi khác và rút ngẫu nhiên ngay lập tức 1 lá bài từ trên tay họ về tay bạn.',
+    desc: 'Chọn 1 người chơi khác: bài của họ được úp xuống và xáo vị trí, bạn tự bốc 1 lá về tay (hên xui trúng lá ngon).',
   },
   grave_robber: {
     name: 'Trộm Mộ',
@@ -247,8 +247,8 @@ export const CARD_INFO: Record<CardType, CardInfo> = {
     emoji: '🥔',
     color: '#a9744f',
     isCat: true,
-    short: 'Đôi: cướp ngẫu nhiên 1 lá. Ba: đòi đúng lá muốn.',
-    desc: 'Mèo thường. Đánh Đôi (cùng loại hoặc ghép với Mèo Hoang/Nhân Bản): rút ngẫu nhiên 1 lá. Bộ ba: gọi tên lá muốn lấy.',
+    short: 'Đôi: bốc 1 lá úp. Ba: đòi đúng lá muốn.',
+    desc: 'Mèo thường. Đánh Đôi (cùng loại hoặc ghép với Mèo Hoang/Nhân Bản): bốc 1 lá úp của đối thủ. Bộ ba: gọi tên lá muốn lấy.',
   },
   cat_melon: {
     name: 'Mèo Dưa Hấu',
@@ -256,8 +256,8 @@ export const CARD_INFO: Record<CardType, CardInfo> = {
     emoji: '🍉',
     color: '#2b8a3e',
     isCat: true,
-    short: 'Đôi: cướp ngẫu nhiên 1 lá. Ba: đòi đúng lá muốn.',
-    desc: 'Mèo thường. Đánh Đôi (cùng loại hoặc ghép với Mèo Hoang/Nhân Bản): rút ngẫu nhiên 1 lá. Bộ ba: gọi tên lá muốn lấy.',
+    short: 'Đôi: bốc 1 lá úp. Ba: đòi đúng lá muốn.',
+    desc: 'Mèo thường. Đánh Đôi (cùng loại hoặc ghép với Mèo Hoang/Nhân Bản): bốc 1 lá úp của đối thủ. Bộ ba: gọi tên lá muốn lấy.',
   },
   cat_bladder: {
     name: 'Mèo Mót Tè',
@@ -265,8 +265,8 @@ export const CARD_INFO: Record<CardType, CardInfo> = {
     emoji: '🚽',
     color: '#1971c2',
     isCat: true,
-    short: 'Đôi: cướp ngẫu nhiên 1 lá. Ba: đòi đúng lá muốn.',
-    desc: 'Mèo thường. Đánh Đôi (cùng loại hoặc ghép với Mèo Hoang/Nhân Bản): rút ngẫu nhiên 1 lá. Bộ ba: gọi tên lá muốn lấy.',
+    short: 'Đôi: bốc 1 lá úp. Ba: đòi đúng lá muốn.',
+    desc: 'Mèo thường. Đánh Đôi (cùng loại hoặc ghép với Mèo Hoang/Nhân Bản): bốc 1 lá úp của đối thủ. Bộ ba: gọi tên lá muốn lấy.',
   },
   cat_schrodinger: {
     name: 'Mèo Schrödinger',
@@ -274,8 +274,8 @@ export const CARD_INFO: Record<CardType, CardInfo> = {
     emoji: '📦',
     color: '#5c4033',
     isCat: true,
-    short: 'Đôi: cướp ngẫu nhiên 1 lá. Ba: đòi đúng lá muốn.',
-    desc: 'Mèo thường. Đánh Đôi (cùng loại hoặc ghép với Mèo Hoang/Nhân Bản): rút ngẫu nhiên 1 lá. Bộ ba: gọi tên lá muốn lấy.',
+    short: 'Đôi: bốc 1 lá úp. Ba: đòi đúng lá muốn.',
+    desc: 'Mèo thường. Đánh Đôi (cùng loại hoặc ghép với Mèo Hoang/Nhân Bản): bốc 1 lá úp của đối thủ. Bộ ba: gọi tên lá muốn lấy.',
   },
   cat_beard: {
     name: 'Mèo Râu Dê',
@@ -283,8 +283,8 @@ export const CARD_INFO: Record<CardType, CardInfo> = {
     emoji: '🧔',
     color: '#862e9c',
     isCat: true,
-    short: 'Đôi: cướp ngẫu nhiên 1 lá. Ba: đòi đúng lá muốn.',
-    desc: 'Mèo thường. Đánh Đôi (cùng loại hoặc ghép với Mèo Hoang/Nhân Bản): rút ngẫu nhiên 1 lá. Bộ ba: gọi tên lá muốn lấy.',
+    short: 'Đôi: bốc 1 lá úp. Ba: đòi đúng lá muốn.',
+    desc: 'Mèo thường. Đánh Đôi (cùng loại hoặc ghép với Mèo Hoang/Nhân Bản): bốc 1 lá úp của đối thủ. Bộ ba: gọi tên lá muốn lấy.',
   },
 };
 

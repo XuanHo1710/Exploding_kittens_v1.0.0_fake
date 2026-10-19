@@ -219,11 +219,11 @@ export function describeCard(type: CardType, rules: RoomRules): string {
   if (type === 'targeted_attack') return `Kết thúc lượt không rút bài. Người bạn chỉ định phải chơi ${rules.attackMode === 'stack' ? '2 lượt cộng toàn bộ lượt tấn công bạn còn nợ' : 'đúng 2 lượt'}.`;
   if (type === 'see_future') return `Bí mật xem ${rules.futureCount} lá trên cùng của chồng bài.`;
   if (type === 'alter_future') return `Bí mật xem ${rules.futureCount} lá trên cùng của chồng bài và đẩy Mèo Nổ xuống dưới các lá an toàn.`;
-  if (type === 'share_future') return `Xem ${rules.futureCount} lá trên cùng của chồng bài (đẩy bom xuống dưới) và cho người kế tiếp cùng biết.`;
+  if (type === 'share_future') return `Xem và sắp xếp lại ${rules.futureCount} lá trên cùng của chồng bài, rồi cho người kế tiếp cùng biết thứ tự mới.`;
   if (type === 'nope') return `Chặn hành động trong ${rules.nopeSeconds} giây, cả ngoài lượt. Không chặn Mèo Nổ/Gỡ Bom. ${rules.nopeChain ? 'Có thể Nope lại Nope.' : 'Không được Nope lại Nope.'}`;
   if (CARD_INFO[type].isCat) {
     const prefix = type === 'feral_cat' ? 'Mèo Hoang đại diện ghép được với mọi loại mèo. ' : '';
-    const effects = [rules.allowPair && 'Đôi: cướp ngẫu nhiên 1 lá', rules.allowTriple && 'Ba: gọi tên lá muốn lấy', rules.allowFive && 'Dùng trong combo 5 lá khác loại'].filter(Boolean);
+    const effects = [rules.allowPair && 'Đôi: bốc 1 lá úp của đối thủ', rules.allowTriple && 'Ba: gọi tên lá muốn lấy', rules.allowFive && 'Dùng trong combo 5 lá khác loại'].filter(Boolean);
     return effects.length ? `${prefix}${effects.join('. ')}.` : 'Mèo thường; phòng này đã tắt các combo nên lá này không có hiệu ứng.';
   }
   return CARD_INFO[type].desc;

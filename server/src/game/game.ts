@@ -32,6 +32,7 @@ import {
   SHUFFLE_STYLES,
   ShuffleStyle,
   sortTienLenHand,
+  PLAYING_CARD_BY_CODE,
 } from '../../../shared/src';
 
 export class GameError extends Error {}
@@ -63,10 +64,19 @@ interface Pending {
   deadline: number;
 }
 
+/** Lá chức năng mà Nhân Bản (đánh riêng) được phép sao chép */
+const CLONEABLE: ReadonlySet<ActionKind> = new Set<ActionKind>([
+  'attack', 'targeted_attack', 'personal_attack', 'skip', 'super_skip', 'reverse', 'draw_bottom',
+  'catomic_bomb', 'swap_top_bottom', 'bury', 'garbage_collection', 'shuffle', 'see_future',
+  'alter_future', 'share_future', 'dig_deeper', 'favor', 'mark', 'grave_robber',
+]);
+
 type Waiting =
   | { kind: 'defuse_place'; playerId: string; card: Card; deadline: number }
   | { kind: 'favor_give'; playerId: string; toId: string; deadline: number }
-  | { kind: 'alter_future'; playerId: string; cards: Card[]; deadline: number };
+  | { kind: 'alter_future'; playerId: string; cards: Card[]; deadline: number; shareWith?: string }
+  /** Cướp Nhắm / Đôi: người cướp tự chọn 1 lá úp của đối phương (thứ tự đã xáo, không lộ lá nào là lá nào) */
+  | { kind: 'steal_pick'; playerId: string; targetId: string; via: 'mark' | 'pair'; order: string[]; deadline: number };
 
 export interface GameHooks {
   changed(game: Game): void;
@@ -108,6 +118,8 @@ export class Game {
   bet = 0;
   pot = 0;
   paid = false;
+  /** Mã ván (do RoomsService đặt khi thu cược) – dùng làm mã thao tác trả thưởng để không trả 2 lần */
+  roundId = '';
   private seq = 0;
   private timer?: NodeJS.Timeout;
   private roomRules: RoomRules;
@@ -139,7 +151,7 @@ export class Game {
     gameMode: GameMode = 'exploding_kittens',
   ) {
     this.roomRules = this.parseRules(rules);
-    if (GAME_MODES[gameMode]) {
+    if (Object.hasOwn(GAME_MODES, gameMode)) {
       this.gameMode = gameMode;
       this.roomRules.maxPlayers = Math.min(this.roomRules.maxPlayers, GAME_MODES[gameMode].maxPlayers);
     }
@@ -152,14 +164,14 @@ export class Game {
 
   setGameMode(byId: string, mode: GameMode) {
     this.requireLobbyHost(byId);
-    if (!GAME_MODES[mode]) throw new GameError('Chế độ chơi không hợp lệ.');
+    if (typeof mode !== 'string' || !Object.hasOwn(GAME_MODES, mode)) throw new GameError('Chế độ chơi không hợp lệ.');
     if (this.players.length > GAME_MODES[mode].maxPlayers) {
       throw new GameError(`Chế độ ${GAME_MODES[mode].name} tối đa ${GAME_MODES[mode].maxPlayers} người (hiện có ${this.players.length} người).`);
     }
     if (this.gameMode === mode) return;
     this.run(() => {
       this.gameMode = mode;
-      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, mode === 'tien_len' ? 4 : mode === 'blackjack_21' ? 6 : this.roomRules.maxPlayers), GAME_MODES[mode].maxPlayers);
+      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, mode === 'tien_len' ? 4 : mode === 'blackjack_21' ? 10 : this.roomRules.maxPlayers), GAME_MODES[mode].maxPlayers);
       this.invalidateReady();
       this.addLog(`🎮 Chủ phòng đổi sang chế độ: ${GAME_MODES[mode].emoji} ${GAME_MODES[mode].name}.`);
     });
@@ -221,6 +233,12 @@ export class Game {
     this.run(() => {
       const existing = this.player(id);
       if (existing) {
+        if (existing.left) {
+          // Đã rời / bỏ cuộc giữa ván: chỉ quay lại được khi phòng về phòng chờ
+          if (this.phase !== 'lobby') throw new GameError('Bạn đã rời ván này, đợi ván sau nhé.');
+          existing.left = false;
+          existing.alive = true;
+        }
         existing.name = name;
         existing.avatar = avatar;
         existing.connected = true;
@@ -241,15 +259,15 @@ export class Game {
     this.run(() => {
       p.connected = connected;
       if (!connected && this.phase === 'lobby') {
-        setTimeout(() => {
+        setTimeout(() => this.safe(() => {
           if (!p.connected && this.phase === 'lobby' && this.player(id)) this.removePlayer(id);
-        }, LOBBY_GRACE_MS);
+        }), LOBBY_GRACE_MS);
       }
       // Chủ phòng rớt mạng / tải lại trang: đợi một lúc rồi mới chuyển quyền chủ phòng
       if (!connected && this.hostId === id) {
-        setTimeout(() => {
+        setTimeout(() => this.safe(() => {
           if (!p.connected && this.hostId === id) this.run(() => this.pickHost());
-        }, LOBBY_GRACE_MS);
+        }), LOBBY_GRACE_MS);
       }
     });
   }
@@ -277,7 +295,6 @@ export class Game {
         p.connected = false;
         if (this.phase === 'playing' && p.alive) {
           this.finishWaitingFor(id);
-          if (this.pending?.targetId === id) this.pending = undefined;
           this.addLog(`${p.name} bỏ cuộc.`);
           this.eliminate(p);
         }
@@ -292,6 +309,9 @@ export class Game {
     if (!targetId || targetId === byId) throw new GameError('Không thể tự kích chính mình.');
     const p = this.player(targetId);
     if (!p || p.left) throw new GameError('Người chơi không còn trong phòng.');
+    if (this.phase !== 'lobby') {
+      throw new GameError('Chỉ mời người ra được khi đang ở phòng chờ. Người treo máy sẽ được hệ thống tự đánh khi hết giờ.');
+    }
     this.run(() => {
       if (this.phase === 'lobby') {
         this.players = this.players.filter((x) => x.id !== targetId);
@@ -301,7 +321,6 @@ export class Game {
         p.connected = false;
         if (this.phase === 'playing' && p.alive) {
           this.finishWaitingFor(targetId);
-          if (this.pending?.targetId === targetId) this.pending = undefined;
           this.addLog(`👢 Chủ phòng đã kích ${p.name} khỏi trận!`);
           this.eliminate(p);
         } else {
@@ -390,9 +409,12 @@ export class Game {
       this.payouts = {};
       this.direction = 1;
       this.turnDeadline = undefined;
+      const gone = this.players.filter((p) => p.left);
       this.players = this.players.filter((p) => !p.left);
+      gone.forEach((p) => this.hooks.removed(p.id, this.code));
       this.pot = 0;
       this.paid = false;
+      this.roundId = '';
       for (const p of this.players) {
         p.hand = [];
         p.alive = true;
@@ -406,6 +428,8 @@ export class Game {
 
   private startBlackjack() {
     this.bjDeck = shuffle(createStandard52Deck());
+    this.deck = [];
+    this.discard = [];
     this.bjHands.clear();
     this.bjStatus.clear();
     this.bjOutcomes.clear();
@@ -492,14 +516,14 @@ export class Game {
       const nextEv = evaluateBlackjackHand(cards, isDealer);
       this.addLog(`🃏 ${p.name} rút thêm 1 lá (đang có ${cards.length} lá).`);
 
+      // Cùng một câu cho quắc / đủ 21 / Ngũ Linh: chưa lật bài thì không ai biết
       if (nextEv.kind === 'bust') {
         this.bjStatus.set(playerId, 'busted');
-        this.addLog(`💥 ${p.name} đã dừng lượt (${cards.length} lá).`);
+        this.addLog(`✋ ${p.name} dừng lượt (${cards.length} lá).`);
         this.advanceBlackjackTurn();
       } else if (nextEv.kind === 'ngu_linh' || nextEv.points === 21 || cards.length >= 5) {
         this.bjStatus.set(playerId, 'stood');
-        if (nextEv.kind === 'ngu_linh') this.addLog(`🌟 ${p.name} đủ 5 lá! Chốt bài.`);
-        else this.addLog(`✅ ${p.name} chốt bài (${cards.length} lá).`);
+        this.addLog(`✋ ${p.name} dừng lượt (${cards.length} lá).`);
         this.advanceBlackjackTurn();
       } else {
         this.turnDeadline = Date.now() + this.roomRules.turnSeconds * 1000;
@@ -519,7 +543,7 @@ export class Game {
         throw new GameError(`Bạn mới có ${ev.points} điểm, cần ít nhất ${isDealer ? 15 : 16} điểm mới được dừng!`);
       }
       this.bjStatus.set(playerId, 'stood');
-      this.addLog(`✋ ${p.name} dừng rút (${cards.length} lá).`);
+      this.addLog(`✋ ${p.name} dừng lượt (${cards.length} lá).`);
       this.advanceBlackjackTurn();
     });
   }
@@ -555,118 +579,82 @@ export class Game {
     });
   }
 
+  /**
+   * Kết thúc ván 21. Ăn thua 1:1 với Nhà Cái: mỗi người đã cược `bet` lúc bắt đầu.
+   * - Nhà con thắng: nhận lại cược + bet × hệ số (Xì Bàng ×3, Xì Dách/Ngũ Linh ×2, thường ×1) từ Nhà Cái
+   * - Nhà con thua (kể cả rời bàn giữa ván): mất cược cho Nhà Cái
+   * - Hoà: nhận lại cược
+   * Nhà Cái nhận lại cược ± phần chênh (có thể âm; phần âm được trừ vào xu khi lưu, tổng xu luôn bảo toàn).
+   */
   private finishBlackjack() {
     this.phase = 'ended';
     this.turnDeadline = undefined;
-    const dCards = this.bjHands.get(this.bjDealerId) ?? [];
-    const dEval = evaluateBlackjackHand(dCards, true);
+    const dealerId = this.bjDealerId;
+    const dEval = evaluateBlackjackHand(this.bjHands.get(dealerId) ?? [], true);
+    const nonDealers = this.players.filter((p) => p.id !== dealerId);
+    const bet = this.pot > 0 ? this.bet : 0;
 
-    const activePlayers = this.players.filter((p) => !p.left);
-    const nonDealers = activePlayers.filter((p) => p.id !== this.bjDealerId);
-
-    const weights = new Map<string, number>();
-    let dealerWinsCount = 0;
-    let dealerLossesCount = 0;
-
+    this.payouts = {};
+    let dealerNet = 0;
+    let dealerWins = 0;
+    let dealerLosses = 0;
     for (const p of nonDealers) {
-      const pCards = this.bjHands.get(p.id) ?? [];
-      const pEval = evaluateBlackjackHand(pCards, false);
+      const pEval = evaluateBlackjackHand(this.bjHands.get(p.id) ?? [], false);
       const existing = this.bjOutcomes.get(p.id);
       const cmp = existing
         ? { outcome: existing.outcome === 'win' ? 'player' : existing.outcome === 'lose' ? 'dealer' : 'push', reason: existing.text }
         : compareBlackjackHands(dEval, pEval);
-
       this.bjStatus.set(p.id, 'revealed');
+      let delta = 0;
+      let outcome: 'win' | 'lose' | 'push' = 'push';
       if (cmp.outcome === 'player') {
-        const w = pEval.kind === 'xi_bang' ? 3 : pEval.kind === 'xi_dach' || pEval.kind === 'ngu_linh' ? 2 : 1;
-        weights.set(p.id, w);
-        dealerLossesCount++;
-        this.bjOutcomes.set(p.id, { outcome: 'win', text: `Thắng Nhà Cái (${cmp.reason})`, delta: 0 });
+        const mult = pEval.kind === 'xi_bang' ? 3 : pEval.kind === 'xi_dach' || pEval.kind === 'ngu_linh' ? 2 : 1;
+        delta = bet * mult;
+        outcome = 'win';
+        dealerLosses++;
       } else if (cmp.outcome === 'dealer') {
-        dealerWinsCount++;
-        this.bjOutcomes.set(p.id, { outcome: 'lose', text: `Thua Nhà Cái (${cmp.reason})`, delta: 0 });
-      } else {
-        this.bjOutcomes.set(p.id, { outcome: 'push', text: `Hoà Nhà Cái (${cmp.reason})`, delta: 0 });
+        delta = -bet;
+        outcome = 'lose';
+        dealerWins++;
       }
+      dealerNet -= delta;
+      if (bet > 0) this.payouts[p.id] = bet + delta;
+      const label = outcome === 'win' ? 'Thắng' : outcome === 'lose' ? 'Thua' : 'Hoà';
+      const reason = existing ? existing.text : cmp.reason;
+      this.bjOutcomes.set(p.id, { outcome, text: `${label} Nhà Cái (${reason})`, delta });
     }
-    this.bjStatus.set(this.bjDealerId, 'revealed');
+    if (bet > 0) this.payouts[dealerId] = bet + dealerNet;
+    this.bjStatus.set(dealerId, 'revealed');
+    const dOutcome: 'win' | 'lose' | 'push' =
+      bet > 0
+        ? dealerNet > 0 ? 'win' : dealerNet < 0 ? 'lose' : 'push'
+        : dealerWins > dealerLosses ? 'win' : dealerLosses > dealerWins ? 'lose' : 'push';
+    this.bjOutcomes.set(dealerId, { outcome: dOutcome, text: `Nhà Cái: Thắng ${dealerWins} · Thua ${dealerLosses}`, delta: dealerNet });
 
-    // Phân bổ hũ xu (pot) bảo toàn 100% tổng số xu đã cược
-    this.payouts = {};
-    if (this.pot > 0 && this.bet > 0) {
-      let pool = this.pot;
-      // Hoàn lại tiền gốc cho những nhà con Hoà hoặc Thắng trước
-      for (const p of nonDealers) {
-        const out = this.bjOutcomes.get(p.id)?.outcome;
-        if (out === 'push' || out === 'win') {
-          const refund = Math.min(pool, this.bet);
-          this.payouts[p.id] = (this.payouts[p.id] ?? 0) + refund;
-          pool -= refund;
-        }
-      }
-      // Phần pool còn lại gồm tiền cược của Nhà Cái + tiền của các Nhà Con bị thua
-      const totalWinWeight = [...weights.values()].reduce((a, b) => a + b, 0);
-      if (totalWinWeight > 0 && pool > 0) {
-        // Nếu có cả Nhà Con thắng và Nhà Con thua: Nhà Cái giữ phần thắng từ Nhà Con thua nếu còn dư
-        const dealerKeep = Math.min(pool, dealerWinsCount * this.bet);
-        const forWinners = pool - dealerKeep;
-        let distributed = 0;
-        const winEntries = [...weights.entries()];
-        winEntries.forEach(([pid, w], idx) => {
-          const share = idx === winEntries.length - 1 ? forWinners - distributed : Math.floor((forWinners * w) / totalWinWeight);
-          distributed += share;
-          this.payouts[pid] = (this.payouts[pid] ?? 0) + share;
-        });
-        if (dealerKeep > 0) {
-          this.payouts[this.bjDealerId] = (this.payouts[this.bjDealerId] ?? 0) + dealerKeep;
-        }
-      } else if (pool > 0) {
-        // Không Nhà Con nào thắng -> Nhà Cái ăn toàn bộ phần còn lại
-        this.payouts[this.bjDealerId] = (this.payouts[this.bjDealerId] ?? 0) + pool;
-      }
-    }
-
-    // Cập nhật delta xu và xác định người thắng cuộc
-    let bestGain = -Infinity;
-    this.winnerIds = [];
-    for (const p of activePlayers) {
-      const got = this.payouts[p.id] ?? 0;
-      const delta = this.bet > 0 ? got - this.bet : 0;
-      if (p.id === this.bjDealerId) {
-        const dOutcome: 'win' | 'lose' | 'push' =
-          dealerWinsCount > dealerLossesCount ? 'win' : dealerLossesCount > dealerWinsCount ? 'lose' : 'push';
-        this.bjOutcomes.set(p.id, {
-          outcome: dOutcome,
-          text: `Nhà Cái: Thắng ${dealerWinsCount} · Thua ${dealerLossesCount}`,
-          delta,
-        });
-      } else {
-        const cur = this.bjOutcomes.get(p.id)!;
-        this.bjOutcomes.set(p.id, { ...cur, delta });
-      }
-      const isWinner = this.bjOutcomes.get(p.id)?.outcome === 'win';
-      if (isWinner) this.winnerIds.push(p.id);
-      if (delta > bestGain && isWinner) {
-        bestGain = delta;
-        this.winnerId = p.id;
-      }
-    }
-    if (!this.winnerId) {
-      this.winnerId = this.winnerIds[0] ?? this.bjDealerId;
-    }
-
+    this.winnerIds = this.players.filter((p) => !p.left && this.bjOutcomes.get(p.id)?.outcome === 'win').map((p) => p.id);
+    this.winnerId = [...this.winnerIds].sort((x, y) => (this.bjOutcomes.get(y)?.delta ?? 0) - (this.bjOutcomes.get(x)?.delta ?? 0))[0];
     const winnerNames = this.winnerIds.map((id) => this.player(id)?.name).filter(Boolean);
-    this.addLog(
-      winnerNames.length
-        ? `🏆 Kết thúc ván 21! Người thắng: ${winnerNames.join(', ')}.`
-        : '🤝 Kết thúc ván 21: Cả bàn hoà nhau!',
-    );
+    this.addLog(winnerNames.length ? `🏆 Kết thúc ván 21! Người thắng: ${winnerNames.join(', ')}.` : '🤝 Kết thúc ván 21: không ai thắng Nhà Cái.');
+  }
+
+  /** Nhà Cái rời bàn giữa ván: huỷ ván, hoàn cược cho tất cả (không ai được lợi) */
+  private voidBlackjack(reason: string) {
+    this.phase = 'ended';
+    this.turnDeadline = undefined;
+    this.payouts = {};
+    if (this.pot > 0) for (const p of this.players) this.payouts[p.id] = this.bet;
+    for (const p of this.players) this.bjOutcomes.set(p.id, { outcome: 'push', text: 'Huỷ ván – hoàn cược', delta: 0 });
+    this.winnerIds = [];
+    this.winnerId = undefined;
+    this.addLog(reason);
   }
 
   // ---------- TIẾN LÊN MIỀN NAM (4 NGƯỜI) ----------
 
   private startTienLen() {
     const deck = shuffle(createStandard52Deck());
+    this.deck = [];
+    this.discard = [];
     this.tlHands.clear();
     this.tlTableCombo = undefined;
     this.tlLastActorId = undefined;
@@ -758,7 +746,8 @@ export class Game {
       // Lượt mở màn ván đầu tiên: bắt buộc có lá nhỏ nhất (3♠)
       if (this.tlFirstTurnOfMatch && this.tlLowestCardCode) {
         if (!combo.cards.some((c) => c.code === this.tlLowestCardCode)) {
-          throw new GameError(`Lượt đầu tiên phải đánh bộ có chứa lá nhỏ nhất (${this.tlLowestCardCode.replace('Spd-', '')}♠ / lá nhỏ nhất trên tay)!`);
+          const low = PLAYING_CARD_BY_CODE[this.tlLowestCardCode];
+          throw new GameError(`Lượt đầu tiên phải đánh bộ có chứa lá nhỏ nhất (${low ? `${low.rank}${low.suitSymbol}` : this.tlLowestCardCode})!`);
         }
       }
 
@@ -792,21 +781,12 @@ export class Game {
 
       // Kiểm tra hết bài -> Thắng ngay!
       if (nextHand.length === 0) {
-        this.tlFinishOrder.push(playerId);
-        this.phase = 'ended';
-        this.winnerId = playerId;
-        this.winnerIds = [playerId];
-        this.tlLastWinnerId = playerId;
-        this.payouts = this.pot > 0 ? { [playerId]: this.pot } : {};
-        this.turnDeadline = undefined;
-        this.addLog(`🏆 ${p.name} đã đánh hết 13 lá và VỀ NHẤT!`);
+        this.tlWin(p, `🏆 ${p.name} đã đánh hết 13 lá và VỀ NHẤT!`);
         return;
       }
 
       // Chuyển lượt sang người tiếp theo chưa bỏ vòng
-      const myIdx = this.players.findIndex((x) => x.id === playerId);
-      const nextIdx = this.nextTienLenIdx(myIdx);
-      this.startTurn(nextIdx, 1);
+      this.tlNextTurn(this.players.findIndex((x) => x.id === playerId));
     });
   }
 
@@ -821,12 +801,20 @@ export class Game {
 
       this.tlPassedIds.add(playerId);
       this.addLog(`⏭️ ${p.name} bỏ lượt.`);
+      this.tlNextTurn(this.currentIdx);
+    });
+  }
 
-      // Kiểm tra xem tất cả những người khác đã bỏ vòng hết chưa
+  /**
+   * Chuyển lượt Tiến Lên. Nếu không còn ai (ngoài người đánh cuối) chưa bỏ vòng – kể cả vì có người rời bàn –
+   * thì kết thúc vòng: người đánh cuối được đánh bộ mới; nếu người đó đã rời, người kế tiếp được đánh tự do.
+   */
+  private tlNextTurn(fromIdx: number) {
+    if (this.tlTableCombo) {
       const activeOthers = this.players.filter(
         (x) => x.alive && !x.left && x.id !== this.tlLastActorId && !this.tlPassedIds.has(x.id),
       );
-      if (activeOthers.length === 0 && this.tlLastActorId) {
+      if (activeOthers.length === 0) {
         const leaderIdx = this.players.findIndex((x) => x.id === this.tlLastActorId);
         const leader = this.players[leaderIdx];
         this.tlTableCombo = undefined;
@@ -837,11 +825,22 @@ export class Game {
           this.startTurn(leaderIdx, 1);
           return;
         }
+        this.tlLastActorId = undefined;
       }
+    }
+    this.startTurn(this.nextTienLenIdx(fromIdx), 1);
+  }
 
-      const nextIdx = this.nextTienLenIdx(this.currentIdx);
-      this.startTurn(nextIdx, 1);
-    });
+  /** Một người về nhất (đánh hết bài, hết giờ tự đánh lá cuối, hoặc mọi người khác rời bàn) */
+  private tlWin(p: Player, message: string) {
+    this.tlFinishOrder.push(p.id);
+    this.phase = 'ended';
+    this.winnerId = p.id;
+    this.winnerIds = [p.id];
+    this.tlLastWinnerId = p.id;
+    this.payouts = this.pot > 0 ? { [p.id]: this.pot } : {};
+    this.turnDeadline = undefined;
+    this.addLog(message);
   }
 
   private nextTienLenIdx(from: number): number {
@@ -858,6 +857,7 @@ export class Game {
 
   play(playerId: string, req: PlayRequest) {
     this.run(() => {
+      this.requireExplodingKittens();
       const p = this.requireAlive(playerId);
       if (this.waiting) throw new GameError('Đang chờ người khác thao tác.');
       const ids = [...new Set(req.cardIds)];
@@ -882,8 +882,15 @@ export class Game {
       if (this.pending) throw new GameError('Đợi hành động trước xử lý xong đã.');
 
       const types = played.map((c) => c.type);
-      const kind = detectPlayKind(types, this.roomRules);
+      let kind = detectPlayKind(types, this.roomRules);
       if (!kind) throw new GameError('Cách đánh này không hợp lệ theo luật phòng.');
+      // Nhân Bản đánh riêng = dùng lại hiệu ứng của lá chức năng vừa có hiệu lực trên bàn
+      if (kind === 'clone') {
+        const copied = this.lastPlay?.result === 'done' ? this.lastPlay.kind : undefined;
+        if (!copied || !CLONEABLE.has(copied)) throw new GameError('Chưa có lá chức năng nào vừa có hiệu lực để Nhân Bản.');
+        kind = copied;
+      }
+      const cloned = types.length === 1 && types[0] === 'clone';
 
       let target: Player | undefined;
       if (kind === 'targeted_attack') {
@@ -894,10 +901,10 @@ export class Game {
         if (!target || !target.alive || target.id === playerId) throw new GameError('Chọn một người chơi khác.');
         if (!target.hand.length) throw new GameError(`${target.name} hết bài rồi.`);
       }
-      if (kind === 'triple' && (!req.namedType || !CARD_INFO[req.namedType] || req.namedType === 'exploding')) {
+      if (kind === 'triple' && (typeof req.namedType !== 'string' || !Object.hasOwn(CARD_INFO, req.namedType) || req.namedType === 'exploding')) {
         throw new GameError('Chọn tên lá muốn lấy.');
       }
-      if ((kind === 'five' || kind === 'grave_robber') && (!req.discardType || req.discardType === 'exploding' || !this.discard.some((c) => c.type === req.discardType))) {
+      if ((kind === 'five' || kind === 'grave_robber') && (typeof req.discardType !== 'string' || req.discardType === 'exploding' || !this.discard.some((c) => c.type === req.discardType))) {
         throw new GameError('Chọn lá muốn lấy từ chồng bài bỏ.');
       }
 
@@ -914,18 +921,20 @@ export class Game {
         namedType: req.namedType,
         discardType: req.discardType,
         discardCardId,
-        shuffleStyle: req.shuffleStyle && SHUFFLE_STYLES[req.shuffleStyle] ? req.shuffleStyle : 'riffle',
+        shuffleStyle: typeof req.shuffleStyle === 'string' && Object.hasOwn(SHUFFLE_STYLES, req.shuffleStyle) ? req.shuffleStyle : 'riffle',
         cards: types,
         nopeCount: 0,
         deadline: Date.now() + this.roomRules.nopeSeconds * 1000,
       };
       this.lastPlay = { id: ++this.playSeq, kind, actorId: playerId, targetId: target?.id, cards: types, cardIds: played.map((c) => c.id), nopers: [], nopeCardIds: [] };
-      this.addLog(this.describe(p, kind, target, req));
+      const desc = this.describe(p, kind, target, req);
+      this.addLog(cloned ? `🧬 ${p.name} đánh Nhân Bản, sao chép hiệu ứng ${CARD_INFO[kind as CardType]?.name ?? kind}. ${desc}` : desc);
     });
   }
 
   draw(playerId: string) {
     this.run(() => {
+      this.requireExplodingKittens();
       const p = this.requireAlive(playerId);
       if (this.current()?.id !== playerId) throw new GameError('Chưa tới lượt bạn.');
       if (this.pending || this.waiting) throw new GameError('Đợi xử lý xong đã.');
@@ -948,6 +957,16 @@ export class Game {
       const card = this.player(playerId)!.hand.find((c) => c.id === cardId);
       if (!card) throw new GameError('Lá bài không hợp lệ.');
       this.doGiveFavor(card);
+    });
+  }
+
+  /** Người cướp chọn lá úp thứ `index` (0-based) trên tay đối phương */
+  pickSteal(playerId: string, index: number) {
+    this.run(() => {
+      const w = this.waiting;
+      if (w?.kind !== 'steal_pick' || w.playerId !== playerId) throw new GameError('Không có lá nào đang chờ bạn chọn.');
+      if (!Number.isInteger(index) || index < 0 || index >= w.order.length) throw new GameError('Chọn 1 lá úp hợp lệ.');
+      this.doStealPick(index);
     });
   }
 
@@ -974,8 +993,10 @@ export class Game {
             myEval: evaluateBlackjackHand(this.bjHands.get(id) ?? [], id === this.bjDealerId),
             players: this.players.map((p): BlackjackPlayerView => {
               const pCards = this.bjHands.get(p.id) ?? [];
-              const st = this.bjStatus.get(p.id) ?? 'playing';
-              const showCards = this.phase === 'ended' || st === 'revealed' || p.id === id;
+              const realSt = this.bjStatus.get(p.id) ?? 'playing';
+              // Quắc chỉ người đó biết; người khác chỉ thấy "đã dừng" cho tới khi lật bài
+              const st = realSt === 'busted' && p.id !== id && this.phase !== 'ended' ? 'stood' : realSt;
+              const showCards = this.phase === 'ended' || realSt === 'revealed' || p.id === id;
               const out = this.bjOutcomes.get(p.id);
               return {
                 playerId: p.id,
@@ -1058,7 +1079,9 @@ export class Game {
                 cards: w.playerId === id ? w.cards : undefined,
                 deadline: w.deadline,
               }
-            : w,
+            : w?.kind === 'steal_pick'
+              ? { kind: w.kind, playerId: w.playerId, targetId: w.targetId, via: w.via, count: w.order.length, deadline: w.deadline }
+              : w,
       winnerId: this.winnerId,
       log: this.log,
       logTotal: this.logTotal,
@@ -1089,6 +1112,19 @@ export class Game {
 
   // ---------- nội bộ ----------
 
+  /** Chạy callback của bộ hẹn giờ: lỗi bất ngờ chỉ ghi log, không làm sập cả server */
+  private safe(fn: () => void) {
+    try {
+      fn();
+    } catch (error) {
+      if (!(error instanceof GameError)) console.error(`[Game ${this.code}] lỗi trong bộ hẹn giờ`, error);
+    }
+  }
+
+  private requireExplodingKittens() {
+    if (this.gameMode !== 'exploding_kittens') throw new GameError('Không phải ván Mèo Nổ.');
+  }
+
   /** Mọi thay đổi trạng thái đi qua đây: chạy xong thì hẹn giờ lại và báo cho mọi người */
   private run(fn: () => void) {
     fn();
@@ -1101,7 +1137,7 @@ export class Game {
     if (this.phase !== 'playing') return;
     const at = this.pending?.deadline ?? this.waiting?.deadline ?? this.turnDeadline;
     if (!at) return;
-    this.timer = setTimeout(() => this.run(() => this.onTimer()), Math.max(0, at - Date.now()) + 50);
+    this.timer = setTimeout(() => this.safe(() => this.run(() => this.onTimer())), Math.max(0, at - Date.now()) + 50);
   }
 
   private onTimer() {
@@ -1113,16 +1149,15 @@ export class Game {
         const isDealer = cur.id === this.bjDealerId;
         const ev = evaluateBlackjackHand(cards, isDealer);
         if (!ev.canStand && ev.canHit && this.bjDeck.length > 0) {
-          this.addLog(`⏰ ${cur.name} hết giờ và chưa đủ tuổi, tự động rút 1 lá.`);
-          const drawn = this.bjDeck.shift()!;
-          cards.push(drawn);
-          this.bjHands.set(cur.id, cards);
-          const nextEv = evaluateBlackjackHand(cards, isDealer);
-          if (nextEv.kind === 'bust') this.bjStatus.set(cur.id, 'busted');
-          else if (nextEv.canStand || !nextEv.canHit) this.bjStatus.set(cur.id, 'stood');
-          else {
-            this.bjStatus.set(cur.id, 'stood');
+          this.addLog(`⏰ ${cur.name} hết giờ và chưa đủ tuổi, tự động rút bài.`);
+          let nextEv = ev;
+          while (!nextEv.canStand && nextEv.canHit && this.bjDeck.length > 0) {
+            cards.push(this.bjDeck.shift()!);
+            nextEv = evaluateBlackjackHand(cards, isDealer);
           }
+          this.bjHands.set(cur.id, cards);
+          this.bjStatus.set(cur.id, nextEv.kind === 'bust' ? 'busted' : 'stood');
+          this.addLog(`✋ ${cur.name} dừng lượt (${cards.length} lá).`);
         } else {
           this.addLog(`⏰ ${cur.name} hết giờ, tự động dừng bài.`);
           this.bjStatus.set(cur.id, 'stood');
@@ -1138,21 +1173,9 @@ export class Game {
         if (this.tlTableCombo && this.tlLastActorId !== cur.id) {
           this.addLog(`⏰ ${cur.name} hết giờ, tự động bỏ lượt.`);
           this.tlPassedIds.add(cur.id);
-          const activeOthers = this.players.filter(
-            (x) => x.alive && !x.left && x.id !== this.tlLastActorId && !this.tlPassedIds.has(x.id),
-          );
-          if (activeOthers.length === 0 && this.tlLastActorId) {
-            const leaderIdx = this.players.findIndex((x) => x.id === this.tlLastActorId);
-            this.tlTableCombo = undefined;
-            this.tlPassedIds.clear();
-            if (leaderIdx >= 0) {
-              this.startTurn(leaderIdx, 1);
-              return;
-            }
-          }
-          this.startTurn(this.nextTienLenIdx(this.currentIdx), 1);
+          this.tlNextTurn(this.currentIdx);
         } else {
-          // Đang cầm cái mở vòng mới -> tự động đánh lá nhỏ nhất trên tay
+          // Được đánh tự do (bàn trống hoặc đang cầm cái) -> tự động đánh lá nhỏ nhất trên tay
           const hand = this.tlHands.get(cur.id) ?? [];
           if (hand.length > 0) {
             const card = hand[0];
@@ -1161,18 +1184,16 @@ export class Game {
             cur.hand = nextHand.map((c) => ({ id: c.id, type: 'cat_taco' as CardType }));
             this.tlTableCombo = detectTienLenCombo([card])!;
             this.tlLastActorId = cur.id;
+            this.tlPassedIds.clear();
+            this.tlChopLog = undefined;
             this.tlFirstTurnOfMatch = false;
             this.tlLowestCardCode = undefined;
             this.addLog(`⏰ ${cur.name} hết giờ, tự động đánh ${card.nameVi}.`);
             if (nextHand.length === 0) {
-              this.phase = 'ended';
-              this.winnerId = cur.id;
-              this.winnerIds = [cur.id];
-              this.payouts = this.pot > 0 ? { [cur.id]: this.pot } : {};
-              this.turnDeadline = undefined;
+              this.tlWin(cur, `🏆 ${cur.name} đánh lá cuối cùng và VỀ NHẤT!`);
               return;
             }
-            this.startTurn(this.nextTienLenIdx(this.currentIdx), 1);
+            this.tlNextTurn(this.currentIdx);
           }
         }
       }
@@ -1190,10 +1211,15 @@ export class Game {
         this.doPlaceBomb(randomInt(this.deck.length + 1));
       } else if (w.kind === 'alter_future') {
         this.doAlterFuture();
+      } else if (w.kind === 'steal_pick') {
+        this.doStealPick();
       } else {
         const hand = this.player(w.playerId)?.hand ?? [];
         if (hand.length) this.doGiveFavor(hand[randomInt(hand.length)]);
-        else this.waiting = undefined;
+        else {
+          this.waiting = undefined;
+          this.extendTurnDeadline();
+        }
       }
       return;
     }
@@ -1216,6 +1242,12 @@ export class Game {
       return;
     }
     const target = pd.targetId ? this.player(pd.targetId) : undefined;
+    // Người bị nhắm tới đã rời bàn: Xin Bài / Cướp / combo không còn tác dụng (Tấn Công Chỉ Định chuyển cho người kế tiếp)
+    if (target && !target.alive && ['favor', 'mark', 'pair', 'triple'].includes(pd.kind)) {
+      if (this.lastPlay) this.lastPlay.result = 'cancelled';
+      this.addLog(`${target.name} đã rời bàn, hành động của ${actor.name} không còn tác dụng.`);
+      return;
+    }
 
     switch (pd.kind) {
       case 'attack': {
@@ -1277,33 +1309,27 @@ export class Game {
       case 'bury': {
         const topCard = this.deck.shift();
         if (topCard) {
-          if (topCard.type !== 'exploding') {
-            actor.hand.push(topCard);
-            this.hooks.fx(this, { type: 'draw', playerId: actor.id });
-            const buryIdx = actor.hand.findIndex((c) => c.type !== 'defuse');
-            const buried = actor.hand.splice(buryIdx >= 0 ? buryIdx : 0, 1)[0];
-            if (buried) {
-              const pos = randomInt(this.deck.length + 1);
-              this.deck.splice(pos, 0, buried);
-              this.hooks.fx(this, { type: 'insert', playerId: actor.id });
-            }
-            this.addLog(`🕳️ ${actor.name} rút 1 lá và chôn 1 lá vào lại chồng bài.`);
-            this.endOneTurn();
-          } else {
-            this.deck.unshift(topCard);
-            this.drawFor(actor, 'top');
-          }
-        } else {
-          this.endOneTurn();
+          // chôn vào giữa (không đặt lại lên trên cùng), Mèo Nổ cũng không kích nổ
+          const pos = this.deck.length ? 1 + randomInt(this.deck.length) : 0;
+          this.deck.splice(pos, 0, topCard);
+          this.hooks.notify(actor.id, {
+            kind: 'future',
+            cards: [topCard.type],
+            cardIds: [topCard.id],
+            text: `Chôn Bài: lá trên cùng là ${CARD_INFO[topCard.type].name}, đã chôn vào vị trí ${pos + 1}/${this.deck.length}`,
+          });
+          this.hooks.fx(this, { type: 'insert', playerId: actor.id });
         }
+        this.addLog(`🕳️ ${actor.name} bí mật xem lá trên cùng và chôn nó vào giữa chồng bài.`);
+        this.endOneTurn();
         break;
       }
       case 'garbage_collection': {
         let returned = 0;
         for (const pl of this.players) {
           if (!pl.alive || !pl.hand.length) continue;
-          const nonDefuseIdx = pl.hand.findIndex((c) => c.type !== 'defuse');
-          const pickIdx = nonDefuseIdx >= 0 ? nonDefuseIdx : randomInt(pl.hand.length);
+          const candidates = pl.hand.map((c, i) => (c.type !== 'defuse' ? i : -1)).filter((i) => i >= 0);
+          const pickIdx = candidates.length ? candidates[randomInt(candidates.length)] : randomInt(pl.hand.length);
           const [given] = pl.hand.splice(pickIdx, 1);
           if (given) {
             this.deck.push(given);
@@ -1356,34 +1382,28 @@ export class Game {
         this.hooks.fx(this, { type: 'future', playerId: actor.id });
         const count = Math.min(this.roomRules.futureCount, this.deck.length);
         const slice = this.deck.slice(0, count);
-        const top = slice.map((c) => c.type);
-        const ids = slice.map((c) => c.id);
-        this.hooks.notify(actor.id, {
-          kind: 'future',
-          cards: top,
-          cardIds: ids,
-          text: `${top.length} lá trên cùng (đã chia sẻ với người kế tiếp)`,
-        });
-        const nextIdx = this.nextAliveIdx(this.currentIdx);
-        const nextPl = this.players[nextIdx];
-        if (nextPl && nextPl.id !== actor.id) {
-          this.hooks.notify(nextPl.id, {
-            kind: 'future',
-            cards: top,
-            cardIds: ids,
-            text: `${actor.name} chia sẻ ${top.length} lá trên cùng với bạn`,
-          });
+        const nextPl = this.players[this.nextAliveIdx(this.currentIdx)];
+        const shareWith = nextPl && nextPl.id !== actor.id ? nextPl.id : undefined;
+        if (slice.length <= 1) {
+          this.notifyShared(actor, slice, shareWith);
+          break;
         }
-        this.addLog(`👁️ ${actor.name} xem và chia sẻ ${top.length} lá trên cùng với ${nextPl?.name ?? 'bàn chơi'}.`);
+        this.waiting = {
+          kind: 'alter_future',
+          playerId: actor.id,
+          cards: slice,
+          shareWith,
+          deadline: Date.now() + this.roomRules.promptSeconds * 1000,
+        };
+        this.addLog(`👁️ ${actor.name} đang xem và sắp xếp ${slice.length} lá trên cùng để chia sẻ với ${nextPl?.name ?? 'bàn chơi'}…`);
         break;
       }
       case 'dig_deeper': {
         if (this.deck.length >= 2 && this.deck[0].type === 'exploding' && this.deck[1].type !== 'exploding') {
           [this.deck[0], this.deck[1]] = [this.deck[1], this.deck[0]];
-          this.addLog(`⛏️ ${actor.name} Đào Sâu né lá trên cùng và rút lá kế tiếp!`);
-        } else {
-          this.addLog(`⛏️ ${actor.name} Đào Sâu rút bài!`);
         }
+        // Cùng một câu dù có né hay không: người khác không biết lá trên cùng là gì
+        this.addLog(`⛏️ ${actor.name} Đào Sâu rút bài!`);
         this.drawFor(actor, 'top');
         break;
       }
@@ -1393,21 +1413,10 @@ export class Game {
         }
         break;
       case 'mark':
-        if (target?.alive && target.hand.length) {
-          const peeked = target.hand[randomInt(target.hand.length)];
-          this.hooks.notify(actor.id, {
-            kind: 'future',
-            cards: [peeked.type],
-            cardIds: [peeked.id],
-            text: `Đánh Dấu: bạn soi thấy ${target.name} đang giữ lá ${CARD_INFO[peeked.type].name}`,
-          });
-          this.addLog(`🎯 ${actor.name} đánh dấu và soi 1 lá trên tay ${target.name}.`);
-        }
+        this.startStealPick(actor, target, 'mark');
         break;
       case 'pair':
-        if (target?.alive && target.hand.length) {
-          this.transfer(target, actor, target.hand[randomInt(target.hand.length)], 'pair');
-        }
+        this.startStealPick(actor, target, 'pair');
         break;
       case 'triple': {
         const card = target?.hand.find((c) => c.type === pd.namedType);
@@ -1481,7 +1490,10 @@ export class Game {
     const w = this.waiting as Extract<Waiting, { kind: 'alter_future' }>;
     const count = Math.min(w.cards.length, this.deck.length);
     const currentSlice = this.deck.slice(0, count);
-    if (Array.isArray(cardIds) && cardIds.length === currentSlice.length) {
+    if (Array.isArray(cardIds) && cardIds.length !== currentSlice.length) {
+      throw new GameError('Thứ tự các lá bài không hợp lệ.');
+    }
+    if (Array.isArray(cardIds)) {
       const map = new Map(currentSlice.map((c) => [c.id, c]));
       const seen = new Set<string>();
       const reordered: Card[] = [];
@@ -1496,10 +1508,60 @@ export class Game {
     this.waiting = undefined;
     this.extendTurnDeadline();
     this.hooks.fx(this, { type: 'insert', playerId: w.playerId });
-    this.addLog(`🔮 ${this.player(w.playerId)?.name} đã sắp xếp xong ${count} lá trên cùng!`);
+    const actor = this.player(w.playerId);
+    if (w.shareWith !== undefined || this.lastPlay?.kind === 'share_future') {
+      if (actor) this.notifyShared(actor, this.deck.slice(0, count), w.shareWith);
+    } else {
+      this.addLog(`🔮 ${actor?.name} đã sắp xếp xong ${count} lá trên cùng!`);
+    }
   }
 
-  private transfer(from: Player, to: Player, card: Card, via: 'favor' | 'pair' | 'triple') {
+  /** Hé Lộ Tương Lai: người đánh và người kế tiếp cùng thấy các lá trên cùng (theo thứ tự đã sắp) */
+  private notifyShared(actor: Player, slice: Card[], shareWith?: string) {
+    const cards = slice.map((c) => c.type);
+    const cardIds = slice.map((c) => c.id);
+    const other = shareWith ? this.player(shareWith) : undefined;
+    this.hooks.notify(actor.id, { kind: 'future', cards, cardIds, text: `${cards.length} lá trên cùng (đã chia sẻ với ${other?.name ?? 'người kế tiếp'})` });
+    if (other?.alive) this.hooks.notify(other.id, { kind: 'future', cards, cardIds, text: `${actor.name} chia sẻ ${cards.length} lá trên cùng với bạn` });
+    this.addLog(`👁️ ${actor.name} chia sẻ ${cards.length} lá trên cùng với ${other?.name ?? 'bàn chơi'}.`);
+  }
+
+  private startStealPick(actor: Player, target: Player | undefined, via: 'mark' | 'pair') {
+    if (!target?.alive || !target.hand.length) {
+      this.addLog(`${target?.name ?? '?'} hết bài, không cướp được lá nào.`);
+      return;
+    }
+    if (target.hand.length === 1) {
+      this.transfer(target, actor, target.hand[0], via);
+      return;
+    }
+    this.waiting = {
+      kind: 'steal_pick',
+      playerId: actor.id,
+      targetId: target.id,
+      via,
+      order: shuffle(target.hand.map((c) => c.id)),
+      deadline: Date.now() + this.roomRules.promptSeconds * 1000,
+    };
+    this.addLog(`🫳 ${actor.name} đang chọn 1 lá úp trên tay ${target.name}…`);
+  }
+
+  /** Không truyền `index` = hết giờ, chọn ngẫu nhiên */
+  private doStealPick(index?: number) {
+    const w = this.waiting as Extract<Waiting, { kind: 'steal_pick' }>;
+    this.waiting = undefined;
+    this.extendTurnDeadline();
+    const actor = this.player(w.playerId);
+    const target = this.player(w.targetId);
+    if (!actor?.alive || !target?.alive || !target.hand.length) return;
+    const pickedId = w.order[index ?? randomInt(w.order.length)];
+    // Bài trên tay đối phương đã đổi (hiếm): lấy ngẫu nhiên trong số còn lại
+    const card = target.hand.find((c) => c.id === pickedId) ?? target.hand[randomInt(target.hand.length)];
+    if (index === undefined) this.addLog(`⏰ ${actor.name} hết giờ chọn, hệ thống bốc ngẫu nhiên 1 lá.`);
+    this.transfer(target, actor, card, w.via);
+  }
+
+  private transfer(from: Player, to: Player, card: Card, via: 'favor' | 'pair' | 'triple' | 'mark') {
     from.hand = from.hand.filter((c) => c.id !== card.id);
     to.hand.push(card);
     const name = CARD_INFO[card.type].name;
@@ -1516,21 +1578,27 @@ export class Game {
     if (w?.playerId !== id) return;
     if (w.kind === 'defuse_place') this.doPlaceBomb(randomInt(this.deck.length + 1));
     else if (w.kind === 'alter_future') this.doAlterFuture();
-    else this.waiting = undefined;
+    else {
+      this.waiting = undefined;
+      this.extendTurnDeadline();
+    }
   }
 
   private eliminate(p: Player) {
     const wasCurrent = this.current()?.id === p.id;
-    this.discard.push(...p.hand);
+    if (this.gameMode === 'exploding_kittens') this.discard.push(...p.hand);
     p.hand = [];
     p.alive = false;
     if (this.gameMode === 'blackjack_21') {
-      this.bjStatus.set(p.id, 'busted');
-      const alive = this.players.filter((x) => x.alive && !x.left);
-      if (alive.length <= 1 || p.id === this.bjDealerId) {
-        if (alive.length === 1 && p.id === this.bjDealerId) {
-          this.bjDealerId = alive[0].id;
-        }
+      if (p.id === this.bjDealerId) {
+        this.voidBlackjack(`🚪 Nhà Cái ${p.name} rời bàn – huỷ ván, hoàn cược cho mọi người.`);
+        return;
+      }
+      // Nhà con rời bàn giữa ván: tính là thua, mất cược cho Nhà Cái
+      this.bjStatus.set(p.id, 'stood');
+      this.bjOutcomes.set(p.id, { outcome: 'lose', text: 'Rời bàn giữa ván', delta: 0 });
+      const remaining = this.players.filter((x) => x.id !== this.bjDealerId && x.alive && !x.left);
+      if (remaining.length === 0) {
         this.finishBlackjack();
         return;
       }
@@ -1538,29 +1606,51 @@ export class Game {
       return;
     }
     if (this.gameMode === 'tien_len') {
+      const leftHand = this.tlHands.get(p.id) ?? [];
       this.tlHands.delete(p.id);
       this.tlPassedIds.add(p.id);
+      // Người giữ lá nhỏ nhất rời trước nước mở đầu: người kế tiếp được đánh tự do
+      if (this.tlFirstTurnOfMatch && this.tlLowestCardCode && leftHand.some((c) => c.code === this.tlLowestCardCode)) {
+        this.tlFirstTurnOfMatch = false;
+        this.tlLowestCardCode = undefined;
+      }
       const alive = this.players.filter((x) => x.alive && !x.left);
       if (alive.length <= 1) {
-        this.phase = 'ended';
-        this.winnerId = alive[0]?.id;
-        this.winnerIds = alive[0] ? [alive[0].id] : [];
-        if (alive[0] && this.pot > 0) this.payouts = { [alive[0].id]: this.pot };
-        this.turnDeadline = undefined;
-        this.addLog(alive[0] ? `🏆 ${alive[0].name} thắng!` : 'Hết ván.');
+        if (alive[0]) this.tlWin(alive[0], `🏆 ${alive[0].name} thắng vì những người khác đã rời bàn!`);
+        else {
+          this.phase = 'ended';
+          this.turnDeadline = undefined;
+          this.addLog('Hết ván.');
+        }
         return;
       }
       if (this.tlLastActorId === p.id) {
+        // Người đánh cuối rời bàn: kết thúc vòng, người đang tới lượt được đánh tự do
         this.tlTableCombo = undefined;
         this.tlPassedIds.clear();
+        this.tlChopLog = undefined;
+        this.tlLastActorId = undefined;
+        if (wasCurrent) this.startTurn(this.nextTienLenIdx(this.currentIdx), 1);
+        return;
       }
-      if (wasCurrent) this.startTurn(this.nextTienLenIdx(this.currentIdx), 1);
+      if (wasCurrent) this.tlNextTurn(this.currentIdx);
       return;
     }
-    if (this.pending?.actorId === p.id) this.pending = undefined;
+    if (this.pending?.actorId === p.id) {
+      this.pending = undefined;
+      if (this.lastPlay && !this.lastPlay.result) this.lastPlay.result = 'cancelled';
+    }
     if (this.waiting?.kind === 'favor_give' && this.waiting.toId === p.id) this.waiting = undefined;
+    if (this.waiting?.kind === 'steal_pick' && this.waiting.targetId === p.id) {
+      const thief = this.player(this.waiting.playerId);
+      this.waiting = undefined;
+      this.extendTurnDeadline();
+      if (this.lastPlay) this.lastPlay.result = 'cancelled';
+      this.addLog(`${p.name} đã rời bàn, ${thief?.name ?? '?'} không cướp được lá nào.`);
+    }
     const alive = this.players.filter((x) => x.alive);
     if (alive.length <= 1) {
+      if (this.waiting?.kind === 'defuse_place') this.deck.unshift(this.waiting.card);
       this.phase = 'ended';
       this.winnerId = alive[0]?.id;
       this.winnerIds = alive[0] ? [alive[0].id] : [];
@@ -1658,7 +1748,7 @@ export class Game {
       case 'targeted_attack':
         return `${p.name} đánh Tấn Công Chỉ Định vào ${target!.name}.`;
       case 'mark':
-        return `${p.name} đánh Đánh Dấu vào ${target!.name}.`;
+        return `${p.name} đánh Cướp Nhắm vào ${target!.name}.`;
       case 'grave_robber':
         return `${p.name} đánh Trộm Mộ, muốn lấy ${CARD_INFO[req.discardType!].name} từ chồng bài bỏ.`;
       default:
