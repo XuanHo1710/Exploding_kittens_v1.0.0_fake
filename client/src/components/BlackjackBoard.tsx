@@ -127,7 +127,7 @@ export default function BlackjackBoard({ view, meId, emit, emote, chat, dock }: 
                   .join(' ')}
                 style={{ ['--x' as string]: x, ['--y' as string]: y } as CSSProperties}
               >
-                {isHost && !p.left && (
+                {isHost && !p.left && view.phase === 'lobby' && (
                   <button
                     type="button"
                     className="seat-kick-btn"

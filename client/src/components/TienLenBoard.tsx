@@ -7,6 +7,7 @@ import {
   detectTienLenCombo,
   type Emote,
   type RoomView,
+  PLAYING_CARD_BY_CODE,
 } from '../../../shared/src';
 import PlayerAvatar from '../art/PlayerAvatar';
 import { fmtCoins, Brand } from './Dock';
@@ -158,7 +159,7 @@ export default function TienLenBoard({ view, meId, emit, emote, chat, dock }: Pr
                   .join(' ')}
                 style={{ ['--x' as string]: x, ['--y' as string]: y } as CSSProperties}
               >
-                {isHost && !p.left && (
+                {isHost && !p.left && view.phase === 'lobby' && (
                   <button
                     type="button"
                     className="seat-kick-btn"
@@ -238,7 +239,7 @@ export default function TienLenBoard({ view, meId, emit, emote, chat, dock }: Pr
               </h3>
               {tl.firstTurnOfMatch && tl.mustIncludeLowest && (
                 <p className="muted small">
-                  Lượt mở màn ván đầu tiên cần đánh bộ có chứa lá nhỏ nhất ({tl.mustIncludeLowest.replace('Spd-', '')}♠ / lá nhỏ nhất).
+                  Lượt mở màn ván đầu tiên cần đánh bộ có chứa lá nhỏ nhất ({PLAYING_CARD_BY_CODE[tl.mustIncludeLowest] ? `${PLAYING_CARD_BY_CODE[tl.mustIncludeLowest].rank}${PLAYING_CARD_BY_CODE[tl.mustIncludeLowest].suitSymbol}` : tl.mustIncludeLowest}).
                 </p>
               )}
             </div>
