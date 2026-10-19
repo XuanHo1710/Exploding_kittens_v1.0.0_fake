@@ -15,3 +15,7 @@ export const registerAccount = (playerId: string, name: string, pin: string, ava
   post<AuthResult>('/api/account/register', { playerId, name, pin, avatar });
 
 export const loginAccount = (name: string, pin: string) => post<AuthResult>('/api/account/login', { name, pin });
+
+/** Huỷ token trên server (lỗi mạng thì bỏ qua: trình duyệt vẫn xoá thông tin đăng nhập) */
+export const logoutAccount = (playerId: string, token: string) =>
+  post<{ ok: true }>('/api/account/logout', { playerId, token }).catch(() => undefined);

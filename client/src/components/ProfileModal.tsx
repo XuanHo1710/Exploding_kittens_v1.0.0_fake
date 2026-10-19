@@ -66,7 +66,7 @@ export default function ProfileModal({ identity, account, onDaily, onLogout, onS
       const res = await fetch(`${SERVER_URL}/api/avatar`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ playerId: identity.playerId, dataUrl }),
+        body: JSON.stringify({ playerId: identity.playerId, token: identity.token, dataUrl }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.message ?? 'Tải ảnh lỗi');

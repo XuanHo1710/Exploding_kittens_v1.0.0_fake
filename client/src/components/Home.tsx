@@ -34,7 +34,7 @@ export default function Home({
       await onCreate(
         {
           ...base,
-          maxPlayers: mode === 'tien_len' ? 4 : 6,
+          maxPlayers: mode === 'tien_len' ? 4 : mode === 'blackjack_21' ? 10 : 6,
         },
         mode,
       );

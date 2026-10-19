@@ -4,6 +4,7 @@ import { io, Socket } from 'socket.io-client';
 import { DEFAULT_ROOM_RULES, type AccountInfo, type ChatMessage, type Emote, type GameFx, type Identity, type PrivateNotice, type RoomView } from '../../shared/src';
 import { RoomPlayerCountContext, RoomRulesContext } from './roomRulesContext';
 import { clearIdentity, loadIdentity, updateIdentity } from './identity';
+import { logoutAccount } from './api';
 import { SettingsContext, useSettingsState } from './settings';
 import Dock, { Brand } from './components/Dock';
 import ProfileModal from './components/ProfileModal';
@@ -63,8 +64,10 @@ export default function App() {
     clearTimeout(toastTimer.current);
     toastTimer.current = window.setTimeout(() => setToast(null), 3500);
   };
+  // Server chỉ nhận socket có token tài khoản: chưa đăng nhập bằng PIN thì chưa kết nối
+  const hasToken = !!identity?.token;
   useEffect(() => {
-    if (!identity) return;
+    if (!identity?.token) return;
     const auth = (cb: (data: object) => void) => cb(identityRef.current ?? {});
     const s = SERVER_URL ? io(SERVER_URL, { auth }) : io({ auth });
     s.on('connect', () => setOnline(true));
@@ -98,7 +101,7 @@ export default function App() {
       s.disconnect();
       setSocket(null);
     };
-  }, [identity?.playerId]);
+  }, [identity?.playerId, hasToken]);
 
   // Vừa tạo tài khoản / đăng nhập (có token mới, cùng playerId): kết nối lại để server xác thực
   const lastToken = useRef(identity?.token);
@@ -222,6 +225,7 @@ export default function App() {
             account={account}
             onDaily={() => emit('account:daily')}
             onLogout={() => {
+              if (identity.token) void logoutAccount(identity.playerId, identity.token);
               clearIdentity();
               setIdentity(null);
               setAccount(null);
