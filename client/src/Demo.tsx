@@ -3,13 +3,14 @@
  * Các cảnh: play | myturn | defuse | future | favor | ended | dead | reveal | shuffle | explode | emote
  */
 import { useEffect, useState } from 'react';
-import type { Card, CardType, ChatMessage, Emote, GameFx, PrivateNotice, RoomView } from '../../shared/src';
+import { DEFAULT_ROOM_RULES, type Card, type CardType, type ChatMessage, type Emote, type GameFx, type PrivateNotice, type RoomView } from '../../shared/src';
+import { RoomPlayerCountContext, RoomRulesContext } from './roomRulesContext';
 import GameBoard from './components/GameBoard';
 import { CardPreviewLayer } from './components/CardPreview';
 import { SettingsContext, useSettingsState } from './settings';
 
 const NAMES = ['xuânho', 'dsa', 'aloalo', 'Minh', 'Lan Anh', 'Tuấn', 'Hùng', 'Thảo'];
-const HAND: CardType[] = ['defuse', 'cat_melon', 'cat_melon', 'see_future', 'nope', 'skip', 'shuffle', 'favor', 'cat_beard'];
+const HAND: CardType[] = ['defuse', 'cat_melon', 'cat_melon', 'see_future', 'nope', 'skip', 'draw_bottom', 'shuffle', 'favor', 'cat_beard'];
 
 export default function Demo() {
   const [saved] = useSettingsState();
@@ -90,6 +91,9 @@ export default function Demo() {
   const myTurn = ['myturn', 'defuse', 'future', 'shuffle'].includes(scene);
   const view: RoomView = {
     code: 'DEMO',
+    gameMode: 'exploding_kittens',
+    rules: DEFAULT_ROOM_RULES,
+    rulesVersion: 1,
     phase: scene === 'ended' ? 'ended' : 'playing',
     hostId: 'me',
     players,
@@ -119,6 +123,8 @@ export default function Demo() {
   };
   return (
     <SettingsContext.Provider value={settings}>
+      <RoomRulesContext.Provider value={view.rules}>
+      <RoomPlayerCountContext.Provider value={view.players.length}>
       <div className="app">
         <GameBoard view={view} meId="me" emit={(e, p) => {
             console.log('[demo emit]', e, p);
@@ -126,6 +132,8 @@ export default function Demo() {
           }} notice={notice} onCloseNotice={() => setNotice(null)} reveal={reveal} onCloseReveal={() => setReveal(null)} fx={fx} emote={emote} chat={chat} />
         <CardPreviewLayer />
       </div>
+      </RoomPlayerCountContext.Provider>
+      </RoomRulesContext.Provider>
     </SettingsContext.Provider>
   );
 }

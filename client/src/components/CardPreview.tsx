@@ -3,8 +3,11 @@
  * CardView gắn trigger, App/Demo render <CardPreviewLayer /> đúng 1 lần.
  */
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type PointerEvent as RPointerEvent, type MouseEvent as RMouseEvent } from 'react';
-import { CARD_INFO, DECK_COUNTS, type CardType } from '../../../shared/src';
+import { Cat, Package } from 'lucide-react';
+import { CARD_INFO, describeCard, roomDeckSummary, type CardType, type DeckCardType, type RoomRules } from '../../../shared/src';
+import { useRoomPlayerCount, useRoomRules } from '../roomRulesContext';
 import CardView from './CardView';
+import { CardIcon } from './icons';
 
 interface Preview {
   type: CardType;
@@ -91,22 +94,55 @@ export function usePreviewTrigger(type: CardType, seed: string | number | undefi
 /** Hướng dẫn cách dùng từng lá */
 const HOW: Record<CardType, string> = {
   exploding: 'Không đánh được. Rút trúng là phải dùng Gỡ Bom ngay, không có thì bị loại.',
-  defuse: 'Không cần bấm đánh: game tự dùng khi bạn rút trúng Mèo Nổ, rồi cho bạn chọn chỗ nhét bom lại.',
-  attack: 'Trong lượt của bạn: chọn lá này rồi bấm "Đánh ra". Bạn không phải rút bài.',
-  skip: 'Trong lượt của bạn: chọn lá này rồi bấm "Đánh ra" để kết thúc lượt mà không rút. Hay dùng khi nghi lá trên cùng là bom.',
-  favor: 'Trong lượt của bạn: chọn lá, bấm vào avatar người muốn xin rồi "Đánh ra". Người đó tự chọn lá đưa bạn.',
-  shuffle: 'Trong lượt của bạn: chọn lá rồi "Đánh ra". Dùng khi biết bom nằm trên cùng để phá vị trí.',
-  see_future: 'Trong lượt của bạn: chọn lá rồi "Đánh ra". Chỉ mình bạn thấy 3 lá trên cùng.',
-  nope: 'Bất cứ lúc nào có người vừa đánh bài (kể cả ngoài lượt): bấm nút NOPE! đỏ giữa bàn trong 4 giây.',
+  defuse: '', // Filled from the room's bomb placement setting below.
+  attack: 'Trong lượt của bạn: bấm lá này để kết thúc lượt ngay mà không cần rút bài, ép người kế tiếp chơi 2 lượt.',
+  targeted_attack: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người bất kỳ trên bàn để ép người đó phải chơi 2 lượt.',
+  personal_attack: 'Trong lượt của bạn: bấm lá này để tự nhận 3 lượt liên tiếp (dùng khi muốn rút nhiều bài an toàn hoặc gánh thay).',
+  skip: 'Trong lượt của bạn: bấm lá này để kết thúc 1 lượt ngay mà không phải rút bài. Hay dùng khi nghi lá trên cùng là bom.',
+  super_skip: 'Trong lượt của bạn: bấm lá này để kết thúc TOÀN BỘ số lượt bạn đang phải đi (kể cả khi bị Tấn Công cộng dồn) mà không rút bài.',
+  reverse: 'Trong lượt của bạn: bấm lá này để đảo ngược chiều vòng chơi và kết thúc 1 lượt của bạn mà không cần rút bài.',
+  draw_bottom: 'Trong lượt của bạn: bấm lá này để rút 1 lá dưới ĐÁY chồng bài thay vì lá trên cùng, rồi kết thúc 1 lượt ngay.',
+  catomic_bomb: 'Trong lượt của bạn: bấm lá này để gom TẤT CẢ Mèo Nổ trong chồng rút đặt ngửa lên ĐẦU chồng bài, xáo phần còn lại và kết thúc 1 lượt không cần rút!',
+  swap_top_bottom: 'Trong lượt của bạn: bấm lá này để tráo đổi vị trí lá trên cùng và lá dưới đáy chồng bài (chưa kết thúc lượt, cực hợp khi đi kèm Rút Đáy).',
+  bury: 'Trong lượt của bạn: bấm lá này để rút lá trên cùng rồi bí mật chôn 1 lá bài vào lại chồng rút, kết thúc 1 lượt.',
+  garbage_collection: 'Trong lượt của bạn: bấm lá này để buộc mọi người còn sống bỏ 1 lá trên tay vào lại chồng bài rồi xáo đều.',
+  shuffle: 'Trong lượt của bạn: bấm lá này rồi chọn kiểu xáo bài để đảo ngẫu nhiên vị trí Mèo Nổ trong chồng rút.',
+  see_future: '', // Filled from the room's preview count below.
+  alter_future: '', // Filled from the room's preview count below.
+  share_future: '', // Filled from the room's preview count below.
+  dig_deeper: 'Trong lượt của bạn: bấm lá này để đào sâu né Mèo Nổ nếu lá đầu là bom và rút bài kết thúc 1 lượt.',
+  favor: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người chơi có bài. Người đó tự chọn 1 lá trên tay đưa cho bạn.',
+  mark: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người chơi để đánh dấu và bí mật soi 1 lá ngẫu nhiên trên tay họ.',
+  grave_robber: 'Trong lượt của bạn: bấm lá này rồi chọn 1 lá bài bất kỳ đang nằm trong chồng bài bỏ để lấy về tay.',
+  nope: '', // Filled from the room's Nope window and chaining setting below.
+  clone: 'Lá đại diện đa năng: dùng kèm các lá mèo để ghép thành Đôi (2 lá) hoặc Bộ ba (3 lá) cướp bài đối thủ.',
+  feral_cat: 'Mèo Hoang đa năng: ghép chung với bất kỳ lá mèo nào khác để tạo thành Đôi (2 lá) hoặc Bộ ba (3 lá) cướp bài.',
   cat_potato: '',
   cat_melon: '',
   cat_bladder: '',
   cat_schrodinger: '',
   cat_beard: '',
 };
-const CAT_HOW = 'Chọn 2 lá giống nhau (đôi) để cướp ngẫu nhiên 1 lá, hoặc 3 lá giống nhau (bộ ba) để đòi đúng lá bạn muốn. Bấm vào avatar để chọn người.';
+function howToPlay(type: CardType, rules: RoomRules) {
+  let text = HOW[type];
+  if (type === 'defuse') text = `Game tự dùng khi bạn rút trúng Mèo Nổ, sau đó ${rules.bombPlacement === 'choose' ? 'bạn chọn vị trí nhét bom lại' : 'bom được nhét lại ở vị trí ngẫu nhiên'}.`;
+  if (type === 'see_future') text = `Trong lượt của bạn: bấm lá để bí mật xem tối đa ${rules.futureCount} lá trên cùng.`;
+  if (type === 'alter_future') text = `Trong lượt của bạn: bấm lá để xem và sắp xếp tối đa ${rules.futureCount} lá trên cùng (tự động đẩy Mèo Nổ xuống dưới cho bạn).`;
+  if (type === 'share_future') text = `Trong lượt của bạn: bấm lá để xem tối đa ${rules.futureCount} lá trên cùng và chia sẻ cho người chơi kế tiếp cùng biết.`;
+  if (type === 'nope') text = `Khi có người đánh bài, bấm lá này hoặc nút NOPE! trong ${rules.nopeSeconds} giây, kể cả ngoài lượt. ${rules.nopeChain ? 'Bạn có thể Nope lại một lá Nope.' : 'Mỗi hành động chỉ được Nope một lần.'}`;
+  const canMatch = CARD_INFO[type].isCat || (rules.comboScope === 'any' && type !== 'exploding');
+  const combos: string[] = [];
+  if (canMatch && rules.allowPair) combos.push('2 lá cùng loại (hoặc ghép với Mèo Hoang / Sao Chép) để cướp ngẫu nhiên 1 lá');
+  if (canMatch && rules.allowTriple) combos.push('3 lá cùng loại (hoặc ghép với Mèo Hoang / Sao Chép) để đòi đúng lá muốn');
+  if (type !== 'exploding' && rules.allowFive) combos.push('5 lá khác loại để lấy 1 lá trong chồng bài bỏ');
+  if (combos.length) text += `${text ? ' ' : ''}Combo được phép: ${combos.join('; ')}. Dùng “Chọn nhiều lá” để chọn combo.`;
+  if (!text) text = 'Phòng này đã tắt các combo dùng được với lá này. Bạn vẫn có thể đưa lá khi bị Xin Bài.';
+  return text;
+}
 
 export function CardPreviewLayer() {
+  const rules = useRoomRules();
+  const playerCount = useRoomPlayerCount();
   const p = useSyncExternalStore(store.sub, store.get, store.get);
   const boxRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number; side: string } | null>(null);
@@ -116,16 +152,17 @@ export function CardPreviewLayer() {
       setPos(null);
       return;
     }
-    // offsetWidth/Height: kích thước thật, không bị animation scale làm lệch
-    const w = boxRef.current.offsetWidth;
-    const h = boxRef.current.offsetHeight;
-    // clientWidth: không tính thanh cuộn
     const vw = document.documentElement.clientWidth;
     const vh = document.documentElement.clientHeight;
+    if (vw < 640) {
+      boxRef.current.classList.add('side-sheet');
+    }
+    const w = boxRef.current.offsetWidth;
+    const h = boxRef.current.offsetHeight;
     const r = p.rect;
     const gap = 14;
-    const clampX = (x: number) => Math.min(Math.max(8, x), vw - w - 8);
-    const clampY = (y: number) => Math.min(Math.max(8, y), vh - h - 8);
+    const clampX = (x: number) => Math.min(Math.max(8, x), Math.max(8, vw - w - 8));
+    const clampY = (y: number) => Math.min(Math.max(8, y), Math.max(8, vh - h - 8));
     const midX = r.left + r.width / 2 - w / 2;
     const midY = r.top + r.height / 2 - h / 2;
     let next: { left: number; top: number; side: string };
@@ -135,7 +172,7 @@ export function CardPreviewLayer() {
     else if (r.left - gap - w > 8) next = { left: r.left - gap - w, top: clampY(midY), side: 'left' };
     else next = { left: clampX(midX), top: clampY(r.bottom + gap), side: 'below' };
     setPos(next);
-  }, [p]);
+  }, [p, rules, playerCount]);
 
   useLayoutEffect(() => {
     if (!p) return;
@@ -154,31 +191,42 @@ export function CardPreviewLayer() {
 
   if (!p) return null;
   const info = CARD_INFO[p.type];
-  const count =
-    p.type === 'exploding' ? 'mỗi người 1 lá (trong chồng bài)' : p.type === 'defuse' ? 'mỗi người 1 lá' : `${DECK_COUNTS[p.type as keyof typeof DECK_COUNTS]} lá`;
+  const deck = playerCount === undefined ? undefined : roomDeckSummary(rules, playerCount);
+  const count = p.type === 'exploding'
+    ? deck ? `${deck.bombs} lá` : rules.bombMode === 'fixed' ? `${rules.fixedBombs} lá` : rules.bombMode === 'players' ? 'bằng số người chơi' : 'ít hơn số người chơi 1 lá'
+    : p.type === 'defuse'
+      ? deck ? `${deck.defuses} lá (${rules.defusesPerPlayer}/người + ${rules.extraDefuses} trong chồng rút)` : `${rules.defusesPerPlayer}/người + ${rules.extraDefuses} trong chồng rút`
+      : `${rules.cardCounts[p.type as DeckCardType]} lá`;
+  const isMobile = typeof document !== 'undefined' && document.documentElement.clientWidth < 640;
   return (
     <div
       ref={boxRef}
-      className={`card-preview side-${pos?.side ?? 'none'}`}
+      className={`card-preview side-${pos?.side ?? (isMobile ? 'sheet' : 'none')}`}
       style={{ left: pos?.left ?? -9999, top: pos?.top ?? -9999, ['--c' as string]: info.color }}
       role="tooltip"
     >
       <CardView type={p.type} seed={p.seed} size="xl" className="preview-card" preview={false} />
       <div className="preview-info">
         <div className="preview-name">
-          <span>{info.emoji}</span> {info.name}
+          <CardIcon type={p.type} size={20} /> {info.name}
         </div>
         <div className="preview-section">
           <span className="preview-label">Tác dụng</span>
-          <p>{info.desc}</p>
+          <p>{describeCard(p.type, rules)}</p>
         </div>
         <div className="preview-section">
           <span className="preview-label">Cách đánh</span>
-          <p>{info.isCat ? CAT_HOW : HOW[p.type]}</p>
+          <p>{howToPlay(p.type, rules)}</p>
         </div>
         <div className="preview-meta">
-          <span>📦 Trong bộ: {count}</span>
-          {info.isCat && <span>🐱 Mèo thường</span>}
+          <span>
+            <Package size={13} className="inline-icon" /> Trong bộ: {count}
+          </span>
+          {info.isCat && (
+            <span>
+              <Cat size={13} className="inline-icon" /> Mèo thường
+            </span>
+          )}
         </div>
       </div>
     </div>

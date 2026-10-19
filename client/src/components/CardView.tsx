@@ -1,9 +1,9 @@
-import type { CSSProperties } from 'react';
-import { CARD_INFO, type CardType } from '../../../shared/src';
+import { useEffect, useState, type CSSProperties } from 'react';
+import { CARD_INFO, describeCard, type CardType } from '../../../shared/src';
 import CardArt from '../art/CardArt';
 import { cardImage } from '../cardImages';
-import { useSettings } from '../settings';
 import { usePreviewTrigger } from './CardPreview';
+import { useRoomRules } from '../roomRulesContext';
 
 /** Nền tranh riêng cho vài lá (mặc định pha sáng từ màu lá) */
 const PANEL: Partial<Record<CardType, string>> = {
@@ -29,8 +29,13 @@ interface Props {
 
 export default function CardView({ type, seed, selected, size = 'md', onClick, className = '', style, preview = true, cid }: Props) {
   const info = CARD_INFO[type];
-  const { cardStyle } = useSettings();
-  const img = cardStyle === 'photo' ? cardImage(type, seed) : undefined;
+  const rules = useRoomRules();
+  const short = describeCard(type, rules);
+  const img = cardImage(type, seed);
+  const [imgErr, setImgErr] = useState(false);
+  useEffect(() => {
+    setImgErr(false);
+  }, [img]);
   const Tag = onClick ? 'button' : 'div';
   const trigger = usePreviewTrigger(type, seed, preview);
   return (
@@ -39,13 +44,13 @@ export default function CardView({ type, seed, selected, size = 'md', onClick, c
       className={`card card-${size}${selected ? ' selected' : ''} ${className}`}
       style={{ ['--c' as string]: info.color, ['--panel' as string]: PANEL[type], ...style }}
       onClick={onClick}
-      title={preview ? undefined : `${info.name}: ${info.desc}`}
+      title={preview ? undefined : `${info.name}: ${short}`}
       data-cid={cid}
       {...trigger}
     >
-      {img ? (
+      {img && !imgErr ? (
         <>
-          <img className="card-photo" src={img} alt={info.name} draggable={false} />
+          <img className="card-photo" src={img} alt={info.name} draggable={false} onError={() => setImgErr(true)} />
           <span className="card-photo-name">{info.name}</span>
         </>
       ) : (
@@ -54,7 +59,7 @@ export default function CardView({ type, seed, selected, size = 'md', onClick, c
           <span className="cf-art">
             <CardArt type={type} />
           </span>
-          <span className="cf-desc">{info.short}</span>
+          <span className="cf-desc">{short}</span>
         </span>
       )}
     </Tag>

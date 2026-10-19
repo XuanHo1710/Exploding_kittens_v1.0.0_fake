@@ -1,12 +1,53 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  ArrowUpDown,
+  Ban,
+  Bomb,
+  BookOpen,
+  Cat,
+  Check,
+  CircleDot,
+  Coins,
+  Crosshair,
+  Crown,
+  Droplets,
+  Eye,
+  GripVertical,
+  HandHeart,
+  Hourglass,
+  Layers,
+  LogOut,
+  MessageSquare,
+  MoreHorizontal,
+  MousePointerClick,
+  Play,
+  RotateCcw,
+  ScrollText,
+  ShieldCheck,
+  Shuffle,
+  Skull,
+  Sparkles,
+  TrendingDown,
+  Trophy,
+  UserX,
+  Wand2,
+  WifiOff,
+  X,
+  Zap,
+} from 'lucide-react';
+import {
   CARD_INFO,
   EMOTES,
-  NOPE_WINDOW_MS,
+  SINGLE_ACTION_CARDS,
+  WILDCARD_CAT_TYPES,
+  canMatchComboCards,
+  detectPlayKind,
   QUICK_EMOTES,
   THROWABLES,
-  PROMPT_MS,
-  TURN_MS,
   type ActionKind,
   type Card,
   type CardType,
@@ -21,12 +62,14 @@ import {
 import { CardBack } from '../art/CatAvatar';
 import PlayerAvatar from '../art/PlayerAvatar';
 import CardView from './CardView';
+import { ShuffleIcon } from './icons';
 import Modal from './Modal';
 import { sfx } from '../sfx';
-import { flyCard, flyClone, flyEmoji, seatEl } from '../fx';
+import { flyCard, flyClone, flyEmoji, flyTransferCard, seatEl } from '../fx';
 import PlayWizard, { type WizardResult } from './PlayWizard';
 import ChatPanel, { useChatState, type ChatTab, type RoomChat } from './ChatPanel';
 import { Brand, fmtCoins } from './Dock';
+import Rules from './Rules';
 
 interface Props {
   view: RoomView;
@@ -58,17 +101,33 @@ function loadChatOpen() {
   }
 }
 
-const SINGLE: CardType[] = ['attack', 'skip', 'favor', 'shuffle', 'see_future'];
+const SINGLE: readonly CardType[] = SINGLE_ACTION_CARDS;
 
 /** Thứ tự xếp bài "theo loại": lá cứu mạng → lá chặn → lá chức năng → mèo (cùng loại đứng cạnh nhau) */
 const SORT_ORDER: CardType[] = [
   'defuse',
   'nope',
+  'super_skip',
   'skip',
+  'reverse',
+  'draw_bottom',
+  'dig_deeper',
+  'bury',
+  'targeted_attack',
   'attack',
+  'personal_attack',
+  'catomic_bomb',
+  'swap_top_bottom',
+  'garbage_collection',
   'favor',
+  'mark',
+  'grave_robber',
   'shuffle',
+  'alter_future',
   'see_future',
+  'share_future',
+  'feral_cat',
+  'clone',
   'cat_potato',
   'cat_melon',
   'cat_bladder',
@@ -171,23 +230,27 @@ function pileShuffle(container: HTMLElement | null) {
 
 const SHUFFLE_ANIM: Record<ShuffleStyle, (c: HTMLElement | null) => void> = { riffle, overhand, pile: pileShuffle };
 
-/** Cùng luật với server: đoán kiểu đánh từ các lá đang chọn */
-function detectKind(types: CardType[]): ActionKind | null {
-  if (types.length === 1 && SINGLE.includes(types[0])) return types[0] as ActionKind;
-  const same = types.every((t) => t === types[0]);
-  if ((types.length === 2 || types.length === 3) && same && CARD_INFO[types[0]].isCat) {
-    return types.length === 2 ? 'pair' : 'triple';
-  }
-  if (types.length === 5 && new Set(types).size === 5) return 'five';
-  return null;
-}
-
 const KIND_LABEL: Record<ActionKind, string> = {
   attack: 'Tấn Công',
+  targeted_attack: 'Tấn Công Chỉ Định',
+  personal_attack: 'Tự Tấn Công (3x)',
   skip: 'Bỏ Lượt',
+  super_skip: 'Siêu Bỏ Lượt',
+  reverse: 'Đảo Chiều',
+  draw_bottom: 'Rút Đáy',
+  catomic_bomb: 'Bom Nguyên Tử',
+  swap_top_bottom: 'Đổi Đầu Đuôi',
+  bury: 'Chôn Bài',
+  garbage_collection: 'Thu Gom Rác',
   favor: 'Xin Bài',
+  mark: 'Đánh Dấu',
+  grave_robber: 'Trộm Mộ',
   shuffle: 'Xáo Bài',
   see_future: 'Xem Trước',
+  alter_future: 'Sửa Tương Lai',
+  share_future: 'Chia Sẻ Tương Lai',
+  dig_deeper: 'Đào Sâu',
+  clone: 'Sao Chép',
   pair: 'Đôi mèo',
   triple: 'Bộ ba mèo',
   five: '5 lá khác loại',
@@ -246,65 +309,15 @@ function useFeed(log: string[], total: number) {
 
 type FloatKind = 'emote' | 'hit' | 'blast' | 'shard' | 'impact' | 'splat' | 'yolk' | 'drop' | 'shell' | 'crack' | 'bounce' | 'dizzy' | 'heart';
 
-/** Vệt văng (cà chua, phân…) – hình loang có răng cưa + vài chấm */
-const SPLAT_PATH =
-  'M50 16 C58 4 68 20 63 29 C75 22 88 30 77 42 C93 44 91 59 77 61 C88 73 75 86 63 75 C63 91 46 93 44 79 C33 89 18 81 27 68 C10 66 10 51 25 49 C13 38 23 24 36 31 C33 17 43 12 50 16 Z';
-
-function HitArt({ kind, v }: { kind: FloatKind; v?: string }) {
+function HitArt({ kind }: { kind: FloatKind; v?: string }) {
   if (kind === 'splat') {
-    return (
-      <svg viewBox="0 0 100 100" aria-hidden="true">
-        <path d={SPLAT_PATH} />
-        <circle cx="14" cy="22" r="5" />
-        <circle cx="88" cy="20" r="4" />
-        <circle cx="90" cy="82" r="5" />
-        <circle cx="10" cy="84" r="3.5" />
-        {v === 'tomato' && (
-          <g fill="#ffe08a" opacity=".9">
-            <ellipse cx="44" cy="44" rx="3" ry="2" />
-            <ellipse cx="58" cy="52" rx="3" ry="2" transform="rotate(40 58 52)" />
-            <ellipse cx="48" cy="60" rx="3" ry="2" transform="rotate(-30 48 60)" />
-          </g>
-        )}
-        <ellipse cx="38" cy="36" rx="9" ry="5" fill="#fff" opacity=".35" />
-      </svg>
-    );
+    return <Droplets size={38} strokeWidth={2.2} aria-hidden="true" />;
   }
   if (kind === 'yolk') {
-    return (
-      <svg viewBox="0 0 100 100" aria-hidden="true">
-        <path d={SPLAT_PATH} fill="#fffdf4" stroke="#e9e1c8" strokeWidth="1.5" />
-        <circle cx="52" cy="50" r="17" fill="#ffb703" />
-        <circle cx="52" cy="50" r="17" fill="url(#yolkShine)" />
-        <ellipse cx="46" cy="44" rx="5" ry="3" fill="#fff" opacity=".7" />
-        <defs>
-          <radialGradient id="yolkShine" cx="40%" cy="35%" r="70%">
-            <stop offset="0" stopColor="#ffd166" />
-            <stop offset="1" stopColor="#f48c06" stopOpacity=".6" />
-          </radialGradient>
-        </defs>
-      </svg>
-    );
+    return <CircleDot size={38} strokeWidth={2.2} aria-hidden="true" />;
   }
   if (kind === 'crack') {
-    return (
-      <svg viewBox="0 0 100 100" aria-hidden="true" fill="none" strokeLinecap="round" strokeLinejoin="round">
-        <g stroke="#1d1b1a" strokeWidth="4.5" opacity=".55">
-          <path d="M52 48 L40 32 L44 20 L36 8" />
-          <path d="M52 48 L68 36 L82 34 L94 24" />
-          <path d="M52 48 L62 64 L58 78 L66 94" />
-          <path d="M52 48 L34 58 L20 56 L8 66" />
-          <path d="M40 32 L28 30" />
-          <path d="M62 64 L76 70" />
-        </g>
-        <g stroke="#fff" strokeWidth="2">
-          <path d="M52 48 L40 32 L44 20 L36 8" />
-          <path d="M52 48 L68 36 L82 34 L94 24" />
-          <path d="M52 48 L62 64 L58 78 L66 94" />
-          <path d="M52 48 L34 58 L20 56 L8 66" />
-        </g>
-      </svg>
-    );
+    return <Zap size={38} strokeWidth={2.2} aria-hidden="true" />;
   }
   return null;
 }
@@ -346,15 +359,17 @@ function Floaters({
 }
 
 /** Vòng đếm ngược quanh avatar */
-function Ring({ progress, children, active, tone = 'turn' }: { progress: number; children: ReactNode; active: boolean; tone?: string }) {
+function Ring({ progress, children, active, urgent, tone = 'turn' }: { progress: number; children: ReactNode; active: boolean; urgent?: boolean; tone?: string }) {
   return (
-    <div className={`ring${active ? ' active' : ''} tone-${tone}`} style={{ ['--p' as string]: Math.max(0, Math.min(1, progress)) } as CSSProperties}>
+    <div className={`ring${active ? ' active' : ''}${urgent ? ' urgent' : ''} tone-${tone}`} style={{ ['--p' as string]: Math.max(0, Math.min(1, progress)) } as CSSProperties}>
       {children}
     </div>
   );
 }
 
 export default function GameBoard({ view, meId, emit, notice, onCloseNotice, reveal, onCloseReveal, fx, emote, chat = NO_CHAT, dock }: Props) {
+  const { rules } = view;
+  const kindLabel = (kind: ActionKind) => kind === 'pair' ? `Đôi${rules.comboScope === 'cats' ? ' mèo' : ''}` : kind === 'triple' ? `Bộ ba${rules.comboScope === 'cats' ? ' mèo' : ''}` : KIND_LABEL[kind];
   const now = useNow();
   const announce = useAnnouncement(view.log, view.logTotal);
   const feed = useFeed(view.log, view.logTotal);
@@ -373,6 +388,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   // Tin chat mới: hiện bong bóng ngay trên avatar người gửi vài giây
   const [chatPops, setChatPops] = useState<Record<string, { id: number; text: string }>>({});
   const lastChatId = useRef(chat.messages.at(-1)?.id ?? 0);
+  const newestChatId = chat.messages.at(-1)?.id ?? 0;
   useEffect(() => {
     const fresh = chat.messages.filter((m) => m.id > lastChatId.current);
     lastChatId.current = chat.messages.at(-1)?.id ?? lastChatId.current;
@@ -392,7 +408,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       );
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chat.messages.length]);
+  }, [newestChatId]);
   // Biểu cảm: emoji nảy trên avatar, ném đồ vào người khác
   // Mỗi lần thả là 1 emoji bay lên riêng (bấm nhiều thì hiện liên tục, chồng nhiều cái như livestream)
   type Floater = { id: number; emoji: string; kind: FloatKind; dx: number; dy?: number; rot: number; dur: number; v?: string; delay?: number };
@@ -406,6 +422,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   /** Đánh Xáo Bài: chọn kiểu xáo */
   const [shufflePick, setShufflePick] = useState<string[] | null>(null);
   const [leaveAsk, setLeaveAsk] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
   const avatarEl = (pid: string) => document.querySelector(`[data-avatar="${CSS.escape(pid)}"]`) ?? seatEl(pid);
   useEffect(() => {
     if (!emote) return;
@@ -566,6 +583,11 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   const [giveId, setGiveId] = useState<string | null>(null);
   const [bombPos, setBombPos] = useState(0);
   const [shuffling, setShuffling] = useState<string | null>(null);
+  const [transferBanner, setTransferBanner] = useState<string | null>(null);
+  const [kickAsk, setKickAsk] = useState<PublicPlayer | null>(null);
+  const [alterOrder, setAlterOrder] = useState<Card[]>([]);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [overIdx, setOverIdx] = useState<number | null>(null);
   const [shake, setShake] = useState(false);
   const [bubbles, setBubbles] = useState<Record<string, string>>({});
   const deckRef = useRef<HTMLButtonElement>(null);
@@ -603,7 +625,30 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   const { pending, waiting, lastPlay } = view;
   const giving = waiting?.kind === 'favor_give' && waiting.playerId === meId;
   const placing = waiting?.kind === 'defuse_place' && waiting.playerId === meId;
+  const altering = waiting?.kind === 'alter_future' && waiting.playerId === meId && !!waiting.cards?.length;
   const canDraw = alive && myTurn && !pending && !waiting && view.phase === 'playing';
+
+  const alterKey = waiting?.kind === 'alter_future' && waiting.cards ? waiting.cards.map((c) => c.id).join(',') : '';
+  useEffect(() => {
+    if (waiting?.kind === 'alter_future' && waiting.cards) {
+      setAlterOrder(waiting.cards);
+      setDragIdx(null);
+      setOverIdx(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alterKey]);
+
+  const moveAlterCard = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
+    setAlterOrder((prev) => {
+      if (fromIndex >= prev.length || toIndex >= prev.length) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
+    sfx('tap');
+  };
 
   const handIds = new Set(view.hand.map((c) => c.id));
   // Xếp bài trên tay: giữ thứ tự hiện tại, lá mới nằm cuối; bấm "Xếp bài" thì trượt về đúng loại
@@ -656,23 +701,71 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   }, [view.hand]);
   const sel = selected.filter((id) => handIds.has(id));
   const selCards = view.hand.filter((c) => sel.includes(c.id));
-  const kind = detectKind(selCards.map((c) => c.type));
-  const needsTarget = kind === 'favor' || kind === 'pair' || kind === 'triple';
-  const targets = view.players.filter((p) => p.alive && p.id !== meId && p.handCount > 0);
-  const needsWizard = needsTarget || kind === 'five';
-  const countOf = (t: CardType) => view.hand.filter((c) => c.type === t).length;
+  const kind = detectPlayKind(selCards.map((c) => c.type), rules);
+  const needsTarget = kind === 'favor' || kind === 'targeted_attack' || kind === 'mark' || kind === 'pair' || kind === 'triple';
+  const needsDiscard = kind === 'five' || kind === 'grave_robber';
+  const aliveOpponents = view.players.filter((p) => p.alive && p.id !== meId);
+  const handTargets = aliveOpponents.filter((p) => p.handCount > 0);
+  const targets = kind === 'targeted_attack' ? aliveOpponents : handTargets;
+  const needsWizard = needsTarget || needsDiscard;
+  const matchingComboIds = (t: CardType) => {
+    const isWild = WILDCARD_CAT_TYPES.includes(t);
+    if (isWild) {
+      const wildIds = view.hand.filter((c) => WILDCARD_CAT_TYPES.includes(c.type)).map((c) => c.id);
+      const regularCats = view.hand.filter((c) => CARD_INFO[c.type].isCat && !WILDCARD_CAT_TYPES.includes(c.type));
+      let bestIds = wildIds;
+      for (const rc of regularCats) {
+        const group = [...view.hand.filter((c) => c.type === rc.type).map((c) => c.id), ...wildIds];
+        if (group.length > bestIds.length) bestIds = group;
+      }
+      return [...new Set(bestIds)];
+    }
+    if (CARD_INFO[t].isCat) {
+      return view.hand.filter((c) => c.type === t || WILDCARD_CAT_TYPES.includes(c.type)).map((c) => c.id);
+    }
+    return view.hand.filter((c) => c.type === t).map((c) => c.id);
+  };
   const myActionTime = alive && myTurn && !pending && !waiting && view.phase === 'playing';
+  const combosEnabled = rules.allowPair || rules.allowTriple || rules.allowFive;
+  const comboHint = [
+    rules.allowPair ? `2 ${rules.comboScope === 'cats' ? 'lá mèo' : 'lá'} cùng loại` : '',
+    rules.allowTriple ? `3 ${rules.comboScope === 'cats' ? 'lá mèo' : 'lá'} cùng loại` : '',
+    rules.allowFive ? '5 lá khác loại' : '',
+  ].filter(Boolean).join(' / ');
+  const canNopePending =
+    !!pending &&
+    (!pending.nopeCount || rules.nopeChain) &&
+    (pending.nopeCount % 2 === 0 ? pending.actorId !== meId : lastPlay?.nopers.at(-1) !== meId);
+  const canComboType = (t: CardType) => {
+    const matchCount = matchingComboIds(t).length;
+    return (
+      (rules.comboScope === 'cats' ? CARD_INFO[t].isCat : t !== 'exploding') &&
+      handTargets.length > 0 &&
+      ((rules.allowPair && matchCount >= 2) || (rules.allowTriple && matchCount >= 3))
+    );
+  };
   /** Lá sáng = bấm là đánh được ngay */
   const isPlayable = (c: Card) => {
     if (!alive || view.phase !== 'playing' || waiting) return false;
-    if (pending) return c.type === 'nope';
+    if (pending) return c.type === 'nope' && canNopePending;
     if (!myActionTime) return false;
-    if (SINGLE.includes(c.type)) return c.type !== 'favor' || targets.length > 0;
-    if (CARD_INFO[c.type].isCat) return countOf(c.type) >= 2 && targets.length > 0;
-    return false;
+    if (SINGLE.includes(c.type)) {
+      if (c.type === 'favor' || c.type === 'mark') return handTargets.length > 0;
+      if (c.type === 'targeted_attack') return aliveOpponents.length > 0;
+      if (c.type === 'grave_robber') return view.discardTypes.length > 0;
+      return true;
+    }
+    return canComboType(c.type);
   };
-  const nopeCard = view.hand.find((c) => c.type === 'nope');
-  const canPlay = alive && myTurn && !pending && !waiting && !!kind;
+  const nopeCard = canNopePending ? view.hand.find((c) => c.type === 'nope') : undefined;
+  const canPlay = myActionTime && !!kind && (!needsTarget || targets.length > 0) && (!needsDiscard || view.discardTypes.length > 0);
+
+  useEffect(() => {
+    if (myActionTime) return;
+    setComboMode(false);
+    setSelected([]);
+    setWizardOpen(false);
+  }, [myActionTime]);
 
   useEffect(() => {
     if (placing && waiting?.kind === 'defuse_place') setBombPos((p) => Math.min(p, waiting.deckCount));
@@ -707,24 +800,36 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       case 'shuffle': {
         const st = SHUFFLE_STYLES[f.style] ? f.style : 'riffle';
         sfx('shuffle');
-        setShuffling(`${SHUFFLE_STYLES[st].emoji} ${nameOf(f.playerId)} xáo bài kiểu ${SHUFFLE_STYLES[st].name}!`);
+        setShuffling(`${nameOf(f.playerId)} xáo bài kiểu ${SHUFFLE_STYLES[st].name}!`);
         window.requestAnimationFrame(() => SHUFFLE_ANIM[st](riffleRef.current));
         window.setTimeout(() => setShuffling(null), 1700);
         break;
       }
       case 'future':
-        if (f.playerId !== meId) showBubble(f.playerId, '🔮 đang xem trước');
+        if (f.playerId !== meId) showBubble(f.playerId, 'Đang xem trước');
         break;
       case 'transfer': {
         const from = f.from === 'discard' ? discardRef.current : seatEl(f.from);
-        flyCard(from, seatEl(f.to));
-        if (f.from !== 'discard') showBubble(f.from, '−1 lá', 1800);
-        showBubble(f.to, '+1 lá', 1800);
+        const fromLabel = f.from === 'discard' ? 'Bài bỏ' : nameOf(f.from);
+        const toLabel = nameOf(f.to);
+        flyTransferCard(from, seatEl(f.to), { fromName: fromLabel, toName: toLabel, via: f.via });
+        if (f.from !== 'discard') {
+          showBubble(f.from, `−1 lá (bị ${toLabel} lấy)`, 2600);
+          setShaking((h) => ({ ...h, [f.from]: (h[f.from] ?? 0) + 1 }));
+          window.setTimeout(() => setShaking((h) => ({ ...h, [f.from]: Math.max(0, (h[f.from] ?? 1) - 1) })), 500);
+        }
+        showBubble(f.to, f.from === 'discard' ? '+1 lá từ bài bỏ' : `+1 lá (lấy từ ${fromLabel})`, 2600);
+        setTransferBanner(
+          f.from === 'discard'
+            ? `🎴 ${toLabel} lấy 1 lá từ chồng bài bỏ!`
+            : `🎴 ${toLabel} vừa lấy 1 lá bài từ ${fromLabel}!`,
+        );
+        window.setTimeout(() => setTransferBanner(null), 2800);
         break;
       }
       case 'insert':
         flyCard(seatEl(f.playerId), deck);
-        if (f.playerId !== meId) showBubble(f.playerId, '🤫 nhét bom lại');
+        if (f.playerId !== meId) showBubble(f.playerId, 'Đã xếp bài vào chồng rút');
         break;
       case 'explode':
         setShake(true);
@@ -785,14 +890,15 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         emit('game:play', { cardIds: [card.id] });
         return;
       }
-      if (CARD_INFO[card.type].isCat) {
-        // mèo: bấm để nhấc lên / hạ xuống; đủ 2–3 lá cùng loại thì bấm nút "Đánh đôi / bộ ba"
+      if (CARD_INFO[card.type].isCat || !SINGLE.includes(card.type)) {
+        // bài ghép cặp (mèo, mèo đa năng hoặc bài khác khi comboScope='any'): bấm để nhấc lên / hạ xuống
         const on = sel.includes(card.id);
         sfx(on ? 'unselect' : 'select');
         setSelected((s) => {
-          const same = s.filter((id) => byId.get(id)?.type === card.type);
-          if (on) return same.filter((id) => id !== card.id);
-          return [...same, card.id].slice(-3);
+          if (on) return s.filter((id) => id !== card.id);
+          const curTypes = s.map((id) => byId.get(id)?.type).filter((x): x is CardType => !!x);
+          const compatible = canMatchComboCards([...curTypes, card.type], rules) ? s : [];
+          return [...compatible, card.id].slice(rules.allowTriple ? -3 : -2);
         });
         return;
       }
@@ -802,7 +908,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         return;
       }
       setSelected([card.id]);
-      if (card.type === 'favor') {
+      if (card.type === 'favor' || card.type === 'targeted_attack' || card.type === 'mark' || card.type === 'grave_robber') {
         setWizardOpen(true);
         return;
       }
@@ -844,17 +950,46 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   let status: ReactNode;
   let statusTone = '';
   if (view.phase === 'ended') {
-    status = view.winnerId === meId ? '🏆 Bạn thắng!' : `🏆 ${nameOf(view.winnerId)} thắng!`;
+    status = (
+      <span className="status-row">
+        <Trophy size={16} className="inline-icon" /> {view.winnerId === meId ? 'Bạn thắng!' : `${nameOf(view.winnerId)} thắng!`}
+      </span>
+    );
   } else if (!alive) {
-    status = '💀 Bạn đã nổ. Ngồi xem tiếp nhé!';
+    status = (
+      <span className="status-row">
+        <Skull size={16} className="inline-icon" /> Bạn đã nổ. Ngồi xem tiếp nhé!
+      </span>
+    );
   } else if (giving && waiting?.kind === 'favor_give') {
-    status = `🙏 ${nameOf(waiting.toId)} xin bài: bấm 1 lá để đưa (${secs(waiting.deadline)}s)`;
+    status = (
+      <span className="status-row">
+        <HandHeart size={16} className="inline-icon" /> {nameOf(waiting.toId)} xin bài: bấm 1 lá để đưa ({secs(waiting.deadline)}s)
+      </span>
+    );
     statusTone = 'warn';
+  } else if (altering && waiting?.kind === 'alter_future') {
+    status = (
+      <span className="status-row">
+        <Wand2 size={16} className="inline-icon" /> Sửa Tương Lai: kéo thả sắp xếp {waiting.count} lá trên cùng ({secs(waiting.deadline)}s)
+      </span>
+    );
+    statusTone = 'go';
   } else if (waiting) {
     status =
-      waiting.kind === 'defuse_place'
-        ? `🧯 ${nameOf(waiting.playerId)} đang lén nhét Mèo Nổ lại…`
-        : `🙏 Đợi ${nameOf(waiting.playerId)} chọn bài đưa cho ${nameOf(waiting.toId)}…`;
+      waiting.kind === 'defuse_place' ? (
+        <span className="status-row">
+          <ShieldCheck size={16} className="inline-icon" /> {nameOf(waiting.playerId)} đang lén nhét Mèo Nổ lại…
+        </span>
+      ) : waiting.kind === 'alter_future' ? (
+        <span className="status-row">
+          <Wand2 size={16} className="inline-icon" /> {nameOf(waiting.playerId)} đang sắp xếp {waiting.count} lá trên cùng…
+        </span>
+      ) : (
+        <span className="status-row">
+          <HandHeart size={16} className="inline-icon" /> Đợi {nameOf(waiting.playerId)} chọn bài đưa cho {nameOf(waiting.toId)}…
+        </span>
+      );
   } else if (pending) {
     status = nopeCard ? 'Có người vừa đánh bài: muốn chặn thì bấm NOPE!' : 'Đang chờ xem có ai Nope không…';
   } else if (myTurn) {
@@ -874,10 +1009,16 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   }
 
   const seatProgress = (p: PublicPlayer) => {
-    if (waiting?.playerId === p.id) return { active: true, progress: left(waiting.deadline, PROMPT_MS), tone: 'wait' };
-    if (p.id === view.currentPlayerId && !pending && !waiting) return { active: true, progress: left(view.turnDeadline, TURN_MS), tone: 'turn' };
-    if (p.id === view.currentPlayerId) return { active: true, progress: 1, tone: 'turn' };
-    return { active: false, progress: 0, tone: 'turn' };
+    if (waiting?.playerId === p.id) {
+      const rem = waiting.deadline ? waiting.deadline - now : 99999;
+      return { active: true, progress: left(waiting.deadline, rules.promptSeconds * 1000), urgent: rem > 0 && rem <= 5000, tone: 'wait' };
+    }
+    if (p.id === view.currentPlayerId && !pending && !waiting) {
+      const rem = view.turnDeadline ? view.turnDeadline - now : 99999;
+      return { active: true, progress: left(view.turnDeadline, rules.turnSeconds * 1000), urgent: rem > 0 && rem <= 5000, tone: 'turn' };
+    }
+    if (p.id === view.currentPlayerId) return { active: true, progress: 1, urgent: false, tone: 'turn' };
+    return { active: false, progress: 0, urgent: false, tone: 'turn' };
   };
 
   // Bài trên tay: đủ chỗ thì tách nhau, chật thì xếp chồng vừa khung
@@ -895,12 +1036,32 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
           {opponents.map((p, i) => {
             const a = ((270 - span / 2 + (span * (i + 0.5)) / opponents.length) * Math.PI) / 180;
             const ring = seatProgress(p);
+            const isTurn = view.phase === 'playing' && p.id === view.currentPlayerId;
             const isTarget = needsTarget && targetId === p.id;
             const pickable = needsTarget && canPlay && targets.some((t) => t.id === p.id);
+            const isStealing =
+              (pending && pending.actorId === p.id && !!pending.targetId && ['favor', 'pair', 'triple'].includes(pending.kind)) ||
+              (waiting?.kind === 'favor_give' && waiting.toId === p.id);
+            const isVictim =
+              (pending && pending.targetId === p.id && ['favor', 'pair', 'triple'].includes(pending.kind)) ||
+              (waiting?.kind === 'favor_give' && waiting.playerId === p.id);
             return (
               <div
                 key={p.id}
-                className={['seat', throwMenu === p.id && 'menu-on', Math.cos(a) > 0.25 ? 'bubble-left' : 'bubble-right', !p.alive && 'dead', !p.connected && 'offline', isTarget && 'targeted', pickable && 'pickable'].filter(Boolean).join(' ')}
+                className={[
+                  'seat',
+                  isTurn && 'turn',
+                  throwMenu === p.id && 'menu-on',
+                  Math.cos(a) > 0.25 ? 'bubble-left' : 'bubble-right',
+                  !p.alive && 'dead',
+                  !p.connected && 'offline',
+                  isTarget && 'targeted',
+                  pickable && 'pickable',
+                  isStealing && 'stealing',
+                  isVictim && 'being-stolen',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
                 style={{ ['--x' as string]: (Math.cos(a) * 44).toFixed(2), ['--y' as string]: (Math.sin(a) * 40).toFixed(2) } as CSSProperties}
                 data-pid={p.id}
                 onPointerEnter={pickable ? undefined : hoverStay}
@@ -914,15 +1075,38 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                     : undefined
                 }
               >
+                {view.hostId === meId && !p.left && (
+                  <button
+                    type="button"
+                    className="seat-kick-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setKickAsk(p);
+                    }}
+                    title={`Kích ${p.name} khỏi trận`}
+                    aria-label={`Kích ${p.name} khỏi trận`}
+                  >
+                    <UserX size={13} />
+                  </button>
+                )}
+                {isTurn && (
+                  <span className="turn-badge">
+                    <Zap size={12} className="inline-icon" /> ĐANG ĐÁNH{view.turnsRemaining > 1 ? ` ×${view.turnsRemaining}` : ''}
+                  </span>
+                )}
                 <span
                   className={`avatar-wrap${pickable ? '' : ' throwable'}${throwMenu === p.id ? ' menu-open' : ''}${shaking[p.id] ? ' got-hit' : ''}`}
                   data-avatar={p.id}
                   onPointerEnter={pickable ? undefined : hoverOpen(p.id)}
                   onClick={pickable ? undefined : () => setThrowMenu((m) => (m === p.id ? null : p.id))}
                 >
-                  {!pickable && <span className="throw-hover">🎯</span>}
+                  {!pickable && (
+                    <span className="throw-hover">
+                      <Crosshair size={13} />
+                    </span>
+                  )}
                   <Ring {...ring}>
-                    <PlayerAvatar id={p.id} avatar={p.avatar} size={58} dead={!p.alive} />
+                    <PlayerAvatar id={p.id} avatar={p.avatar} size={isTurn ? 76 : 58} dead={!p.alive} />
                   </Ring>
                   <Floaters list={pops[p.id]} combo={combos[p.id]} />
                   {chatPops[p.id] && (
@@ -950,8 +1134,17 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                   )}
                 </span>
                 <div className="seat-name">
-                  {p.id === view.hostId && <span title="Chủ phòng">👑</span>}
+                  {p.id === view.hostId && (
+                    <span title="Chủ phòng" className="seat-icon">
+                      <Crown size={12} />
+                    </span>
+                  )}
                   {p.name}
+                  {!p.connected && (
+                    <span title="Mất kết nối" className="seat-icon offline-icon">
+                      <WifiOff size={11} />
+                    </span>
+                  )}
                 </div>
                 <div className="seat-cards">
                   {p.alive ? (
@@ -964,10 +1157,24 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                       <span className="seat-count">{p.handCount}</span>
                     </>
                   ) : (
-                    <span className="seat-dead">đã nổ</span>
+                    <span className="seat-dead">{p.left ? 'đã rời' : 'đã nổ'}</span>
                   )}
                 </div>
-                {isTarget && <span className="target-tag">🎯 mục tiêu</span>}
+                {isTarget && (
+                  <span className="target-tag">
+                    <Crosshair size={11} className="inline-icon" /> mục tiêu
+                  </span>
+                )}
+                {isVictim && (
+                  <span className="steal-tag victim">
+                    {waiting?.kind === 'favor_give' ? '🤲 Đang chọn bài đưa' : '🎯 Đang bị lấy bài'}
+                  </span>
+                )}
+                {isStealing && (
+                  <span className="steal-tag thief">
+                    🤏 Đang lấy bài của {nameOf(pending?.targetId ?? (waiting?.kind === 'favor_give' ? waiting.playerId : undefined))}
+                  </span>
+                )}
                 {lastPlay?.nopers.at(-1) === p.id && pending && <span className="nope-bubble">NOPE!</span>}
                 {bubbles[p.id] && <span className="seat-bubble">{bubbles[p.id]}</span>}
               </div>
@@ -989,8 +1196,8 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                 <span key={k} />
               ))}
             </span>
-            <span className="deck-stack" />
-            <span className="deck-stack s2" />
+            {view.deckCount > 1 && <span className="deck-stack" />}
+            {view.deckCount > 3 && <span className="deck-stack s2" />}
             <CardBack count={view.deckCount} />
             {canDraw && <span className="deck-label">RÚT BÀI</span>}
           </button>
@@ -1002,7 +1209,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                 <div className="lp-head">
                   <PlayerAvatar id={lastPlay.actorId} avatar={avatarOf(lastPlay.actorId)} size={26} />
                   <span>
-                    <b>{nameOf(lastPlay.actorId)}</b> đánh {KIND_LABEL[lastPlay.kind]}
+                    <b>{nameOf(lastPlay.actorId)}</b> đánh {kindLabel(lastPlay.kind)}
                     {lastPlay.targetId && <> → {nameOf(lastPlay.targetId)}</>}
                   </span>
                 </div>
@@ -1020,20 +1227,48 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                 {pending ? (
                   <div className="lp-pending">
                     <div className="nope-timer">
-                      <span style={{ width: `${Math.max(0, left(pending.deadline, NOPE_WINDOW_MS)) * 100}%` }} />
+                      <span style={{ width: `${Math.max(0, Math.min(1, left(pending.deadline, rules.nopeSeconds * 1000))) * 100}%` }} />
                     </div>
                     <span className={pending.nopeCount % 2 ? 'tag bad' : 'tag'}>
-                      {pending.nopeCount % 2 ? '✋ Đang bị Nope' : pending.nopeCount ? '↩️ Nope bị Nope lại' : '⏳ Chờ Nope'} · {secs(pending.deadline)}s
+                      {pending.nopeCount % 2 ? (
+                        <>
+                          <Ban size={12} className="inline-icon" /> Đang bị Nope
+                        </>
+                      ) : pending.nopeCount ? (
+                        <>
+                          <RotateCcw size={12} className="inline-icon" /> Nope bị Nope lại
+                        </>
+                      ) : (
+                        <>
+                          <Hourglass size={12} className="inline-icon" /> Chờ Nope
+                        </>
+                      )}{' '}
+                      · {secs(pending.deadline)}s
                     </span>
                     {alive && nopeCard && (
-                      <button className="nope-btn" onClick={() => emit('game:play', { cardIds: [nopeCard.id] })}>
-                        ✋ NOPE!
+                      <button
+                        className="nope-btn"
+                        onClick={() => {
+                          flyOut([nopeCard.id]);
+                          sfx('nope');
+                          emit('game:play', { cardIds: [nopeCard.id] });
+                        }}
+                      >
+                        <Ban size={18} /> NOPE!
                       </button>
                     )}
                   </div>
                 ) : (
                   <span className={`tag ${lastPlay.result === 'noped' ? 'bad' : 'good'}`}>
-                    {lastPlay.result === 'noped' ? '✋ Đã bị Nope' : '✓ Đã có hiệu lực'}
+                    {lastPlay.result === 'noped' ? (
+                      <>
+                        <Ban size={12} className="inline-icon" /> Đã bị Nope
+                      </>
+                    ) : (
+                      <>
+                        <Check size={12} className="inline-icon" /> Đã có hiệu lực
+                      </>
+                    )}
                   </span>
                 )}
               </div>
@@ -1059,41 +1294,60 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         </div>
         <div className="arena-tools">
           <Brand code={view.code} />
-          <button className="icon-btn exit-btn" onClick={leave} title="Thoát trận">
-            🚪 <span className="hide-sm">Thoát trận</span>
+          <button className="icon-btn" onClick={() => setRulesOpen(true)} title="Xem luật phòng">
+            <BookOpen size={15} /> <span>Luật phòng</span>
           </button>
-          {view.pot > 0 && view.phase === 'playing' && <span className="pot-chip">💰 Hũ {fmtCoins(view.pot)} xu</span>}
+          <button className="icon-btn exit-btn" onClick={leave} title="Thoát trận">
+            <LogOut size={15} /> <span className="hide-sm">Thoát trận</span>
+          </button>
+          {view.pot > 0 && view.phase === 'playing' && (
+            <span className="pot-chip">
+              <Coins size={14} className="inline-icon" /> Hũ {fmtCoins(view.pot)} xu
+            </span>
+          )}
           {!chatOpen && (
             <>
               <button className="icon-btn" onClick={() => setChatOpen(true, 'chat')} title="Mở chat">
-                💬 <span className="hide-sm">Chat</span>
+                <MessageSquare size={15} /> <span className="hide-sm">Chat</span>
                 {unread > 0 && <span className="badge">{unread}</span>}
               </button>
               <button className="icon-btn" onClick={() => setChatOpen(true, 'log')} title="Xem toàn bộ diễn biến">
-                📜 <span className="hide-sm">Diễn biến</span>
+                <ScrollText size={15} /> <span className="hide-sm">Diễn biến</span>
               </button>
             </>
           )}
         </div>
         <div className="arena-dock">{dock}</div>
 
-
-
         {announce && <div className={`announce ${announce.tone}`}>{announce.text}</div>}
         {shuffling && <div className="announce shuffle">{shuffling}</div>}
+        {transferBanner && <div className="announce transfer">{transferBanner}</div>}
 
         {view.phase === 'ended' && (
           <div className="ended">
             <PlayerAvatar id={view.winnerId ?? 'none'} avatar={avatarOf(view.winnerId)} size={120} />
-            <h2>🏆 {view.winnerId === meId ? 'Bạn thắng!' : `${nameOf(view.winnerId)} thắng!`}</h2>
-            {view.pot > 0 && <div className="prize">+{fmtCoins(view.pot)} xu 🪙</div>}
-            {view.hostId === meId ? (
-              <button className="primary big" onClick={() => emit('game:restart')}>
-                Chơi lại
-              </button>
-            ) : (
-              <p className="muted">Đợi chủ phòng mở ván mới…</p>
+            <h2>
+              <Trophy size={28} className="inline-icon" /> {view.winnerId === meId ? 'Bạn thắng!' : `${nameOf(view.winnerId)} thắng!`}
+            </h2>
+            {view.pot > 0 && (
+              <div className="prize">
+                +{fmtCoins(view.pot)} xu <Coins size={22} className="inline-icon" />
+              </div>
             )}
+            <div className="ended-actions">
+              <button className="secondary" onClick={() => setRulesOpen(true)}>
+                <BookOpen size={15} /> Luật phòng
+              </button>
+              {view.hostId === meId && (
+                <button className="primary big" onClick={() => emit('game:restart')}>
+                  <RotateCcw size={17} /> Chơi lại
+                </button>
+              )}
+              <button className="ghost" onClick={() => emit('room:leave')}>
+                <LogOut size={15} /> Rời phòng
+              </button>
+            </div>
+            {view.hostId !== meId && <p className="muted">Đợi chủ phòng mở ván mới…</p>}
           </div>
         )}
       </div>
@@ -1106,15 +1360,25 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
               {e}
             </button>
           ))}
-          <button className={`emote-btn more${pickerOpen ? ' on' : ''}`} onClick={() => setPickerOpen((o) => !o)} title="Thêm biểu cảm / ném đồ">
-            ⋯
+          <button
+            className={`emote-btn more${pickerOpen ? ' on' : ''}`}
+            onClick={() => setPickerOpen((o) => !o)}
+            title="Thêm biểu cảm / ném đồ"
+            aria-label="Thêm biểu cảm"
+          >
+            <MoreHorizontal size={18} />
           </button>
         </div>
         <div className="my-bar">
-          <span className={`avatar-wrap${shaking[meId] ? ' got-hit' : ''}`} data-avatar={meId}>
+          <span className={`avatar-wrap${myTurn && view.phase === 'playing' ? ' my-turn-avatar' : ''}${shaking[meId] ? ' got-hit' : ''}`} data-avatar={meId}>
             <Ring {...(me ? seatProgress(me) : { active: false, progress: 0 })}>
-              <PlayerAvatar id={meId} avatar={me?.avatar} size={52} dead={!alive} />
+              <PlayerAvatar id={meId} avatar={me?.avatar} size={myTurn && view.phase === 'playing' ? 68 : 52} dead={!alive} />
             </Ring>
+            {myTurn && view.phase === 'playing' && (
+              <span className="my-turn-badge">
+                <Zap size={11} className="inline-icon" /> LƯỢT BẠN
+              </span>
+            )}
             <Floaters list={pops[meId]} combo={combos[meId]} />
             {chatPops[meId] && (
               <span key={`c${chatPops[meId].id}`} className="chat-pop mine">
@@ -1130,22 +1394,34 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
           <div className="my-actions">
             {!comboMode && myActionTime && (kind === 'pair' || kind === 'triple') && (
               <button className="primary big play-combo" onClick={() => setWizardOpen(true)}>
-                ▶ {kind === 'pair' ? 'Đánh đôi' : 'Đánh bộ ba'} ({sel.length} lá)
+                <Play size={16} /> {kind === 'pair' ? 'Đánh đôi' : 'Đánh bộ ba'} ({sel.length} lá)
               </button>
             )}
-            {!comboMode && myActionTime && !kind && sel.length === 1 && <span className="hint-chip">🐱 Chọn thêm 1 lá mèo giống vậy để đánh đôi</span>}
-            {!comboMode && myActionTime && !sel.length && <span className="hint-chip">👆 Bấm lá sáng để đánh · bấm chồng bài để rút</span>}
-            {!comboMode && pending && alive && nopeCard && <span className="hint-chip nope">✋ Bấm lá Nope để chặn!</span>}
+            {!comboMode && myActionTime && !kind && sel.length > 0 && (
+              <span className="hint-chip">
+                <Cat size={14} className="inline-icon" /> Chọn thêm {Math.max(0, (rules.allowPair ? 2 : 3) - sel.length)} lá {rules.comboScope === 'cats' ? 'mèo ' : ''}cùng loại để đánh {rules.allowPair ? 'đôi' : 'bộ ba'}
+              </span>
+            )}
+            {!comboMode && myActionTime && !sel.length && (
+              <span className="hint-chip">
+                <MousePointerClick size={14} className="inline-icon" /> Bấm lá sáng để đánh · bấm chồng bài để rút
+              </span>
+            )}
+            {!comboMode && pending && alive && nopeCard && (
+              <span className="hint-chip nope">
+                <Ban size={14} className="inline-icon" /> Bấm lá Nope để chặn!
+              </span>
+            )}
             {comboMode && (
               <>
-                <span className="kind-chip">{kind ? KIND_LABEL[kind] : `Đã chọn ${sel.length} lá`}</span>
-                {!kind && sel.length > 0 && <span className="muted small">Chọn 5 lá khác tên nhau (hoặc 2–3 lá mèo giống nhau)</span>}
+                <span className="kind-chip">{kind ? kindLabel(kind) : `Đã chọn ${sel.length} lá`}</span>
+                {!kind && comboHint && <span className="muted small">Chọn {comboHint}</span>}
                 <button className="primary" disabled={!canPlay} onClick={play}>
-                  {needsTarget ? 'Chọn người →' : kind === 'five' ? 'Chọn lá →' : 'Đánh ra'}
+                  {needsTarget ? 'Chọn người' : needsDiscard ? 'Chọn lá' : 'Đánh ra'}
                 </button>
               </>
             )}
-            {myActionTime && (
+            {myActionTime && combosEnabled && (
               <button
                 className={comboMode ? 'secondary on' : 'secondary'}
                 onClick={() => {
@@ -1154,7 +1430,15 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                 }}
                 title="Chọn nhiều lá để đánh combo"
               >
-                {comboMode ? '✕ Thôi chọn nhiều' : '🃏 Chọn nhiều lá'}
+                {comboMode ? (
+                  <>
+                    <X size={15} /> Thôi chọn nhiều
+                  </>
+                ) : (
+                  <>
+                    <Layers size={15} /> Chọn nhiều lá
+                  </>
+                )}
               </button>
             )}
             {sel.length > 0 && (
@@ -1164,12 +1448,12 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
             )}
             {canDraw && (
               <button className="secondary" onClick={() => emit('game:draw')}>
-                🂠 Rút bài
+                <Layers size={15} /> Rút bài
               </button>
             )}
             {view.hand.length > 1 && (
               <button className="secondary" onClick={sortHand} title="Xếp bài theo loại: lá cùng loại đứng cạnh nhau">
-                🗂️ Xếp bài
+                <ArrowUpDown size={15} /> Xếp bài
               </button>
             )}
           </div>
@@ -1185,10 +1469,10 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                 </button>
               ))}
             </div>
-            <div className="emote-tip">😈 Muốn ném đồ? Bấm vào avatar người đó.</div>
+            <div className="emote-tip">Muốn ném đồ? Bấm vào avatar người đó.</div>
           </div>
         )}
-        <div ref={handRef} className="hand" style={{ ['--overlap' as string]: `${overlap}px` } as CSSProperties}>
+        <div ref={handRef} className={`hand${!alive && !view.hand.length ? ' hand-empty-dead' : ''}`} style={{ ['--overlap' as string]: `${overlap}px` } as CSSProperties}>
           {hand.map((c, i) => (
             <CardView
               key={c.id}
@@ -1198,7 +1482,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
               size="lg"
               className={`${comboMode || !(myActionTime || pending) ? '' : isPlayable(c) ? 'playable' : 'dim'}${fresh.has(c.id) ? ' fresh' : ''}`}
               selected={sel.includes(c.id)}
-              onClick={alive && (comboMode || isPlayable(c)) ? () => clickCard(c) : undefined}
+              onClick={alive && ((comboMode && myActionTime && c.type !== 'exploding') || isPlayable(c)) ? () => clickCard(c) : undefined}
               style={{ ['--i' as string]: i - (hand.length - 1) / 2 } as CSSProperties}
             />
           ))}
@@ -1225,8 +1509,18 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       )}
 
       {/* ================= HỘP THOẠI ================= */}
+      {rulesOpen && (
+        <Modal title={<span className="modal-title-icon"><BookOpen size={19} /> Luật phòng</span>} width={840} onClose={() => setRulesOpen(false)}>
+          <Rules rules={rules} playerCount={view.players.length} />
+          <div className="modal-actions">
+            <button className="primary" onClick={() => setRulesOpen(false)}>
+              Đã hiểu
+            </button>
+          </div>
+        </Modal>
+      )}
       {leaveAsk && (
-        <Modal title="🚪 Thoát trận?" width={420}>
+        <Modal title={<span className="modal-title-icon"><LogOut size={19} /> Thoát trận?</span>} width={420}>
           <p>
             Ván đang diễn ra, thoát bây giờ sẽ bị tính là <b>thua</b>
             {view.pot > 0 && <> và mất số xu đã cược</>}.
@@ -1249,8 +1543,8 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       )}
 
       {shufflePick && (
-        <Modal title="🔀 Xáo bài kiểu nào?" width={640}>
-          <p className="muted">Kiểu nào cũng xáo ngẫu nhiên hoàn toàn, chỉ khác cách cả bàn nhìn thấy bạn xáo 😎</p>
+        <Modal title={<span className="modal-title-icon"><Shuffle size={19} /> Xáo bài kiểu nào?</span>} width={640}>
+          <p className="muted">Kiểu nào cũng xáo ngẫu nhiên hoàn toàn, chỉ khác cách cả bàn nhìn thấy bạn xáo.</p>
           <div className="shuffle-options">
             {(Object.keys(SHUFFLE_STYLES) as ShuffleStyle[]).map((st) => (
               <button key={st} className={`shuffle-opt so-${st}`} onClick={() => playShuffle(st)}>
@@ -1261,7 +1555,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                   <i />
                 </span>
                 <b>
-                  {SHUFFLE_STYLES[st].emoji} {SHUFFLE_STYLES[st].name}
+                  <ShuffleIcon style={st} size={15} className="inline-icon" /> {SHUFFLE_STYLES[st].name}
                 </b>
                 <span className="muted small">{SHUFFLE_STYLES[st].desc}</span>
               </button>
@@ -1276,7 +1570,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       )}
 
       {placing && waiting?.kind === 'defuse_place' && (
-        <Modal title="🧯 Gỡ bom thành công!" width={480}>
+        <Modal title={<span className="modal-title-icon"><ShieldCheck size={19} /> Gỡ bom thành công!</span>} width={480}>
           <p>
             Bí mật nhét Mèo Nổ lại vào chồng bài. Còn <b>{secs(waiting.deadline)}s</b>, hết giờ sẽ nhét ngẫu nhiên.
           </p>
@@ -1293,14 +1587,31 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                   }}
                   title={`Vị trí ${pos + 1}`}
                 >
-                  {pos === bombPos ? '💣' : ''}
+                  {pos === bombPos ? <Bomb size={13} /> : ''}
                 </button>
               );
             })}
           </div>
-          <input type="range" min={0} max={waiting.deckCount} value={bombPos} onChange={(e) => setBombPos(Number(e.target.value))} />
+          <input
+            type="range"
+            min={0}
+            max={waiting.deckCount}
+            value={bombPos}
+            aria-label="Vị trí đặt lại Mèo Nổ trong chồng bài"
+            onChange={(e) => setBombPos(Number(e.target.value))}
+          />
           <p className="center bomb-pos">
-            {bombPos === 0 ? '⬆ Trên cùng: người kế tiếp rút trúng ngay!' : bombPos === waiting.deckCount ? '⬇ Dưới cùng' : `Lá thứ ${bombPos + 1} từ trên xuống`}
+            {bombPos === 0 ? (
+              <>
+                <ArrowUp size={14} className="inline-icon" /> Trên cùng: người kế tiếp rút trúng ngay!
+              </>
+            ) : bombPos === waiting.deckCount ? (
+              <>
+                <ArrowDown size={14} className="inline-icon" /> Dưới cùng
+              </>
+            ) : (
+              `Lá thứ ${bombPos + 1} từ trên xuống`
+            )}
           </p>
           <div className="seg">
             <button className={bombPos === 0 ? 'on' : ''} onClick={() => setBombPos(0)}>
@@ -1313,7 +1624,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
           </div>
           <div className="modal-actions">
             <button className="primary big" onClick={() => emit('game:place', { position: bombPos })}>
-              💣 Nhét vào
+              <Bomb size={17} /> Nhét vào
             </button>
           </div>
         </Modal>
@@ -1326,10 +1637,11 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
           targets={targets}
           discardTypes={view.discardTypes}
           initialTarget={targetId}
+          rules={rules}
           comboSwitch={
-            !comboMode && (kind === 'pair' || kind === 'triple') && countOf(selCards[0].type) >= 3
+            !comboMode && rules.allowPair && rules.allowTriple && (kind === 'pair' || kind === 'triple') && selCards[0] && matchingComboIds(selCards[0].type).length >= 3
               ? (to) => {
-                  const same = view.hand.filter((c) => c.type === selCards[0].type).map((c) => c.id);
+                  const same = matchingComboIds(selCards[0].type);
                   setSelected(same.slice(0, to === 'triple' ? 3 : 2));
                 }
               : undefined
@@ -1344,7 +1656,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       )}
 
       {giving && waiting?.kind === 'favor_give' && (
-        <Modal title={`🙏 ${nameOf(waiting.toId)} xin bài bạn`} width={760}>
+        <Modal title={<span className="modal-title-icon"><HandHeart size={19} /> {nameOf(waiting.toId)} xin bài bạn</span>} width={760}>
           <p>
             Chọn <b>1 lá</b> để đưa cho {nameOf(waiting.toId)}. Còn <b>{secs(waiting.deadline)}s</b>, hết giờ sẽ đưa ngẫu nhiên.
           </p>
@@ -1371,20 +1683,147 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         </Modal>
       )}
 
+      {kickAsk && (
+        <Modal title={<span className="modal-title-icon"><UserX size={19} /> Kích {kickAsk.name} khỏi trận?</span>} width={420} onClose={() => setKickAsk(null)}>
+          <p>
+            Người chơi <b>{kickAsk.name}</b> sẽ bị loại khỏi ván hiện tại và buộc rời phòng ngay lập tức.
+          </p>
+          <div className="modal-actions">
+            <button className="ghost" onClick={() => setKickAsk(null)}>
+              Huỷ
+            </button>
+            <button
+              className="primary big danger"
+              onClick={() => {
+                emit('room:kick', { targetId: kickAsk.id });
+                setKickAsk(null);
+              }}
+            >
+              <UserX size={16} /> Kích ngay
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {altering && waiting?.kind === 'alter_future' && (
+        <Modal
+          title={
+            <span className="modal-title-icon">
+              <Sparkles size={19} /> Sửa Tương Lai — Kéo thả sắp xếp bài
+            </span>
+          }
+          width={680}
+        >
+          <p>
+            Kéo thả các lá bài (hoặc bấm <b>◀ ▶</b>) để đổi vị trí tuỳ ý. Lá số <b>1</b> sẽ nằm <b>trên cùng</b> chồng bài rút! Còn{' '}
+            <b>{secs(waiting.deadline)}s</b>.
+          </p>
+          <div className="alter-grid">
+            {alterOrder.map((c, idx) => (
+              <div
+                key={c.id}
+                className={`alter-item${dragIdx === idx ? ' dragging' : ''}${overIdx === idx && dragIdx !== idx ? ' drag-over' : ''}`}
+                draggable
+                onDragStart={(e) => {
+                  setDragIdx(idx);
+                  e.dataTransfer.effectAllowed = 'move';
+                  try {
+                    e.dataTransfer.setData('text/plain', String(idx));
+                  } catch {}
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = 'move';
+                  if (overIdx !== idx) setOverIdx(idx);
+                }}
+                onDragLeave={() => {
+                  if (overIdx === idx) setOverIdx(null);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const from = dragIdx ?? Number(e.dataTransfer.getData('text/plain'));
+                  if (!Number.isNaN(from) && from !== idx) {
+                    moveAlterCard(from, idx);
+                  }
+                  setDragIdx(null);
+                  setOverIdx(null);
+                }}
+                onDragEnd={() => {
+                  setDragIdx(null);
+                  setOverIdx(null);
+                }}
+              >
+                <div className="alter-pos-badge">
+                  #{idx + 1} {idx === 0 ? '• Trên cùng' : idx === alterOrder.length - 1 ? '• Dưới cùng' : ''}
+                </div>
+                <div className="alter-card-wrap">
+                  <CardView type={c.type} seed={c.id} size="xl" preview={false} />
+                </div>
+                <div className="alter-card-name">{CARD_INFO[c.type].name}</div>
+                <div className="alter-move-btns">
+                  <button
+                    type="button"
+                    className="secondary small"
+                    disabled={idx === 0}
+                    onClick={() => moveAlterCard(idx, idx - 1)}
+                    title="Đẩy lên trước"
+                  >
+                    ◀ Lên
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary small"
+                    disabled={idx === alterOrder.length - 1}
+                    onClick={() => moveAlterCard(idx, idx + 1)}
+                    title="Đẩy ra sau"
+                  >
+                    Xuống ▶
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="modal-actions">
+            <button
+              className="primary big"
+              onClick={() => {
+                sfx('play');
+                emit('game:alter', { cardIds: alterOrder.map((c) => c.id) });
+              }}
+            >
+              <Sparkles size={17} /> Xác nhận thứ tự
+            </button>
+          </div>
+        </Modal>
+      )}
+
       {reveal && (
         <div className={`reveal ${reveal.kind}`} key={reveal.key} onClick={onCloseReveal}>
           <div className="reveal-box">
-            <div className="reveal-title">{reveal.kind === 'lost' ? '😿 Bạn bị lấy mất' : '😺 Bạn nhận được'}</div>
-            {reveal.cards.map((t, i) => (
-              <CardView key={i} type={t} seed={reveal.cardIds?.[i]} size="xl" preview={false} />
-            ))}
+            <div className="reveal-title">
+              {reveal.kind === 'lost' ? (
+                <>
+                  <TrendingDown size={22} className="inline-icon" /> Bạn bị lấy mất
+                </>
+              ) : (
+                <>
+                  <Sparkles size={22} className="inline-icon" /> Bạn nhận được
+                </>
+              )}
+            </div>
+            <div className="reveal-cards">
+              {reveal.cards.map((t, i) => (
+                <CardView key={i} type={t} seed={reveal.cardIds?.[i]} size="xl" preview={false} />
+              ))}
+            </div>
             <div className="reveal-text">{reveal.text}</div>
+            <span className="muted small">Bấm để đóng</span>
           </div>
         </div>
       )}
 
       {notice && (
-        <Modal title="🔮 Tương lai của chồng bài" width={620}>
+        <Modal title={<span className="modal-title-icon"><Eye size={19} /> Tương lai của chồng bài</span>} width={620} onClose={onCloseNotice}>
           <p className="muted">{notice.text}</p>
           <div className="future">
             {notice.cards.length ? (
