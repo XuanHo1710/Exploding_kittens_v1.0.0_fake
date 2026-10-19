@@ -12,11 +12,34 @@ const today = () => new Date().toISOString().slice(0, 10);
 const findByName = (db: DbShape, name: string) => Object.values(db.accounts).find((a) => a.nameKey === name.trim().toLowerCase());
 const accountIn = (db: DbShape, id: string) => Object.hasOwn(db.accounts, id) ? db.accounts[id] : undefined;
 const touch = (acc: Account) => { acc.updatedAt = Date.now(); };
+const OPS_KEEP = 500;
+const hasOp = (db: DbShape, opId?: string) => !!opId && !!db.ops && Object.hasOwn(db.ops, opId);
+/** Ghi nhận mã thao tác (giữ tối đa OPS_KEEP mã gần nhất) */
+const markOp = (db: DbShape, opId?: string) => {
+  if (!opId) return;
+  db.ops ??= {};
+  db.ops[opId] = Date.now();
+  const ids = Object.keys(db.ops);
+  if (ids.length > OPS_KEEP) {
+    ids.sort((a, b) => db.ops![a] - db.ops![b]).slice(0, ids.length - OPS_KEEP).forEach((id) => delete db.ops![id]);
+  }
+};
+const OP_ID = /^[\w:.-]{1,100}$/;
 
 @Injectable()
 export class AccountsService {
   /** chống dò PIN: sai 5 lần thì khoá 60 giây theo tên */
-  private fails = new Map<string, { n: number; until: number }>();
+  private fails = new Map<string, { n: number; until: number; at: number }>();
+
+  /** Giữ bảng đếm sai PIN có giới hạn: bỏ mục đã hết khoá và cũ hơn 10 phút, vẫn đầy thì bỏ mục cũ nhất */
+  private pruneFails(now: number) {
+    if (this.fails.size < 2000) return;
+    for (const [k, f] of this.fails) if (f.until <= now && now - f.at > 10 * 60_000) this.fails.delete(k);
+    for (const k of this.fails.keys()) {
+      if (this.fails.size < 2000) break;
+      this.fails.delete(k);
+    }
+  }
 
   constructor(private readonly db: DbService) {}
 
@@ -71,7 +94,7 @@ export class AccountsService {
   }
 
   async login(rawName: unknown, rawPin: unknown) {
-    const name = String(rawName ?? '').trim();
+    const name = String(rawName ?? '').trim().slice(0, 20);
     const key = name.toLowerCase();
     const pin = this.checkPin(rawPin);
     return this.db.transaction((db) => {
@@ -80,8 +103,11 @@ export class AccountsService {
       const acc = findByName(db, name);
       const ok = acc && timingSafeEqual(Buffer.from(hashPin(pin, acc.pinSalt), 'hex'), Buffer.from(acc.pinHash, 'hex'));
       if (!acc || !ok) {
-        const n = f?.until && f.until <= Date.now() ? 1 : (f?.n ?? 0) + 1;
-        this.fails.set(key, { n, until: n >= 5 ? Date.now() + 60_000 : 0 });
+        const now = Date.now();
+        const n = f?.until && f.until <= now ? 1 : (f?.n ?? 0) + 1;
+        this.pruneFails(now);
+        this.fails.delete(key);
+        this.fails.set(key, { n, until: n >= 5 ? now + 60_000 : 0, at: now });
         throw new HttpException('Sai tên hoặc mã PIN', HttpStatus.UNAUTHORIZED);
       }
       this.fails.delete(key);
@@ -150,10 +176,13 @@ export class AccountsService {
     });
   }
 
-  /** Trừ cược và tăng số ván cho cả bàn trong một lần ghi JSON. */
-  async chargeGame(playerIds: string[], bet: number) {
+  /** Trừ cược và tăng số ván cho cả bàn trong một lần ghi JSON. Cùng opId thì chỉ trừ một lần. */
+  async chargeGame(playerIds: string[], bet: number, opId?: string) {
     this.checkGameAmount(playerIds, bet);
+    this.checkOpId(opId);
     return this.db.transaction((db) => {
+      if (hasOp(db, opId)) return;
+      markOp(db, opId);
       const accounts = playerIds.map((id) => accountIn(db, id));
       for (const acc of accounts) {
         if (bet > 0 && !acc) throw new HttpException('Ván có cược cần tài khoản PIN.', HttpStatus.BAD_REQUEST);
@@ -168,10 +197,19 @@ export class AccountsService {
     });
   }
 
-  /** Hoàn tác cả bàn nếu chưa thể bắt đầu ván sau khi đã ghi khoản cược. */
-  async refundGame(playerIds: string[], bet: number) {
+  /**
+   * Hoàn tác cả bàn nếu chưa thể bắt đầu ván sau khi đã ghi khoản cược.
+   * Có chargeOpId: chỉ hoàn khi khoản thu đó THẬT SỰ đã nằm trong DB (và chưa hoàn lần nào).
+   * Trả về true nếu đã hoàn xu.
+   */
+  async refundGame(playerIds: string[], bet: number, opId?: string, chargeOpId?: string) {
     this.checkGameAmount(playerIds, bet);
+    this.checkOpId(opId);
+    this.checkOpId(chargeOpId);
     return this.db.transaction((db) => {
+      if (hasOp(db, opId)) return false;
+      if (chargeOpId && !hasOp(db, chargeOpId)) return false;
+      markOp(db, opId);
       for (const id of playerIds) {
         const acc = accountIn(db, id);
         if (!acc) continue;
@@ -179,20 +217,64 @@ export class AccountsService {
         acc.games = Math.max(0, acc.games - 1);
         touch(acc);
       }
+      return true;
     });
   }
 
-  async rewardWinner(playerId: string, pot: number) {
+  async rewardWinner(playerId: string, pot: number, opId?: string) {
     if (!Number.isSafeInteger(pot) || pot < 0) throw new HttpException('Hũ xu không hợp lệ.', HttpStatus.BAD_REQUEST);
-    return this.addCoins(playerId, pot, 'win');
+    this.checkOpId(opId);
+    return this.db.transaction((db) => {
+      if (hasOp(db, opId)) return true;
+      const acc = accountIn(db, playerId);
+      if (!acc || !Number.isSafeInteger(acc.coins + pot)) return false;
+      markOp(db, opId);
+      acc.coins += pot;
+      acc.wins++;
+      touch(acc);
+      return true;
+    });
   }
 
-  /** Trả thưởng cho một hoặc nhiều người chơi (dùng cho Xì Dách 21 và Tiến Lên). */
-  async rewardPayouts(payouts: Record<string, number>, winnerIds: string[]) {
+  /**
+   * Trả thưởng cho một hoặc nhiều người chơi (Xì Dách 21, Tiến Lên). Cùng opId thì chỉ trả một lần.
+   * Khoản âm (Nhà Cái Xì Dách thua nhiều hơn tiền cược) được trừ vào xu, tối đa bằng số xu đang có;
+   * phần Nhà Cái không đủ trả được cắt đều từ phần lãi của người thắng → tổng xu luôn bảo toàn.
+   */
+  async rewardPayouts(payouts: Record<string, number>, winnerIds: string[], opId?: string) {
+    this.checkOpId(opId);
+    const entries = Object.entries(payouts).filter(([, amount]) => Number.isSafeInteger(amount));
     return this.db.transaction((db) => {
+      if (hasOp(db, opId)) return true;
+      markOp(db, opId);
       const winSet = new Set(winnerIds);
-      for (const [playerId, amount] of Object.entries(payouts)) {
-        if (!Number.isSafeInteger(amount) || amount < 0) continue;
+      const amounts = new Map(entries);
+      let shortfall = 0;
+      for (const [playerId, amount] of entries) {
+        if (amount >= 0) continue;
+        const acc = accountIn(db, playerId);
+        const can = acc ? Math.min(acc.coins, -amount) : 0;
+        shortfall += -amount - can;
+        amounts.set(playerId, -can);
+      }
+      if (shortfall > 0) {
+        const positives = entries.filter(([, amount]) => amount > 0);
+        const total = positives.reduce((sum, [, amount]) => sum + amount, 0);
+        let left = shortfall;
+        // chia theo tỉ lệ, rồi bù phần lẻ do làm tròn cho tới khi đủ (tổng xu luôn bảo toàn)
+        for (const [playerId, amount] of positives) {
+          const cut = Math.min(amount, Math.floor((shortfall * amount) / total));
+          amounts.set(playerId, amount - cut);
+          left -= cut;
+        }
+        for (const [playerId] of positives) {
+          if (left <= 0) break;
+          const cut = Math.min(left, amounts.get(playerId)!);
+          amounts.set(playerId, amounts.get(playerId)! - cut);
+          left -= cut;
+        }
+      }
+      for (const [playerId, amount] of amounts) {
         const acc = accountIn(db, playerId);
         if (!acc) continue;
         acc.coins += amount;
@@ -201,6 +283,10 @@ export class AccountsService {
       }
       return true;
     });
+  }
+
+  private checkOpId(opId?: string) {
+    if (opId !== undefined && !OP_ID.test(opId)) throw new HttpException('Mã thao tác không hợp lệ.', HttpStatus.BAD_REQUEST);
   }
 
   private checkGameAmount(playerIds: string[], bet: number) {

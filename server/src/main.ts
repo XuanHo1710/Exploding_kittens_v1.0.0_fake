@@ -6,6 +6,9 @@ import { mkdirSync } from 'fs';
 import { AppModule } from './app.module';
 import { AVATAR_DIR } from './avatar/avatar.controller';
 
+// Promise bị từ chối mà không ai bắt: ghi log thay vì để Node dừng cả server (mất mọi phòng đang chơi)
+process.on('unhandledRejection', (reason) => console.error('[unhandledRejection]', reason));
+
 async function bootstrap() {
   mkdirSync(AVATAR_DIR, { recursive: true });
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
