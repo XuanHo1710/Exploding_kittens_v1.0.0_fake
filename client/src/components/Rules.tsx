@@ -137,6 +137,8 @@ export default function Rules({ rules: suppliedRules, playerCount: suppliedPlaye
               <li><b>Các bộ hợp lệ:</b> Rác (1 lá), Đôi (2 lá cùng số), Sám cô (3 lá cùng số), Sảnh (≥ 3 lá liên tiếp, không chứa 2), Tứ Quý (4 lá cùng số), 3 Đôi Thông, 4 Đôi Thông.</li>
               <li><b>Luật Chặt Heo / Hàng:</b> 3 Đôi Thông chặt 1 Heo hoặc 3 Đôi Thông nhỏ hơn; Tứ Quý chặt 1 Heo, Đôi Heo, 3 Đôi Thông hoặc Tứ Quý nhỏ hơn; 4 Đôi Thông chặt 1 Heo, Đôi Heo, 3 Đôi Thông, Tứ Quý, 4 Đôi Thông nhỏ hơn (không cần tới vòng).</li>
               <li><b>Tới Trắng:</b> Thắng ngay khi chia bài nếu có Tứ Quý Heo, Sảnh Rồng (3→A), 6 Đôi, hoặc 5 Đôi Thông.</li>
+              <li><b>Xếp hạng:</b> Người hết bài đầu tiên về Nhất, những người còn lại đánh tiếp để xếp Nhì, Ba; người cuối cùng còn bài là Bét. Người rời bàn giữa ván tính Bét.</li>
+              <li><b>Xu (khi có cược):</b> Nhất ăn cược của Bét, Nhì/Ba hoà vốn. Bị chặt Heo phải trả người chặt; Bét còn Heo trên tay (thối Heo) phải trả người Nhất. Heo đen (♠ ♣) = ½ mức cược, Heo đỏ (♦ ♥) = 1 mức cược. Tới Trắng ăn cả hũ.</li>
             </ul>
           </section>
         </div>
