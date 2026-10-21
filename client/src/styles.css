@@ -535,6 +535,7 @@ button.card:not(:disabled):active { transform: scale(0.97) !important; }
   font-size: 16px; padding: 7px 22px; border-radius: 10px;
   box-shadow: 0 4px 14px rgba(224, 49, 49, 0.4);
 }
+.nope-btn.super { background: #7a1010; display: inline-flex; align-items: center; gap: 6px; }
 
 /* thông báo lớn */
 .announce {

@@ -33,6 +33,7 @@ const HOW: Record<CardType, string> = {
   favor: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người chơi có bài. Người đó tự chọn 1 lá trên tay đưa cho bạn.',
   mark: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người chơi để cướp ngẫu nhiên 1 lá của họ (bạn bốc 1 lá trong bài úp đã xáo vị trí).',
   grave_robber: 'Trong lượt của bạn: bấm lá này, mọi người chơi đã chết còn bài trên tay phải chọn 1 lá để xáo vào chồng bài rút.',
+  super_nope: 'Khi có người khác đánh bài (hoặc đánh Nope), bấm lá này hoặc nút SIÊU NOPE! để chặn, kể cả ngoài lượt. Không lá Nope nào chặn lại được Siêu Nope nên kết quả chốt ngay.',
   nope: '', // Filled from the room's Nope window and chaining setting below.
   clone: 'Trong lượt của bạn: bấm lá này để nó trở thành lá nằm trên đỉnh chồng bài bỏ (chỉ đánh được khi lá đó là lá chức năng).',
   feral_cat: 'Dùng như bất kỳ lá mèo thường nào: ghép với mèo khác thành Đôi (hoặc Bộ ba nếu phòng cho phép).',

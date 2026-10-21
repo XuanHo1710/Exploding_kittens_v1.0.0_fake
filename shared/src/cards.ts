@@ -21,6 +21,7 @@ export type CardType =
   | 'mark'
   | 'grave_robber'
   | 'nope'
+  | 'super_nope'
   | 'clone'
   | 'feral_cat'
   | 'cat_potato'
@@ -225,6 +226,14 @@ export const CARD_INFO: Record<CardType, CardInfo> = {
     color: '#d23b2f',
     desc: 'Chặn hành động của người chơi khác. Có thể đánh bất cứ lúc nào.',
   },
+  super_nope: {
+    name: 'Siêu Nope',
+    code: 'Nop',
+    short: 'Chặn hành động của người khác. Không Nope nào chặn được. Đánh lúc nào cũng được.',
+    emoji: '🛑',
+    color: '#a61e1e',
+    desc: 'Siêu Nope không thể bị Nope bởi một lá Nope khác! Có thể đánh bất cứ lúc nào để chặn hành động của người chơi khác.',
+  },
   clone: {
     name: 'Nhân Bản',
     code: 'Cln',
@@ -312,6 +321,7 @@ export const DECK_COUNTS: Record<Exclude<CardType, 'exploding'>, number> = {
   mark: 4,
   grave_robber: 2,
   nope: 10,
+  super_nope: 2,
   clone: 3,
   feral_cat: 4,
   cat_potato: 8,

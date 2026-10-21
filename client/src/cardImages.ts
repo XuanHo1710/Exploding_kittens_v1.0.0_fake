@@ -28,6 +28,7 @@ export const CARD_CODE_PREFIX: Record<CardType, string> = {
   mark: 'Mrk',
   grave_robber: 'Grv',
   nope: 'Nop',
+  super_nope: 'Nop',
   clone: 'Cln',
   feral_cat: 'Fer',
   cat_potato: 'Cat1',
@@ -297,6 +298,9 @@ export const CARD_VARIANTS: Record<CardType, string[]> = {
     'Nop-025.jpg',
     'Nop-026.jpg',
     'Nop-027.jpg',
+  ],
+  // SUPER NOPE (Coffee Expansion): "Super Nope cannot be Noped by another Nope! Play this at any time"
+  super_nope: [
     'Nop-030.jpg',
   ],
   clone: [

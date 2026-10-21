@@ -165,6 +165,8 @@ export interface LastPlay {
   /** Những người đã đánh Nope, theo thứ tự */
   nopers: string[];
   nopeCardIds: string[];
+  /** Loại lá Nope theo thứ tự (Nope / Siêu Nope) */
+  nopeCardTypes?: CardType[];
   result?: 'done' | 'noped' | 'cancelled';
 }
 

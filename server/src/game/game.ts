@@ -18,6 +18,7 @@ import {
   createStandard52Deck,
   detectPlayKind,
   UNNOPEABLE_KINDS,
+  NOPE_CARD_TYPES,
   detectTienLenCombo,
   evaluateBlackjackHand,
   normalizeRoomRules,
@@ -936,16 +937,28 @@ export class Game {
       if (!cards.length || cards.some((c) => !c)) throw new GameError('Lá bài không hợp lệ.');
       const played = cards as Card[];
 
-      // Nope: đánh được bất cứ lúc nào có hành động đang chờ
-      if (played.length === 1 && played[0].type === 'nope') {
+      // Nope / Siêu Nope: đánh được bất cứ lúc nào có hành động đang chờ
+      if (played.length === 1 && NOPE_CARD_TYPES.includes(played[0].type)) {
         if (!this.pending) throw new GameError('Không có gì để Nope.');
         if (!this.roomRules.nopeChain && this.pending.nopeCount > 0) throw new GameError('Luật phòng không cho phép Nope lại Nope.');
+        // "Stop the action of another player": không tự chặn hành động (hay lá Nope) của chính mình
+        const lastActorId = this.pending.nopeCount === 0 ? this.pending.actorId : this.lastPlay?.nopers.at(-1);
+        if (lastActorId === p.id) throw new GameError('Không thể Nope chính mình.');
+        const isSuper = played[0].type === 'super_nope';
         this.toDiscard(p, played);
         this.pending.nopeCount++;
         this.lastPlay?.nopers.push(p.id);
         this.lastPlay?.nopeCardIds.push(played[0].id);
+        this.lastPlay?.nopeCardTypes?.push(played[0].type);
+        const blocked = this.pending.nopeCount % 2 === 1;
+        if (isSuper) {
+          // "Super Nope cannot be Noped by another Nope!" → chốt kết quả ngay, không mở thêm thời gian chờ Nope
+          this.addLog(blocked ? `🛑 ${p.name} SIÊU NOPE! Không ai Nope lại được.` : `🛑 ${p.name} SIÊU NOPE lại cái Nope! Không ai Nope lại được.`);
+          this.resolvePending();
+          return;
+        }
         this.pending.deadline = Date.now() + this.roomRules.nopeSeconds * 1000;
-        this.addLog(this.pending.nopeCount % 2 ? `${p.name} NOPE!` : `${p.name} NOPE lại cái Nope!`);
+        this.addLog(blocked ? `${p.name} NOPE!` : `${p.name} NOPE lại cái Nope!`);
         return;
       }
 
@@ -1004,7 +1017,7 @@ export class Game {
         nopeCount: 0,
         deadline: Date.now() + this.roomRules.nopeSeconds * 1000,
       };
-      this.lastPlay = { id: ++this.playSeq, kind, actorId: playerId, targetId: target?.id, cards: types, cardIds: played.map((c) => c.id), nopers: [], nopeCardIds: [] };
+      this.lastPlay = { id: ++this.playSeq, kind, actorId: playerId, targetId: target?.id, cards: types, cardIds: played.map((c) => c.id), nopers: [], nopeCardIds: [], nopeCardTypes: [] };
       const desc = this.describe(p, kind, target, req);
       this.addLog(cloned ? `🧬 ${p.name} đánh Nhân Bản, sao chép hiệu ứng ${CARD_INFO[kind as CardType]?.name ?? kind}. ${desc}` : desc);
       // Luật nhà: Siêu Bỏ Lượt không bị Nope → có hiệu lực ngay, không mở thời gian chờ Nope

@@ -555,3 +555,36 @@ test('luật nhà: Siêu Bỏ Lượt có hiệu lực ngay, không ai Nope đư
   assert.equal(game.pending, undefined);
   assert.equal(game.current().id, C);
 });
+
+test('Siêu Nope: chặn ngay, không ai Nope lại được, kết quả chốt luôn', (t) => {
+  const { game } = kittens(t, { [A]: ['favor', 'nope'], [B]: ['super_nope', 'cat_melon'], [C]: ['nope'] }, ['cat_taco', 'shuffle']);
+  game.play(A, { cardIds: [`${A}-favor-0`], targetId: B });
+  game.play(B, { cardIds: [`${B}-super_nope-0`] });
+  assert.equal(game.pending, undefined, 'không mở thêm thời gian chờ Nope');
+  assert.equal(game.lastPlay.result, 'noped');
+  assert.deepEqual(game.lastPlay.nopeCardTypes, ['super_nope']);
+  assert.equal(game.waiting, undefined, 'Xin Bài bị chặn, B không phải đưa bài');
+  assert.throws(() => game.play(A, { cardIds: [`${A}-nope-1`] }), GameError, 'không Nope được Siêu Nope');
+  assert.throws(() => game.play(C, { cardIds: [`${C}-nope-0`] }), GameError);
+  assert.equal(game.current().id, A, 'vẫn là lượt A');
+});
+
+test('Siêu Nope chặn lại một lá Nope: hành động gốc có hiệu lực ngay', (t) => {
+  const { game } = kittens(t, { [A]: ['favor', 'super_nope'], [B]: ['nope', 'cat_melon'], [C]: ['nope'] }, ['cat_taco', 'shuffle']);
+  game.play(A, { cardIds: [`${A}-favor-0`], targetId: B });
+  game.play(B, { cardIds: [`${B}-nope-0`] });
+  game.play(A, { cardIds: [`${A}-super_nope-1`] });
+  assert.equal(game.pending, undefined);
+  assert.equal(game.lastPlay.result, 'done');
+  assert.equal(game.waiting?.kind, 'favor_give', 'B phải đưa bài cho A');
+});
+
+test('Nope: không tự Nope hành động hay lá Nope của chính mình', (t) => {
+  const { game } = kittens(t, { [A]: ['shuffle', 'nope', 'nope'], [B]: ['nope'], [C]: [] }, ['cat_taco', 'cat_melon']);
+  game.play(A, { cardIds: [`${A}-shuffle-0`] });
+  assert.throws(() => game.play(A, { cardIds: [`${A}-nope-1`] }), GameError, 'không Nope hành động của mình');
+  game.play(B, { cardIds: [`${B}-nope-0`] });
+  game.play(A, { cardIds: [`${A}-nope-1`] });
+  assert.throws(() => game.play(A, { cardIds: [`${A}-nope-2`] }), GameError, 'không Nope lại lá Nope của chính mình');
+  assert.equal(game.pending.nopeCount, 2);
+});

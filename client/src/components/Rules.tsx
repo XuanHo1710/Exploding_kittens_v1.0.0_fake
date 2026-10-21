@@ -66,6 +66,8 @@ export default function Rules({ rules: suppliedRules, playerCount: suppliedPlaye
               {(rules.allowPair || rules.allowTriple) && <li>Combo: chọn đủ {matching}, rồi bấm đánh đôi hoặc bộ ba. Dùng “Chọn nhiều lá” để ghép lá đa năng hoặc lá chức năng khi phòng cho phép.</li>}
               {rules.allowFive && <li>Combo 5 lá: bấm “Chọn nhiều lá”, chọn 5 lá có tên khác nhau rồi bấm “Chọn lá”.</li>}
               <li>Khi có thể chặn, lá Nope trên tay và nút NOPE! giữa bàn sáng lên.</li>
+              <li><b>Siêu Nope</b>: chặn như Nope nhưng không lá Nope nào chặn lại được, đánh ra là chốt kết quả ngay.</li>
+              <li>Không ai được Nope hành động (hay lá Nope) của chính mình.</li>
               <li>Luật nhà: <b>Siêu Bỏ Lượt</b> không bị Nope, đánh ra là có hiệu lực ngay.</li>
               <li>Rê chuột (hoặc nhấn giữ trên điện thoại) vào lá bất kỳ để xem ảnh gốc phóng to và giải thích chi tiết theo luật phòng.</li>
             </ul>

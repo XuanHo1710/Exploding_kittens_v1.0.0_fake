@@ -24,6 +24,7 @@ import {
   MessageSquare,
   MoreHorizontal,
   MousePointerClick,
+  OctagonX,
   Play,
   RotateCcw,
   ScrollText,
@@ -43,6 +44,7 @@ import {
   CARD_INFO,
   EMOTES,
   SINGLE_ACTION_CARDS,
+  NOPE_CARD_TYPES,
   WILDCARD_CAT_TYPES,
   canMatchComboCards,
   cloneCopyKind,
@@ -110,6 +112,7 @@ const SINGLE: readonly CardType[] = SINGLE_ACTION_CARDS;
 const SORT_ORDER: CardType[] = [
   'defuse',
   'nope',
+  'super_nope',
   'super_skip',
   'skip',
   'reverse',
@@ -787,7 +790,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   /** Lá sáng = bấm là đánh được ngay */
   const isPlayable = (c: Card) => {
     if (!alive || view.phase !== 'playing' || waiting) return false;
-    if (pending) return c.type === 'nope' && canNopePending;
+    if (pending) return NOPE_CARD_TYPES.includes(c.type) && canNopePending;
     if (!myActionTime) return false;
     if (SINGLE.includes(c.type)) {
       // Nhân Bản: sáng khi lá trên đỉnh chồng bỏ là lá chức năng dùng được lúc này
@@ -797,6 +800,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
     return canComboType(c.type);
   };
   const nopeCard = canNopePending ? view.hand.find((c) => c.type === 'nope') : undefined;
+  const superNopeCard = canNopePending ? view.hand.find((c) => c.type === 'super_nope') : undefined;
   const canPlay = myActionTime && !!kind && (!needsTarget || targets.length > 0);
   /** Combo 5 lá khác nhau: lục chồng bài bỏ (gồm cả 5 lá vừa đánh) */
   const fiveDiscardTypes = [...new Set([...view.discardTypes, ...selCards.map((c) => c.type)])].filter((t) => t !== 'exploding');
@@ -929,7 +933,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         sfx('deny');
         return;
       }
-      if (card.type === 'nope') {
+      if (NOPE_CARD_TYPES.includes(card.type)) {
         flyOut([card.id]);
         sfx('nope');
         emit('game:play', { cardIds: [card.id] });
@@ -1289,7 +1293,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                   ))}
                   {lastPlay.nopers.map((id, i) => (
                     <div key={`n${i}`} className="lp-nope" style={{ ['--n' as string]: i } as CSSProperties}>
-                      <CardView type="nope" seed={lastPlay.nopeCardIds?.[i] ?? `nope-${lastPlay.id}-${i}`} size="sm" />
+                      <CardView type={lastPlay.nopeCardTypes?.[i] ?? 'nope'} seed={lastPlay.nopeCardIds?.[i] ?? `nope-${lastPlay.id}-${i}`} size="sm" />
                       <span className="lp-noper">{nameOf(id)}</span>
                     </div>
                   ))}
@@ -1325,6 +1329,19 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                         }}
                       >
                         <Ban size={18} /> NOPE!
+                      </button>
+                    )}
+                    {alive && superNopeCard && (
+                      <button
+                        className="nope-btn super"
+                        title="Siêu Nope: không ai Nope lại được"
+                        onClick={() => {
+                          flyOut([superNopeCard.id]);
+                          sfx('nope');
+                          emit('game:play', { cardIds: [superNopeCard.id] });
+                        }}
+                      >
+                        <OctagonX size={18} /> SIÊU NOPE!
                       </button>
                     )}
                   </div>

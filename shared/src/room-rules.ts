@@ -178,6 +178,9 @@ export const SINGLE_ACTION_CARDS: readonly CardType[] = [
  */
 export const UNNOPEABLE_KINDS: readonly ActionKind[] = ['super_skip'];
 
+/** Lá dùng để Nope. Siêu Nope: "Super Nope cannot be Noped by another Nope! Play this at any time." */
+export const NOPE_CARD_TYPES: readonly CardType[] = ['nope', 'super_nope'];
+
 /** Nhân Bản đánh lẻ sao chép được các lá chức năng đánh lẻ (trừ chính Nhân Bản) */
 export const CLONEABLE_KINDS: readonly ActionKind[] = SINGLE_ACTION_CARDS.filter((t) => t !== 'clone') as ActionKind[];
 
@@ -275,10 +278,11 @@ export function describeCard(type: CardType, rules: RoomRules): string {
   if (type === 'attack') return `${CARD_INFO.attack.desc}${rules.attackMode === 'stack' ? ' Luật phòng: cộng thêm số lượt bạn đang nợ.' : ''}`;
   if (type === 'targeted_attack') return `${CARD_INFO.targeted_attack.desc}${rules.attackMode === 'stack' ? ' Luật phòng: cộng thêm số lượt bạn đang nợ.' : ''}`;
   if (type === 'see_future') return `Bí mật xem ${rules.futureCount} lá trên cùng của chồng bài.`;
-  if (type === 'nope') return `Chặn hành động trong ${rules.nopeSeconds} giây, cả ngoài lượt. Không chặn Mèo Nổ/Gỡ Bom. ${rules.nopeChain ? 'Có thể Nope lại Nope.' : 'Không được Nope lại Nope.'}`;
   if (type === 'alter_future') return `Bí mật xem và sắp xếp lại ${rules.futureCount} lá trên cùng của chồng bài rút.`;
   if (type === 'share_future') return `Xem và sắp xếp lại ${rules.futureCount} lá trên cùng của chồng bài rút, rồi cho người chơi kế tiếp xem các lá đó.`;
   if (type === 'super_skip') return `${CARD_INFO.super_skip.desc} Luật nhà: không ai Nope được lá này.`;
+  if (type === 'nope') return `Chặn hành động trong ${rules.nopeSeconds} giây, cả ngoài lượt. Không chặn Mèo Nổ/Gỡ Bom, không chặn được Siêu Nope (luật nhà: cả Siêu Bỏ Lượt). ${rules.nopeChain ? 'Có thể Nope lại Nope.' : 'Không được Nope lại Nope.'}`;
+  if (type === 'super_nope') return `${CARD_INFO.super_nope.desc} Đánh ra là chốt ngay, không chờ Nope.${rules.nopeChain ? '' : ' Luật phòng: không dùng để chặn lại một lá Nope.'}`;
   if (CARD_INFO[type].isCat) {
     const prefix = type === 'feral_cat' ? 'Dùng như bất kỳ lá mèo thường nào. ' : 'Đánh lẻ không có tác dụng. ';
     const effects = [rules.allowPair && 'Đôi: cướp ngẫu nhiên 1 lá của người khác', rules.allowTriple && 'Ba: gọi tên lá muốn lấy', rules.allowFive && 'Dùng trong combo 5 lá khác nhau'].filter(Boolean);
