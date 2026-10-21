@@ -7,7 +7,8 @@ import {
 import { CardIcon } from './icons';
 import Modal from './Modal';
 
-const SAVED_RULES_KEY = 'meono.room-rules.v1';
+// v2: luật mặc định đổi theo sách luật chính thức (Tấn Công cộng dồn, đôi/ba mọi lá cùng tên)
+const SAVED_RULES_KEY = 'meono.room-rules.v2';
 
 export function getSavedRoomRules(): RoomRules {
   try {

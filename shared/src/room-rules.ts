@@ -43,9 +43,10 @@ export const DEFAULT_ROOM_RULES: RoomRules = Object.freeze({
   allowPair: true,
   allowTriple: true,
   allowFive: true,
-  comboScope: 'cats',
-  // Chữ in trên lá Tấn Công: "buộc người kế tiếp chơi 2 lượt" (không cộng dồn). Cộng dồn là tuỳ chọn của phòng.
-  attackMode: 'replace',
+  // Sách luật chính thức: "Two of a Kind" / "Three of a Kind" dùng mọi lá cùng tên, không chỉ lá mèo.
+  comboScope: 'any',
+  // Sách luật chính thức: bị Tấn Công mà đánh Tấn Công thì người kế tiếp chơi số lượt còn lại + 2 (2 → 4 → 6…).
+  attackMode: 'stack',
   nopeChain: true,
   futureCount: 3,
   bombPlacement: 'choose',
@@ -67,8 +68,11 @@ export const RULE_PRESETS: ReadonlyArray<{ id: string; name: string; description
     rules: { ...DEFAULT_ROOM_RULES, extraDefuses: 0, bombMode: 'players', comboScope: 'any', turnSeconds: 45,
       cardCounts: { ...baseCounts, attack: 14, targeted_attack: 6, catomic_bomb: 4, skip: 10, nope: 12 } },
   },
-  { id: 'legacy', name: 'Cổ điển', description: 'Chỉ dùng bộ bài cơ bản truyền thống, mỗi người 1 Gỡ Bom, số bom bằng số người.',
-    rules: { ...DEFAULT_ROOM_RULES, extraDefuses: 0, bombMode: 'players', cardCounts: { ...zeroCounts, attack: 8, skip: 8, favor: 8, shuffle: 8, see_future: 10, nope: 10, cat_potato: 8, cat_melon: 8, cat_bladder: 8, cat_schrodinger: 8, cat_beard: 8 } } },
+  {
+    id: 'legacy', name: 'Bản gốc', description: 'Đúng bộ Exploding Kittens gốc 56 lá cho 2–5 người: 4 Tấn Công, 4 Bỏ Lượt, 4 Xin Bài, 4 Xáo Bài, 5 Xem Trước, 5 Nope, 20 lá mèo.',
+    rules: { ...DEFAULT_ROOM_RULES, maxPlayers: 5, extraDefuses: 2, bombMode: 'players_minus_one',
+      cardCounts: { ...zeroCounts, attack: 4, skip: 4, favor: 4, shuffle: 4, see_future: 5, nope: 5, cat_potato: 4, cat_melon: 4, cat_bladder: 4, cat_schrodinger: 4, cat_beard: 4 } },
+  },
 ];
 
 export const RULE_LIMITS = {
@@ -215,7 +219,8 @@ export function canMatchComboCards(types: CardType[], rules: RoomRules): boolean
   if (nonWild.length === 0) return true;
   const baseType = nonWild[0];
   if (!nonWild.every((t) => t === baseType)) return false;
-  return rules.comboScope === 'any' || !!CARD_INFO[baseType].isCat;
+  // Mèo Hoang: "Use as any cat card" → chỉ thay được lá mèo, không ghép với lá chức năng
+  return !!CARD_INFO[baseType].isCat;
 }
 
 /** Loại lá này có được làm "lá chính" của đôi/ba không (phòng chỉ cho mèo thường thì chỉ mèo) */
@@ -232,14 +237,15 @@ export function comboGroupFor<C extends { id: string; type: CardType }>(hand: re
   if (WILDCARD_CAT_TYPES.includes(type)) {
     let best = wilds;
     for (const base of new Set(hand.map((c) => c.type))) {
-      if (!comboBaseAllowed(base, rules)) continue;
+      if (!comboBaseAllowed(base, rules) || !CARD_INFO[base].isCat) continue;
       const group = [...hand.filter((c) => c.type === base), ...wilds];
       if (group.length > best.length) best = group;
     }
     return best;
   }
   if (!comboBaseAllowed(type, rules)) return [];
-  return [...hand.filter((c) => c.type === type), ...wilds];
+  const same = hand.filter((c) => c.type === type);
+  return CARD_INFO[type].isCat ? [...same, ...wilds] : same;
 }
 
 /** Lá loại `type` có đang ghép được đôi (hoặc ba nếu phòng tắt đôi) không */
@@ -265,7 +271,7 @@ export function ruleSummary(rules: RoomRules): string[] {
   return [
     `Tối đa ${rules.maxPlayers} người · mỗi người ${rules.handSize} lá thường + ${rules.defusesPerPlayer} Gỡ Bom`,
     `${bombRule} · thêm ${rules.extraDefuses} Gỡ Bom vào chồng rút`,
-    combos ? `Combo: ${combos}. Đôi/ba ${rules.comboScope === 'cats' ? 'chỉ dùng mèo thường (& Mèo Hoang)' : 'dùng mọi loại bài giống nhau'}.` : 'Tắt tất cả combo.',
+    combos ? `Combo: ${combos}. Đôi/ba ${rules.comboScope === 'cats' ? 'chỉ dùng mèo thường (& Mèo Hoang)' : 'dùng mọi lá cùng tên (Mèo Hoang chỉ thay lá mèo)'}.` : 'Tắt tất cả combo.',
     `Tấn Công ${rules.attackMode === 'stack' ? 'cộng số lượt còn nợ' : 'đặt lại thành 2 lượt'} · ${rules.nopeChain ? 'được Nope lại Nope' : 'không được Nope lại Nope'}`,
     `Xem trước ${rules.futureCount} lá · nhét bom ${rules.bombPlacement === 'choose' ? 'tự chọn vị trí' : 'ngẫu nhiên'}`,
     `Lượt ${rules.turnSeconds}s · chờ Nope ${rules.nopeSeconds}s · chọn bài/nhét bom ${rules.promptSeconds}s`,
