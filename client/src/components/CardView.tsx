@@ -2,7 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { CARD_INFO, describeCard, type CardType } from '../../../shared/src';
 import CardArt from '../art/CardArt';
 import { cardImage } from '../cardImages';
-import { usePreviewTrigger } from './CardPreview';
+import { usePreviewTrigger } from './cardPreviewStore';
 import { useRoomRules } from '../roomRulesContext';
 
 /** Nền tranh riêng cho vài lá (mặc định pha sáng từ màu lá) */

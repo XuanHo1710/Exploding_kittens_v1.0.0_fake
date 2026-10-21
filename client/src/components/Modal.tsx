@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { sfx } from '../sfx';
-import { hidePreview } from './CardPreview';
+import { hidePreview } from './cardPreviewStore';
 
 interface Props {
   title: ReactNode;
