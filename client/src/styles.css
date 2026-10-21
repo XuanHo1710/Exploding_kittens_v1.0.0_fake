@@ -260,7 +260,7 @@ input[type='range']:focus-visible { outline: 2px solid var(--accent); outline-of
 .landing-chips span svg { color: var(--accent); }
 .landing-panel .panel { width: 100%; padding: 24px; gap: 18px; }
 .panel-block { display: flex; flex-direction: column; gap: 10px; }
-.join-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+.join-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; }
 
 .hero { position: relative; width: clamp(280px, 32vw, 440px); aspect-ratio: 460 / 330; margin-bottom: clamp(12px, 2vw, 28px); }
 .hero .hero-card { position: absolute; left: 50%; bottom: 0; transform-origin: 50% 110%; --w: clamp(118px, 12.5vw, 180px); }
@@ -2229,3 +2229,32 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   /* Gợi ý luật trên nền xanh đậm: đủ tương phản để đọc */
   .bj-turn-banner .muted { color: rgba(226, 232, 240, 0.82); }
 }
+
+/* khán giả */
+.spectator-chip {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text); font-weight: 600; font-size: 13px;
+  padding: 5px 10px; border-radius: 10px; box-shadow: var(--shadow-card); white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 4px; cursor: default;
+}
+.spectator-area { padding-bottom: 10px; align-self: start; }
+.game:has(> .spectator-area) { align-content: start; }
+.lobby-spectators {
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.lobby-spectators .bet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.lobby-spectators p { margin: 0; }
+.spectator-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.spectator-item {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px 3px 3px; font-size: 13px; font-weight: 500;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 999px; max-width: 100%;
+}
+.spectator-item.me { border-color: var(--accent); }
+.spectator-item.offline { opacity: 0.5; }
+.spectator-kick {
+  display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border-radius: 50%;
+  background: transparent; border: none; color: var(--muted); cursor: pointer;
+}
+.spectator-kick:hover { color: var(--bad); }
+/* Xì Dách / Tiến Lên: khán giả chỉ có 1 dòng trạng thái + nút rời phòng, không ép thành cột hẹp */
+.bj-game .spectator-area .my-status, .tl-game .spectator-area .my-status { display: block; flex: 1 1 100%; }

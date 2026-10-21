@@ -167,6 +167,7 @@ export default function App() {
           <Home
             onCreate={(rules, gameMode) => emitConfirmed('room:create', { rules, gameMode })}
             onJoin={(code) => emit('room:join', { code })}
+            onWatch={(code) => emit('room:watch', { code })}
           />
         )}
         {loggedIn && view?.phase === 'lobby' && <Lobby view={view} meId={identity.playerId} emit={emit} chat={chatProps} account={account}

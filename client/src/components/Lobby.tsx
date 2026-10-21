@@ -14,6 +14,7 @@ import { copyTextSafe, fmtCoins } from './Dock';
 import PlayerAvatar from '../art/PlayerAvatar';
 import ChatPanel, { useChatState, type RoomChat } from './ChatPanel';
 import RoomSettings, { RoomRuleSummary } from './RoomSettings';
+import { LobbySpectators, isSpectating, roomPeople } from './Spectators';
 
 interface Props {
   view: RoomView;
@@ -29,7 +30,7 @@ const NO_CHAT: RoomChat = { messages: [], typing: {}, send: () => {}, onTyping: 
 export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSaveRules }: Props) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const { typingNames, unread } = useChatState(chat, view.players, meId, true);
+  const { typingNames, unread } = useChatState(chat, roomPeople(view), meId, true);
   const isHost = view.hostId === meId;
   const gameMode: GameMode = view.gameMode ?? 'exploding_kittens';
   const modeInfo = GAME_MODES[gameMode];
@@ -39,6 +40,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
   const maxPlayers = Math.min(view.rules.maxPlayers, modeInfo.maxPlayers);
   const empty = Math.max(0, maxPlayers - view.players.length);
   const me = view.players.find((player) => player.id === meId);
+  const spectating = isSpectating(view, meId);
   const awaitingReady = view.players.filter((player) => player.connected && player.id !== view.hostId && !player.ready);
   const deck = roomDeckSummary(view.rules, online);
   const deckOk = gameMode === 'exploding_kittens' ? deck.canStart : online <= modeInfo.maxPlayers;
@@ -144,6 +146,8 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
             ))}
           </div>
 
+          <LobbySpectators view={view} meId={meId} emit={emit} />
+
           <div className="bet-box">
             <div className="bet-head">
               <b>
@@ -233,6 +237,8 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                   </>
                 )}
               </button>
+            ) : spectating ? (
+              <span className="muted small">Bạn đang xem. Bấm “Vào bàn chơi” ở mục Khán giả nếu còn ghế trống.</span>
             ) : (
               <button className={me?.ready ? 'secondary big' : 'primary big'} onClick={() => emit('room:ready', { ready: !me?.ready, rulesVersion: view.rulesVersion })}>
                 {me?.ready ? (

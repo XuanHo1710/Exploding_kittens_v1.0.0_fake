@@ -13,6 +13,7 @@ import {
 import PlayerAvatar from '../art/PlayerAvatar';
 import { fmtCoins, Brand } from './Dock';
 import ChatPanel, { useChatState, type RoomChat } from './ChatPanel';
+import { SpectatorArea, SpectatorChip, isSpectating, roomPeople } from './Spectators';
 import Modal from './Modal';
 import PlayingCardView from './PlayingCardView';
 import { sfx } from '../sfx';
@@ -36,9 +37,10 @@ export default function TienLenBoard({ view, meId, emit, emote, chat, dock }: Pr
   const [now, setNow] = useState(Date.now());
   const [pops, setPops] = useState<Record<string, { emoji: string; key: number }>>({});
 
-  const { typingNames, unread } = useChatState(chat, view.players, meId, chatOpen && chatTab === 'chat');
+  const { typingNames, unread } = useChatState(chat, roomPeople(view), meId, chatOpen && chatTab === 'chat');
   const tl = view.tienLen;
   const me = view.players.find((p) => p.id === meId);
+  const spectating = isSpectating(view, meId);
   const isHost = view.hostId === meId;
   const myTurn = view.phase === 'playing' && view.currentPlayerId === meId;
   const others = view.players.filter((p) => p.id !== meId);
@@ -122,6 +124,7 @@ export default function TienLenBoard({ view, meId, emit, emote, chat, dock }: Pr
             )}
           </div>
           <div className="top-right">
+            <SpectatorChip view={view} />
             {dock}
             <button
               className={`icon-btn chat-btn${chatOpen ? ' on' : ''}`}
@@ -133,7 +136,7 @@ export default function TienLenBoard({ view, meId, emit, emote, chat, dock }: Pr
             </button>
             <button
               className="icon-btn leave-btn"
-              onClick={() => (view.phase === 'playing' ? setLeaveAsk(true) : emit('room:leave'))}
+              onClick={() => (view.phase === 'playing' && !spectating ? setLeaveAsk(true) : emit('room:leave'))}
               title="Rời phòng"
             >
               <LogOut size={17} />
@@ -276,97 +279,101 @@ export default function TienLenBoard({ view, meId, emit, emote, chat, dock }: Pr
       </div>
 
       {/* Khu vực bài trên tay của bản thân */}
-      <div className={`my-area${myTurn ? ' my-turn' : ''}`}>
-        <div className="my-bar">
-          <div className="my-status">
-            <div className={`ring${myTurn ? ' active my-turn-avatar' : ''}`}>
-              <PlayerAvatar id={meId} avatar={me?.avatar} size={myTurn ? 68 : 52} />
-              {myTurn && <span className="my-turn-badge">⚡ LƯỢT BẠN</span>}
-            </div>
-            <div>
-              <div className="my-name-row">
-                <b>{me?.name}</b>
-                {myRank ? <span className="tl-rank-tag">🏆 {myRank}</span> : <span className="seat-count">Còn {tl.hand.length} lá</span>}
-                {tl.passedIds.includes(meId) && <span className="tl-pass-tag">⏭️ Đã bỏ vòng</span>}
+      {spectating ? (
+        <SpectatorArea view={view} emit={emit} />
+      ) : (
+        <div className={`my-area${myTurn ? ' my-turn' : ''}`}>
+          <div className="my-bar">
+            <div className="my-status">
+              <div className={`ring${myTurn ? ' active my-turn-avatar' : ''}`}>
+                <PlayerAvatar id={meId} avatar={me?.avatar} size={myTurn ? 68 : 52} />
+                {myTurn && <span className="my-turn-badge">⚡ LƯỢT BẠN</span>}
               </div>
-              <span className="muted small">
-                {sel.length > 0
-                  ? combo
-                    ? beatCheck?.ok
-                      ? `✅ Bộ hợp lệ: ${combo.labelVi}`
-                      : `⚠️ ${combo.labelVi} — ${beatCheck?.reason}`
-                    : `⚠️ ${sel.length} lá đang chọn chưa tạo thành bộ Tiến Lên hợp lệ`
-                  : view.phase === 'ended'
-                    ? myRank ? `Ván đã kết thúc — bạn về ${myRank}.` : 'Ván đã kết thúc.'
-                  : myRank && view.phase === 'playing'
-                    ? `Bạn đã về ${myRank}! Chờ những người còn lại đánh xong…`
-                    : myTurn
-                      ? `Còn ${secs(view.turnDeadline)}s — Lá sáng là lá đánh được. Chọn bài để đánh hoặc Bỏ lượt`
-                      : `Đang chờ ${nameOf(view.currentPlayerId)}…`}
-              </span>
-            </div>
-            <div className="quick-emotes">
-              {QUICK_EMOTES.map((e) => (
-                <button key={e} className="qe-btn" onClick={() => sendEmote(e)}>
-                  {e}
+              <div>
+                <div className="my-name-row">
+                  <b>{me?.name}</b>
+                  {myRank ? <span className="tl-rank-tag">🏆 {myRank}</span> : <span className="seat-count">Còn {tl.hand.length} lá</span>}
+                  {tl.passedIds.includes(meId) && <span className="tl-pass-tag">⏭️ Đã bỏ vòng</span>}
+                </div>
+                <span className="muted small">
+                  {sel.length > 0
+                    ? combo
+                      ? beatCheck?.ok
+                        ? `✅ Bộ hợp lệ: ${combo.labelVi}`
+                        : `⚠️ ${combo.labelVi} — ${beatCheck?.reason}`
+                      : `⚠️ ${sel.length} lá đang chọn chưa tạo thành bộ Tiến Lên hợp lệ`
+                    : view.phase === 'ended'
+                      ? myRank ? `Ván đã kết thúc — bạn về ${myRank}.` : 'Ván đã kết thúc.'
+                    : myRank && view.phase === 'playing'
+                      ? `Bạn đã về ${myRank}! Chờ những người còn lại đánh xong…`
+                      : myTurn
+                        ? `Còn ${secs(view.turnDeadline)}s — Lá sáng là lá đánh được. Chọn bài để đánh hoặc Bỏ lượt`
+                        : `Đang chờ ${nameOf(view.currentPlayerId)}…`}
+                </span>
+              </div>
+              <div className="quick-emotes">
+                {QUICK_EMOTES.map((e) => (
+                  <button key={e} className="qe-btn" onClick={() => sendEmote(e)}>
+                    {e}
+                  </button>
+                ))}
+                <button className={`qe-btn more${pickerOpen ? ' on' : ''}`} onClick={() => setPickerOpen((o) => !o)}>
+                  <Smile size={16} />
                 </button>
-              ))}
-              <button className={`qe-btn more${pickerOpen ? ' on' : ''}`} onClick={() => setPickerOpen((o) => !o)}>
-                <Smile size={16} />
+              </div>
+            </div>
+  
+            <div className="my-actions">
+              {sel.length > 0 && (
+                <button className="ghost" onClick={() => setSel([])}>
+                  <X size={15} /> Bỏ chọn ({sel.length})
+                </button>
+              )}
+              <button className="primary big" disabled={!canPlayCombo} onClick={playSelected}>
+                <Play size={16} /> {combo ? `Đánh ${combo.labelVi}` : 'Đánh bài'}
               </button>
+              {canPass && (
+                <button
+                  className="secondary big"
+                  onClick={() => {
+                    sfx('tap');
+                    emit('tienlen:pass');
+                    setSel([]);
+                  }}
+                >
+                  <SkipForward size={16} /> Bỏ lượt
+                </button>
+              )}
             </div>
           </div>
-
-          <div className="my-actions">
-            {sel.length > 0 && (
-              <button className="ghost" onClick={() => setSel([])}>
-                <X size={15} /> Bỏ chọn ({sel.length})
-              </button>
-            )}
-            <button className="primary big" disabled={!canPlayCombo} onClick={playSelected}>
-              <Play size={16} /> {combo ? `Đánh ${combo.labelVi}` : 'Đánh bài'}
-            </button>
-            {canPass && (
-              <button
-                className="secondary big"
-                onClick={() => {
-                  sfx('tap');
-                  emit('tienlen:pass');
-                  setSel([]);
-                }}
-              >
-                <SkipForward size={16} /> Bỏ lượt
-              </button>
-            )}
+  
+          {pickerOpen && (
+            <div className="emote-picker" role="dialog" aria-label="Biểu cảm">
+              <div className="emote-title">Thả biểu cảm</div>
+              <div className="emote-grid">
+                {EMOTES.map((e) => (
+                  <button key={e} onClick={() => sendEmote(e)}>
+                    {e}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+  
+          <div className={`hand tl-hand${myTurn ? ' my-turn' : ''}`}>
+            {tl.hand.map((c) => (
+              <PlayingCardView
+                key={c.id}
+                card={c}
+                size="lg"
+                selected={sel.includes(c.id)}
+                playable={playableIds.has(c.id)}
+                onClick={() => toggleCard(c.id)}
+              />
+            ))}
           </div>
         </div>
-
-        {pickerOpen && (
-          <div className="emote-picker" role="dialog" aria-label="Biểu cảm">
-            <div className="emote-title">Thả biểu cảm</div>
-            <div className="emote-grid">
-              {EMOTES.map((e) => (
-                <button key={e} onClick={() => sendEmote(e)}>
-                  {e}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className={`hand tl-hand${myTurn ? ' my-turn' : ''}`}>
-          {tl.hand.map((c) => (
-            <PlayingCardView
-              key={c.id}
-              card={c}
-              size="lg"
-              selected={sel.includes(c.id)}
-              playable={playableIds.has(c.id)}
-              onClick={() => toggleCard(c.id)}
-            />
-          ))}
-        </div>
-      </div>
+      )}
 
       {chatOpen && (
         <div className="chat-col">

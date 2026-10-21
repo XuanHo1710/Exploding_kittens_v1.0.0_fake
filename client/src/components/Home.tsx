@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Plus } from 'lucide-react';
+import { ArrowRight, Eye, Plus } from 'lucide-react';
 import { GAME_MODES, type GameMode, type RoomRules } from '../../../shared/src';
 import Landing from './Hero';
 import RoomSettings, { getSavedRoomRules } from './RoomSettings';
@@ -16,9 +16,11 @@ function getInitialRoomCode(): string {
 export default function Home({
   onCreate,
   onJoin,
+  onWatch,
 }: {
   onCreate: (rules: RoomRules, gameMode: GameMode) => void | Promise<void>;
   onJoin: (code: string) => void;
+  onWatch: (code: string) => void;
 }) {
   const [code, setCode] = useState(getInitialRoomCode);
   const [gameMode, setGameMode] = useState<GameMode>('exploding_kittens');
@@ -83,7 +85,7 @@ export default function Home({
             }}
           >
             <h2>Vào phòng có sẵn</h2>
-            <p className="muted">Nhập mã 4 chữ chủ phòng gửi cho bạn.</p>
+            <p className="muted">Nhập mã 4 chữ chủ phòng gửi cho bạn. Bấm “Xem” để vào làm khán giả (tối đa 15 người/phòng), kể cả khi ván đang chơi.</p>
             <div className="join-row">
               <input
                 className="code-input"
@@ -95,6 +97,9 @@ export default function Home({
               />
               <button className={ready ? 'primary big' : 'secondary big'} disabled={!ready}>
                 Vào <ArrowRight size={18} />
+              </button>
+              <button type="button" className="secondary big" disabled={!ready} onClick={() => onWatch(code)} title="Vào xem, không ngồi bàn">
+                <Eye size={18} /> Xem
               </button>
             </div>
           </form>

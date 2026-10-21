@@ -37,6 +37,7 @@ import {
   PLAYING_CARD_BY_CODE,
   CLONEABLE_KINDS,
   cloneCopyKind,
+  MAX_SPECTATORS,
 } from '../../../shared/src';
 
 export class GameError extends Error {}
@@ -53,6 +54,14 @@ interface Player {
   left?: boolean;
   avatar?: string;
   readyVersion?: number;
+}
+
+/** Khán giả: chỉ xem, không có bài, không ảnh hưởng lượt chơi */
+interface Spectator {
+  id: string;
+  name: string;
+  avatar?: string;
+  connected: boolean;
 }
 
 interface Pending {
@@ -101,6 +110,7 @@ export class Game {
   phase: Phase = 'lobby';
   hostId = '';
   players: Player[] = [];
+  spectators: Spectator[] = [];
   private deck: Card[] = []; // deck[0] là lá trên cùng
   private discard: Card[] = [];
   private currentIdx = 0;
@@ -236,6 +246,17 @@ export class Game {
 
   addPlayer(id: string, name: string, avatar?: string) {
     this.run(() => {
+      // Khán giả xin vào bàn: chỉ được khi đang ở phòng chờ
+      if (this.spectator(id)) {
+        if (this.phase !== 'lobby') throw new GameError('Ván đang chơi, đợi ván sau để vào bàn nhé.');
+        const maxP = Math.min(this.roomRules.maxPlayers, GAME_MODES[this.gameMode].maxPlayers);
+        if (this.players.length >= maxP) throw new GameError(`Bàn đã đủ ${maxP} người.`);
+        this.spectators = this.spectators.filter((x) => x.id !== id);
+        this.players.push({ id, name, avatar, connected: true, alive: true, hand: [] });
+        if (!this.hostId) this.hostId = id;
+        this.addLog(`🪑 ${name} vào bàn chơi.`);
+        return;
+      }
       const existing = this.player(id);
       if (existing) {
         if (existing.left) {
@@ -249,16 +270,68 @@ export class Game {
         existing.connected = true;
         return;
       }
-      if (this.phase !== 'lobby') throw new GameError('Phòng đang chơi, đợi ván sau nhé.');
+      if (this.phase !== 'lobby') throw new GameError('Phòng đang chơi, đợi ván sau hoặc bấm "Xem" để vào xem nhé.');
       const maxP = Math.min(this.roomRules.maxPlayers, GAME_MODES[this.gameMode].maxPlayers);
-      if (this.players.length >= maxP) throw new GameError(`Phòng đã đủ ${maxP} người.`);
+      if (this.players.length >= maxP) throw new GameError(`Phòng đã đủ ${maxP} người. Bấm "Xem" để vào xem nhé.`);
       this.players.push({ id, name, avatar, connected: true, alive: true, hand: [] });
       if (!this.hostId) this.hostId = id;
       this.addLog(`${name} vào phòng.`);
     });
   }
 
+  // ---------- khán giả ----------
+
+  spectator(id: string) {
+    return this.spectators.find((x) => x.id === id);
+  }
+
+  /** Vào xem (tối đa MAX_SPECTATORS người). Người đang ngồi ở phòng chờ thì chuyển sang xem. */
+  addSpectator(id: string, name: string, avatar?: string) {
+    this.run(() => {
+      const watching = this.spectator(id);
+      if (watching) {
+        watching.name = name;
+        watching.avatar = avatar;
+        watching.connected = true;
+        return;
+      }
+      const seated = this.player(id);
+      if (seated) {
+        if (this.phase !== 'lobby') throw new GameError(seated.left ? 'Bạn đã rời ván này, đợi ván sau nhé.' : 'Bạn đang chơi ván này.');
+        if (this.players.length <= 1) throw new GameError('Bạn là người chơi duy nhất, chưa chuyển sang xem được.');
+      }
+      if (this.spectators.length >= MAX_SPECTATORS) throw new GameError(`Phòng đã đủ ${MAX_SPECTATORS} khán giả.`);
+      if (seated) {
+        this.players = this.players.filter((x) => x.id !== id);
+        if (this.hostId === id) this.pickHost();
+      }
+      this.spectators.push({ id, name, avatar, connected: true });
+      this.addLog(seated ? `👀 ${name} rời bàn, chuyển sang xem.` : `👀 ${name} vào xem.`);
+    });
+  }
+
+  removeSpectator(id: string) {
+    const s = this.spectator(id);
+    if (!s) return;
+    this.run(() => {
+      this.spectators = this.spectators.filter((x) => x.id !== id);
+      this.addLog(`👀 ${s.name} thôi xem.`);
+    });
+    this.hooks.removed(id, this.code);
+  }
+
   setConnected(id: string, connected: boolean) {
+    const watcher = this.spectator(id);
+    if (watcher) {
+      this.run(() => { watcher.connected = connected; });
+      // Khán giả mất kết nối quá lâu: tự rời phòng để nhường chỗ
+      if (!connected) {
+        setTimeout(() => this.safe(() => {
+          if (this.spectator(id) === watcher && !watcher.connected) this.removeSpectator(id);
+        }), LOBBY_GRACE_MS);
+      }
+      return;
+    }
     const p = this.player(id);
     if (!p) return;
     this.run(() => {
@@ -281,7 +354,7 @@ export class Game {
 
   /** Đổi tên / avatar giữa chừng (không cần kết nối lại) */
   updateProfile(id: string, name: string, avatar?: string) {
-    const p = this.player(id);
+    const p = this.player(id) ?? this.spectator(id);
     if (!p) return;
     this.run(() => {
       p.name = name;
@@ -290,6 +363,10 @@ export class Game {
   }
 
   removePlayer(id: string) {
+    if (this.spectator(id)) {
+      this.removeSpectator(id);
+      return;
+    }
     const p = this.player(id);
     if (!p) return;
     this.run(() => {
@@ -317,6 +394,15 @@ export class Game {
   kickPlayer(byId: string, targetId: string) {
     if (byId !== this.hostId) throw new GameError('Chỉ chủ phòng mới được kích người chơi.');
     if (!targetId || targetId === byId) throw new GameError('Không thể tự kích chính mình.');
+    const watcher = this.spectator(targetId);
+    if (watcher) {
+      this.run(() => {
+        this.spectators = this.spectators.filter((x) => x.id !== targetId);
+        this.addLog(`👢 Chủ phòng đã mời khán giả ${watcher.name} ra khỏi phòng.`);
+      });
+      this.hooks.removed(targetId, this.code);
+      return;
+    }
     const p = this.player(targetId);
     if (!p || p.left) throw new GameError('Người chơi không còn trong phòng.');
     if (this.phase !== 'lobby') {
@@ -1177,6 +1263,7 @@ export class Game {
               ? (this.tlHands.get(p.id)?.length ?? 0)
               : p.hand.length,
       })),
+      spectators: this.spectators.map((x) => ({ id: x.id, name: x.name, avatar: x.avatar, connected: x.connected })),
       hand: this.player(id)?.hand ?? [],
       currentPlayerId: this.phase === 'playing' ? this.current()?.id : undefined,
       turnsRemaining: this.turnsRemaining,
@@ -1901,6 +1988,7 @@ export class Game {
   private requireAlive(id: string) {
     if (this.phase !== 'playing') throw new GameError('Ván chưa bắt đầu.');
     const p = this.player(id);
+    if (!p && this.spectator(id)) throw new GameError('Bạn đang xem, không chơi được ván này.');
     if (!p?.alive) throw new GameError('Bạn đã bị loại.');
     return p;
   }

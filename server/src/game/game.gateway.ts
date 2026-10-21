@@ -131,6 +131,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return this.handle(c, (me) => this.rooms.join(body?.code, me.playerId, me.name, me.avatar));
   }
 
+  @SubscribeMessage('room:watch')
+  watch(@ConnectedSocket() c: Socket, @MessageBody() body: { code: string }) {
+    return this.handle(c, (me) => this.rooms.watch(body?.code, me.playerId, me.name, me.avatar));
+  }
+
   @SubscribeMessage('room:leave')
   leave(@ConnectedSocket() c: Socket) {
     return this.handle(c, (me) => this.rooms.leave(me.playerId));

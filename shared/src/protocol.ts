@@ -112,6 +112,16 @@ export interface PublicPlayer {
   coins?: number;
 }
 
+/** Khán giả trong phòng: chỉ xem, không có bài */
+export interface SpectatorView {
+  id: string;
+  name: string;
+  avatar?: string;
+  connected: boolean;
+}
+/** Số khán giả tối đa mỗi phòng */
+export const MAX_SPECTATORS = 15;
+
 /** Thông tin tài khoản (xu ảo, không phải tiền thật) */
 export interface AccountInfo {
   playerId: string;
@@ -178,6 +188,8 @@ export interface RoomView {
   phase: Phase;
   hostId: string;
   players: PublicPlayer[];
+  /** Khán giả đang xem (không ngồi bàn) */
+  spectators: SpectatorView[];
   hand: Card[];
   currentPlayerId?: string;
   turnsRemaining: number;

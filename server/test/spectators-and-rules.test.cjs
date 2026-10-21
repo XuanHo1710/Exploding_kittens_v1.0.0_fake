@@ -138,3 +138,49 @@ test('Trộm Mộ: người chết rời phòng khi đang phải chọn → ch�
   assert.equal(game.deck.length, 2);
   assert.equal(game.current().id, A, 'vẫn là lượt A');
 });
+
+// ---------- khán giả ----------
+
+test('khán giả: tối đa 15 người, không có bài, không chơi được, không tính là người chơi', (t) => {
+  const { game } = room(t);
+  for (let i = 0; i < MAX_SPECTATORS; i++) game.addSpectator(`watcher_${i}xx`, `W${i}`);
+  assert.equal(MAX_SPECTATORS, 15);
+  assert.throws(() => game.addSpectator('watcher_full', 'Full'), /15 khán giả/);
+  assert.equal(game.players.length, 3);
+  start(game);
+  const view = game.viewFor('watcher_0xx');
+  assert.equal(view.spectators.length, 15);
+  assert.deepEqual(view.hand, []);
+  assert.equal(view.players.length, 3);
+  assert.throws(() => game.draw('watcher_0xx'), /đang xem/);
+  assert.throws(() => game.play('watcher_0xx', { cardIds: ['x'] }), /đang xem/);
+  // không lộ bài riêng của ai cho khán giả
+  assert.ok(view.players.every((p) => !('hand' in p)));
+});
+
+test('khán giả: vào bàn khi ở phòng chờ, không vào được khi ván đang chơi; người chơi chuyển sang xem', (t) => {
+  const { game } = room(t, [A, B]);
+  game.addSpectator(W, 'Watcher');
+  game.addPlayer(W, 'Watcher');
+  assert.deepEqual(game.players.map((p) => p.id), [A, B, W]);
+  assert.equal(game.spectators.length, 0);
+  game.addSpectator(A, 'P0'); // chủ phòng chuyển sang xem → quyền chủ phòng chuyển cho người khác
+  assert.deepEqual(game.players.map((p) => p.id), [B, W]);
+  assert.equal(game.hostId, B);
+  start(game);
+  assert.throws(() => game.addPlayer(A, 'P0'), /đợi ván sau/);
+  assert.throws(() => game.addSpectator(B, 'P1'), /đang chơi/);
+});
+
+test('khán giả: rời phòng, bị chủ phòng mời ra; người chơi duy nhất không chuyển sang xem được', (t) => {
+  const { game, removed } = room(t, [A, B]);
+  game.addSpectator(W, 'Watcher');
+  game.addSpectator('watcher_two', 'Two');
+  game.kickPlayer(A, W);
+  assert.deepEqual(removed, [W]);
+  game.removePlayer('watcher_two');
+  assert.equal(game.spectators.length, 0);
+  game.addSpectator(A, 'P0');
+  assert.throws(() => game.addSpectator(B, 'P1'), /duy nhất/);
+  assert.deepEqual(game.players.map((p) => p.id), [B]);
+});

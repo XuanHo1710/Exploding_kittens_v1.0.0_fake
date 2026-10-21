@@ -63,7 +63,7 @@ export class RoomsService {
 
   chat(playerId: string, raw: string) {
     const game = this.roomOf(playerId);
-    const me = game?.players.find((p) => p.id === playerId);
+    const me = game?.players.find((p) => p.id === playerId) ?? game?.spectator(playerId);
     if (!game || !me) return;
     const text = String(raw ?? '').replace(/\s+/g, ' ').trim().slice(0, CHAT_MAX_LEN);
     if (!text) return;
@@ -90,7 +90,8 @@ export class RoomsService {
   /** Thả biểu cảm / ném đồ: không đổi trạng thái ván, chỉ phát cho cả phòng */
   emote(playerId: string, emoji: string, to?: string) {
     const game = this.roomOf(playerId);
-    if (!game) return;
+    // Khán giả không có ghế để thả biểu cảm / ném đồ
+    if (!game || game.spectator(playerId)) return;
     const now = Date.now();
     const b = this.emoteBucket.get(playerId) ?? { tokens: 8, at: now };
     b.tokens = Math.min(8, b.tokens + ((now - b.at) / 1000) * 6);
@@ -307,9 +308,9 @@ export class RoomsService {
     this.server = server;
   }
 
-  /** Người đang thực sự ở phòng này (không tính người đã rời / đã sang phòng khác) */
-  private members(game: Game) {
-    return game.players.filter((p) => !p.left && this.playerRoom.get(p.id) === game.code);
+  /** Người đang thực sự ở phòng này, gồm cả khán giả (không tính người đã rời / đã sang phòng khác) */
+  private members(game: Game): { id: string }[] {
+    return [...game.players.filter((p) => !p.left), ...game.spectators].filter((p) => this.playerRoom.get(p.id) === game.code);
   }
 
   roomOf(playerId: string) {
@@ -377,9 +378,37 @@ export class RoomsService {
     }
   }
 
+  /** Vào phòng để xem (khán giả). Người đang ngồi ở phòng chờ của chính phòng này thì chuyển sang xem. */
+  watch(rawCode: string, playerId: string, name: string, avatar?: string) {
+    const code = String(rawCode ?? '').trim().toUpperCase();
+    const game = this.rooms.get(code);
+    if (!game) throw new GameError(`Không tìm thấy phòng ${code}.`);
+    const prev = this.roomOf(playerId);
+    if (prev && !prev.spectator(playerId)) this.assertReady(prev);
+    const prevCode = this.playerRoom.get(playerId);
+    this.playerRoom.set(playerId, code);
+    try {
+      game.addSpectator(playerId, name, avatar);
+    } catch (error) {
+      if (prevCode) this.playerRoom.set(playerId, prevCode);
+      else this.playerRoom.delete(playerId);
+      throw error;
+    }
+    this.sendChatHistory(playerId);
+    if (prev && prev !== game) {
+      prev.removePlayer(playerId);
+      this.cleanup(prev);
+    }
+  }
+
   leave(playerId: string) {
     const game = this.roomOf(playerId);
     if (!game) return;
+    if (game.spectator(playerId)) {
+      game.removeSpectator(playerId);
+      this.playerRoom.delete(playerId);
+      return;
+    }
     this.assertReady(game);
     game.removePlayer(playerId);
     this.playerRoom.delete(playerId);
@@ -398,7 +427,8 @@ export class RoomsService {
   connected(playerId: string, name: string, avatar?: string) {
     const game = this.roomOf(playerId);
     if (!game) return false;
-    if (this.starting.has(game) || this.refunds.has(game)) this.deferConnection(game, playerId, true);
+    if (game.spectator(playerId)) game.setConnected(playerId, true);
+    else if (this.starting.has(game) || this.refunds.has(game)) this.deferConnection(game, playerId, true);
     else {
       try {
         game.addPlayer(playerId, name, avatar);
@@ -427,7 +457,7 @@ export class RoomsService {
   disconnected(playerId: string) {
     const game = this.roomOf(playerId);
     if (!game) return;
-    if (this.starting.has(game) || this.refunds.has(game)) this.deferConnection(game, playerId, false);
+    if (!game.spectator(playerId) && (this.starting.has(game) || this.refunds.has(game))) this.deferConnection(game, playerId, false);
     else game.setConnected(playerId, false);
   }
 
@@ -460,6 +490,14 @@ export class RoomsService {
     const empty = game.players.every((p) => p.left) || game.players.length === 0;
     if (empty && !this.starting.has(game) && !this.refunds.has(game) && !this.payouts.has(game) && !this.failedPayouts.has(game) && this.rooms.get(game.code) === game) {
       game.dispose();
+      // Bàn không còn ai chơi: mời khán giả ra
+      for (const w of game.spectators) {
+        if (this.playerRoom.get(w.id) !== game.code) continue;
+        this.playerRoom.delete(w.id);
+        this.server?.to(`p:${w.id}`).emit('state', null);
+        this.server?.to(`p:${w.id}`).emit('toast', `Phòng ${game.code} đã đóng.`);
+      }
+      game.spectators = [];
       this.rooms.delete(game.code);
       this.chats.delete(game.code);
       this.deferredConnections.delete(game);

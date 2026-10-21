@@ -73,6 +73,7 @@ import { sfx } from '../sfx';
 import { flyCard, flyClone, flyEmoji, flyTransferCard, seatEl } from '../fx';
 import PlayWizard, { type WizardResult } from './PlayWizard';
 import ChatPanel, { useChatState, type ChatTab, type RoomChat } from './ChatPanel';
+import { SpectatorArea, SpectatorChip, isSpectating, roomPeople } from './Spectators';
 import { Brand, fmtCoins } from './Dock';
 import Rules from './Rules';
 
@@ -394,7 +395,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       /* tuỳ chọn hiển thị */
     }
   };
-  const { typingNames, unread } = useChatState(chat, view.players, meId, chatOpen && chatTab === 'chat');
+  const { typingNames, unread } = useChatState(chat, roomPeople(view), meId, chatOpen && chatTab === 'chat');
   // Tin chat mới: hiện bong bóng ngay trên avatar người gửi vài giây
   const [chatPops, setChatPops] = useState<Record<string, { id: number; text: string }>>({});
   const lastChatId = useRef(chat.messages.at(-1)?.id ?? 0);
@@ -636,6 +637,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   const nameOf = (id?: string) => (id === meId ? 'Bạn' : (view.players.find((p) => p.id === id)?.name ?? '?'));
 
   const me = view.players.find((p) => p.id === meId);
+  const spectating = isSpectating(view, meId);
   const alive = !!me?.alive;
   const myTurn = view.currentPlayerId === meId;
   const { pending, waiting, lastPlay } = view;
@@ -920,8 +922,9 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   }, [reveal?.key]);
 
   // Đối thủ xếp theo chiều kim đồng hồ bắt đầu từ người ngồi sau mình
-  const myIdx = Math.max(0, view.players.findIndex((p) => p.id === meId));
-  const opponents = [...view.players.slice(myIdx + 1), ...view.players.slice(0, myIdx)];
+  // Khán giả không có ghế: mọi người chơi đều ngồi quanh bàn
+  const myIdx = view.players.findIndex((p) => p.id === meId);
+  const opponents = myIdx < 0 ? view.players : [...view.players.slice(myIdx + 1), ...view.players.slice(0, myIdx)];
   const span = Math.min(200, 60 + opponents.length * 24);
   const crowded = opponents.length > 5;
 
@@ -1391,8 +1394,9 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
             <BookOpen size={15} /> <span>Luật phòng</span>
           </button>
           <button className="icon-btn exit-btn" onClick={leave} title="Thoát trận">
-            <LogOut size={15} /> <span className="hide-sm">Thoát trận</span>
+            <LogOut size={15} /> <span className="hide-sm">{spectating ? 'Rời phòng' : 'Thoát trận'}</span>
           </button>
+          <SpectatorChip view={view} />
           {view.pot > 0 && view.phase === 'playing' && (
             <span className="pot-chip">
               <Coins size={14} className="inline-icon" /> Hũ {fmtCoins(view.pot)} xu
@@ -1446,148 +1450,152 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       </div>
 
       {/* ================= KHU CỦA MÌNH ================= */}
-      <div className={`my-area${myTurn ? ' my-turn' : ''}`} data-pid={meId}>
-        <div className="quick-emotes" role="toolbar" aria-label="Biểu cảm nhanh">
-          {QUICK_EMOTES.map((e) => (
-            <button key={e} onClick={() => sendEmote(e)} title={`Thả ${e}`}>
-              {e}
+      {spectating ? (
+        <SpectatorArea view={view} emit={emit} />
+      ) : (
+        <div className={`my-area${myTurn ? ' my-turn' : ''}`} data-pid={meId}>
+          <div className="quick-emotes" role="toolbar" aria-label="Biểu cảm nhanh">
+            {QUICK_EMOTES.map((e) => (
+              <button key={e} onClick={() => sendEmote(e)} title={`Thả ${e}`}>
+                {e}
+              </button>
+            ))}
+            <button
+              className={`emote-btn more${pickerOpen ? ' on' : ''}`}
+              onClick={() => setPickerOpen((o) => !o)}
+              title="Thêm biểu cảm / ném đồ"
+              aria-label="Thêm biểu cảm"
+            >
+              <MoreHorizontal size={18} />
             </button>
-          ))}
-          <button
-            className={`emote-btn more${pickerOpen ? ' on' : ''}`}
-            onClick={() => setPickerOpen((o) => !o)}
-            title="Thêm biểu cảm / ném đồ"
-            aria-label="Thêm biểu cảm"
-          >
-            <MoreHorizontal size={18} />
-          </button>
-        </div>
-        <div className="my-bar">
-          <span className={`avatar-wrap${myTurn && view.phase === 'playing' ? ' my-turn-avatar' : ''}${shaking[meId] ? ' got-hit' : ''}`} data-avatar={meId}>
-            <Ring {...(me ? seatProgress(me) : { active: false, progress: 0 })}>
-              <PlayerAvatar id={meId} avatar={me?.avatar} size={myTurn && view.phase === 'playing' ? 68 : 52} dead={!alive} />
-            </Ring>
-            {myTurn && view.phase === 'playing' && (
-              <span className="my-turn-badge">
-                <Zap size={11} className="inline-icon" /> LƯỢT BẠN
-              </span>
-            )}
-            <Floaters list={pops[meId]} combo={combos[meId]} />
-            {chatPops[meId] && (
-              <span key={`c${chatPops[meId].id}`} className="chat-pop mine">
-                {chatPops[meId].text}
-              </span>
-            )}
-          </span>
-          <div className={`my-status ${statusTone}`}>
-            <div>{status}</div>
-            {myTurn && !pending && !waiting && <div className="muted small">Còn {secs(view.turnDeadline)}s</div>}
           </div>
-
-          <div className="my-actions">
-            {!comboMode && myActionTime && (kind === 'pair' || kind === 'triple') && (
-              <button className="primary big play-combo" onClick={() => setWizardOpen(true)}>
-                <Play size={16} /> {kind === 'pair' ? 'Đánh đôi' : 'Đánh bộ ba'} ({sel.length} lá)
-              </button>
-            )}
-            {!comboMode && myActionTime && !kind && sel.length > 0 && (
-              <span className="hint-chip">
-                <Cat size={14} className="inline-icon" /> Chọn thêm {Math.max(0, (rules.allowPair ? 2 : 3) - sel.length)} lá {rules.comboScope === 'cats' ? 'mèo ' : ''}cùng loại để đánh {rules.allowPair ? 'đôi' : 'bộ ba'}
-              </span>
-            )}
-            {!comboMode && myActionTime && !sel.length && (
-              <span className="hint-chip">
-                <MousePointerClick size={14} className="inline-icon" /> Bấm lá sáng để đánh · bấm chồng bài để rút
-                {canFive && <> · có 5 lá khác nhau: bấm “Chọn nhiều lá” để đánh combo 5</>}
-              </span>
-            )}
-            {!comboMode && pending && alive && nopeCard && (
-              <span className="hint-chip nope">
-                <Ban size={14} className="inline-icon" /> Bấm lá Nope để chặn!
-              </span>
-            )}
-            {comboMode && (
-              <>
-                <span className="kind-chip">{kind ? kindLabel(kind) : `Đã chọn ${sel.length} lá`}</span>
-                {!kind && comboHint && <span className="muted small">Chọn {comboHint}</span>}
-                <button className="primary" disabled={!canPlay} onClick={play}>
-                  {needsTarget ? 'Chọn người' : needsDiscard ? 'Chọn lá' : 'Đánh ra'}
-                </button>
-              </>
-            )}
-            {myActionTime && combosEnabled && (
-              <button
-                className={comboMode ? 'secondary on' : 'secondary'}
-                onClick={() => {
-                  setComboMode((m) => !m);
-                  setSelected([]);
-                }}
-                title="Chọn nhiều lá để đánh combo"
-              >
-                {comboMode ? (
-                  <>
-                    <X size={15} /> Thôi chọn nhiều
-                  </>
-                ) : (
-                  <>
-                    <Layers size={15} /> Chọn nhiều lá
-                  </>
-                )}
-              </button>
-            )}
-            {sel.length > 0 && (
-              <button className="ghost" onClick={() => setSelected([])}>
-                Bỏ chọn
-              </button>
-            )}
-            {canDraw && (
-              <button className="secondary" onClick={() => emit('game:draw')}>
-                <Layers size={15} /> Rút bài
-              </button>
-            )}
-            {view.hand.length > 1 && (
-              <button className="secondary" onClick={sortHand} title="Xếp bài theo loại: lá cùng loại đứng cạnh nhau">
-                <ArrowUpDown size={15} /> Xếp bài
-              </button>
-            )}
-            {view.hand.length > 1 && (
-              <button className="secondary" onClick={shuffleHand} title="Trộn ngẫu nhiên thứ tự bài trên tay">
-                <Shuffle size={15} /> Trộn bài
-              </button>
-            )}
-          </div>
-        </div>
-
-        {pickerOpen && (
-          <div className="emote-picker" role="dialog" aria-label="Biểu cảm">
-            <div className="emote-title">Thả biểu cảm</div>
-            <div className="emote-grid">
-              {EMOTES.map((e) => (
-                <button key={e} onClick={() => sendEmote(e)}>
-                  {e}
-                </button>
-              ))}
+          <div className="my-bar">
+            <span className={`avatar-wrap${myTurn && view.phase === 'playing' ? ' my-turn-avatar' : ''}${shaking[meId] ? ' got-hit' : ''}`} data-avatar={meId}>
+              <Ring {...(me ? seatProgress(me) : { active: false, progress: 0 })}>
+                <PlayerAvatar id={meId} avatar={me?.avatar} size={myTurn && view.phase === 'playing' ? 68 : 52} dead={!alive} />
+              </Ring>
+              {myTurn && view.phase === 'playing' && (
+                <span className="my-turn-badge">
+                  <Zap size={11} className="inline-icon" /> LƯỢT BẠN
+                </span>
+              )}
+              <Floaters list={pops[meId]} combo={combos[meId]} />
+              {chatPops[meId] && (
+                <span key={`c${chatPops[meId].id}`} className="chat-pop mine">
+                  {chatPops[meId].text}
+                </span>
+              )}
+            </span>
+            <div className={`my-status ${statusTone}`}>
+              <div>{status}</div>
+              {myTurn && !pending && !waiting && <div className="muted small">Còn {secs(view.turnDeadline)}s</div>}
             </div>
-            <div className="emote-tip">Muốn ném đồ? Bấm vào avatar người đó.</div>
+  
+            <div className="my-actions">
+              {!comboMode && myActionTime && (kind === 'pair' || kind === 'triple') && (
+                <button className="primary big play-combo" onClick={() => setWizardOpen(true)}>
+                  <Play size={16} /> {kind === 'pair' ? 'Đánh đôi' : 'Đánh bộ ba'} ({sel.length} lá)
+                </button>
+              )}
+              {!comboMode && myActionTime && !kind && sel.length > 0 && (
+                <span className="hint-chip">
+                  <Cat size={14} className="inline-icon" /> Chọn thêm {Math.max(0, (rules.allowPair ? 2 : 3) - sel.length)} lá {rules.comboScope === 'cats' ? 'mèo ' : ''}cùng loại để đánh {rules.allowPair ? 'đôi' : 'bộ ba'}
+                </span>
+              )}
+              {!comboMode && myActionTime && !sel.length && (
+                <span className="hint-chip">
+                  <MousePointerClick size={14} className="inline-icon" /> Bấm lá sáng để đánh · bấm chồng bài để rút
+                  {canFive && <> · có 5 lá khác nhau: bấm “Chọn nhiều lá” để đánh combo 5</>}
+                </span>
+              )}
+              {!comboMode && pending && alive && nopeCard && (
+                <span className="hint-chip nope">
+                  <Ban size={14} className="inline-icon" /> Bấm lá Nope để chặn!
+                </span>
+              )}
+              {comboMode && (
+                <>
+                  <span className="kind-chip">{kind ? kindLabel(kind) : `Đã chọn ${sel.length} lá`}</span>
+                  {!kind && comboHint && <span className="muted small">Chọn {comboHint}</span>}
+                  <button className="primary" disabled={!canPlay} onClick={play}>
+                    {needsTarget ? 'Chọn người' : needsDiscard ? 'Chọn lá' : 'Đánh ra'}
+                  </button>
+                </>
+              )}
+              {myActionTime && combosEnabled && (
+                <button
+                  className={comboMode ? 'secondary on' : 'secondary'}
+                  onClick={() => {
+                    setComboMode((m) => !m);
+                    setSelected([]);
+                  }}
+                  title="Chọn nhiều lá để đánh combo"
+                >
+                  {comboMode ? (
+                    <>
+                      <X size={15} /> Thôi chọn nhiều
+                    </>
+                  ) : (
+                    <>
+                      <Layers size={15} /> Chọn nhiều lá
+                    </>
+                  )}
+                </button>
+              )}
+              {sel.length > 0 && (
+                <button className="ghost" onClick={() => setSelected([])}>
+                  Bỏ chọn
+                </button>
+              )}
+              {canDraw && (
+                <button className="secondary" onClick={() => emit('game:draw')}>
+                  <Layers size={15} /> Rút bài
+                </button>
+              )}
+              {view.hand.length > 1 && (
+                <button className="secondary" onClick={sortHand} title="Xếp bài theo loại: lá cùng loại đứng cạnh nhau">
+                  <ArrowUpDown size={15} /> Xếp bài
+                </button>
+              )}
+              {view.hand.length > 1 && (
+                <button className="secondary" onClick={shuffleHand} title="Trộn ngẫu nhiên thứ tự bài trên tay">
+                  <Shuffle size={15} /> Trộn bài
+                </button>
+              )}
+            </div>
           </div>
-        )}
-        <div ref={handRef} className={`hand${!alive && !view.hand.length ? ' hand-empty-dead' : ''}`} style={{ ['--overlap' as string]: `${overlap}px` } as CSSProperties}>
-          {hand.map((c, i) => (
-            <CardView
-              key={c.id}
-              cid={c.id}
-              type={c.type}
-              seed={c.id}
-              size="lg"
-              className={`${comboMode || !(myActionTime || pending) ? '' : isPlayable(c) ? 'playable' : 'dim'}${fresh.has(c.id) ? ' fresh' : ''}`}
-              selected={sel.includes(c.id)}
-              onClick={alive && ((comboMode && myActionTime && c.type !== 'exploding') || isPlayable(c)) ? () => clickCard(c) : undefined}
-              style={{ ['--i' as string]: i - (hand.length - 1) / 2 } as CSSProperties}
-            />
-          ))}
-          {!view.hand.length && <span className="muted">Không còn lá nào trên tay.</span>}
+  
+          {pickerOpen && (
+            <div className="emote-picker" role="dialog" aria-label="Biểu cảm">
+              <div className="emote-title">Thả biểu cảm</div>
+              <div className="emote-grid">
+                {EMOTES.map((e) => (
+                  <button key={e} onClick={() => sendEmote(e)}>
+                    {e}
+                  </button>
+                ))}
+              </div>
+              <div className="emote-tip">Muốn ném đồ? Bấm vào avatar người đó.</div>
+            </div>
+          )}
+          <div ref={handRef} className={`hand${!alive && !view.hand.length ? ' hand-empty-dead' : ''}`} style={{ ['--overlap' as string]: `${overlap}px` } as CSSProperties}>
+            {hand.map((c, i) => (
+              <CardView
+                key={c.id}
+                cid={c.id}
+                type={c.type}
+                seed={c.id}
+                size="lg"
+                className={`${comboMode || !(myActionTime || pending) ? '' : isPlayable(c) ? 'playable' : 'dim'}${fresh.has(c.id) ? ' fresh' : ''}`}
+                selected={sel.includes(c.id)}
+                onClick={alive && ((comboMode && myActionTime && c.type !== 'exploding') || isPlayable(c)) ? () => clickCard(c) : undefined}
+                style={{ ['--i' as string]: i - (hand.length - 1) / 2 } as CSSProperties}
+              />
+            ))}
+            {!view.hand.length && <span className="muted">Không còn lá nào trên tay.</span>}
+          </div>
         </div>
-      </div>
+      )}
 
       {chatOpen && (
         <div className="chat-col">

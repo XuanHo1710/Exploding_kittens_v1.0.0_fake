@@ -97,6 +97,10 @@ export default function Demo() {
     phase: scene === 'ended' ? 'ended' : 'playing',
     hostId: 'me',
     players,
+    spectators:
+      scene === 'watch'
+        ? [{ id: 'w0', name: 'Khán giả Lan', connected: true }, { id: 'w1', name: 'Bảo', connected: true }, { id: 'w2', name: 'Khoa', connected: false }]
+        : [],
     hand: scene === 'dead' ? [] : hand,
     currentPlayerId: myTurn ? 'me' : 'p2',
     turnsRemaining: 1,
@@ -136,7 +140,7 @@ export default function Demo() {
       <RoomRulesContext.Provider value={view.rules}>
       <RoomPlayerCountContext.Provider value={view.players.length}>
       <div className="app">
-        <GameBoard view={view} meId="me" emit={(e, p) => {
+        <GameBoard view={view} meId={scene === 'watch' ? 'w0' : 'me'} emit={(e, p) => {
             console.log('[demo emit]', e, p);
             if (e === 'room:emote') setEmote({ id: Date.now(), e: { from: 'me', ...(p as { emoji: string; to?: string }) } });
           }} notice={notice} onCloseNotice={() => setNotice(null)} reveal={reveal} onCloseReveal={() => setReveal(null)} fx={fx} emote={emote} chat={chat} />

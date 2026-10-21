@@ -4,6 +4,7 @@ import { EMOTES, QUICK_EMOTES, type Emote, type RoomView } from '../../../shared
 import PlayerAvatar from '../art/PlayerAvatar';
 import { fmtCoins, Brand } from './Dock';
 import ChatPanel, { useChatState, type RoomChat } from './ChatPanel';
+import { SpectatorArea, SpectatorChip, isSpectating, roomPeople } from './Spectators';
 import Modal from './Modal';
 import PlayingCardView from './PlayingCardView';
 import { sfx } from '../sfx';
@@ -26,9 +27,10 @@ export default function BlackjackBoard({ view, meId, emit, emote, chat, dock }: 
   const [now, setNow] = useState(Date.now());
   const [pops, setPops] = useState<Record<string, { emoji: string; key: number }>>({});
 
-  const { typingNames, unread } = useChatState(chat, view.players, meId, chatOpen && chatTab === 'chat');
+  const { typingNames, unread } = useChatState(chat, roomPeople(view), meId, chatOpen && chatTab === 'chat');
   const bj = view.blackjack;
   const me = view.players.find((p) => p.id === meId);
+  const spectating = isSpectating(view, meId);
   const myBj = bj?.players.find((p) => p.playerId === meId);
   const isHost = view.hostId === meId;
   const isDealer = bj?.dealerId === meId;
@@ -70,6 +72,7 @@ export default function BlackjackBoard({ view, meId, emit, emote, chat, dock }: 
             )}
           </div>
           <div className="top-right">
+            <SpectatorChip view={view} />
             {dock}
             <button
               className={`icon-btn chat-btn${chatOpen ? ' on' : ''}`}
@@ -81,7 +84,7 @@ export default function BlackjackBoard({ view, meId, emit, emote, chat, dock }: 
             </button>
             <button
               className="icon-btn leave-btn"
-              onClick={() => (view.phase === 'playing' ? setLeaveAsk(true) : emit('room:leave'))}
+              onClick={() => (view.phase === 'playing' && !spectating ? setLeaveAsk(true) : emit('room:leave'))}
               title="Rời phòng"
             >
               <LogOut size={17} />
@@ -263,99 +266,103 @@ export default function BlackjackBoard({ view, meId, emit, emote, chat, dock }: 
       </div>
 
       {/* Khu vực bài của bản thân */}
-      <div className={`my-area${myTurn ? ' my-turn' : ''}`}>
-        <div className="my-bar">
-          <div className="my-status">
-            <div className={`ring${myTurn ? ' active my-turn-avatar' : ''}`}>
-              <PlayerAvatar id={meId} avatar={me?.avatar} size={myTurn ? 68 : 52} />
-              {myTurn && <span className="my-turn-badge">⚡ LƯỢT BẠN</span>}
-            </div>
-            <div>
-              <div className="my-name-row">
-                <b>{me?.name}</b>
-                {isDealer && (
-                  <span className="dealer-badge">
-                    <Crown size={12} className="inline-icon" /> NHÀ CÁI
-                  </span>
-                )}
-                <span className={`bj-eval-tag ${bj.myEval.kind}`}>{bj.myEval.labelVi}</span>
-                {myBj?.outcome && (
-                  <span className={`bj-outcome-tag ${myBj.outcome}`}>
-                    {myBj.outcome === 'win' ? '🏆 Thắng' : myBj.outcome === 'lose' ? '💀 Thua' : '🤝 Hoà'}
-                    {myBj.coinDelta !== undefined && view.bet > 0 && (
-                      <> ({myBj.coinDelta >= 0 ? `+${fmtCoins(myBj.coinDelta)}` : fmtCoins(myBj.coinDelta)} xu)</>
-                    )}
-                  </span>
-                )}
+      {spectating ? (
+        <SpectatorArea view={view} emit={emit} />
+      ) : (
+        <div className={`my-area${myTurn ? ' my-turn' : ''}`}>
+          <div className="my-bar">
+            <div className="my-status">
+              <div className={`ring${myTurn ? ' active my-turn-avatar' : ''}`}>
+                <PlayerAvatar id={meId} avatar={me?.avatar} size={myTurn ? 68 : 52} />
+                {myTurn && <span className="my-turn-badge">⚡ LƯỢT BẠN</span>}
               </div>
-              <span className="muted small">
-                {myTurn
-                  ? `Còn ${secs(view.turnDeadline)}s — Chọn Rút thêm bài hoặc Dừng bài`
-                  : view.phase === 'playing'
-                    ? `Đang chờ ${nameOf(view.currentPlayerId)}…`
-                    : myBj?.outcomeText ?? 'Ván đã kết thúc'}
-              </span>
-            </div>
-            <div className="quick-emotes">
-              {QUICK_EMOTES.map((e) => (
-                <button key={e} className="qe-btn" onClick={() => sendEmote(e)}>
-                  {e}
+              <div>
+                <div className="my-name-row">
+                  <b>{me?.name}</b>
+                  {isDealer && (
+                    <span className="dealer-badge">
+                      <Crown size={12} className="inline-icon" /> NHÀ CÁI
+                    </span>
+                  )}
+                  <span className={`bj-eval-tag ${bj.myEval.kind}`}>{bj.myEval.labelVi}</span>
+                  {myBj?.outcome && (
+                    <span className={`bj-outcome-tag ${myBj.outcome}`}>
+                      {myBj.outcome === 'win' ? '🏆 Thắng' : myBj.outcome === 'lose' ? '💀 Thua' : '🤝 Hoà'}
+                      {myBj.coinDelta !== undefined && view.bet > 0 && (
+                        <> ({myBj.coinDelta >= 0 ? `+${fmtCoins(myBj.coinDelta)}` : fmtCoins(myBj.coinDelta)} xu)</>
+                      )}
+                    </span>
+                  )}
+                </div>
+                <span className="muted small">
+                  {myTurn
+                    ? `Còn ${secs(view.turnDeadline)}s — Chọn Rút thêm bài hoặc Dừng bài`
+                    : view.phase === 'playing'
+                      ? `Đang chờ ${nameOf(view.currentPlayerId)}…`
+                      : myBj?.outcomeText ?? 'Ván đã kết thúc'}
+                </span>
+              </div>
+              <div className="quick-emotes">
+                {QUICK_EMOTES.map((e) => (
+                  <button key={e} className="qe-btn" onClick={() => sendEmote(e)}>
+                    {e}
+                  </button>
+                ))}
+                <button className={`qe-btn more${pickerOpen ? ' on' : ''}`} onClick={() => setPickerOpen((o) => !o)}>
+                  <Smile size={16} />
                 </button>
-              ))}
-              <button className={`qe-btn more${pickerOpen ? ' on' : ''}`} onClick={() => setPickerOpen((o) => !o)}>
-                <Smile size={16} />
-              </button>
+              </div>
+            </div>
+  
+            <div className="my-actions">
+              {myTurn && (
+                <>
+                  <button
+                    className="primary big"
+                    disabled={!bj.myEval.canHit}
+                    onClick={() => {
+                      sfx('draw');
+                      emit('blackjack:hit');
+                    }}
+                  >
+                    <Layers size={17} /> Rút thêm bài (Hit)
+                  </button>
+                  <button
+                    className="secondary big"
+                    disabled={!bj.myEval.canStand}
+                    onClick={() => {
+                      sfx('play');
+                      emit('blackjack:stand');
+                    }}
+                    title={!bj.myEval.canStand ? `Cần đủ ít nhất ${isDealer ? 15 : 16} điểm mới được dừng` : undefined}
+                  >
+                    <Hand size={17} /> {isDealer ? 'Mở bài & So điểm tất cả' : `Dừng bài (${bj.myEval.points}đ)`}
+                  </button>
+                </>
+              )}
             </div>
           </div>
-
-          <div className="my-actions">
-            {myTurn && (
-              <>
-                <button
-                  className="primary big"
-                  disabled={!bj.myEval.canHit}
-                  onClick={() => {
-                    sfx('draw');
-                    emit('blackjack:hit');
-                  }}
-                >
-                  <Layers size={17} /> Rút thêm bài (Hit)
-                </button>
-                <button
-                  className="secondary big"
-                  disabled={!bj.myEval.canStand}
-                  onClick={() => {
-                    sfx('play');
-                    emit('blackjack:stand');
-                  }}
-                  title={!bj.myEval.canStand ? `Cần đủ ít nhất ${isDealer ? 15 : 16} điểm mới được dừng` : undefined}
-                >
-                  <Hand size={17} /> {isDealer ? 'Mở bài & So điểm tất cả' : `Dừng bài (${bj.myEval.points}đ)`}
-                </button>
-              </>
-            )}
+  
+          {pickerOpen && (
+            <div className="emote-picker" role="dialog" aria-label="Biểu cảm">
+              <div className="emote-title">Thả biểu cảm</div>
+              <div className="emote-grid">
+                {EMOTES.map((e) => (
+                  <button key={e} onClick={() => sendEmote(e)}>
+                    {e}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+  
+          <div className="hand bj-hand">
+            {bj.hand.map((c) => (
+              <PlayingCardView key={c.id} card={c} size="lg" />
+            ))}
           </div>
         </div>
-
-        {pickerOpen && (
-          <div className="emote-picker" role="dialog" aria-label="Biểu cảm">
-            <div className="emote-title">Thả biểu cảm</div>
-            <div className="emote-grid">
-              {EMOTES.map((e) => (
-                <button key={e} onClick={() => sendEmote(e)}>
-                  {e}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="hand bj-hand">
-          {bj.hand.map((c) => (
-            <PlayingCardView key={c.id} card={c} size="lg" />
-          ))}
-        </div>
-      </div>
+      )}
 
       {chatOpen && (
         <div className="chat-col">
