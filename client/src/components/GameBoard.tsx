@@ -676,6 +676,22 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       sfx('deny');
       return;
     }
+    applyOrder(next);
+  };
+  /** Trộn ngẫu nhiên thứ tự bài trên tay (chỉ ở máy mình) */
+  const shuffleHand = () => {
+    const ids = hand.map((c) => c.id);
+    let next = ids;
+    for (let tries = 0; tries < 5 && next.join() === ids.join(); tries++) {
+      next = [...ids];
+      for (let i = next.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [next[i], next[j]] = [next[j], next[i]];
+      }
+    }
+    applyOrder(next);
+  };
+  const applyOrder = (next: string[]) => {
     const before = new Map<string, DOMRect>();
     handRef.current?.querySelectorAll<HTMLElement>('[data-cid]').forEach((el) => before.set(el.dataset.cid!, el.getBoundingClientRect()));
     flipFrom.current = before;
@@ -1491,6 +1507,11 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
             {view.hand.length > 1 && (
               <button className="secondary" onClick={sortHand} title="Xếp bài theo loại: lá cùng loại đứng cạnh nhau">
                 <ArrowUpDown size={15} /> Xếp bài
+              </button>
+            )}
+            {view.hand.length > 1 && (
+              <button className="secondary" onClick={shuffleHand} title="Trộn ngẫu nhiên thứ tự bài trên tay">
+                <Shuffle size={15} /> Trộn bài
               </button>
             )}
           </div>
