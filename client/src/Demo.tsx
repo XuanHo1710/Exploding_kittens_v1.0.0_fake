@@ -1,11 +1,18 @@
 /**
  * Màn giả lập để thử giao diện, chỉ có khi chạy dev: http://localhost:5173/?demo=play
- * Các cảnh: play | myturn | defuse | future | favor | ended | dead | reveal | shuffle | explode | emote
+ * Các cảnh: play | myturn | defuse | future | favor | ended | dead | reveal | shuffle | explode | emote | watch
+ * Phòng khác: lobby | lobby-watch | tl | tl-watch | bj | bj-watch (đuôi -watch = xem dưới góc nhìn khán giả)
  */
 import { useEffect, useState } from 'react';
-import { DEFAULT_ROOM_RULES, type Card, type CardType, type ChatMessage, type Emote, type GameFx, type PrivateNotice, type RoomView } from '../../shared/src';
+import {
+  DEFAULT_ROOM_RULES, createStandard52Deck, detectTienLenCombo, evaluateBlackjackHand, sortTienLenHand,
+  type Card, type CardType, type ChatMessage, type Emote, type GameFx, type PrivateNotice, type RoomView,
+} from '../../shared/src';
 import { RoomPlayerCountContext, RoomRulesContext } from './roomRulesContext';
 import GameBoard from './components/GameBoard';
+import Lobby from './components/Lobby';
+import TienLenBoard from './components/TienLenBoard';
+import BlackjackBoard from './components/BlackjackBoard';
 import { CardPreviewLayer } from './components/CardPreview';
 import { SettingsContext, useSettingsState } from './settings';
 
@@ -58,6 +65,19 @@ export default function Demo() {
     },
     onTyping: () => {},
   };
+  // ?chat=flood: người khác chat liên tục (thử tự cuộn); ?chat=flood-up: đang kéo lên xem tin cũ thì không bị giật xuống
+  useEffect(() => {
+    const mode = qs.get('chat');
+    if (!mode?.startsWith('flood')) return;
+    const lines = ['ai cầm Nope?', 'sắp nổ rồi 😱', '🔥🔥🔥', 'đánh nhanh lên nào', 'tui còn 1 Gỡ Bom thôi', 'GG', 'ván này căng quá', '😂', 'xáo bài đi', 'Nope nè!'];
+    const timers: number[] = [];
+    if (mode === 'flood-up') timers.push(window.setTimeout(() => { const el = document.querySelector('.chat-list'); if (el) el.scrollTop = 0; }, 2600));
+    lines.forEach((text, i) => timers.push(window.setTimeout(() => {
+      setMessages((m) => [...m, { id: 1000 + i, from: i % 2 ? 'p1' : 'p2', name: i % 2 ? 'dsa' : 'aloalo', text, at: Date.now() }]);
+    }, 1200 + i * 250)));
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => {
     if (scene !== 'emote') return;
     const seq: Emote[] = [
@@ -137,12 +157,65 @@ export default function Demo() {
     pot: 600,
     log: ['Bắt đầu! 6 người, 5 Mèo Nổ trong chồng bài.', 'Tuấn đánh Xáo Bài.', '💥 Minh rút trúng Mèo Nổ và NỔ TUNG!', 'aloalo đánh đôi mèo, rút bài của xuânho.', 'dsa NOPE!'],
   };
+  // ---------- phòng chờ / Tiến Lên / Xì Dách ----------
+  const watch = scene.endsWith('-watch');
+  const meId = watch || scene === 'watch' ? 'w0' : 'me';
+  const spectators = watch || scene === 'watch'
+    ? [{ id: 'w0', name: 'Khán giả Lan', connected: true }, { id: 'w1', name: 'Bảo', connected: true }, { id: 'w2', name: 'Khoa', connected: false }]
+    : [{ id: 'w1', name: 'Bảo', connected: true }];
+  const base = scene.replace(/-watch$/, '');
+  let other: RoomView | null = null;
+  if (base === 'lobby' || base === 'tl' || base === 'bj') {
+    const count = base === 'tl' ? 4 : base === 'lobby' ? 4 : 5;
+    const ps = NAMES.slice(0, count).map((name, i) => ({ id: i === 0 ? 'me' : `p${i}`, name, connected: true, alive: true, ready: i % 2 === 0, handCount: 0, coins: 1200 }));
+    const deck = createStandard52Deck();
+    other = { ...view, spectators, players: ps, hand: [], pending: undefined, lastPlay: undefined, waiting: undefined, winnerId: undefined };
+    if (base === 'lobby') other = { ...other, phase: 'lobby', currentPlayerId: undefined };
+    if (base === 'tl') {
+      const hands = ps.map((_, i) => sortTienLenHand(deck.slice(i * 13, i * 13 + 13)));
+      const table = detectTienLenCombo(hands[2].slice(0, 1));
+      other = {
+        ...other, gameMode: 'tien_len', currentPlayerId: watch ? 'p1' : 'me',
+        players: ps.map((p, i) => ({ ...p, handCount: i === 2 ? 12 : 13 })),
+        tienLen: { hand: watch ? [] : hands[0], tableCombo: table ?? undefined, lastActorId: 'p2', passedIds: [], firstTurnOfMatch: false, finishOrder: [] },
+      };
+    }
+    if (base === 'bj') {
+      const hands = ps.map((_, i) => deck.slice(i * 3, i * 3 + 2));
+      other = {
+        ...other, gameMode: 'blackjack_21', currentPlayerId: watch ? 'p1' : 'me',
+        players: ps.map((p) => ({ ...p, handCount: 2 })),
+        blackjack: {
+          dealerId: 'p4', deckCount: 40, hand: watch ? [] : hands[0], myEval: evaluateBlackjackHand(watch ? [] : hands[0]),
+          players: ps.map((p, i) => ({ playerId: p.id, isDealer: p.id === 'p4', status: 'playing', handCount: 2, betAmount: 100, cards: !watch && i === 0 ? hands[0] : undefined })),
+        },
+      };
+    }
+  }
+  const emitDemo = (e: string, p?: unknown) => console.log('[demo emit]', e, p);
+  if (other) {
+    return (
+      <SettingsContext.Provider value={settings}>
+        <RoomRulesContext.Provider value={other.rules}>
+        <RoomPlayerCountContext.Provider value={other.players.length}>
+        <div className="app">
+          {base === 'lobby' ? <Lobby view={other} meId={meId} emit={emitDemo} chat={chat} />
+            : base === 'tl' ? <TienLenBoard view={other} meId={meId} emit={emitDemo} emote={emote} chat={chat} dock={null} />
+            : <BlackjackBoard view={other} meId={meId} emit={emitDemo} emote={emote} chat={chat} dock={null} />}
+          <CardPreviewLayer />
+        </div>
+        </RoomPlayerCountContext.Provider>
+        </RoomRulesContext.Provider>
+      </SettingsContext.Provider>
+    );
+  }
+
   return (
     <SettingsContext.Provider value={settings}>
       <RoomRulesContext.Provider value={view.rules}>
       <RoomPlayerCountContext.Provider value={view.players.length}>
       <div className="app">
-        <GameBoard view={view} meId={scene === 'watch' ? 'w0' : 'me'} emit={(e, p) => {
+        <GameBoard view={view} meId={meId} emit={(e, p) => {
             console.log('[demo emit]', e, p);
             if (e === 'room:emote') setEmote({ id: Date.now(), e: { from: 'me', ...(p as { emoji: string; to?: string }) } });
           }} notice={notice} onCloseNotice={() => setNotice(null)} reveal={reveal} onCloseReveal={() => setReveal(null)} fx={fx} emote={emote} chat={chat} />
