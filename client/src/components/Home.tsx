@@ -3,15 +3,8 @@ import { ArrowRight, Eye, Plus } from 'lucide-react';
 import { GAME_MODES, type GameMode, type RoomRules } from '../../../shared/src';
 import Landing from './Hero';
 import RoomSettings, { getSavedRoomRules } from './RoomSettings';
+import { readRoomParam } from '../roomLink';
 
-function getInitialRoomCode(): string {
-  try {
-    const raw = new URLSearchParams(window.location.search).get('room') ?? '';
-    return raw.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
-  } catch {
-    return '';
-  }
-}
 
 export default function Home({
   onCreate,
@@ -22,7 +15,7 @@ export default function Home({
   onJoin: (code: string) => void;
   onWatch: (code: string) => void;
 }) {
-  const [code, setCode] = useState(getInitialRoomCode);
+  const [code, setCode] = useState(readRoomParam);
   const [gameMode, setGameMode] = useState<GameMode>('exploding_kittens');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const ready = code.trim().length === 4;

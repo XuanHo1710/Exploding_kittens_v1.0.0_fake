@@ -18,6 +18,7 @@ import Rules from './components/Rules';
 import Modal from './components/Modal';
 import { CardPreviewLayer } from './components/CardPreview';
 import { sfx } from './sfx';
+import { readRoomParam, writeRoomParam } from './roomLink';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL as string | undefined;
 
@@ -45,6 +46,8 @@ export default function App() {
   const fxSeq = useRef(0);
   const [showRules, setShowRules] = useState(false);
   const toastTimer = useRef<number | undefined>(undefined);
+  /** Mở link ?roomid=ABCD: kết nối xong (kể cả sau khi đăng nhập) thì tự vào phòng đó */
+  const linkRoom = useRef(readRoomParam());
 
   // Tiếng "tách" nhẹ cho mọi nút chính
   useEffect(() => {
@@ -64,6 +67,34 @@ export default function App() {
     clearTimeout(toastTimer.current);
     toastTimer.current = window.setTimeout(() => setToast(null), 3500);
   };
+  /** Vào phòng theo link mời. Bàn đủ người / đang chơi thì vào xem. */
+  const joinFromLink = (s: Socket, current: RoomView | null) => {
+    const code = linkRoom.current;
+    if (!code) return;
+    linkRoom.current = '';
+    if (current?.code === code) return;
+    if (current && current.phase !== 'lobby') {
+      showToast(`Bạn đang chơi ở phòng ${current.code}. Xong ván rồi mở lại link để vào phòng ${code}.`);
+      return;
+    }
+    s.timeout(10_000).emit('room:join', { code }, (err: Error | null, res?: { ok: boolean; error?: string }) => {
+      if (err || res?.ok) return;
+      const why = res?.error ?? '';
+      if (!/đang chơi|đủ/.test(why)) {
+        writeRoomParam(null);
+        return;
+      }
+      s.timeout(10_000).emit('room:watch', { code }, (err2: Error | null, res2?: { ok: boolean }) => {
+        if (!err2 && res2?.ok) showToast(`Phòng ${code} ${/đang chơi/.test(why) ? 'đang chơi' : 'đã đủ người'}, bạn vào xem nhé 👀`);
+      });
+    });
+  };
+  // Thanh địa chỉ luôn là link của phòng đang ở: tải lại hay gửi link cho bạn đều vào đúng phòng
+  useEffect(() => {
+    if (view?.code) writeRoomParam(view.code);
+    else if (!linkRoom.current) writeRoomParam(null);
+  }, [view?.code]);
+
   // Server chỉ nhận socket có token tài khoản: chưa đăng nhập bằng PIN thì chưa kết nối
   const hasToken = !!identity?.token;
   useEffect(() => {
@@ -75,6 +106,7 @@ export default function App() {
     s.on('state', (v: RoomView | null) => {
       setView(v);
       if (!v) setChat([]);
+      joinFromLink(s, v);
     });
     s.on('toast', showToast);
     s.on('notice', (n: PrivateNotice) => (n.kind === 'future' ? setNotice(n) : setReveal({ ...n, key: Date.now() })));

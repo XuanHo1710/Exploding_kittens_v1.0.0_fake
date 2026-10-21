@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Coins, Copy, Crown, Gamepad2, LogOut, Play, Settings2, Trophy, UserPlus, UserX } from 'lucide-react';
+import { Check, Coins, Copy, Crown, Gamepad2, Link2, LogOut, Play, Settings2, Trophy, UserPlus, UserX } from 'lucide-react';
 import {
   BET_OPTIONS,
   GAME_MODES,
@@ -15,6 +15,7 @@ import PlayerAvatar from '../art/PlayerAvatar';
 import ChatPanel, { useChatState, type RoomChat } from './ChatPanel';
 import RoomSettings, { RoomRuleSummary } from './RoomSettings';
 import { LobbySpectators, isSpectating, roomPeople } from './Spectators';
+import { roomInviteUrl } from '../roomLink';
 
 interface Props {
   view: RoomView;
@@ -30,6 +31,7 @@ const NO_CHAT: RoomChat = { messages: [], typing: {}, send: () => {}, onTyping: 
 export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSaveRules }: Props) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const { typingNames, unread } = useChatState(chat, roomPeople(view), meId, true);
   const isHost = view.hostId === meId;
   const gameMode: GameMode = view.gameMode ?? 'exploding_kittens';
@@ -50,6 +52,22 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
     void copyTextSafe(view.code).then((ok) => setCopied(ok));
     window.setTimeout(() => setCopied(false), 1500);
   };
+  /** Link mời: điện thoại mở bảng chia sẻ (Zalo, Messenger…), máy tính sao chép link */
+  const shareInvite = async () => {
+    const url = roomInviteUrl(view.code);
+    const touch = window.matchMedia?.('(pointer: coarse)').matches;
+    if (touch && typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: `Vào phòng ${view.code}`, text: `Vào chơi ${modeInfo.shortName} với mình nè! Phòng ${view.code}:`, url });
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+      }
+    }
+    const ok = await copyTextSafe(url);
+    setLinkCopied(ok);
+    window.setTimeout(() => setLinkCopied(false), 1800);
+  };
 
   return (
     <div className="center-screen">
@@ -57,13 +75,16 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
         <div className="panel lobby">
           <div className="lobby-head">
             <div>
-              <p className="muted">Mã phòng, bấm để sao chép và gửi cho mọi người</p>
+              <p className="muted">Mã phòng. Gửi link mời để bạn bè bấm là vào thẳng phòng</p>
               <button type="button" className="room-code-btn" onClick={copyRoomCode} title="Sao chép mã phòng">
                 <span className="room-code">{view.code}</span>
                 <span className="room-code-copy">
                   {copied ? <Check size={16} /> : <Copy size={16} />}
                   <small>{copied ? 'Đã chép' : 'Sao chép'}</small>
                 </span>
+              </button>
+              <button type="button" className="secondary invite-link-btn" onClick={() => void shareInvite()} title={roomInviteUrl(view.code)}>
+                {linkCopied ? <Check size={15} /> : <Link2 size={15} />} {linkCopied ? 'Đã chép link mời' : 'Gửi link mời'}
               </button>
             </div>
             <div className="lobby-count">

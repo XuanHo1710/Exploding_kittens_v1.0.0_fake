@@ -2303,3 +2303,6 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   .dead-thumb + .dead-thumb { margin-left: -8px; }
 }
 @media (prefers-reduced-motion: reduce) { .dead-thumb { transition: none; } }
+
+/* Phòng chờ: nút gửi link mời (?roomid=XXXX) */
+.invite-link-btn { margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 6px 12px; }
