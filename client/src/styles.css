@@ -2258,3 +2258,13 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 .spectator-kick:hover { color: var(--bad); }
 /* Xì Dách / Tiến Lên: khán giả chỉ có 1 dòng trạng thái + nút rời phòng, không ép thành cột hẹp */
 .bj-game .spectator-area .my-status, .tl-game .spectator-area .my-status { display: block; flex: 1 1 100%; }
+
+/* Thanh trên cùng của Xì Dách / Tiến Lên: các nút xếp hàng ngang, xuống dòng gọn trên điện thoại */
+.top-bar { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; position: relative; z-index: 9; }
+.top-left, .top-right { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; max-width: 100%; }
+.pot-badge {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text); font-weight: 600; font-size: 13px;
+  padding: 5px 12px; border-radius: 10px; box-shadow: var(--shadow-card); white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.pot-badge svg { color: var(--accent-2); }
