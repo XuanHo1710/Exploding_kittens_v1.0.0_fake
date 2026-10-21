@@ -277,7 +277,7 @@ function freshLines(log: string[], total: number, seen: { current: number }) {
 }
 
 function useAnnouncement(log: string[], total: number) {
-  const [msg, setMsg] = useState<{ text: string; tone: string } | null>(null);
+  const [msg, setMsg] = useState<{ text: string; tone: string; at: number } | null>(null);
   const seen = useRef(total);
   useEffect(() => {
     const fresh = freshLines(log, total, seen);
@@ -285,11 +285,15 @@ function useAnnouncement(log: string[], total: number) {
     if (!hit) return;
     const tone = hit.includes('NỔ TUNG') ? 'boom' : /🏆|ăn hũ/.test(hit) ? 'win' : 'defuse';
     sfx(tone);
-    setMsg({ text: hit.replace(/^[^\p{L}]+/u, ''), tone });
-    const t = setTimeout(() => setMsg(null), 2600);
-    return () => clearTimeout(t);
+    setMsg({ text: hit.replace(/^[^\p{L}]+/u, ''), tone, at: Date.now() });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [total]);
+  // Tự ẩn sau 2.6s. Hẹn giờ theo chính thông báo (không theo nhật ký), để dòng nhật ký mới đến ngay sau không huỷ mất hẹn giờ.
+  useEffect(() => {
+    if (!msg) return;
+    const t = setTimeout(() => setMsg(null), 2600);
+    return () => clearTimeout(t);
+  }, [msg]);
   return msg;
 }
 
