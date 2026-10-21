@@ -342,8 +342,8 @@ test('special cards (targeted_attack, personal_attack, super_skip, reverse, swap
 
   // super_skip ends all 2 turns at once for THIRD
   game.players[2].hand = [card('super_skip', 'ssk-1')];
-  game.play(THIRD, { cardIds: ['ssk-1'] });
-  game.resolvePending();
+  game.play(THIRD, { cardIds: ['ssk-1'] }); // luật nhà: không chờ Nope, có hiệu lực ngay
+  assert.equal(game.pending, undefined);
   assert.equal(game.viewFor(HOST).currentPlayerId, HOST);
   assert.equal(game.viewFor(HOST).turnsRemaining, 1);
 

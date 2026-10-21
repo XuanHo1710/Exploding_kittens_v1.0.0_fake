@@ -541,3 +541,17 @@ test('5 lá khác nhau: lá nào cũng được (kể cả Gỡ Bom, Nope), lấ
     game.play(A, { cardIds: ['x1', 'x2', 'x3', 'x4', `${A}-defuse-0`], discardType: 'reverse' });
   }, GameError, 'không có lá đó trong chồng bỏ');
 });
+
+test('luật nhà: Siêu Bỏ Lượt có hiệu lực ngay, không ai Nope được (kể cả Nhân Bản sao chép nó)', (t) => {
+  const { game } = kittens(t, { [A]: ['super_skip', 'skip'], [B]: ['nope', 'clone'], [C]: ['nope'] }, ['cat_taco', 'cat_melon', 'shuffle']);
+  game.turnsRemaining = 2;
+  game.play(A, { cardIds: [`${A}-super_skip-0`] });
+  assert.equal(game.pending, undefined, 'không mở thời gian chờ Nope');
+  assert.equal(game.lastPlay.result, 'done');
+  assert.equal(game.current().id, B, 'kết thúc cả 2 lượt của A');
+  assert.throws(() => game.play(C, { cardIds: [`${C}-nope-0`] }), GameError);
+  // Nhân Bản sao chép Siêu Bỏ Lượt cũng không Nope được
+  game.play(B, { cardIds: [`${B}-clone-1`] });
+  assert.equal(game.pending, undefined);
+  assert.equal(game.current().id, C);
+});

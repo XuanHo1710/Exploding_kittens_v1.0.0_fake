@@ -14,11 +14,11 @@ import { store } from './cardPreviewStore';
 const HOW: Record<CardType, string> = {
   exploding: 'Không đánh được. Rút trúng là phải dùng Gỡ Bom ngay, không có thì bị loại.',
   defuse: '', // Filled from the room's bomb placement setting below.
-  super_skip: 'Trong lượt của bạn: bấm lá này để kết thúc TOÀN BỘ số lượt bạn đang phải đi (kể cả khi bị Tấn Công cộng dồn) mà không rút bài.',
   attack: 'Trong lượt của bạn: bấm lá này để kết thúc lượt mà không rút bài, buộc người chơi kế tiếp chơi 2 lượt.',
   targeted_attack: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người chơi. Bạn kết thúc lượt không rút bài, người đó phải chơi 2 lượt và vòng chơi tiếp tục từ họ.',
   personal_attack: 'Trong lượt của bạn: bấm lá này để chơi 3 lượt liên tiếp.',
   skip: 'Trong lượt của bạn: bấm lá này để kết thúc lượt mà không rút bài.',
+  super_skip: 'Trong lượt của bạn: bấm lá này để kết thúc lượt mà không rút bài; nếu đang phải chơi nhiều lượt thì kết thúc tất cả. Có hiệu lực ngay, không ai Nope được (luật nhà).',
   reverse: 'Trong lượt của bạn: bấm lá này để đảo ngược chiều vòng chơi và kết thúc lượt mà không rút bài.',
   draw_bottom: 'Trong lượt của bạn: bấm lá này để kết thúc lượt bằng cách rút lá dưới đáy chồng bài rút.',
   catomic_bomb: 'Trong lượt của bạn: bấm lá này để lấy hết Mèo Nổ ra, xáo chồng bài rồi úp tất cả Mèo Nổ lên trên cùng. Lượt của bạn kết thúc.',

@@ -17,6 +17,7 @@ import {
   compareBlackjackHands,
   createStandard52Deck,
   detectPlayKind,
+  UNNOPEABLE_KINDS,
   detectTienLenCombo,
   evaluateBlackjackHand,
   normalizeRoomRules,
@@ -1006,6 +1007,8 @@ export class Game {
       this.lastPlay = { id: ++this.playSeq, kind, actorId: playerId, targetId: target?.id, cards: types, cardIds: played.map((c) => c.id), nopers: [], nopeCardIds: [] };
       const desc = this.describe(p, kind, target, req);
       this.addLog(cloned ? `🧬 ${p.name} đánh Nhân Bản, sao chép hiệu ứng ${CARD_INFO[kind as CardType]?.name ?? kind}. ${desc}` : desc);
+      // Luật nhà: Siêu Bỏ Lượt không bị Nope → có hiệu lực ngay, không mở thời gian chờ Nope
+      if (UNNOPEABLE_KINDS.includes(kind)) this.resolvePending();
     });
   }
 

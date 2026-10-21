@@ -172,6 +172,11 @@ export const SINGLE_ACTION_CARDS: readonly CardType[] = [
   'clone',
 ];
 
+/**
+ * Luật nhà (chủ phòng yêu cầu, không in trên lá): các hiệu ứng này có hiệu lực ngay, không ai Nope được.
+ * Nhân Bản sao chép Siêu Bỏ Lượt cũng tính là Siêu Bỏ Lượt.
+ */
+export const UNNOPEABLE_KINDS: readonly ActionKind[] = ['super_skip'];
 
 /** Nhân Bản đánh lẻ sao chép được các lá chức năng đánh lẻ (trừ chính Nhân Bản) */
 export const CLONEABLE_KINDS: readonly ActionKind[] = SINGLE_ACTION_CARDS.filter((t) => t !== 'clone') as ActionKind[];
@@ -273,6 +278,7 @@ export function describeCard(type: CardType, rules: RoomRules): string {
   if (type === 'nope') return `Chặn hành động trong ${rules.nopeSeconds} giây, cả ngoài lượt. Không chặn Mèo Nổ/Gỡ Bom. ${rules.nopeChain ? 'Có thể Nope lại Nope.' : 'Không được Nope lại Nope.'}`;
   if (type === 'alter_future') return `Bí mật xem và sắp xếp lại ${rules.futureCount} lá trên cùng của chồng bài rút.`;
   if (type === 'share_future') return `Xem và sắp xếp lại ${rules.futureCount} lá trên cùng của chồng bài rút, rồi cho người chơi kế tiếp xem các lá đó.`;
+  if (type === 'super_skip') return `${CARD_INFO.super_skip.desc} Luật nhà: không ai Nope được lá này.`;
   if (CARD_INFO[type].isCat) {
     const prefix = type === 'feral_cat' ? 'Dùng như bất kỳ lá mèo thường nào. ' : 'Đánh lẻ không có tác dụng. ';
     const effects = [rules.allowPair && 'Đôi: cướp ngẫu nhiên 1 lá của người khác', rules.allowTriple && 'Ba: gọi tên lá muốn lấy', rules.allowFive && 'Dùng trong combo 5 lá khác nhau'].filter(Boolean);
