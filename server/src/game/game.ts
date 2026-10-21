@@ -1256,6 +1256,8 @@ export class Game {
         left: !!p.left,
         ready: p.id === this.hostId || p.readyVersion === this.rulesVersion,
         alive: p.alive,
+        // Mèo Nổ: người đã chết lật ngửa bài cho cả bàn xem (vẫn giữ bài cho lá Trộm Mộ)
+        revealed: this.gameMode === 'exploding_kittens' && this.phase !== 'lobby' && !p.alive ? [...p.hand] : undefined,
         handCount:
           this.gameMode === 'blackjack_21'
             ? (this.bjHands.get(p.id)?.length ?? 0)
@@ -1682,6 +1684,7 @@ export class Game {
       if (this.roomRules.bombPlacement === 'random') this.doPlaceBomb(randomInt(this.deck.length + 1));
     } else {
       this.addLog(`💥 ${p.name} rút trúng Mèo Nổ${from === 'bottom' ? ' dưới đáy' : ''} và NỔ TUNG!`);
+      if (p.hand.length) this.addLog(`👀 Bài của ${p.name} được lật ngửa cho cả bàn xem.`);
       this.discard.push(card);
       this.hooks.fx(this, { type: 'explode', playerId: p.id });
       this.eliminate(p);

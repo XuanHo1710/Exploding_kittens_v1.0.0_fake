@@ -184,3 +184,30 @@ test('khán giả: rời phòng, bị chủ phòng mời ra; người chơi duy 
   assert.throws(() => game.addSpectator(B, 'P1'), /duy nhất/);
   assert.deepEqual(game.players.map((p) => p.id), [B]);
 });
+
+// ---------- người đã nổ lật ngửa bài ----------
+
+test('Mèo Nổ: người đã nổ lật ngửa bài cho cả bàn (kể cả khán giả); người còn sống vẫn giấu bài', (t) => {
+  const { game } = room(t);
+  game.addSpectator(W, 'Watcher');
+  start(game);
+  table(game, { [A]: ['skip'], [B]: ['nope', 'cat_melon'], [C]: ['favor', 'shuffle'] }, ['exploding']);
+  game.draw(A); // A rút trúng Mèo Nổ, không có Gỡ Bom → nổ
+  assert.equal(game.player(A).alive, false);
+  for (const viewer of [B, C, W]) {
+    const view = game.viewFor(viewer);
+    assert.deepEqual(view.players.find((p) => p.id === A).revealed.map((c) => c.type), ['skip'], viewer);
+    assert.equal(view.players.find((p) => p.id === B).revealed, undefined, 'người còn sống không lộ bài');
+    assert.equal(view.players.find((p) => p.id === C).revealed, undefined);
+  }
+  assert.match(game.viewFor(B).log.join('\n'), /lật ngửa/);
+});
+
+test('lật ngửa bài chỉ có ở Mèo Nổ: Tiến Lên không lộ bài người rời bàn', (t) => {
+  const game = new Game('TLRV', { changed() {}, removed() {}, fx() {}, notify() {} }, { firstPlayer: 'host' }, 'tien_len');
+  [A, B, C].forEach((id, i) => game.addPlayer(id, `P${i}`));
+  t.after(() => game.dispose());
+  start(game);
+  game.removePlayer(C);
+  assert.ok(game.viewFor(A).players.every((p) => p.revealed === undefined));
+});

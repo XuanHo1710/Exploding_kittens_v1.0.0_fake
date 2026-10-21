@@ -110,6 +110,8 @@ export interface PublicPlayer {
   avatar?: string;
   /** Số xu (chỉ có khi người chơi đã có tài khoản) */
   coins?: number;
+  /** Mèo Nổ: người đã chết bị lật ngửa toàn bộ bài trên tay cho cả bàn xem */
+  revealed?: Card[];
 }
 
 /** Khán giả trong phòng: chỉ xem, không có bài */

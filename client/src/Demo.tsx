@@ -86,6 +86,8 @@ export default function Demo() {
     connected: i !== 4,
     alive: scene === 'dead' ? i !== 0 : i !== 3,
     handCount: i === 0 ? HAND.length : 4 + ((i * 3) % 5),
+    // người đã nổ: bài lật ngửa cho cả bàn xem
+    revealed: (scene === 'dead' ? i === 0 : i === 3) ? HAND.slice(0, 7).map((type, k) => ({ id: `rv${i}-${k}`, type })) : undefined,
   }));
   const hand: Card[] = HAND.map((type, i) => ({ id: `h${i}`, type }));
   const myTurn = ['myturn', 'defuse', 'future', 'shuffle'].includes(scene);

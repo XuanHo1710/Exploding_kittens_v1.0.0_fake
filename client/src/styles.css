@@ -429,7 +429,9 @@ button.card:not(:disabled):active { transform: scale(0.97) !important; }
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   width: 106px; pointer-events: auto;
 }
-.seat.dead { filter: grayscale(0.85); opacity: 0.65; }
+/* người đã nổ: mờ đi, riêng xấp bài lật ngửa vẫn rõ màu để cả bàn xem */
+.seat.dead > :not(.seat-cards), .seat.dead .seat-dead { filter: grayscale(0.85); opacity: 0.65; }
+.seat.dead .seat-cards { height: auto; flex-direction: column; gap: 3px; }
 .seat.offline { opacity: 0.55; }
 .seats.crowded .seat { width: 92px; gap: 2px; }
 .seats.crowded .seat .avatar { --av-size: 46px; }
@@ -2276,3 +2278,28 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   display: inline-flex; align-items: center; gap: 5px;
 }
 .pot-badge svg { color: var(--accent-2); }
+
+/* Mèo Nổ: bài lật ngửa của người đã nổ */
+.dead-hand {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 6px 3px 4px; min-height: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-card);
+  cursor: pointer; color: var(--text);
+}
+.dead-hand:hover, .dead-hand:focus-visible { border-color: var(--accent); }
+.dead-thumbs { display: inline-flex; align-items: center; padding: 0 2px; }
+.dead-thumb {
+  width: 22px; height: 31px; border-radius: 3px; overflow: hidden; flex: none; background: var(--c);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); transform: rotate(calc((var(--k) - 2) * 5deg));
+  transition: transform 0.15s ease;
+}
+.dead-thumb + .dead-thumb { margin-left: -9px; }
+.dead-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dead-thumb-emoji { display: grid; place-items: center; height: 100%; font-size: 13px; }
+.dead-hand:hover .dead-thumb { transform: translateY(-3px) rotate(calc((var(--k) - 2) * 7deg)); }
+.dead-more { font-size: 11px; font-weight: 700; }
+.dead-grid .wiz-card { cursor: default; }
+@media (max-width: 760px) {
+  .dead-thumb { width: 18px; height: 25px; }
+  .dead-thumb + .dead-thumb { margin-left: -8px; }
+}
+@media (prefers-reduced-motion: reduce) { .dead-thumb { transition: none; } }

@@ -74,6 +74,7 @@ import { flyCard, flyClone, flyEmoji, flyTransferCard, seatEl } from '../fx';
 import PlayWizard, { type WizardResult } from './PlayWizard';
 import ChatPanel, { useChatState, type ChatTab, type RoomChat } from './ChatPanel';
 import { SpectatorArea, SpectatorChip, isSpectating, roomPeople } from './Spectators';
+import { DeadHandFan, DeadHandModal } from './DeadHand';
 import { Brand, fmtCoins } from './Dock';
 import Rules from './Rules';
 
@@ -600,6 +601,8 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   const [shuffling, setShuffling] = useState<string | null>(null);
   const [transferBanner, setTransferBanner] = useState<string | null>(null);
   const [kickAsk, setKickAsk] = useState<PublicPlayer | null>(null);
+  /** Đang xem bài lật ngửa của người đã nổ */
+  const [deadViewId, setDeadViewId] = useState<string | null>(null);
   const [alterOrder, setAlterOrder] = useState<Card[]>([]);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
@@ -1013,7 +1016,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   } else if (!alive) {
     status = (
       <span className="status-row">
-        <Skull size={16} className="inline-icon" /> Bạn đã nổ. Ngồi xem tiếp nhé!
+        <Skull size={16} className="inline-icon" /> Bạn đã nổ. {view.hand.length ? 'Bài của bạn đang lật ngửa cho cả bàn xem 👀' : 'Ngồi xem tiếp nhé!'}
       </span>
     );
   } else if (giving && waiting?.kind === 'favor_give') {
@@ -1236,7 +1239,10 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                       <span className="seat-count">{p.handCount}</span>
                     </>
                   ) : (
-                    <span className="seat-dead">{p.left ? 'đã rời' : 'đã nổ'}</span>
+                    <>
+                      <span className="seat-dead">{p.left ? 'đã rời' : 'đã nổ'}</span>
+                      <DeadHandFan player={p} onOpen={() => setDeadViewId(p.id)} />
+                    </>
                   )}
                 </div>
                 {isTarget && (
@@ -1871,6 +1877,10 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
             </button>
           </div>
         </Modal>
+      )}
+
+      {deadViewId && view.players.some((p) => p.id === deadViewId && p.revealed) && (
+        <DeadHandModal player={view.players.find((p) => p.id === deadViewId)!} onClose={() => setDeadViewId(null)} />
       )}
 
       {kickAsk && (
