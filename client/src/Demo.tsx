@@ -122,6 +122,8 @@ export default function Demo() {
             ? { kind: 'defuse_place', playerId: 'me', deckCount: 31, deadline: now + 21_000, bury: true }
           : scene === 'steal'
             ? { kind: 'steal_pick', playerId: 'me', targetId: 'p1', via: 'mark', count: 7, deadline: now + 21_000 }
+          : scene === 'alter'
+            ? { kind: 'alter_future', playerId: 'me', count: 3, cards: [{ id: 'af1', type: 'exploding' }, { id: 'af2', type: 'nope' }, { id: 'af3', type: 'cat_potato' }], deadline: now + 21_000 }
             : undefined,
     winnerId: scene === 'ended' ? 'me' : undefined,
     logTotal: 5,

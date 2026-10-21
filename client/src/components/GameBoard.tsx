@@ -599,6 +599,8 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   const [alterOrder, setAlterOrder] = useState<Card[]>([]);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
+  /** Sửa Tương Lai: lá đang được chọn để đổi chỗ (bấm lá thứ hai là đổi) – dùng được cả trên điện thoại */
+  const [pickIdx, setPickIdx] = useState<number | null>(null);
   const [shake, setShake] = useState(false);
   const [bubbles, setBubbles] = useState<Record<string, string>>({});
   const deckRef = useRef<HTMLButtonElement>(null);
@@ -648,6 +650,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       setAlterOrder(waiting.cards);
       setDragIdx(null);
       setOverIdx(null);
+      setPickIdx(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [alterKey]);
@@ -662,6 +665,25 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       return next;
     });
     sfx('tap');
+  };
+  const swapAlterCards = (a: number, b: number) => {
+    setAlterOrder((prev) => {
+      if (a === b || !prev[a] || !prev[b]) return prev;
+      const next = [...prev];
+      [next[a], next[b]] = [next[b], next[a]];
+      return next;
+    });
+    sfx('tap');
+  };
+  const tapAlterCard = (idx: number) => {
+    if (pickIdx === null) {
+      setPickIdx(idx);
+      sfx('select');
+    } else {
+      if (pickIdx !== idx) swapAlterCards(pickIdx, idx);
+      else sfx('unselect');
+      setPickIdx(null);
+    }
   };
 
   const handIds = new Set(view.hand.map((c) => c.id));
@@ -1850,23 +1872,34 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         <Modal
           title={
             <span className="modal-title-icon">
-              <Sparkles size={19} /> Sửa Tương Lai — Kéo thả sắp xếp bài
+              <Sparkles size={19} /> Sửa Tương Lai — Sắp xếp bài
             </span>
           }
           width={680}
         >
           <p>
-            Kéo thả các lá bài (hoặc bấm <b>◀ ▶</b>) để đổi vị trí tuỳ ý. Lá số <b>1</b> sẽ nằm <b>trên cùng</b> chồng bài rút! Còn{' '}
-            <b>{secs(waiting.deadline)}s</b>.
+            <b>Bấm 2 lá</b> để đổi chỗ cho nhau (hoặc kéo thả, bấm <b>◀ ▶</b>). Lá số <b>1</b> sẽ nằm <b>trên cùng</b> chồng bài rút. Còn{' '}
+            <b>{secs(waiting.deadline)}s</b>, hết giờ sẽ giữ nguyên thứ tự.
           </p>
           <div className="alter-grid">
             {alterOrder.map((c, idx) => (
               <div
                 key={c.id}
-                className={`alter-item${dragIdx === idx ? ' dragging' : ''}${overIdx === idx && dragIdx !== idx ? ' drag-over' : ''}`}
+                className={`alter-item${dragIdx === idx ? ' dragging' : ''}${overIdx === idx && dragIdx !== idx ? ' drag-over' : ''}${pickIdx === idx ? ' picked' : ''}`}
                 draggable
+                role="button"
+                tabIndex={0}
+                aria-pressed={pickIdx === idx}
+                onClick={() => tapAlterCard(idx)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    tapAlterCard(idx);
+                  }
+                }}
                 onDragStart={(e) => {
                   setDragIdx(idx);
+                  setPickIdx(null);
                   e.dataTransfer.effectAllowed = 'move';
                   try {
                     e.dataTransfer.setData('text/plain', String(idx));
@@ -1901,34 +1934,43 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                   <CardView type={c.type} seed={c.id} size="xl" preview={false} />
                 </div>
                 <div className="alter-card-name">{CARD_INFO[c.type].name}</div>
-                <div className="alter-move-btns">
+                <div className="alter-move-btns" onClick={(e) => e.stopPropagation()}>
                   <button
                     type="button"
                     className="secondary small"
                     disabled={idx === 0}
-                    onClick={() => moveAlterCard(idx, idx - 1)}
+                    onClick={() => {
+                      setPickIdx(null);
+                      moveAlterCard(idx, idx - 1);
+                    }}
                     title="Đẩy lên trước"
+                    aria-label="Đẩy lên trước"
                   >
-                    ◀ Lên
+                    ◀<span className="alter-btn-text"> Lên</span>
                   </button>
                   <button
                     type="button"
                     className="secondary small"
                     disabled={idx === alterOrder.length - 1}
-                    onClick={() => moveAlterCard(idx, idx + 1)}
+                    onClick={() => {
+                      setPickIdx(null);
+                      moveAlterCard(idx, idx + 1);
+                    }}
                     title="Đẩy ra sau"
+                    aria-label="Đẩy ra sau"
                   >
-                    Xuống ▶
+                    <span className="alter-btn-text">Xuống </span>▶
                   </button>
                 </div>
               </div>
             ))}
           </div>
-          <div className="modal-actions">
+          <div className="modal-actions alter-actions">
             <button
               className="primary big"
               onClick={() => {
                 sfx('play');
+                setPickIdx(null);
                 emit('game:alter', { cardIds: alterOrder.map((c) => c.id) });
               }}
             >
