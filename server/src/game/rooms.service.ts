@@ -30,7 +30,7 @@ export class RoomsService {
   private hooks: GameHooks = {
     changed: (game) => this.broadcast(game),
     notify: (playerId, notice) => this.server.to(`p:${playerId}`).emit('notice', notice),
-    fx: (game, fx) => game.players.forEach((p) => this.server.to(`p:${p.id}`).emit('fx', fx)),
+    fx: (game, fx) => this.members(game).forEach((p) => this.server.to(`p:${p.id}`).emit('fx', fx)),
     removed: (playerId, code) => {
       if (this.playerRoom.get(playerId) !== code) return;
       this.playerRoom.delete(playerId);
@@ -72,13 +72,13 @@ export class RoomsService {
     const msg: ChatMessage = { id: ++this.chatSeq, from: playerId, name: me.name, avatar: me.avatar, text, at: now };
     const list = [...(this.chats.get(game.code) ?? []), msg].slice(-100);
     this.chats.set(game.code, list);
-    game.players.forEach((p) => this.server.to(`p:${p.id}`).emit('chat', msg));
+    this.members(game).forEach((p) => this.server.to(`p:${p.id}`).emit('chat', msg));
   }
 
   typing(playerId: string) {
     const game = this.roomOf(playerId);
     if (!game || !this.typingLimit.hit(playerId)) return;
-    game.players.filter((p) => p.id !== playerId).forEach((p) => this.server.to(`p:${p.id}`).emit('typing', { from: playerId }));
+    this.members(game).filter((p) => p.id !== playerId).forEach((p) => this.server.to(`p:${p.id}`).emit('typing', { from: playerId }));
   }
 
   /** Gửi lịch sử chat khi vào phòng / kết nối lại */
@@ -103,7 +103,7 @@ export class RoomsService {
     b.tokens -= 1;
     this.emoteBucket.set(playerId, b);
     const e: Emote = { from: playerId, emoji, to };
-    game.players.forEach((p) => this.server.to(`p:${p.id}`).emit('emote', e));
+    this.members(game).forEach((p) => this.server.to(`p:${p.id}`).emit('emote', e));
   }
 
   // ---------- tài khoản & xu ----------
@@ -307,6 +307,11 @@ export class RoomsService {
     this.server = server;
   }
 
+  /** Người đang thực sự ở phòng này (không tính người đã rời / đã sang phòng khác) */
+  private members(game: Game) {
+    return game.players.filter((p) => !p.left && this.playerRoom.get(p.id) === game.code);
+  }
+
   roomOf(playerId: string) {
     const code = this.playerRoom.get(playerId);
     return code ? this.rooms.get(code) : undefined;
@@ -355,8 +360,16 @@ export class RoomsService {
     const prev = this.roomOf(playerId);
     this.assertReady(game);
     if (prev && prev !== game) this.assertReady(prev);
-    game.addPlayer(playerId, name, avatar);
+    // Ghi phòng mới trước khi thêm người: trạng thái phòng chỉ gửi cho người đang ở phòng đó
+    const prevCode = this.playerRoom.get(playerId);
     this.playerRoom.set(playerId, code);
+    try {
+      game.addPlayer(playerId, name, avatar);
+    } catch (error) {
+      if (prevCode) this.playerRoom.set(playerId, prevCode);
+      else this.playerRoom.delete(playerId);
+      throw error;
+    }
     this.sendChatHistory(playerId);
     if (prev && prev !== game) {
       prev.removePlayer(playerId);
@@ -433,7 +446,9 @@ export class RoomsService {
   private broadcast(game: Game) {
     if (!this.failedPayouts.has(game)) void this.payout(game).catch(() => undefined);
     const coins = new Map(game.players.map((p) => [p.id, this.verified.has(p.id) ? this.accounts.get(p.id)?.coins : undefined]));
-    for (const p of game.players) {
+    // Chỉ gửi cho người đang ở phòng này: người đã rời giữa ván vẫn giữ ghế (để không lệch lượt)
+    // nhưng không được nhận trạng thái phòng cũ, nếu không sẽ bị kéo ngược về phòng cũ.
+    for (const p of this.members(game)) {
       const view = game.viewFor(p.id);
       view.players = view.players.map((x) => ({ ...x, coins: coins.get(x.id) }));
       this.server.to(`p:${p.id}`).emit('state', view);
