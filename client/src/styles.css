@@ -750,9 +750,13 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
 .chat-starters button { background: var(--surface-2); font-size: 12.5px; padding: 5px 10px; border-radius: 999px; }
 .chat-starters button:hover { background: var(--border); }
 .chat-new {
-  position: absolute; left: 50%; bottom: 122px; transform: translateX(-50%);
+  position: absolute; left: 50%; bottom: 122px; transform: translateX(-50%); z-index: 2;
+  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
   background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: 12px; padding: 5px 12px; border-radius: 999px; box-shadow: var(--shadow-card);
+  animation: chat-new-in 0.18s ease-out;
 }
+@keyframes chat-new-in { from { opacity: 0; transform: translate(-50%, 6px); } }
+@media (prefers-reduced-motion: reduce) { .chat-new { animation: none; } }
 .chat-typing {
   min-height: 20px; padding: 0 14px; font-size: 12px; color: var(--muted);
   display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -817,12 +821,16 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
 .quick-emotes .more.on { background: var(--surface-2); color: var(--text); }
 
 /* phòng chờ + chat */
-.lobby-wrap { display: flex; gap: 16px; align-items: stretch; max-width: 100%; }
-.lobby-chat { width: 330px; display: flex; min-height: 420px; contain: size; }
+/* Chat phòng chờ: khung gọn, dính theo màn hình khi cuộn phòng chờ (không kéo dài theo cột bên trái) */
+.lobby-wrap { display: flex; gap: 16px; align-items: flex-start; max-width: 100%; }
+.lobby-chat {
+  width: 330px; display: flex; contain: size;
+  position: sticky; top: 72px; height: min(520px, calc(100dvh - 96px)); min-height: 340px;
+}
 @media (max-width: 1020px) {
   .floating-top { position: absolute; }
-  .lobby-wrap { flex-direction: column; width: min(640px, 100%); }
-  .lobby-chat { width: auto; height: 420px; min-height: 0; }
+  .lobby-wrap { flex-direction: column; align-items: stretch; width: min(640px, 100%); }
+  .lobby-chat { position: static; width: auto; height: 360px; min-height: 0; }
 }
 
 /* biểu cảm & ném đồ */

@@ -35,29 +35,48 @@ const emojiOnly = (t: string) => /^(\p{Extended_Pictographic}|️|‍|\s)+$/u.te
 export default function ChatPanel({ messages, meId, typingNames, onSend, onTyping, tab, onTab, unread, onClose, log, logTotal = 0 }: Props) {
   const [text, setText] = useState('');
   const [pickOpen, setPickOpen] = useState(false);
-  const [atBottom, setAtBottom] = useState(true);
+  /** Số tin mới của người khác tới lúc đang kéo lên xem tin cũ (hiện nút "N tin mới") */
+  const [newCount, setNewCount] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const lastTyping = useRef(0);
+  /** Đang bám đáy: có tin mới hay nội dung cao thêm (ảnh avatar tải xong…) thì tự cuộn xuống */
+  const stickRef = useRef(true);
+  const seenCount = useRef(messages.length);
 
-  /** Nhảy thẳng xuống tin mới nhất (không hiệu ứng trượt) */
-  const scrollToBottom = () => {
+  /** Nhảy xuống tin mới nhất. smooth = khi người dùng bấm nút "tin mới" */
+  const scrollToBottom = (smooth = false) => {
     const el = listRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (!el) return;
+    stickRef.current = true;
+    setNewCount(0);
+    if (smooth && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    else el.scrollTop = el.scrollHeight;
   };
   // mở chat / đổi tab: luôn đứng ở cuối
   useLayoutEffect(() => {
-    if (tab === 'chat') {
-      scrollToBottom();
-      setAtBottom(true);
-    }
+    if (tab === 'chat') scrollToBottom();
   }, [tab]);
-  // tin mới: đang ở cuối (hoặc mình gửi) thì giữ ở cuối, đang xem tin cũ thì hiện nút "Tin mới"
+  // tin mới: đang ở cuối hoặc mình gửi thì cuộn xuống; đang xem tin cũ thì không giật, chỉ đếm tin mới
   useLayoutEffect(() => {
-    const last = messages.at(-1);
-    if (atBottom || last?.from === meId) scrollToBottom();
+    const added = messages.slice(seenCount.current);
+    seenCount.current = messages.length;
+    if (!added.length) return;
+    if (stickRef.current || added.some((m) => m.from === meId)) scrollToBottom();
+    else setNewCount((c) => c + added.filter((m) => m.from !== meId).length);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length]);
+  // nội dung cao thêm sau khi vẽ (avatar, emoji to, khung chat đổi kích thước) mà đang bám đáy thì vẫn giữ ở đáy
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el || tab !== 'chat' || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => {
+      if (stickRef.current) el.scrollTop = el.scrollHeight;
+    });
+    ro.observe(el);
+    Array.from(el.children).forEach((child) => ro.observe(child));
+    return () => ro.disconnect();
+  }, [tab, messages.length]);
 
   const send = (t: string) => {
     const v = t.trim();
@@ -105,7 +124,9 @@ export default function ChatPanel({ messages, meId, typingNames, onSend, onTypin
             ref={listRef}
             onScroll={(e) => {
               const el = e.currentTarget;
-              setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 40);
+              const near = el.scrollHeight - el.scrollTop - el.clientHeight < 48;
+              stickRef.current = near;
+              if (near) setNewCount(0);
             }}
           >
             {!messages.length && (
@@ -143,9 +164,9 @@ export default function ChatPanel({ messages, meId, typingNames, onSend, onTypin
               );
             })}
           </div>
-          {!atBottom && (
-            <button className="chat-new" onClick={scrollToBottom}>
-              <ArrowDown size={13} /> Tin mới
+          {newCount > 0 && (
+            <button className="chat-new" onClick={() => scrollToBottom(true)}>
+              <ArrowDown size={13} /> {newCount} tin mới
             </button>
           )}
           <div className="chat-typing">
