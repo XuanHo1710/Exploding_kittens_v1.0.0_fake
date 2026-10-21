@@ -33,6 +33,8 @@ import {
   ShuffleStyle,
   sortTienLenHand,
   PLAYING_CARD_BY_CODE,
+  CLONEABLE_KINDS,
+  cloneCopyKind,
 } from '../../../shared/src';
 
 export class GameError extends Error {}
@@ -64,15 +66,14 @@ interface Pending {
   deadline: number;
 }
 
-/** Lá chức năng mà Nhân Bản (đánh riêng) được phép sao chép */
-const CLONEABLE: ReadonlySet<ActionKind> = new Set<ActionKind>([
-  'attack', 'targeted_attack', 'personal_attack', 'skip', 'super_skip', 'reverse', 'draw_bottom',
-  'catomic_bomb', 'swap_top_bottom', 'bury', 'garbage_collection', 'shuffle', 'see_future',
-  'alter_future', 'share_future', 'dig_deeper', 'favor', 'mark', 'grave_robber',
-]);
+const CLONEABLE: ReadonlySet<ActionKind> = new Set(CLONEABLE_KINDS);
 
 type Waiting =
-  | { kind: 'defuse_place'; playerId: string; card: Card; deadline: number }
+  | { kind: 'defuse_place'; playerId: string; card: Card; deadline: number; bury?: boolean }
+  /** Đào Sâu: lá trên cùng đã được rút ra để xem (tạm giữ ở đây) */
+  | { kind: 'dig_choice'; playerId: string; card: Card; deadline: number }
+  /** Thu Gom Rác / Trộm Mộ: từng người tự chọn 1 lá để xáo vào chồng rút */
+  | { kind: 'return_card'; playerId: string; source: 'garbage' | 'grave'; pendingIds: string[]; deadline: number }
   | { kind: 'favor_give'; playerId: string; toId: string; deadline: number }
   | { kind: 'alter_future'; playerId: string; cards: Card[]; deadline: number; shareWith?: string }
   /** Cướp Nhắm / Đôi: người cướp tự chọn 1 lá úp của đối phương (thứ tự đã xáo, không lộ lá nào là lá nào) */
@@ -955,8 +956,8 @@ export class Game {
       if (!kind) throw new GameError('Cách đánh này không hợp lệ theo luật phòng.');
       // Nhân Bản đánh riêng = dùng lại hiệu ứng của lá chức năng vừa có hiệu lực trên bàn
       if (kind === 'clone') {
-        const copied = this.lastPlay?.result === 'done' ? this.lastPlay.kind : undefined;
-        if (!copied || !CLONEABLE.has(copied)) throw new GameError('Chưa có lá chức năng nào vừa có hiệu lực để Nhân Bản.');
+        const copied = cloneCopyKind(this.discard.at(-1), this.lastPlay);
+        if (!copied || !CLONEABLE.has(copied)) throw new GameError('Lá trên đỉnh chồng bài bỏ không phải lá chức năng để Nhân Bản sao chép.');
         kind = copied;
       }
       const cloned = types.length === 1 && types[0] === 'clone';
@@ -973,16 +974,23 @@ export class Game {
       if (kind === 'triple' && (typeof req.namedType !== 'string' || !Object.hasOwn(CARD_INFO, req.namedType) || req.namedType === 'exploding')) {
         throw new GameError('Chọn tên lá muốn lấy.');
       }
-      if ((kind === 'five' || kind === 'grave_robber') && (typeof req.discardType !== 'string' || req.discardType === 'exploding' || !this.discard.some((c) => c.type === req.discardType))) {
+      // "Play 5 different cards (different titles): look through the discard pile and take any card."
+      // 5 lá vừa đánh cũng đã nằm trong chồng bài bỏ nên chọn được cả chúng.
+      if (
+        kind === 'five' &&
+        (typeof req.discardType !== 'string' ||
+          req.discardType === 'exploding' ||
+          !(this.discard.some((c) => c.type === req.discardType) || types.includes(req.discardType as CardType)))
+      ) {
         throw new GameError('Chọn lá muốn lấy từ chồng bài bỏ.');
       }
 
-      // Lock the existing discard before spending the card(s).
-      const discardCardId = (kind === 'five' || kind === 'grave_robber')
-        ? this.discard.filter((c) => c.type === req.discardType).at(-1)?.id
-        : undefined;
-
+      // Giữ đúng lá đã chọn (lá Nope đánh sau trong lúc chờ không bị lấy nhầm).
+      // Ưu tiên lá có sẵn trong chồng bỏ; chồng bỏ không có loại đó thì lấy lại chính lá vừa đánh.
+      const sameType = (c: Card) => c.type === req.discardType;
+      const existingId = kind === 'five' ? this.discard.filter(sameType).at(-1)?.id : undefined;
       this.toDiscard(p, played);
+      const discardCardId = kind === 'five' ? (existingId ?? this.discard.filter(sameType).at(-1)?.id) : undefined;
       this.pending = {
         kind,
         actorId: playerId,
@@ -1026,6 +1034,26 @@ export class Game {
       const card = this.player(playerId)!.hand.find((c) => c.id === cardId);
       if (!card) throw new GameError('Lá bài không hợp lệ.');
       this.doGiveFavor(card);
+    });
+  }
+
+  /** Đào Sâu: giữ lá vừa xem, hoặc rút lá kế tiếp */
+  digChoice(playerId: string, keep: boolean) {
+    this.run(() => {
+      const w = this.waiting;
+      if (w?.kind !== 'dig_choice' || w.playerId !== playerId) throw new GameError('Không có lượt Đào Sâu nào đang chờ bạn.');
+      if (typeof keep !== 'boolean') throw new GameError('Lựa chọn không hợp lệ.');
+      this.doDig(keep);
+    });
+  }
+
+  /** Thu Gom Rác / Trộm Mộ: chọn 1 lá trên tay để xáo vào chồng rút */
+  returnCard(playerId: string, cardId: string) {
+    this.run(() => {
+      const w = this.waiting;
+      if (w?.kind !== 'return_card' || !w.pendingIds.includes(playerId)) throw new GameError('Bạn không cần trả lá nào lúc này.');
+      if (!this.player(playerId)?.hand.some((c) => c.id === cardId)) throw new GameError('Lá bài không hợp lệ.');
+      this.returnOne(playerId, cardId);
     });
   }
 
@@ -1139,7 +1167,11 @@ export class Game {
       lastPlay: this.lastPlay,
       waiting:
         w?.kind === 'defuse_place'
-          ? { kind: w.kind, playerId: w.playerId, deckCount: this.deck.length, deadline: w.deadline }
+          ? { kind: w.kind, playerId: w.playerId, deckCount: this.deck.length, deadline: w.deadline, bury: w.bury }
+          : w?.kind === 'dig_choice'
+            ? { kind: w.kind, playerId: w.playerId, card: w.playerId === id ? w.card : undefined, canDig: this.deck.length > 0, deadline: w.deadline }
+          : w?.kind === 'return_card'
+            ? { kind: w.kind, playerId: w.playerId, source: w.source, pendingIds: [...w.pendingIds], deadline: w.deadline }
           : w?.kind === 'alter_future'
             ? {
                 kind: w.kind,
@@ -1282,6 +1314,10 @@ export class Game {
         this.doAlterFuture();
       } else if (w.kind === 'steal_pick') {
         this.doStealPick();
+      } else if (w.kind === 'dig_choice') {
+        this.doDig(true);
+      } else if (w.kind === 'return_card') {
+        for (const id of [...w.pendingIds]) this.returnOne(id);
       } else {
         const hand = this.player(w.playerId)?.hand ?? [];
         if (hand.length) this.doGiveFavor(hand[randomInt(hand.length)]);
@@ -1376,40 +1412,28 @@ export class Game {
         break;
       }
       case 'bury': {
-        const topCard = this.deck.shift();
-        if (topCard) {
-          // chôn vào giữa (không đặt lại lên trên cùng), Mèo Nổ cũng không kích nổ
-          const pos = this.deck.length ? 1 + randomInt(this.deck.length) : 0;
-          this.deck.splice(pos, 0, topCard);
-          this.hooks.notify(actor.id, {
-            kind: 'future',
-            cards: [topCard.type],
-            cardIds: [topCard.id],
-            text: `Chôn Bài: lá trên cùng là ${CARD_INFO[topCard.type].name}, đã chôn vào vị trí ${pos + 1}/${this.deck.length}`,
-          });
-          this.hooks.fx(this, { type: 'insert', playerId: actor.id });
+        // "End your turn by secretly putting the next card you draw back into the draw pile as if you had defused it."
+        const drawn = this.deck.shift();
+        if (!drawn) {
+          this.endOneTurn();
+          break;
         }
-        this.addLog(`🕳️ ${actor.name} bí mật xem lá trên cùng và chôn nó vào giữa chồng bài.`);
-        this.endOneTurn();
+        this.hooks.fx(this, { type: 'draw', playerId: actor.id });
+        this.hooks.notify(actor.id, {
+          kind: 'future',
+          cards: [drawn.type],
+          cardIds: [drawn.id],
+          text: `Chôn Bài: bạn rút được ${CARD_INFO[drawn.type].name}, giờ bí mật nhét nó lại vào chồng bài`,
+        });
+        this.addLog(`🕳️ ${actor.name} rút 1 lá và bí mật chôn nó lại vào chồng bài.`);
+        this.waiting = { kind: 'defuse_place', playerId: actor.id, card: drawn, bury: true, deadline: Date.now() + this.roomRules.promptSeconds * 1000 };
+        if (this.roomRules.bombPlacement === 'random') this.doPlaceBomb(randomInt(this.deck.length + 1));
         break;
       }
-      case 'garbage_collection': {
-        let returned = 0;
-        for (const pl of this.players) {
-          if (!pl.alive || !pl.hand.length) continue;
-          const candidates = pl.hand.map((c, i) => (c.type !== 'defuse' ? i : -1)).filter((i) => i >= 0);
-          const pickIdx = candidates.length ? candidates[randomInt(candidates.length)] : randomInt(pl.hand.length);
-          const [given] = pl.hand.splice(pickIdx, 1);
-          if (given) {
-            this.deck.push(given);
-            returned++;
-          }
-        }
-        shuffle(this.deck);
-        this.hooks.fx(this, { type: 'shuffle', playerId: actor.id, style: 'overhand' });
-        this.addLog(`♻️ ${actor.name} gom ${returned} lá từ mọi người vào chồng rút và xáo đều!`);
+      case 'garbage_collection':
+        // "Every player (including the one who played this card) must choose one card to shuffle into the draw pile."
+        this.startReturnCards(actor, 'garbage', this.players.filter((pl) => pl.alive && pl.hand.length));
         break;
-      }
       case 'shuffle': {
         shuffle(this.deck);
         const style = pd.shuffleStyle ?? 'riffle';
@@ -1468,12 +1492,16 @@ export class Game {
         break;
       }
       case 'dig_deeper': {
-        if (this.deck.length >= 2 && this.deck[0].type === 'exploding' && this.deck[1].type !== 'exploding') {
-          [this.deck[0], this.deck[1]] = [this.deck[1], this.deck[0]];
+        // "Draw a card, look at it and then either keep it, or draw the next card (which you must keep)
+        //  and put the first card facedown on top of the draw pile."
+        const first = this.deck.shift();
+        if (!first) {
+          this.endOneTurn();
+          break;
         }
-        // Cùng một câu dù có né hay không: người khác không biết lá trên cùng là gì
-        this.addLog(`⛏️ ${actor.name} Đào Sâu rút bài!`);
-        this.drawFor(actor, 'top');
+        this.hooks.fx(this, { type: 'draw', playerId: actor.id });
+        this.addLog(`⛏️ ${actor.name} Đào Sâu: rút 1 lá và xem…`);
+        this.waiting = { kind: 'dig_choice', playerId: actor.id, card: first, deadline: Date.now() + this.roomRules.promptSeconds * 1000 };
         break;
       }
       case 'favor':
@@ -1494,6 +1522,9 @@ export class Game {
         break;
       }
       case 'grave_robber':
+        // "All dead players with cards must choose one card from their hand to shuffle into the draw pile."
+        this.startReturnCards(actor, 'grave', this.players.filter((pl) => !pl.alive && pl.hand.length));
+        break;
       case 'five': {
         const idx = this.discard.findIndex((c) => c.id === pd.discardCardId);
         if (idx >= 0) {
@@ -1515,6 +1546,11 @@ export class Game {
       return;
     }
     this.hooks.fx(this, { type: 'draw', playerId: p.id });
+    this.takeDrawn(p, card, from);
+  }
+
+  /** Người chơi nhận lá vừa rút: lá thường vào tay và hết lượt, Mèo Nổ thì Gỡ Bom hoặc nổ */
+  private takeDrawn(p: Player, card: Card, from: 'top' | 'bottom' = 'top') {
     if (card.type !== 'exploding') {
       p.hand.push(card);
       this.addLog(from === 'bottom' ? `${p.name} rút 1 lá dưới đáy chồng bài.` : `${p.name} rút 1 lá.`);
@@ -1542,8 +1578,70 @@ export class Game {
     this.deck.splice(pos, 0, w.card);
     this.waiting = undefined;
     this.hooks.fx(this, { type: 'insert', playerId: w.playerId });
-    this.addLog(`${this.player(w.playerId)?.name} đã lén nhét Mèo Nổ lại vào chồng bài.`);
+    this.addLog(
+      w.bury
+        ? `${this.player(w.playerId)?.name} đã bí mật chôn lá vừa rút vào lại chồng bài.`
+        : `${this.player(w.playerId)?.name} đã lén nhét Mèo Nổ lại vào chồng bài.`,
+    );
     this.endOneTurn();
+  }
+
+  /** Đào Sâu: keep = giữ lá đã xem; ngược lại úp lá đó lại lên trên và bắt buộc giữ lá kế tiếp */
+  private doDig(keep: boolean) {
+    const w = this.waiting as Extract<Waiting, { kind: 'dig_choice' }>;
+    this.waiting = undefined;
+    const p = this.player(w.playerId)!;
+    const next = keep ? undefined : this.deck.shift();
+    if (!next) {
+      this.addLog(`⛏️ ${p.name} giữ lá vừa rút.`);
+      this.takeDrawn(p, w.card);
+      return;
+    }
+    this.deck.unshift(w.card);
+    this.hooks.fx(this, { type: 'draw', playerId: p.id });
+    this.addLog(`⛏️ ${p.name} úp lá vừa rút lại lên trên chồng bài và rút lá kế tiếp.`);
+    this.takeDrawn(p, next);
+  }
+
+  /** Thu Gom Rác / Trộm Mộ: bắt đầu chờ từng người tự chọn 1 lá */
+  private startReturnCards(actor: Player, source: 'garbage' | 'grave', who: Player[]) {
+    if (!who.length) {
+      this.addLog(source === 'grave' ? '🪦 Không người chơi đã chết nào còn bài trên tay.' : '♻️ Không ai còn bài trên tay để trả.');
+      return;
+    }
+    this.waiting = {
+      kind: 'return_card',
+      playerId: actor.id,
+      source,
+      pendingIds: who.map((pl) => pl.id),
+      deadline: Date.now() + this.roomRules.promptSeconds * 1000,
+    };
+    this.addLog(
+      source === 'grave'
+        ? `🪦 ${actor.name} đánh Trộm Mộ: ${who.map((pl) => pl.name).join(', ')} phải chọn 1 lá xáo vào chồng rút.`
+        : `♻️ ${actor.name} đánh Thu Gom Rác: mọi người chọn 1 lá để xáo vào chồng rút.`,
+    );
+    // Người đã rời bàn không chọn được: hệ thống chọn ngẫu nhiên ngay
+    for (const pl of who) if (pl.left) this.returnOne(pl.id);
+  }
+
+  /** Một người trả 1 lá (không truyền cardId = chọn ngẫu nhiên) */
+  private returnOne(playerId: string, cardId?: string) {
+    const w = this.waiting;
+    if (w?.kind !== 'return_card' || !w.pendingIds.includes(playerId)) return;
+    const pl = this.player(playerId)!;
+    const card = cardId ? pl.hand.find((c) => c.id === cardId) : pl.hand[randomInt(pl.hand.length)];
+    if (card) {
+      pl.hand = pl.hand.filter((c) => c.id !== card.id);
+      this.deck.push(card);
+    }
+    w.pendingIds = w.pendingIds.filter((id) => id !== playerId);
+    if (w.pendingIds.length) return;
+    shuffle(this.deck);
+    this.waiting = undefined;
+    this.extendTurnDeadline();
+    this.hooks.fx(this, { type: 'shuffle', playerId: w.playerId, style: 'overhand' });
+    this.addLog(w.source === 'grave' ? '🪦 Các lá đã được xáo vào chồng rút.' : '♻️ Mọi người đã trả bài, chồng rút được xáo đều!');
   }
 
   private doGiveFavor(card: Card) {
@@ -1644,7 +1742,18 @@ export class Game {
   /** Xử lý nốt việc người này đang bị chờ (khi họ rời phòng giữa ván) */
   private finishWaitingFor(id: string) {
     const w = this.waiting;
+    // Thu Gom Rác / Trộm Mộ: người rời bàn được chọn ngẫu nhiên; người đánh rời bàn thì những người khác vẫn trả bài
+    if (w?.kind === 'return_card') {
+      this.returnOne(id);
+      return;
+    }
     if (w?.playerId !== id) return;
+    if (w.kind === 'dig_choice') {
+      // rời bàn khi đang Đào Sâu: úp lá vừa xem lại lên trên chồng bài
+      this.deck.unshift(w.card);
+      this.waiting = undefined;
+      return;
+    }
     if (w.kind === 'defuse_place') this.doPlaceBomb(randomInt(this.deck.length + 1));
     else if (w.kind === 'alter_future') this.doAlterFuture();
     else {
@@ -1655,8 +1764,8 @@ export class Game {
 
   private eliminate(p: Player) {
     const wasCurrent = this.current()?.id === p.id;
-    if (this.gameMode === 'exploding_kittens') this.discard.push(...p.hand);
-    p.hand = [];
+    // Mèo Nổ: người chết vẫn giữ bài trên tay (lá Trộm Mộ: "all dead players with cards…")
+    if (this.gameMode !== 'exploding_kittens') p.hand = [];
     p.alive = false;
     if (this.gameMode === 'blackjack_21') {
       if (p.id === this.bjDealerId) {
@@ -1713,7 +1822,7 @@ export class Game {
     }
     const alive = this.players.filter((x) => x.alive);
     if (alive.length <= 1) {
-      if (this.waiting?.kind === 'defuse_place') this.deck.unshift(this.waiting.card);
+      if (this.waiting?.kind === 'defuse_place' || this.waiting?.kind === 'dig_choice') this.deck.unshift(this.waiting.card);
       this.phase = 'ended';
       this.winnerId = alive[0]?.id;
       this.winnerIds = alive[0] ? [alive[0].id] : [];
@@ -1805,15 +1914,13 @@ export class Game {
       case 'triple':
         return `${p.name} đánh bộ ba, đòi ${target!.name} đưa ${CARD_INFO[req.namedType!].name}.`;
       case 'five':
-        return `${p.name} đánh 5 lá khác loại, muốn lấy ${CARD_INFO[req.discardType!].name} từ chồng bài bỏ.`;
+        return `${p.name} đánh 5 lá khác nhau, muốn lấy ${CARD_INFO[req.discardType!].name} từ chồng bài bỏ.`;
       case 'favor':
         return `${p.name} đánh Xin Bài vào ${target!.name}.`;
       case 'targeted_attack':
         return `${p.name} đánh Tấn Công Chỉ Định vào ${target!.name}.`;
       case 'mark':
         return `${p.name} đánh Cướp Nhắm vào ${target!.name}.`;
-      case 'grave_robber':
-        return `${p.name} đánh Trộm Mộ, muốn lấy ${CARD_INFO[req.discardType!].name} từ chồng bài bỏ.`;
       default:
         return `${p.name} đánh ${CARD_INFO[kind as CardType].name}.`;
     }

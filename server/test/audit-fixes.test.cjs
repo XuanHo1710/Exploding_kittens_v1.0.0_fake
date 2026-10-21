@@ -380,56 +380,106 @@ test('người bị cướp rời bàn khi người cướp đang chọn lá úp
   assert.ok(game.turnDeadline > Date.now() + 5_000);
 });
 
-test('Chôn Bài: xem riêng lá trên cùng, chôn vào giữa chồng (không nổ) rồi hết lượt', (t) => {
-  for (let i = 0; i < 20; i++) {
-    const { game, notices } = kittens(t, { [A]: ['bury'] }, ['exploding', 'cat_taco', 'cat_melon', 'skip']);
-    game.play(A, { cardIds: [`${A}-bury-0`] });
-    resolve(game);
-    assert.equal(game.deck.length, 4);
-    assert.notEqual(game.deck[0].type, 'exploding', 'lá bị chôn không nằm lại trên cùng');
-    assert.ok(game.player(A).alive);
-    assert.equal(game.current().id, B);
-    const seen = notices.find((n) => n.id === A);
-    assert.deepEqual(seen.cards, ['exploding']);
-    assert.ok(!notices.some((n) => n.id !== A), 'chỉ người đánh mới thấy lá bị chôn');
-  }
+test('Chôn Bài: rút 1 lá, tự chọn chỗ nhét lại như Gỡ Bom (không nổ) rồi hết lượt', (t) => {
+  const { game, notices } = kittens(t, { [A]: ['bury'] }, ['exploding', 'cat_potato', 'cat_melon', 'skip']);
+  game.play(A, { cardIds: [`${A}-bury-0`] });
+  resolve(game);
+  assert.equal(game.waiting?.kind, 'defuse_place');
+  assert.equal(game.waiting.bury, true);
+  assert.equal(game.viewFor(B).waiting.bury, true);
+  assert.deepEqual(notices.find((n) => n.id === A).cards, ['exploding']);
+  assert.ok(!notices.some((n) => n.id !== A), 'chỉ người đánh mới thấy lá vừa rút');
+  game.placeBomb(A, 2);
+  assert.equal(game.deck.length, 4);
+  assert.equal(game.deck[2].type, 'exploding');
+  assert.ok(game.player(A).alive);
+  assert.equal(game.player(A).hand.length, 0, 'lá chôn không vào tay, Gỡ Bom không bị dùng');
+  assert.equal(game.current().id, B);
 });
 
-test('Đào Sâu: dòng nhật ký giống nhau dù có né lá trên cùng hay không', (t) => {
-  const lines = [];
-  for (const deck of [['exploding', 'cat_taco', 'skip'], ['cat_taco', 'skip', 'shuffle']]) {
-    const { game } = kittens(t, { [A]: ['dig_deeper', 'defuse'] }, deck);
+test('Đào Sâu: xem lá vừa rút, giữ lại hoặc úp lại lên trên và bắt buộc giữ lá kế tiếp', (t) => {
+  {
+    const { game } = kittens(t, { [A]: ['dig_deeper'] }, ['cat_potato', 'skip', 'shuffle']);
     game.play(A, { cardIds: [`${A}-dig_deeper-0`] });
     resolve(game);
-    lines.push(game.log.find((l) => l.includes('Đào Sâu rút')));
+    assert.equal(game.waiting?.kind, 'dig_choice');
+    assert.equal(game.viewFor(A).waiting.card.type, 'cat_potato');
+    assert.equal(game.viewFor(B).waiting.card, undefined, 'người khác không thấy lá đang xem');
+    game.digChoice(A, true);
+    assert.deepEqual(handOf(game, A).map((c) => c.type), ['cat_potato']);
+    assert.deepEqual(game.deck.map((c) => c.type), ['skip', 'shuffle']);
+    assert.equal(game.current().id, B);
   }
-  assert.equal(lines[0], lines[1]);
+  {
+    const { game } = kittens(t, { [A]: ['dig_deeper', 'defuse'] }, ['exploding', 'skip', 'shuffle']);
+    game.play(A, { cardIds: [`${A}-dig_deeper-0`] });
+    resolve(game);
+    game.digChoice(A, false);
+    assert.deepEqual(handOf(game, A).map((c) => c.type).sort(), ['defuse', 'skip']);
+    assert.deepEqual(game.deck.map((c) => c.type), ['exploding', 'shuffle'], 'lá đầu được úp lại lên trên');
+    assert.equal(game.current().id, B);
+  }
+  {
+    // hết giờ chưa chọn: giữ lá đã rút
+    const { game } = kittens(t, { [A]: ['dig_deeper', 'defuse'] }, ['exploding', 'skip']);
+    game.play(A, { cardIds: [`${A}-dig_deeper-0`] });
+    resolve(game);
+    game.waiting.deadline = 0;
+    game.onTimer();
+    assert.equal(game.waiting?.kind, 'defuse_place', 'giữ Mèo Nổ thì phải Gỡ Bom');
+  }
 });
 
-test('Hé Lộ Tương Lai: được sắp xếp lại, người kế tiếp thấy đúng thứ tự mới; sai số lá thì báo lỗi', (t) => {
-  const { game, notices } = kittens(t, { [A]: ['share_future'] }, ['exploding', 'cat_taco', 'skip', 'shuffle']);
-  game.play(A, { cardIds: [`${A}-share_future-0`] });
-  resolve(game);
-  assert.equal(game.waiting?.kind, 'alter_future');
-  const ids = game.waiting.cards.map((c) => c.id);
-  assert.throws(() => game.alterFuture(A, ids.slice(1)), GameError);
-  game.alterFuture(A, [...ids].reverse());
-  assert.equal(game.waiting, undefined);
-  assert.equal(game.deck[0].type, 'skip');
-  const toB = notices.find((n) => n.id === B);
-  assert.deepEqual(toB.cards, ['skip', 'cat_taco', 'exploding']);
-});
-
-test('Nhân Bản đánh lẻ: sao chép lá chức năng vừa có hiệu lực, chưa có thì báo lỗi', (t) => {
-  const { game } = kittens(t, { [A]: ['clone', 'skip'], [B]: ['clone'] }, ['cat_taco', 'cat_melon', 'shuffle']);
-  assert.throws(() => game.play(A, { cardIds: [`${A}-clone-0`] }), /Nhân Bản/);
+test('Nhân Bản: trở thành lá trên đỉnh chồng bài bỏ; không phải mèo đại diện', (t) => {
+  const { game } = kittens(t, { [A]: ['clone', 'skip'], [B]: ['clone'], [C]: ['clone', 'cat_potato'] }, ['cat_melon', 'cat_beard', 'shuffle']);
+  assert.throws(() => game.play(A, { cardIds: [`${A}-clone-0`] }), /Nhân Bản/, 'chồng bỏ trống');
   game.play(A, { cardIds: [`${A}-skip-1`] });
   resolve(game);
-  assert.equal(game.current().id, B);
   game.play(B, { cardIds: [`${B}-clone-0`] });
+  assert.equal(game.pending.kind, 'skip', 'lá bên dưới là Bỏ Lượt');
+  resolve(game);
+  assert.equal(game.current().id, C);
+  // Nhân Bản chồng lên Nhân Bản (đã thành Bỏ Lượt) vẫn là Bỏ Lượt
+  game.play(C, { cardIds: [`${C}-clone-0`] });
   assert.equal(game.pending.kind, 'skip');
   resolve(game);
-  assert.equal(game.current().id, C, 'Nhân Bản mang hiệu ứng Bỏ Lượt');
+  // ghép Nhân Bản với mèo thường không thành đôi
+  const { detectPlayKind, DEFAULT_ROOM_RULES } = require('../dist/shared/src/index.js');
+  assert.equal(detectPlayKind(['cat_potato', 'clone'], DEFAULT_ROOM_RULES), null);
+  assert.equal(detectPlayKind(['cat_potato', 'feral_cat'], DEFAULT_ROOM_RULES), 'pair');
+});
+
+test('Thu Gom Rác: mọi người (kể cả người đánh) tự chọn 1 lá xáo vào chồng rút', (t) => {
+  const { game } = kittens(t, { [A]: ['garbage_collection', 'skip'], [B]: ['nope', 'favor'], [C]: ['defuse'] }, ['cat_melon']);
+  game.play(A, { cardIds: [`${A}-garbage_collection-0`] });
+  resolve(game);
+  assert.equal(game.waiting?.kind, 'return_card');
+  assert.deepEqual([...game.waiting.pendingIds].sort(), [A, B, C].sort());
+  game.returnCard(B, `${B}-favor-1`);
+  assert.throws(() => game.returnCard(B, `${B}-nope-0`), GameError, 'mỗi người chỉ trả 1 lá');
+  game.returnCard(A, `${A}-skip-1`);
+  game.waiting.deadline = 0;
+  game.onTimer(); // C hết giờ: chọn ngẫu nhiên
+  assert.equal(game.waiting, undefined);
+  assert.deepEqual(handOf(game, B).map((c) => c.type), ['nope']);
+  assert.equal(handOf(game, C).length, 0);
+  assert.deepEqual(game.deck.map((c) => c.type).sort(), ['cat_melon', 'defuse', 'favor', 'skip']);
+  assert.equal(game.current().id, A, 'không kết thúc lượt');
+});
+
+test('Trộm Mộ: người chơi đã chết còn bài phải chọn 1 lá xáo vào chồng rút', (t) => {
+  const { game } = kittens(t, { [A]: ['grave_robber', 'grave_robber'], [B]: ['nope', 'favor'], [C]: ['skip', 'shuffle'] }, ['cat_melon', 'cat_beard']);
+  game.removePlayer(C); // C rời bàn = chết, vẫn giữ bài trên tay
+  assert.equal(game.player(C).alive, false);
+  assert.equal(handOf(game, C).length, 2);
+  game.play(A, { cardIds: [`${A}-grave_robber-0`] });
+  resolve(game);
+  // C đã rời bàn nên hệ thống chọn ngẫu nhiên ngay
+  assert.equal(game.waiting, undefined);
+  assert.equal(handOf(game, C).length, 1);
+  assert.equal(game.deck.length, 3);
+  assert.deepEqual(handOf(game, B).map((c) => c.type), ['nope', 'favor'], 'người còn sống không bị ảnh hưởng');
+  assert.deepEqual(handOf(game, A).map((c) => c.type), ['grave_robber'], 'không lấy bài từ chồng bỏ');
 });
 
 test('người bị Xin Bài rời bàn trước khi hết giờ Nope → hành động không còn tác dụng', (t) => {
@@ -463,4 +513,31 @@ test('Xì Dách: phòng 10 người chia bài được, người thứ 11 không
   assert.equal(game.phase === 'playing' || game.phase === 'ended', true);
   assert.equal(game.bjDeck.length, 52 - 20);
   for (const id of ids) assert.equal(game.bjHands.get(id).length, 2);
+});
+
+test('Sửa Tương Lai: xem 3 lá trên cùng, gửi thứ tự mới thì chồng bài đổi đúng thứ tự đó', (t) => {
+  const { game } = kittens(t, { [A]: ['alter_future', 'skip'] }, ['cat_taco', 'cat_melon', 'shuffle', 'defuse']);
+  game.play(A, { cardIds: [`${A}-alter_future-0`] });
+  resolve(game);
+  assert.equal(game.waiting?.kind, 'alter_future');
+  const w = game.viewFor(A).waiting;
+  assert.deepEqual(w.cards.map((c) => c.id), ['deck-cat_taco-0', 'deck-cat_melon-1', 'deck-shuffle-2']);
+  assert.equal(game.viewFor(B).waiting.cards, undefined, 'người khác không thấy bài');
+  game.alterFuture(A, ['deck-shuffle-2', 'deck-cat_taco-0', 'deck-cat_melon-1']);
+  assert.equal(game.waiting, undefined);
+  assert.deepEqual(game.deck.map((c) => c.id), ['deck-shuffle-2', 'deck-cat_taco-0', 'deck-cat_melon-1', 'deck-defuse-3']);
+  assert.equal(game.current().id, A, 'vẫn là lượt người đánh');
+});
+
+test('5 lá khác nhau: lá nào cũng được (kể cả Gỡ Bom, Nope), lấy được bất kỳ lá trong chồng bỏ kể cả lá vừa đánh', (t) => {
+  const { game } = kittens(t, { [A]: ['defuse', 'skip', 'nope', 'cat_potato', 'feral_cat'] }, ['cat_taco', 'cat_melon']);
+  assert.equal(game.discard.length, 0);
+  game.play(A, { cardIds: handOf(game, A).map((c) => c.id), discardType: 'defuse' });
+  resolve(game);
+  assert.deepEqual(handOf(game, A).map((c) => c.type), ['defuse']);
+  assert.equal(game.discard.length, 4);
+  assert.throws(() => {
+    handOf(game, A).push({ id: 'x1', type: 'attack' }, { id: 'x2', type: 'favor' }, { id: 'x3', type: 'shuffle' }, { id: 'x4', type: 'see_future' });
+    game.play(A, { cardIds: ['x1', 'x2', 'x3', 'x4', `${A}-defuse-0`], discardType: 'reverse' });
+  }, GameError, 'không có lá đó trong chồng bỏ');
 });

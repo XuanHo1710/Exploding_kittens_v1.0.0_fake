@@ -45,6 +45,9 @@ import {
   SINGLE_ACTION_CARDS,
   WILDCARD_CAT_TYPES,
   canMatchComboCards,
+  cloneCopyKind,
+  canComboWith,
+  comboGroupFor,
   detectPlayKind,
   QUICK_EMOTES,
   THROWABLES,
@@ -250,10 +253,10 @@ const KIND_LABEL: Record<ActionKind, string> = {
   alter_future: 'Sửa Tương Lai',
   share_future: 'Chia Sẻ Tương Lai',
   dig_deeper: 'Đào Sâu',
-  clone: 'Sao Chép',
+  clone: 'Nhân Bản',
   pair: 'Đôi mèo',
   triple: 'Bộ ba mèo',
-  five: '5 lá khác loại',
+  five: '5 lá khác nhau',
 };
 
 function useNow() {
@@ -577,12 +580,14 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   const [selected, setSelected] = useState<string[]>([]);
   const [targetId, setTargetId] = useState('');
   const [wizardOpen, setWizardOpen] = useState(false);
-  /** Chế độ chọn nhiều lá (combo 5 lá khác loại); mặc định bấm lá là đánh luôn như UNO */
+  /** Chế độ chọn nhiều lá (combo 5 lá khác nhau); mặc định bấm lá là đánh luôn như UNO */
   const [comboMode, setComboMode] = useState(false);
   const playZoneRef = useRef<HTMLDivElement>(null);
   const [giveId, setGiveId] = useState<string | null>(null);
   /** Lá úp đang chọn khi cướp bài (vị trí trong hàng lá úp) */
   const [stealIdx, setStealIdx] = useState<number | null>(null);
+  /** Thu Gom Rác / Trộm Mộ: lá đang chọn để xáo vào chồng rút */
+  const [returnId, setReturnId] = useState<string | null>(null);
   const [bombPos, setBombPos] = useState(0);
   const [shuffling, setShuffling] = useState<string | null>(null);
   const [transferBanner, setTransferBanner] = useState<string | null>(null);
@@ -627,6 +632,8 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   const { pending, waiting, lastPlay } = view;
   const giving = waiting?.kind === 'favor_give' && waiting.playerId === meId;
   const placing = waiting?.kind === 'defuse_place' && waiting.playerId === meId;
+  const digging = waiting?.kind === 'dig_choice' && waiting.playerId === meId;
+  const returning = waiting?.kind === 'return_card' && waiting.pendingIds.includes(meId);
   const altering = waiting?.kind === 'alter_future' && waiting.playerId === meId && !!waiting.cards?.length;
   const stealing = waiting?.kind === 'steal_pick' && waiting.playerId === meId;
   const canDraw = alive && myTurn && !pending && !waiting && view.phase === 'playing';
@@ -704,51 +711,36 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   }, [view.hand]);
   const sel = selected.filter((id) => handIds.has(id));
   const selCards = view.hand.filter((c) => sel.includes(c.id));
-  // Nhân Bản đánh lẻ mang hiệu ứng của lá chức năng vừa có hiệu lực (server kiểm tra lại)
-  const cloneKind: ActionKind = view.lastPlay?.result === 'done' ? view.lastPlay.kind : 'clone';
+  // Nhân Bản trở thành lá nằm ngay bên dưới nó: lá trên đỉnh chồng bài bỏ (server kiểm tra lại)
+  const cloneKind: ActionKind =
+    cloneCopyKind(view.discardTop ? { id: view.discardTopId, type: view.discardTop } : undefined, view.lastPlay) ?? 'clone';
   const rawKind = detectPlayKind(selCards.map((c) => c.type), rules);
   const kind = rawKind === 'clone' ? cloneKind : rawKind;
   const needsTarget = kind === 'favor' || kind === 'targeted_attack' || kind === 'mark' || kind === 'pair' || kind === 'triple';
-  const needsDiscard = kind === 'five' || kind === 'grave_robber';
+  const needsDiscard = kind === 'five';
   const aliveOpponents = view.players.filter((p) => p.alive && p.id !== meId);
   const handTargets = aliveOpponents.filter((p) => p.handCount > 0);
   const targets = kind === 'targeted_attack' ? aliveOpponents : handTargets;
   const needsWizard = needsTarget || needsDiscard;
-  const matchingComboIds = (t: CardType) => {
-    const isWild = WILDCARD_CAT_TYPES.includes(t);
-    if (isWild) {
-      const wildIds = view.hand.filter((c) => WILDCARD_CAT_TYPES.includes(c.type)).map((c) => c.id);
-      const regularCats = view.hand.filter((c) => CARD_INFO[c.type].isCat && !WILDCARD_CAT_TYPES.includes(c.type));
-      let bestIds = wildIds;
-      for (const rc of regularCats) {
-        const group = [...view.hand.filter((c) => c.type === rc.type).map((c) => c.id), ...wildIds];
-        if (group.length > bestIds.length) bestIds = group;
-      }
-      return [...new Set(bestIds)];
-    }
-    if (CARD_INFO[t].isCat) {
-      return view.hand.filter((c) => c.type === t || WILDCARD_CAT_TYPES.includes(c.type)).map((c) => c.id);
-    }
-    return view.hand.filter((c) => c.type === t).map((c) => c.id);
-  };
+  const matchingComboIds = (t: CardType) => comboGroupFor(view.hand, t, rules).map((c) => c.id);
   const myActionTime = alive && myTurn && !pending && !waiting && view.phase === 'playing';
   const combosEnabled = rules.allowPair || rules.allowTriple || rules.allowFive;
   const comboHint = [
     rules.allowPair ? `2 ${rules.comboScope === 'cats' ? 'lá mèo' : 'lá'} cùng loại` : '',
     rules.allowTriple ? `3 ${rules.comboScope === 'cats' ? 'lá mèo' : 'lá'} cùng loại` : '',
-    rules.allowFive ? '5 lá khác loại' : '',
+    rules.allowFive ? '5 lá khác tên nhau' : '',
   ].filter(Boolean).join(' / ');
   const canNopePending =
     !!pending &&
     (!pending.nopeCount || rules.nopeChain) &&
     (pending.nopeCount % 2 === 0 ? pending.actorId !== meId : lastPlay?.nopers.at(-1) !== meId);
-  const canComboType = (t: CardType) => {
-    const matchCount = matchingComboIds(t).length;
-    return (
-      (rules.comboScope === 'cats' ? CARD_INFO[t].isCat : t !== 'exploding') &&
-      handTargets.length > 0 &&
-      ((rules.allowPair && matchCount >= 2) || (rules.allowTriple && matchCount >= 3))
-    );
+  /** Đôi/ba cần có người còn bài để lấy, và đủ lá cùng loại (luật chung với server) */
+  const canComboType = (t: CardType) => handTargets.length > 0 && canComboWith(view.hand, t, rules);
+  /** Lá chức năng đánh lẻ có đủ điều kiện (có người để nhắm, có lá trong chồng bỏ…) như server kiểm tra */
+  const singleUsable = (k: ActionKind) => {
+    if (k === 'favor' || k === 'mark') return handTargets.length > 0;
+    if (k === 'targeted_attack') return aliveOpponents.length > 0;
+    return true;
   };
   /** Lá sáng = bấm là đánh được ngay */
   const isPlayable = (c: Card) => {
@@ -756,16 +748,17 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
     if (pending) return c.type === 'nope' && canNopePending;
     if (!myActionTime) return false;
     if (SINGLE.includes(c.type)) {
-      if (c.type === 'favor' || c.type === 'mark') return handTargets.length > 0;
-      if (c.type === 'targeted_attack') return aliveOpponents.length > 0;
-      if (c.type === 'grave_robber') return view.discardTypes.length > 0;
-      if (c.type === 'clone') return cloneKind !== 'clone' || canComboType(c.type);
-      return true;
+      // Nhân Bản: sáng khi lá trên đỉnh chồng bỏ là lá chức năng dùng được lúc này
+      if (c.type === 'clone') return (cloneKind !== 'clone' && singleUsable(cloneKind)) || canComboType(c.type);
+      return singleUsable(c.type as ActionKind);
     }
     return canComboType(c.type);
   };
   const nopeCard = canNopePending ? view.hand.find((c) => c.type === 'nope') : undefined;
-  const canPlay = myActionTime && !!kind && (!needsTarget || targets.length > 0) && (!needsDiscard || view.discardTypes.length > 0);
+  const canPlay = myActionTime && !!kind && (!needsTarget || targets.length > 0);
+  /** Combo 5 lá khác nhau: lục chồng bài bỏ (gồm cả 5 lá vừa đánh) */
+  const fiveDiscardTypes = [...new Set([...view.discardTypes, ...selCards.map((c) => c.type)])].filter((t) => t !== 'exploding');
+  const canFive = rules.allowFive && new Set(view.hand.filter((c) => c.type !== 'exploding').map((c) => c.type)).size >= 5;
 
   useEffect(() => {
     if (myActionTime) return;
@@ -900,7 +893,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         emit('game:play', { cardIds: [card.id] });
         return;
       }
-      if (CARD_INFO[card.type].isCat || !SINGLE.includes(card.type) || (card.type === 'clone' && sel.length > 0)) {
+      if (CARD_INFO[card.type].isCat || !SINGLE.includes(card.type)) {
         // bài ghép cặp (mèo, mèo đa năng hoặc bài khác khi comboScope='any'): bấm để nhấc lên / hạ xuống
         const on = sel.includes(card.id);
         sfx(on ? 'unselect' : 'select');
@@ -919,7 +912,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         return;
       }
       setSelected([card.id]);
-      if (effective === 'favor' || effective === 'targeted_attack' || effective === 'mark' || effective === 'grave_robber') {
+      if (effective === 'favor' || effective === 'targeted_attack' || effective === 'mark') {
         setWizardOpen(true);
         return;
       }
@@ -997,7 +990,17 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
     status =
       waiting.kind === 'defuse_place' ? (
         <span className="status-row">
-          <ShieldCheck size={16} className="inline-icon" /> {nameOf(waiting.playerId)} đang lén nhét Mèo Nổ lại…
+          <ShieldCheck size={16} className="inline-icon" />{' '}
+          {waiting.bury ? `${nameOf(waiting.playerId)} đang bí mật chôn lá vừa rút vào chồng bài…` : `${nameOf(waiting.playerId)} đang lén nhét Mèo Nổ lại…`}
+        </span>
+      ) : waiting.kind === 'dig_choice' ? (
+        <span className="status-row">
+          <Layers size={16} className="inline-icon" /> {nameOf(waiting.playerId)} đang Đào Sâu: xem lá vừa rút…
+        </span>
+      ) : waiting.kind === 'return_card' ? (
+        <span className="status-row">
+          <Layers size={16} className="inline-icon" />{' '}
+          {returning ? 'Chọn 1 lá trên tay để xáo vào chồng rút' : `Đợi ${waiting.pendingIds.map(nameOf).join(', ')} chọn 1 lá xáo vào chồng rút…`}
         </span>
       ) : waiting.kind === 'alter_future' ? (
         <span className="status-row">
@@ -1434,6 +1437,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
             {!comboMode && myActionTime && !sel.length && (
               <span className="hint-chip">
                 <MousePointerClick size={14} className="inline-icon" /> Bấm lá sáng để đánh · bấm chồng bài để rút
+                {canFive && <> · có 5 lá khác nhau: bấm “Chọn nhiều lá” để đánh combo 5</>}
               </span>
             )}
             {!comboMode && pending && alive && nopeCard && (
@@ -1599,9 +1603,9 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
       )}
 
       {placing && waiting?.kind === 'defuse_place' && (
-        <Modal title={<span className="modal-title-icon"><ShieldCheck size={19} /> Gỡ bom thành công!</span>} width={480}>
+        <Modal title={<span className="modal-title-icon"><ShieldCheck size={19} /> {waiting.bury ? 'Chôn Bài' : 'Gỡ bom thành công!'}</span>} width={480}>
           <p>
-            Bí mật nhét Mèo Nổ lại vào chồng bài. Còn <b>{secs(waiting.deadline)}s</b>, hết giờ sẽ nhét ngẫu nhiên.
+            {waiting.bury ? 'Bí mật nhét lá bạn vừa rút lại vào chồng bài' : 'Bí mật nhét Mèo Nổ lại vào chồng bài'}. Còn <b>{secs(waiting.deadline)}s</b>, hết giờ sẽ nhét ngẫu nhiên.
           </p>
           <div className="bomb-track">
             {Array.from({ length: Math.min(waiting.deckCount, 24) + 1 }, (_, i) => {
@@ -1632,7 +1636,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
           <p className="center bomb-pos">
             {bombPos === 0 ? (
               <>
-                <ArrowUp size={14} className="inline-icon" /> Trên cùng: người kế tiếp rút trúng ngay!
+                <ArrowUp size={14} className="inline-icon" /> Trên cùng: người kế tiếp rút trúng lá này ngay!
               </>
             ) : bombPos === waiting.deckCount ? (
               <>
@@ -1664,7 +1668,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
           kind={kind}
           cards={selCards}
           targets={targets}
-          discardTypes={view.discardTypes}
+          discardTypes={fiveDiscardTypes}
           initialTarget={targetId}
           rules={rules}
           comboSwitch={
@@ -1737,6 +1741,59 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
               }}
             >
               <Crosshair size={16} /> Cướp lá này
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {digging && waiting?.kind === 'dig_choice' && (
+        <Modal title={<span className="modal-title-icon"><Layers size={19} /> Đào Sâu</span>} width={460}>
+          <p>
+            Bạn vừa rút lá này. Giữ nó, hoặc úp nó lại lên trên chồng bài và rút lá kế tiếp (<b>bắt buộc giữ</b> lá kế tiếp). Còn{' '}
+            <b>{secs(waiting.deadline)}s</b>, hết giờ sẽ giữ lá này.
+          </p>
+          {waiting.card && (
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0' }}>
+              <CardView type={waiting.card.type} seed={waiting.card.id} size="lg" preview={false} />
+            </div>
+          )}
+          <div className="modal-actions">
+            <button className="secondary big" disabled={!waiting.canDig} onClick={() => emit('game:dig', { keep: false })}>
+              Úp lại &amp; rút lá kế tiếp
+            </button>
+            <button className="primary big" onClick={() => emit('game:dig', { keep: true })}>
+              Giữ lá này
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {returning && waiting?.kind === 'return_card' && (
+        <Modal
+          title={<span className="modal-title-icon"><Layers size={19} /> {waiting.source === 'grave' ? 'Trộm Mộ' : 'Thu Gom Rác'}</span>}
+          width={760}
+        >
+          <p>
+            Chọn <b>1 lá</b> trên tay để xáo vào chồng bài rút. Còn <b>{secs(waiting.deadline)}s</b>, hết giờ sẽ chọn ngẫu nhiên.
+          </p>
+          <div className="give-grid">
+            {view.hand.map((c) => (
+              <button key={c.id} className={`wiz-card${returnId === c.id ? ' on' : ''}`} onClick={() => setReturnId(c.id)}>
+                <CardView type={c.type} seed={c.id} size="md" preview={false} />
+                <span>{CARD_INFO[c.type].name}</span>
+              </button>
+            ))}
+          </div>
+          <div className="modal-actions">
+            <button
+              className="primary big"
+              disabled={!returnId || !view.hand.some((c) => c.id === returnId)}
+              onClick={() => {
+                emit('game:return', { cardId: returnId });
+                setReturnId(null);
+              }}
+            >
+              Xáo lá này vào chồng rút
             </button>
           </div>
         </Modal>

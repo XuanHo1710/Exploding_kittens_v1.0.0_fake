@@ -2,10 +2,10 @@
  * Hộp thoại đánh bài cần chọn thêm:
  * - Xin Bài / Đôi mèo / Bộ ba: chọn người
  * - Bộ ba: gọi tên lá muốn đòi
- * - 5 lá khác loại: chọn lá trong chồng bài bỏ
+ * - 5 lá khác nhau: chọn lá trong chồng bài bỏ
  */
 import { useState, type ReactNode } from 'react';
-import { Cat, Check, Crosshair, HandHeart, Layers, Skull, Target } from 'lucide-react';
+import { Cat, Check, Crosshair, HandHeart, Layers, Target } from 'lucide-react';
 import { CARD_INFO, type ActionKind, type Card, type CardType, type DeckCardType, type PublicPlayer, type RoomRules } from '../../../shared/src';
 import { useRoomRules } from '../roomRulesContext';
 import PlayerAvatar from '../art/PlayerAvatar';
@@ -49,13 +49,12 @@ export default function PlayWizard({ kind, cards, targets, discardTypes, initial
   if (kind === 'favor') title = <span className="modal-title-icon"><HandHeart size={19} /> Xin Bài</span>;
   else if (kind === 'targeted_attack') title = <span className="modal-title-icon"><Crosshair size={19} /> Tấn Công Chỉ Định</span>;
   else if (kind === 'mark') title = <span className="modal-title-icon"><Target size={19} /> Cướp Nhắm</span>;
-  else if (kind === 'grave_robber') title = <span className="modal-title-icon"><Skull size={19} /> Trộm Mộ</span>;
   else if (kind === 'pair') title = <span className="modal-title-icon"><Cat size={19} /> Đôi{rules.comboScope === 'cats' ? ' mèo' : ''}</span>;
   else if (kind === 'triple') title = <span className="modal-title-icon"><Cat size={19} /> Bộ ba{rules.comboScope === 'cats' ? ' mèo' : ''}</span>;
-  else if (kind === 'five') title = <span className="modal-title-icon"><Layers size={19} /> 5 lá khác loại</span>;
+  else if (kind === 'five') title = <span className="modal-title-icon"><Layers size={19} /> 5 lá khác nhau</span>;
 
   const needsTarget = kind === 'favor' || kind === 'targeted_attack' || kind === 'mark' || kind === 'pair' || kind === 'triple';
-  const needsDiscard = kind === 'five' || kind === 'grave_robber';
+  const needsDiscard = kind === 'five';
   const [targetId, setTargetId] = useState<string | undefined>(targets.some((t) => t.id === initialTarget) ? initialTarget : undefined);
   const [namedType, setNamedType] = useState<CardType | undefined>();
   const [discardType, setDiscardType] = useState<CardType | undefined>();
@@ -140,6 +139,7 @@ export default function PlayWizard({ kind, cards, targets, discardTypes, initial
           <h3>
             <span className="step-no">1</span> Chọn lá trong chồng bài bỏ
           </h3>
+          <p className="muted small">Được lấy bất kỳ lá nào trong chồng bài bỏ, kể cả lá bạn vừa đánh.</p>
           {discardTypes.length ? (
             <div className="wiz-grid">
               {discardTypes.map((t) => (

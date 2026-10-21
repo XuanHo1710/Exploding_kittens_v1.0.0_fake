@@ -63,7 +63,10 @@ test('card explanations follow customized effects and disabled combos', () => {
   assert.match(describeCard('see_future', rules), /5 lá/);
   assert.match(describeCard('nope', rules), /2 giây/);
   assert.match(describeCard('nope', rules), /Không được Nope lại/);
-  assert.match(describeCard('attack', rules), /đúng 2 lượt/);
+  // Chữ in trên lá Tấn Công: người kế tiếp chơi 2 lượt; cộng dồn chỉ khi phòng bật
+  assert.match(describeCard('attack', rules), /chơi 2 lượt\.$/);
+  assert.doesNotMatch(describeCard('attack', rules), /cộng thêm/);
+  assert.match(describeCard('attack', normalizeRoomRules({ attackMode: 'stack' })), /cộng thêm số lượt bạn đang nợ/);
   assert.match(describeCard('defuse', rules), /ngẫu nhiên/);
   assert.match(describeCard('cat_beard', rules), /tắt các combo/);
 });

@@ -142,7 +142,12 @@ export interface PendingView {
 
 /** Game đang đợi một người làm gì đó */
 export type WaitingView =
-  | { kind: 'defuse_place'; playerId: string; deckCount: number; deadline: number }
+  /** bury = Chôn Bài: nhét lại lá vừa rút (không phải Mèo Nổ do Gỡ Bom) */
+  | { kind: 'defuse_place'; playerId: string; deckCount: number; deadline: number; bury?: boolean }
+  /** Đào Sâu: đã xem lá trên cùng, chọn giữ hay rút lá kế tiếp. card chỉ gửi cho người đang chọn */
+  | { kind: 'dig_choice'; playerId: string; card?: Card; canDig: boolean; deadline: number }
+  /** Thu Gom Rác / Trộm Mộ: những người trong pendingIds phải tự chọn 1 lá xáo vào chồng rút */
+  | { kind: 'return_card'; playerId: string; source: 'garbage' | 'grave'; pendingIds: string[]; deadline: number }
   | { kind: 'favor_give'; playerId: string; toId: string; deadline: number }
   | { kind: 'alter_future'; playerId: string; count: number; cards?: Card[]; deadline: number }
   /** Cướp Nhắm / Đôi: người cướp chọn 1 trong `count` lá úp của đối phương */
@@ -211,7 +216,7 @@ export interface PlayRequest {
   targetId?: string;
   /** Bộ ba: tên lá muốn lấy */
   namedType?: CardType;
-  /** 5 lá khác loại: lá muốn lấy từ chồng bài bỏ */
+  /** 5 lá khác nhau: lá muốn lấy từ chồng bài bỏ */
   discardType?: CardType;
   /** Xáo Bài: kiểu xáo */
   shuffleStyle?: ShuffleStyle;

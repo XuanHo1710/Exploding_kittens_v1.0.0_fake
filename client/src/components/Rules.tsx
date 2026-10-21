@@ -29,7 +29,7 @@ export default function Rules({ rules: suppliedRules, playerCount: suppliedPlaye
     !CARD_INFO[type].isCat && !actionTypes.includes(type),
   );
   const catTypes = (Object.keys(CARD_INFO) as CardType[]).filter((type) => CARD_INFO[type].isCat);
-  const matching = rules.comboScope === 'cats' ? 'lá mèo cùng loại (hoặc ghép với Mèo Hoang / Sao Chép)' : 'lá cùng loại (kể cả lá chức năng và Gỡ Bom)';
+  const matching = rules.comboScope === 'cats' ? 'lá mèo cùng loại (hoặc ghép với Mèo Hoang)' : 'lá cùng loại (kể cả lá chức năng và Gỡ Bom)';
 
   return (
     <RoomRulesContext.Provider value={rules}>
@@ -64,7 +64,7 @@ export default function Rules({ rules: suppliedRules, playerCount: suppliedPlaye
             <ul>
               <li>Tới lượt bạn, lá nào <b>sáng viền vàng</b> là dùng được. Bấm lá chức năng để đánh; lá cần chọn người / bài bỏ sẽ mở hộp thoại.</li>
               {(rules.allowPair || rules.allowTriple) && <li>Combo: chọn đủ {matching}, rồi bấm đánh đôi hoặc bộ ba. Dùng “Chọn nhiều lá” để ghép lá đa năng hoặc lá chức năng khi phòng cho phép.</li>}
-              {rules.allowFive && <li>Combo 5 lá: bấm “Chọn nhiều lá”, chọn 5 lá khác loại rồi bấm “Chọn lá”.</li>}
+              {rules.allowFive && <li>Combo 5 lá: bấm “Chọn nhiều lá”, chọn 5 lá có tên khác nhau rồi bấm “Chọn lá”.</li>}
               <li>Khi có thể chặn, lá Nope trên tay và nút NOPE! giữa bàn sáng lên.</li>
               <li>Rê chuột (hoặc nhấn giữ trên điện thoại) vào lá bất kỳ để xem ảnh gốc phóng to và giải thích chi tiết theo luật phòng.</li>
             </ul>
@@ -111,10 +111,10 @@ export default function Rules({ rules: suppliedRules, playerCount: suppliedPlaye
               {catTypes.map((type, i) => <div key={type}><CardView type={type} seed={i} size="xs" /><span className="muted small"> × {rules.cardCounts[type as DeckCardType]}</span></div>)}
             </div>
             <ul>
-              <li><b>Mèo Hoang &amp; Sao Chép:</b> Có thể thay thế cho bất kỳ lá mèo nào khi ghép Đôi (2 lá) hoặc Bộ ba (3 lá).</li>
+              <li><b>Mèo Hoang:</b> Dùng như bất kỳ lá mèo thường nào khi ghép Đôi (2 lá) hoặc Bộ ba (3 lá).</li>
               <li><b>Đôi:</b> {rules.allowPair ? `2 ${matching}: chọn 1 người, rút ngẫu nhiên 1 lá của họ.` : 'Đã tắt trong phòng này.'}</li>
               <li><b>Bộ ba:</b> {rules.allowTriple ? `3 ${matching}: chọn 1 người và gọi tên lá muốn lấy. Họ có thì phải đưa.` : 'Đã tắt trong phòng này.'}</li>
-              <li><b>5 lá khác loại:</b> {rules.allowFive ? 'Dùng bất kỳ 5 loại khác nhau (trừ Mèo Nổ) để lấy 1 lá trong chồng bài bỏ. Không lấy lại lá vừa dùng cho combo.' : 'Đã tắt trong phòng này.'}</li>
+              <li><b>5 lá khác nhau:</b> {rules.allowFive ? 'Đánh 5 lá có tên khác nhau (lá nào cũng được, trừ Mèo Nổ) để lục chồng bài bỏ và lấy 1 lá bất kỳ về tay.' : 'Đã tắt trong phòng này.'}</li>
             </ul>
           </section>
           <section>

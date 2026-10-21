@@ -44,7 +44,8 @@ export const DEFAULT_ROOM_RULES: RoomRules = Object.freeze({
   allowTriple: true,
   allowFive: true,
   comboScope: 'cats',
-  attackMode: 'stack',
+  // Chữ in trên lá Tấn Công: "buộc người kế tiếp chơi 2 lượt" (không cộng dồn). Cộng dồn là tuỳ chọn của phòng.
+  attackMode: 'replace',
   nopeChain: true,
   futureCount: 3,
   bombPlacement: 'choose',
@@ -171,21 +172,72 @@ export const SINGLE_ACTION_CARDS: readonly CardType[] = [
   'clone',
 ];
 
-export const WILDCARD_CAT_TYPES: readonly CardType[] = ['feral_cat', 'clone'];
 
-/** Kiểm tra một bộ lá bài có ghép cùng loại hợp lệ (hỗ trợ Mèo Hoang & Nhân Bản đại diện) */
+/** Nhân Bản đánh lẻ sao chép được các lá chức năng đánh lẻ (trừ chính Nhân Bản) */
+export const CLONEABLE_KINDS: readonly ActionKind[] = SINGLE_ACTION_CARDS.filter((t) => t !== 'clone') as ActionKind[];
+
+/** Lá đại diện cho mèo thường. Chỉ Mèo Hoang ("Use as any cat card"); Nhân Bản không ghi điều này. */
+export const WILDCARD_CAT_TYPES: readonly CardType[] = ['feral_cat'];
+
+/**
+ * Nhân Bản: "When you play this card, it becomes whatever card is beneath it" — lá trên đỉnh chồng bài bỏ.
+ * Nếu lá bên dưới là một Nhân Bản khác thì nó đã trở thành lá mà Nhân Bản đó sao chép.
+ * Trả về undefined khi lá bên dưới không phải lá chức năng đánh lẻ được.
+ */
+export function cloneCopyKind(
+  top: { id?: string; type: CardType } | undefined,
+  lastPlay?: { kind: ActionKind; cardIds: string[] },
+): ActionKind | undefined {
+  if (!top) return undefined;
+  if (top.type === 'clone') {
+    return lastPlay && top.id && lastPlay.cardIds.includes(top.id) && CLONEABLE_KINDS.includes(lastPlay.kind) ? lastPlay.kind : undefined;
+  }
+  return CLONEABLE_KINDS.includes(top.type as ActionKind) ? (top.type as ActionKind) : undefined;
+}
+
+/** Kiểm tra một bộ lá bài có ghép cùng loại hợp lệ (hỗ trợ Mèo Hoang đại diện) */
 export function canMatchComboCards(types: CardType[], rules: RoomRules): boolean {
   if (types.length < 2 || types.some((t) => t === 'exploding' || !CARD_INFO[t])) return false;
   const allExactSame = types.every((t) => t === types[0]);
   if (allExactSame) {
     return rules.comboScope === 'any' || !!CARD_INFO[types[0]].isCat || WILDCARD_CAT_TYPES.includes(types[0]);
   }
-  // Cho phép ghép Mèo Hoang / Nhân Bản với 1 loại Mèo thường (hoặc loại bất kỳ khi comboScope === 'any')
+  // Cho phép ghép Mèo Hoang với 1 loại Mèo thường (hoặc loại bất kỳ khi comboScope === 'any')
   const nonWild = types.filter((t) => !WILDCARD_CAT_TYPES.includes(t));
   if (nonWild.length === 0) return true;
   const baseType = nonWild[0];
   if (!nonWild.every((t) => t === baseType)) return false;
   return rules.comboScope === 'any' || !!CARD_INFO[baseType].isCat;
+}
+
+/** Loại lá này có được làm "lá chính" của đôi/ba không (phòng chỉ cho mèo thường thì chỉ mèo) */
+function comboBaseAllowed(type: CardType, rules: RoomRules) {
+  return type !== 'exploding' && !WILDCARD_CAT_TYPES.includes(type) && (rules.comboScope === 'any' || !!CARD_INFO[type]?.isCat);
+}
+
+/**
+ * Nhóm lá lớn nhất trên tay ghép được đôi/ba cùng lá loại `type` (gồm cả Mèo Hoang đại diện).
+ * Trả về [] nếu loại này không ghép được. Khớp đúng luật canMatchComboCards ở server.
+ */
+export function comboGroupFor<C extends { id: string; type: CardType }>(hand: readonly C[], type: CardType, rules: RoomRules): C[] {
+  const wilds = hand.filter((c) => WILDCARD_CAT_TYPES.includes(c.type));
+  if (WILDCARD_CAT_TYPES.includes(type)) {
+    let best = wilds;
+    for (const base of new Set(hand.map((c) => c.type))) {
+      if (!comboBaseAllowed(base, rules)) continue;
+      const group = [...hand.filter((c) => c.type === base), ...wilds];
+      if (group.length > best.length) best = group;
+    }
+    return best;
+  }
+  if (!comboBaseAllowed(type, rules)) return [];
+  return [...hand.filter((c) => c.type === type), ...wilds];
+}
+
+/** Lá loại `type` có đang ghép được đôi (hoặc ba nếu phòng tắt đôi) không */
+export function canComboWith(hand: readonly { id: string; type: CardType }[], type: CardType, rules: RoomRules): boolean {
+  const n = comboGroupFor(hand, type, rules).length;
+  return (rules.allowPair && n >= 2) || (rules.allowTriple && n >= 3);
 }
 
 /** Dùng chung cho server và giao diện để không khác luật về combo. */
@@ -201,7 +253,7 @@ export function detectPlayKind(types: CardType[], rules: RoomRules): ActionKind 
 
 export function ruleSummary(rules: RoomRules): string[] {
   const bombRule = rules.bombMode === 'fixed' ? `${rules.fixedBombs} Mèo Nổ cố định` : rules.bombMode === 'players' ? 'Số Mèo Nổ = số người' : 'Số Mèo Nổ = số người − 1';
-  const combos = [rules.allowPair && 'đôi', rules.allowTriple && 'ba', rules.allowFive && '5 lá khác loại'].filter(Boolean).join(', ');
+  const combos = [rules.allowPair && 'đôi', rules.allowTriple && 'ba', rules.allowFive && '5 lá khác nhau'].filter(Boolean).join(', ');
   return [
     `Tối đa ${rules.maxPlayers} người · mỗi người ${rules.handSize} lá thường + ${rules.defusesPerPlayer} Gỡ Bom`,
     `${bombRule} · thêm ${rules.extraDefuses} Gỡ Bom vào chồng rút`,
@@ -215,15 +267,15 @@ export function ruleSummary(rules: RoomRules): string[] {
 
 export function describeCard(type: CardType, rules: RoomRules): string {
   if (type === 'defuse') return `Tự động dùng khi rút Mèo Nổ. Bom được nhét lại ${rules.bombPlacement === 'choose' ? 'ở vị trí bạn chọn' : 'ngẫu nhiên'}.`;
-  if (type === 'attack') return `Kết thúc lượt không rút bài. Người kế tiếp chơi ${rules.attackMode === 'stack' ? '2 lượt cộng toàn bộ lượt tấn công bạn còn nợ' : 'đúng 2 lượt, không cộng lượt đang nợ'}.`;
-  if (type === 'targeted_attack') return `Kết thúc lượt không rút bài. Người bạn chỉ định phải chơi ${rules.attackMode === 'stack' ? '2 lượt cộng toàn bộ lượt tấn công bạn còn nợ' : 'đúng 2 lượt'}.`;
+  if (type === 'attack') return `${CARD_INFO.attack.desc}${rules.attackMode === 'stack' ? ' Luật phòng: cộng thêm số lượt bạn đang nợ.' : ''}`;
+  if (type === 'targeted_attack') return `${CARD_INFO.targeted_attack.desc}${rules.attackMode === 'stack' ? ' Luật phòng: cộng thêm số lượt bạn đang nợ.' : ''}`;
   if (type === 'see_future') return `Bí mật xem ${rules.futureCount} lá trên cùng của chồng bài.`;
-  if (type === 'alter_future') return `Bí mật xem ${rules.futureCount} lá trên cùng của chồng bài và đẩy Mèo Nổ xuống dưới các lá an toàn.`;
-  if (type === 'share_future') return `Xem và sắp xếp lại ${rules.futureCount} lá trên cùng của chồng bài, rồi cho người kế tiếp cùng biết thứ tự mới.`;
   if (type === 'nope') return `Chặn hành động trong ${rules.nopeSeconds} giây, cả ngoài lượt. Không chặn Mèo Nổ/Gỡ Bom. ${rules.nopeChain ? 'Có thể Nope lại Nope.' : 'Không được Nope lại Nope.'}`;
+  if (type === 'alter_future') return `Bí mật xem và sắp xếp lại ${rules.futureCount} lá trên cùng của chồng bài rút.`;
+  if (type === 'share_future') return `Xem và sắp xếp lại ${rules.futureCount} lá trên cùng của chồng bài rút, rồi cho người chơi kế tiếp xem các lá đó.`;
   if (CARD_INFO[type].isCat) {
-    const prefix = type === 'feral_cat' ? 'Mèo Hoang đại diện ghép được với mọi loại mèo. ' : '';
-    const effects = [rules.allowPair && 'Đôi: bốc 1 lá úp của đối thủ', rules.allowTriple && 'Ba: gọi tên lá muốn lấy', rules.allowFive && 'Dùng trong combo 5 lá khác loại'].filter(Boolean);
+    const prefix = type === 'feral_cat' ? 'Dùng như bất kỳ lá mèo thường nào. ' : 'Đánh lẻ không có tác dụng. ';
+    const effects = [rules.allowPair && 'Đôi: cướp ngẫu nhiên 1 lá của người khác', rules.allowTriple && 'Ba: gọi tên lá muốn lấy', rules.allowFive && 'Dùng trong combo 5 lá khác nhau'].filter(Boolean);
     return effects.length ? `${prefix}${effects.join('. ')}.` : 'Mèo thường; phòng này đã tắt các combo nên lá này không có hiệu ứng.';
   }
   return CARD_INFO[type].desc;

@@ -196,7 +196,7 @@ export default function RoomSettings({ initialRules, title = 'Luật & bộ bài
           <div className="rule-toggles">
             <RuleToggle label="Combo 2 lá cùng loại" checked={draft.allowPair} onChange={(value) => change('allowPair', value)} hint="Cướp ngẫu nhiên 1 lá của người được chọn." />
             <RuleToggle label="Combo 3 lá cùng loại" checked={draft.allowTriple} onChange={(value) => change('allowTriple', value)} hint="Gọi tên loại bài muốn lấy; không có thì mất combo." />
-            <RuleToggle label="Combo 5 lá khác loại" checked={draft.allowFive} onChange={(value) => change('allowFive', value)} hint="Lấy 1 lá tự chọn từ chồng bài bỏ trước combo." />
+            <RuleToggle label="Combo 5 lá khác nhau" checked={draft.allowFive} onChange={(value) => change('allowFive', value)} hint="Đánh 5 lá khác tên để lấy 1 lá bất kỳ trong chồng bài bỏ." />
             <RuleToggle label="Cho phép Nope chặn Nope" checked={draft.nopeChain} onChange={(value) => change('nopeChain', value)} hint="Tắt để mỗi hành động chỉ nhận tối đa 1 Nope." />
           </div>
           <div className="rule-fields">

@@ -95,28 +95,28 @@ export function usePreviewTrigger(type: CardType, seed: string | number | undefi
 const HOW: Record<CardType, string> = {
   exploding: 'Không đánh được. Rút trúng là phải dùng Gỡ Bom ngay, không có thì bị loại.',
   defuse: '', // Filled from the room's bomb placement setting below.
-  attack: 'Trong lượt của bạn: bấm lá này để kết thúc lượt ngay mà không cần rút bài, ép người kế tiếp chơi 2 lượt.',
-  targeted_attack: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người bất kỳ trên bàn để ép người đó phải chơi 2 lượt.',
-  personal_attack: 'Trong lượt của bạn: bấm lá này để tự nhận 3 lượt liên tiếp (dùng khi muốn rút nhiều bài an toàn hoặc gánh thay).',
-  skip: 'Trong lượt của bạn: bấm lá này để kết thúc 1 lượt ngay mà không phải rút bài. Hay dùng khi nghi lá trên cùng là bom.',
   super_skip: 'Trong lượt của bạn: bấm lá này để kết thúc TOÀN BỘ số lượt bạn đang phải đi (kể cả khi bị Tấn Công cộng dồn) mà không rút bài.',
-  reverse: 'Trong lượt của bạn: bấm lá này để đảo ngược chiều vòng chơi và kết thúc 1 lượt của bạn mà không cần rút bài.',
-  draw_bottom: 'Trong lượt của bạn: bấm lá này để rút 1 lá dưới ĐÁY chồng bài thay vì lá trên cùng, rồi kết thúc 1 lượt ngay.',
-  catomic_bomb: 'Trong lượt của bạn: bấm lá này để gom TẤT CẢ Mèo Nổ trong chồng rút đặt ngửa lên ĐẦU chồng bài, xáo phần còn lại và kết thúc 1 lượt không cần rút!',
-  swap_top_bottom: 'Trong lượt của bạn: bấm lá này để tráo đổi vị trí lá trên cùng và lá dưới đáy chồng bài (chưa kết thúc lượt, cực hợp khi đi kèm Rút Đáy).',
-  bury: 'Trong lượt của bạn: bấm lá này để bí mật xem lá trên cùng rồi chôn nó vào giữa chồng rút (không kích nổ), kết thúc 1 lượt.',
-  garbage_collection: 'Trong lượt của bạn: bấm lá này để buộc mọi người còn sống bỏ 1 lá trên tay vào lại chồng bài rồi xáo đều.',
-  shuffle: 'Trong lượt của bạn: bấm lá này rồi chọn kiểu xáo bài để đảo ngẫu nhiên vị trí Mèo Nổ trong chồng rút.',
+  attack: 'Trong lượt của bạn: bấm lá này để kết thúc lượt mà không rút bài, buộc người chơi kế tiếp chơi 2 lượt.',
+  targeted_attack: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người chơi. Bạn kết thúc lượt không rút bài, người đó phải chơi 2 lượt và vòng chơi tiếp tục từ họ.',
+  personal_attack: 'Trong lượt của bạn: bấm lá này để chơi 3 lượt liên tiếp.',
+  skip: 'Trong lượt của bạn: bấm lá này để kết thúc lượt mà không rút bài.',
+  reverse: 'Trong lượt của bạn: bấm lá này để đảo ngược chiều vòng chơi và kết thúc lượt mà không rút bài.',
+  draw_bottom: 'Trong lượt của bạn: bấm lá này để kết thúc lượt bằng cách rút lá dưới đáy chồng bài rút.',
+  catomic_bomb: 'Trong lượt của bạn: bấm lá này để lấy hết Mèo Nổ ra, xáo chồng bài rồi úp tất cả Mèo Nổ lên trên cùng. Lượt của bạn kết thúc.',
+  swap_top_bottom: 'Trong lượt của bạn: bấm lá này để đổi chỗ lá trên cùng và lá dưới đáy chồng bài rút.',
+  bury: 'Trong lượt của bạn: bấm lá này để rút 1 lá rồi bí mật nhét nó lại vào chồng bài (như khi Gỡ Bom, không bị nổ). Lượt của bạn kết thúc.',
+  garbage_collection: 'Trong lượt của bạn: bấm lá này, mọi người (kể cả bạn) tự chọn 1 lá trên tay để xáo vào chồng bài rút.',
+  shuffle: 'Trong lượt của bạn: bấm lá này rồi chọn kiểu xáo để xáo chồng bài rút.',
   see_future: '', // Filled from the room's preview count below.
   alter_future: '', // Filled from the room's preview count below.
   share_future: '', // Filled from the room's preview count below.
-  dig_deeper: 'Trong lượt của bạn: bấm lá này để đào sâu né Mèo Nổ nếu lá đầu là bom và rút bài kết thúc 1 lượt.',
+  dig_deeper: 'Trong lượt của bạn: bấm lá này để rút 1 lá và xem; chọn giữ lá đó, hoặc úp nó lại lên trên và rút lá kế tiếp (bắt buộc giữ).',
   favor: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người chơi có bài. Người đó tự chọn 1 lá trên tay đưa cho bạn.',
-  mark: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người chơi rồi tự bốc 1 lá trong bài úp (đã xáo vị trí) của họ về tay bạn.',
-  grave_robber: 'Trong lượt của bạn: bấm lá này rồi chọn 1 lá bài bất kỳ đang nằm trong chồng bài bỏ để lấy về tay.',
+  mark: 'Trong lượt của bạn: bấm lá này rồi chọn 1 người chơi để cướp ngẫu nhiên 1 lá của họ (bạn bốc 1 lá trong bài úp đã xáo vị trí).',
+  grave_robber: 'Trong lượt của bạn: bấm lá này, mọi người chơi đã chết còn bài trên tay phải chọn 1 lá để xáo vào chồng bài rút.',
   nope: '', // Filled from the room's Nope window and chaining setting below.
-  clone: 'Đánh lẻ để sao chép hiệu ứng lá chức năng vừa có hiệu lực; hoặc dùng kèm các lá mèo để ghép thành Đôi (2 lá) / Bộ ba (3 lá) cướp bài đối thủ.',
-  feral_cat: 'Mèo Hoang đa năng: ghép chung với bất kỳ lá mèo nào khác để tạo thành Đôi (2 lá) hoặc Bộ ba (3 lá) cướp bài.',
+  clone: 'Trong lượt của bạn: bấm lá này để nó trở thành lá nằm trên đỉnh chồng bài bỏ (chỉ đánh được khi lá đó là lá chức năng).',
+  feral_cat: 'Dùng như bất kỳ lá mèo thường nào: ghép với mèo khác thành Đôi (hoặc Bộ ba nếu phòng cho phép).',
   cat_potato: '',
   cat_melon: '',
   cat_bladder: '',
@@ -127,14 +127,14 @@ function howToPlay(type: CardType, rules: RoomRules) {
   let text = HOW[type];
   if (type === 'defuse') text = `Game tự dùng khi bạn rút trúng Mèo Nổ, sau đó ${rules.bombPlacement === 'choose' ? 'bạn chọn vị trí nhét bom lại' : 'bom được nhét lại ở vị trí ngẫu nhiên'}.`;
   if (type === 'see_future') text = `Trong lượt của bạn: bấm lá để bí mật xem tối đa ${rules.futureCount} lá trên cùng.`;
-  if (type === 'alter_future') text = `Trong lượt của bạn: bấm lá để xem và sắp xếp tối đa ${rules.futureCount} lá trên cùng (tự động đẩy Mèo Nổ xuống dưới cho bạn).`;
-  if (type === 'share_future') text = `Trong lượt của bạn: bấm lá để xem và sắp xếp tối đa ${rules.futureCount} lá trên cùng rồi chia sẻ cho người chơi kế tiếp cùng biết.`;
+  if (type === 'alter_future') text = `Trong lượt của bạn: bấm lá để bí mật xem và sắp xếp lại tối đa ${rules.futureCount} lá trên cùng.`;
+  if (type === 'share_future') text = `Trong lượt của bạn: bấm lá để xem và sắp xếp tối đa ${rules.futureCount} lá trên cùng rồi cho người chơi kế tiếp xem các lá đó.`;
   if (type === 'nope') text = `Khi có người đánh bài, bấm lá này hoặc nút NOPE! trong ${rules.nopeSeconds} giây, kể cả ngoài lượt. ${rules.nopeChain ? 'Bạn có thể Nope lại một lá Nope.' : 'Mỗi hành động chỉ được Nope một lần.'}`;
   const canMatch = CARD_INFO[type].isCat || (rules.comboScope === 'any' && type !== 'exploding');
   const combos: string[] = [];
-  if (canMatch && rules.allowPair) combos.push('2 lá cùng loại (hoặc ghép với Mèo Hoang / Sao Chép) để bốc 1 lá úp của đối thủ');
-  if (canMatch && rules.allowTriple) combos.push('3 lá cùng loại (hoặc ghép với Mèo Hoang / Sao Chép) để đòi đúng lá muốn');
-  if (type !== 'exploding' && rules.allowFive) combos.push('5 lá khác loại để lấy 1 lá trong chồng bài bỏ');
+  if (canMatch && rules.allowPair) combos.push('2 lá cùng loại (hoặc ghép với Mèo Hoang) để cướp ngẫu nhiên 1 lá của đối thủ');
+  if (canMatch && rules.allowTriple) combos.push('3 lá cùng loại (hoặc ghép với Mèo Hoang) để đòi đúng lá muốn');
+  if (type !== 'exploding' && rules.allowFive) combos.push('5 lá khác tên nhau để lấy 1 lá bất kỳ trong chồng bài bỏ');
   if (combos.length) text += `${text ? ' ' : ''}Combo được phép: ${combos.join('; ')}. Dùng “Chọn nhiều lá” để chọn combo.`;
   if (!text) text = 'Phòng này đã tắt các combo dùng được với lá này. Bạn vẫn có thể đưa lá khi bị Xin Bài.';
   return text;

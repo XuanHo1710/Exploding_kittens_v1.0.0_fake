@@ -114,7 +114,15 @@ export default function Demo() {
         ? { kind: 'defuse_place', playerId: 'me', deckCount: 31, deadline: now + 24_000 }
         : scene === 'favor'
           ? { kind: 'favor_give', playerId: 'me', toId: 'p1', deadline: now + 21_000 }
-          : undefined,
+          : scene === 'dig'
+            ? { kind: 'dig_choice', playerId: 'me', card: { id: 'dg1', type: 'exploding' }, canDig: true, deadline: now + 21_000 }
+          : scene === 'return'
+            ? { kind: 'return_card', playerId: 'p1', source: 'garbage', pendingIds: ['me', 'p2'], deadline: now + 21_000 }
+          : scene === 'bury'
+            ? { kind: 'defuse_place', playerId: 'me', deckCount: 31, deadline: now + 21_000, bury: true }
+          : scene === 'steal'
+            ? { kind: 'steal_pick', playerId: 'me', targetId: 'p1', via: 'mark', count: 7, deadline: now + 21_000 }
+            : undefined,
     winnerId: scene === 'ended' ? 'me' : undefined,
     logTotal: 5,
     bet: 100,

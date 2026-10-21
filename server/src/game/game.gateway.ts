@@ -216,6 +216,16 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return this.handle(c, (me) => this.game(me).giveFavor(me.playerId, String(body?.cardId)));
   }
 
+  @SubscribeMessage('game:dig')
+  dig(@ConnectedSocket() c: Socket, @MessageBody() body: { keep: boolean }) {
+    return this.handle(c, (me) => this.game(me).digChoice(me.playerId, body?.keep));
+  }
+
+  @SubscribeMessage('game:return')
+  returnCard(@ConnectedSocket() c: Socket, @MessageBody() body: { cardId: string }) {
+    return this.handle(c, (me) => this.game(me).returnCard(me.playerId, String(body?.cardId ?? '')));
+  }
+
   @SubscribeMessage('game:steal')
   steal(@ConnectedSocket() c: Socket, @MessageBody() body: { index: number }) {
     return this.handle(c, (me) => this.game(me).pickSteal(me.playerId, Number(body?.index)));
