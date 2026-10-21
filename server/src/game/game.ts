@@ -142,6 +142,8 @@ export class Game {
   private tlChopLog?: string;
   private tlInstantWinText?: string;
   private tlFinishOrder: string[] = [];
+  /** Xu chặt heo cộng/trừ trong ván (người chặt +, người bị chặt −), tính vào lúc trả thưởng */
+  private tlHeoDelta = new Map<string, number>();
   private tlLastWinnerId?: string;
 
   constructor(
@@ -662,6 +664,7 @@ export class Game {
     this.tlChopLog = undefined;
     this.tlInstantWinText = undefined;
     this.tlFinishOrder = [];
+    this.tlHeoDelta.clear();
 
     let lowestCard: PlayingCard | undefined;
     let lowestHolderId = this.players[0].id;
@@ -722,6 +725,7 @@ export class Game {
     this.run(() => {
       if (this.gameMode !== 'tien_len' || this.phase !== 'playing') throw new GameError('Không phải ván Tiến Lên Miền Nam.');
       const p = this.requireAlive(playerId);
+      if (this.tlFinishOrder.includes(playerId)) throw new GameError('Bạn đã hết bài và có hạng rồi, chờ những người khác nhé.');
       const hand = this.tlHands.get(playerId) ?? [];
       const uniqueIds = [...new Set(cardIds)];
       const selected = uniqueIds.map((id) => hand.find((c) => c.id === id || c.code === id)).filter((c): c is PlayingCard => !!c);
@@ -763,6 +767,7 @@ export class Game {
       p.hand = nextHand.map((c) => ({ id: c.id, type: 'cat_taco' as CardType }));
 
       const prevActorId = this.tlLastActorId;
+      const prevCombo = this.tlTableCombo;
       this.tlTableCombo = combo;
       this.tlLastActorId = playerId;
       this.tlFirstTurnOfMatch = false;
@@ -772,6 +777,13 @@ export class Game {
         const victim = this.player(prevActorId);
         this.tlChopLog = `🔥 ${p.name} dùng ${combo.labelVi} CHẶT ${victim?.name ?? 'đối thủ'}!`;
         this.addLog(this.tlChopLog);
+        // Bị chặt heo: trả cho người chặt (heo đen ½ cược, heo đỏ 1 cược)
+        const fine = this.tlHeoValue(prevCombo?.cards ?? []);
+        if (fine > 0) {
+          this.tlHeoDelta.set(playerId, (this.tlHeoDelta.get(playerId) ?? 0) + fine);
+          this.tlHeoDelta.set(prevActorId, (this.tlHeoDelta.get(prevActorId) ?? 0) - fine);
+          this.addLog(`💸 ${victim?.name ?? 'Người bị chặt'} bị chặt heo, trả ${p.name} ${fine} xu.`);
+        }
         this.hooks.fx(this, { type: 'explode', playerId: prevActorId });
       } else {
         this.tlChopLog = undefined;
@@ -779,9 +791,9 @@ export class Game {
         this.hooks.fx(this, { type: 'draw', playerId });
       }
 
-      // Kiểm tra hết bài -> Thắng ngay!
+      // Hết bài: có hạng (Nhất, Nhì, Ba…); những người còn lại đánh tiếp
       if (nextHand.length === 0) {
-        this.tlWin(p, `🏆 ${p.name} đã đánh hết 13 lá và VỀ NHẤT!`);
+        this.tlFinish(p);
         return;
       }
 
@@ -812,7 +824,7 @@ export class Game {
   private tlNextTurn(fromIdx: number) {
     if (this.tlTableCombo) {
       const activeOthers = this.players.filter(
-        (x) => x.alive && !x.left && x.id !== this.tlLastActorId && !this.tlPassedIds.has(x.id),
+        (x) => this.tlActive(x) && x.id !== this.tlLastActorId && !this.tlPassedIds.has(x.id),
       );
       if (activeOthers.length === 0) {
         const leaderIdx = this.players.findIndex((x) => x.id === this.tlLastActorId);
@@ -820,27 +832,84 @@ export class Game {
         this.tlTableCombo = undefined;
         this.tlPassedIds.clear();
         this.tlChopLog = undefined;
-        if (leader && leader.alive && !leader.left) {
+        if (leader && this.tlActive(leader)) {
           this.addLog(`✨ Cả bàn đã bỏ lượt! ${leader.name} thắng vòng này và được đánh bộ mới.`);
           this.startTurn(leaderIdx, 1);
           return;
         }
+        // Người đánh cuối đã hết bài / rời bàn: người kế tiếp sau họ được đánh tự do
         this.tlLastActorId = undefined;
+        if (leaderIdx >= 0) {
+          this.startTurn(this.nextTienLenIdx(leaderIdx), 1);
+          return;
+        }
       }
     }
     this.startTurn(this.nextTienLenIdx(fromIdx), 1);
   }
 
-  /** Một người về nhất (đánh hết bài, hết giờ tự đánh lá cuối, hoặc mọi người khác rời bàn) */
-  private tlWin(p: Player, message: string) {
+  /** Còn trong ván: chưa rời bàn và chưa hết bài */
+  private tlActive(x: Player) {
+    return x.alive && !x.left && !this.tlFinishOrder.includes(x.id);
+  }
+
+  /** Giá heo: heo đen (♠ ♣) ½ mức cược, heo đỏ (♦ ♥) 1 mức cược */
+  private tlHeoValue(cards: readonly PlayingCard[]) {
+    const bet = this.pot > 0 ? this.bet : 0;
+    return cards.filter((c) => c.rank === '2').reduce((sum, c) => sum + (c.color === 'red' ? bet : Math.floor(bet / 2)), 0);
+  }
+
+  private static readonly TL_RANKS = ['Nhất', 'Nhì', 'Ba', 'Tư'];
+
+  /** Một người hết bài: nhận hạng kế tiếp; còn 1 người có bài thì người đó Bét và hết ván */
+  private tlFinish(p: Player) {
     this.tlFinishOrder.push(p.id);
+    const rank = Game.TL_RANKS[this.tlFinishOrder.length - 1] ?? `${this.tlFinishOrder.length}`;
+    this.addLog(`🏆 ${p.name} đã hết bài và về ${rank.toUpperCase()}!`);
+    if (this.players.filter((x) => this.tlActive(x)).length <= 1) {
+      this.tlEnd();
+      return;
+    }
+    this.tlNextTurn(this.players.findIndex((x) => x.id === p.id));
+  }
+
+  /**
+   * Hết ván: người còn bài cuối cùng là Bét (người rời bàn giữa ván cũng tính Bét).
+   * Xu: mỗi người nhận lại cược, Nhất ăn cược của (các) Bét; cộng chặt heo trong ván và thối heo của Bét.
+   */
+  private tlEnd() {
+    const remaining = this.players.filter((x) => this.tlActive(x));
+    const leavers = this.players.filter((x) => x.left && !this.tlFinishOrder.includes(x.id));
+    this.tlFinishOrder.push(...remaining.map((x) => x.id), ...leavers.map((x) => x.id));
+    const firstId = this.tlFinishOrder[0];
+    const losers = leavers.length ? leavers : remaining;
     this.phase = 'ended';
-    this.winnerId = p.id;
-    this.winnerIds = [p.id];
-    this.tlLastWinnerId = p.id;
-    this.payouts = this.pot > 0 ? { [p.id]: this.pot } : {};
+    this.winnerId = firstId;
+    this.winnerIds = firstId ? [firstId] : [];
+    this.tlLastWinnerId = firstId;
     this.turnDeadline = undefined;
-    this.addLog(message);
+    this.payouts = {};
+    if (this.pot > 0 && firstId) {
+      const delta = new Map(this.tlHeoDelta);
+      // Thối heo: Bét còn giữ heo trên tay phải trả cho người Nhất
+      for (const l of losers) {
+        const fine = this.tlHeoValue(this.tlHands.get(l.id) ?? []);
+        if (fine > 0) {
+          delta.set(l.id, (delta.get(l.id) ?? 0) - fine);
+          delta.set(firstId, (delta.get(firstId) ?? 0) + fine);
+          this.addLog(`💸 ${l.name} thối heo, trả ${this.players.find((x) => x.id === firstId)?.name} ${fine} xu.`);
+        }
+      }
+      for (const x of this.players) {
+        const base = losers.includes(x) ? 0 : x.id === firstId ? this.bet * (1 + losers.length) : this.bet;
+        this.payouts[x.id] = base + (delta.get(x.id) ?? 0);
+      }
+    }
+    const names = this.tlFinishOrder.map((id, i) => {
+      const label = i === this.tlFinishOrder.length - 1 || losers.some((l) => l.id === id) ? 'Bét' : Game.TL_RANKS[i] ?? `${i + 1}`;
+      return `${label}: ${this.players.find((x) => x.id === id)?.name}`;
+    });
+    this.addLog(`🏁 Kết thúc ván — ${names.join(' · ')}`);
   }
 
   private nextTienLenIdx(from: number): number {
@@ -848,7 +917,7 @@ export class Game {
     for (let i = 1; i <= n; i++) {
       const idx = (from + i) % n;
       const p = this.players[idx];
-      if (p.alive && !p.left && !this.tlPassedIds.has(p.id)) return idx;
+      if (this.tlActive(p) && !this.tlPassedIds.has(p.id)) return idx;
     }
     return this.nextAliveIdx(from);
   }
@@ -1190,7 +1259,7 @@ export class Game {
             this.tlLowestCardCode = undefined;
             this.addLog(`⏰ ${cur.name} hết giờ, tự động đánh ${card.nameVi}.`);
             if (nextHand.length === 0) {
-              this.tlWin(cur, `🏆 ${cur.name} đánh lá cuối cùng và VỀ NHẤT!`);
+              this.tlFinish(cur);
               return;
             }
             this.tlNextTurn(this.currentIdx);
@@ -1614,14 +1683,8 @@ export class Game {
         this.tlFirstTurnOfMatch = false;
         this.tlLowestCardCode = undefined;
       }
-      const alive = this.players.filter((x) => x.alive && !x.left);
-      if (alive.length <= 1) {
-        if (alive[0]) this.tlWin(alive[0], `🏆 ${alive[0].name} thắng vì những người khác đã rời bàn!`);
-        else {
-          this.phase = 'ended';
-          this.turnDeadline = undefined;
-          this.addLog('Hết ván.');
-        }
+      if (this.players.filter((x) => this.tlActive(x)).length <= 1) {
+        this.tlEnd();
         return;
       }
       if (this.tlLastActorId === p.id) {

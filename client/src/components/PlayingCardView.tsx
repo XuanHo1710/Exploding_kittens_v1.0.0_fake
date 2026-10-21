@@ -8,6 +8,8 @@ interface Props {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   selected?: boolean;
   disabled?: boolean;
+  /** Viền sáng "đánh được". Mặc định: có onClick là sáng */
+  playable?: boolean;
   className?: string;
   style?: CSSProperties;
   onClick?: () => void;
@@ -20,6 +22,7 @@ export default function PlayingCardView({
   size = 'md',
   selected = false,
   disabled = false,
+  playable,
   className = '',
   style,
   onClick,
@@ -29,7 +32,7 @@ export default function PlayingCardView({
     'playing-card',
     `card-${size}`,
     selected && 'selected',
-    onClick && !disabled && 'playable',
+    (playable ?? (!!onClick && !disabled)) && 'playable',
     className,
   ]
     .filter(Boolean)

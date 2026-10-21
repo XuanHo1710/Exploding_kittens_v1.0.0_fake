@@ -2076,6 +2076,16 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   padding: 2px 8px;
   border-radius: 999px;
 }
+.tl-hand.my-turn .playing-card:not(.playable):not(.selected) { opacity: 0.45; filter: grayscale(0.5); }
+.tl-rank-tag {
+  font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 999px;
+  background: linear-gradient(135deg, #f59f00, #f97316); color: #181a20;
+}
+.tl-ranking { list-style: none; padding: 0; margin: 10px auto; display: grid; gap: 6px; max-width: 360px; text-align: left; }
+.tl-ranking li { display: flex; gap: 10px; align-items: center; padding: 6px 12px; border-radius: 10px; background: rgba(15, 23, 42, 0.55); color: #f1f5f9; }
+.tl-ranking li.me { box-shadow: 0 0 0 2px var(--accent); }
+.tl-ranking li b { min-width: 34px; color: #fbbf24; }
+.tl-ranking li span:last-child { margin-left: auto; font-weight: 700; }
 .seat.passed {
   opacity: 0.68;
 }

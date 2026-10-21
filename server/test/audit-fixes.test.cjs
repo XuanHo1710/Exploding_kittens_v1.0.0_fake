@@ -105,16 +105,49 @@ test('Tiến Lên: lệnh rút bài / đánh lá của Mèo Nổ bị chặn', (
   assert.throws(() => game.play(A, { cardIds: ['Spd-5'] }), /Không phải ván Mèo Nổ/);
 });
 
-test('Tiến Lên: hết giờ tự đánh lá cuối thì được ghi nhận về nhất và đi đầu ván sau', (t) => {
+test('Tiến Lên: hết giờ tự đánh lá cuối thì về Nhất, những người còn lại đánh tiếp tới Bét', (t) => {
   const game = tienLen(t);
   game.tlHands.set(A, [pc('Spd-5')]);
   game.players[0].hand = [{ id: 'Spd-5', type: 'cat_taco' }];
   game.turnDeadline = 1;
   game.onTimer();
-  assert.equal(game.phase, 'ended');
-  assert.equal(game.winner(), A);
-  assert.equal(game.tlLastWinnerId, A);
+  assert.equal(game.phase, 'playing', 'chưa hết ván: còn 2 người có bài');
   assert.deepEqual(game.tlFinishOrder, [A]);
+  assert.equal(game.current().id, B);
+  assert.throws(() => game.tienLenPlay(A, ['Spd-7']), GameError, 'người đã về không đánh nữa');
+  game.tienLenPlay(B, ['Hrt-2']);
+  game.tienLenPass(C);
+  assert.equal(game.current().id, B, 'cả bàn bỏ lượt: B mở vòng mới');
+  game.tienLenPlay(B, ['Clb-4']);
+  assert.equal(game.phase, 'ended');
+  assert.deepEqual(game.tlFinishOrder, [A, B, C]);
+  assert.equal(game.winner(), A);
+  assert.equal(game.tlLastWinnerId, A, 'Nhất đi đầu ván sau');
+});
+
+test('Tiến Lên có cược: Nhất ăn Bét, chặt heo đỏ trả 1 cược, Bét thối heo đen trả ½ cược cho Nhất', (t) => {
+  const game = tienLen(t);
+  game.bet = 100;
+  game.pot = 300;
+  const hands = {
+    [A]: ['Spd-5'],
+    [B]: ['Hrt-2', 'Clb-4'],
+    [C]: ['Spd-6', 'Clb-6', 'Spd-7', 'Clb-7', 'Spd-8', 'Clb-8', 'Dia-3', 'Spd-2'],
+  };
+  for (const p of game.players) {
+    game.tlHands.set(p.id, hands[p.id].map(pc));
+    p.hand = hands[p.id].map((code) => ({ id: code, type: 'cat_taco' }));
+  }
+  game.tienLenPlay(A, ['Spd-5']); // A hết bài: Nhất
+  game.tienLenPlay(B, ['Hrt-2']);
+  game.tienLenPlay(C, ['Spd-6', 'Clb-6', 'Spd-7', 'Clb-7', 'Spd-8', 'Clb-8']); // 3 đôi thông chặt heo đỏ
+  game.tienLenPass(B);
+  game.tienLenPlay(C, ['Dia-3']);
+  game.tienLenPlay(B, ['Clb-4']); // B hết bài: Nhì → C Bét, còn heo đen trên tay
+  assert.equal(game.phase, 'ended');
+  assert.deepEqual(game.tlFinishOrder, [A, B, C]);
+  assert.deepEqual(game.payouts, { [A]: 250, [B]: 0, [C]: 50 });
+  assert.equal(Object.values(game.payouts).reduce((x, y) => x + y, 0), game.pot);
 });
 
 test('Tiến Lên: người giữ lá nhỏ nhất rời bàn trước nước mở đầu → người kế tiếp đánh tự do', (t) => {

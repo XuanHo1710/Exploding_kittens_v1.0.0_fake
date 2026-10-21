@@ -5,6 +5,7 @@ import {
   QUICK_EMOTES,
   canBeatTienLenCombo,
   detectTienLenCombo,
+  tienLenPlayableIds,
   type Emote,
   type RoomView,
   PLAYING_CARD_BY_CODE,
@@ -81,6 +82,19 @@ export default function TienLenBoard({ view, meId, emit, emote, chat, dock }: Pr
     (myTurn || isFourPairsInterrupt) &&
     (!tl.firstTurnOfMatch || !tl.mustIncludeLowest || combo.cards.some((c) => c.code === tl.mustIncludeLowest));
   const canPass = view.phase === 'playing' && myTurn && !!tl.tableCombo && tl.lastActorId !== meId;
+  // Lá sáng = nằm trong ít nhất 1 bộ đánh được lúc này (luật chung với server)
+  const playableIds = myTurn
+    ? tienLenPlayableIds(tl.hand, tl.tableCombo, tl.firstTurnOfMatch ? tl.mustIncludeLowest : undefined)
+    : new Set<string>();
+  const RANKS = ['Nhất', 'Nhì', 'Ba', 'Tư'];
+  /** Hạng của người đã hết bài (hoặc hạng cuối ván); người cuối cùng khi hết ván là Bét */
+  const rankOf = (id: string) => {
+    const i = tl.finishOrder.indexOf(id);
+    if (i < 0) return undefined;
+    if (view.phase === 'ended' && !tl.instantWinText && i === tl.finishOrder.length - 1 && i > 0) return 'Bét';
+    return RANKS[i] ?? `${i + 1}`;
+  };
+  const myRank = rankOf(meId);
 
   const toggleCard = (id: string) => {
     sfx('select');
@@ -183,7 +197,11 @@ export default function TienLenBoard({ view, meId, emit, emote, chat, dock }: Pr
                 )}
                 <div className="seat-name">{p.name}</div>
                 <div className="seat-cards">
-                  <span className="seat-count">🎴 {p.handCount} lá</span>
+                  {rankOf(p.id) ? (
+                    <span className="tl-rank-tag">🏆 {rankOf(p.id)}</span>
+                  ) : (
+                    <span className="seat-count">🎴 {p.handCount} lá</span>
+                  )}
                 </div>
                 {passed && <span className="tl-pass-tag">⏭️ Bỏ vòng</span>}
               </div>
@@ -200,12 +218,22 @@ export default function TienLenBoard({ view, meId, emit, emote, chat, dock }: Pr
                 {view.winnerId === meId ? 'Bạn đã VỀ NHẤT!' : `${nameOf(view.winnerId)} đã VỀ NHẤT!`}
               </h2>
               {tl.instantWinText && <p className="good-text">✨ {tl.instantWinText}</p>}
-              {view.pot > 0 && view.winnerId && (
-                <p className="pot-win">
-                  <Coins size={16} className="inline-icon" /> {nameOf(view.winnerId)} ẵm trọn hũ{' '}
-                  <b>{fmtCoins(view.pot)} xu</b>!
-                </p>
-              )}
+              <ol className="tl-ranking">
+                {tl.finishOrder.map((id) => {
+                  const paid = view.payouts?.[id];
+                  const net = paid !== undefined && view.pot > 0 ? paid - view.bet : undefined;
+                  return (
+                    <li key={id} className={id === meId ? 'me' : ''}>
+                      <b>{rankOf(id)}</b> <span>{nameOf(id)}</span>
+                      {net !== undefined && (
+                        <span className={net >= 0 ? 'good-text' : 'bad-text'}>
+                          <Coins size={13} className="inline-icon" /> {net >= 0 ? `+${fmtCoins(net)}` : `-${fmtCoins(-net)}`} xu
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
               <div className="ended-actions">
                 {isHost ? (
                   <button className="primary big" onClick={() => emit('game:restart')}>
@@ -258,7 +286,7 @@ export default function TienLenBoard({ view, meId, emit, emote, chat, dock }: Pr
             <div>
               <div className="my-name-row">
                 <b>{me?.name}</b>
-                <span className="seat-count">Còn {tl.hand.length} lá</span>
+                {myRank ? <span className="tl-rank-tag">🏆 {myRank}</span> : <span className="seat-count">Còn {tl.hand.length} lá</span>}
                 {tl.passedIds.includes(meId) && <span className="tl-pass-tag">⏭️ Đã bỏ vòng</span>}
               </div>
               <span className="muted small">
@@ -268,9 +296,13 @@ export default function TienLenBoard({ view, meId, emit, emote, chat, dock }: Pr
                       ? `✅ Bộ hợp lệ: ${combo.labelVi}`
                       : `⚠️ ${combo.labelVi} — ${beatCheck?.reason}`
                     : `⚠️ ${sel.length} lá đang chọn chưa tạo thành bộ Tiến Lên hợp lệ`
-                  : myTurn
-                    ? `Còn ${secs(view.turnDeadline)}s — Chọn các lá bài để đánh hoặc Bỏ lượt`
-                    : `Đang chờ ${nameOf(view.currentPlayerId)}…`}
+                  : view.phase === 'ended'
+                    ? myRank ? `Ván đã kết thúc — bạn về ${myRank}.` : 'Ván đã kết thúc.'
+                  : myRank && view.phase === 'playing'
+                    ? `Bạn đã về ${myRank}! Chờ những người còn lại đánh xong…`
+                    : myTurn
+                      ? `Còn ${secs(view.turnDeadline)}s — Lá sáng là lá đánh được. Chọn bài để đánh hoặc Bỏ lượt`
+                      : `Đang chờ ${nameOf(view.currentPlayerId)}…`}
               </span>
             </div>
             <div className="quick-emotes">
@@ -322,13 +354,14 @@ export default function TienLenBoard({ view, meId, emit, emote, chat, dock }: Pr
           </div>
         )}
 
-        <div className="hand tl-hand">
+        <div className={`hand tl-hand${myTurn ? ' my-turn' : ''}`}>
           {tl.hand.map((c) => (
             <PlayingCardView
               key={c.id}
               card={c}
               size="lg"
               selected={sel.includes(c.id)}
+              playable={playableIds.has(c.id)}
               onClick={() => toggleCard(c.id)}
             />
           ))}

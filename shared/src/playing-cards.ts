@@ -489,3 +489,67 @@ export function checkTienLenInstantWin(rawCards: readonly PlayingCard[]): { kind
 
   return null;
 }
+
+/**
+ * Tiến Lên: id các lá nằm trong ít nhất 1 bộ đánh hợp lệ lúc này (để làm sáng lá đánh được).
+ * table = bộ trên bàn (không có = đánh tự do); mustInclude = mã lá bắt buộc có (lượt mở màn ván đầu).
+ */
+export function tienLenPlayableIds(
+  rawHand: readonly PlayingCard[],
+  table: TienLenCombo | undefined,
+  mustInclude?: string,
+): Set<string> {
+  const hand = sortTienLenHand(rawHand);
+  const out = new Set<string>();
+  if (mustInclude) {
+    // Lượt mở màn: thử mọi bộ có chứa lá bắt buộc (tối đa 2^12 bộ, chỉ xảy ra 1 lần mỗi ván)
+    const must = hand.find((c) => c.code === mustInclude);
+    if (!must) return out;
+    const rest = hand.filter((c) => c !== must);
+    for (let mask = 0; mask < 1 << rest.length; mask++) {
+      const cards = [must, ...rest.filter((_, i) => mask & (1 << i))];
+      const combo = detectTienLenCombo(cards);
+      if (combo && canBeatTienLenCombo(table, combo).ok) cards.forEach((c) => out.add(c.id));
+    }
+    return out;
+  }
+  const tryCombo = (cards: PlayingCard[], extra: PlayingCard[] = []) => {
+    const combo = detectTienLenCombo(cards);
+    if (!combo || !canBeatTienLenCombo(table, combo).ok) return;
+    cards.forEach((c) => out.add(c.id));
+    extra.forEach((c) => out.add(c.id));
+  };
+  const byRank = new Map<number, PlayingCard[]>();
+  for (const c of hand) {
+    const g = byRank.get(c.tienLenRankOrder) ?? [];
+    g.push(c);
+    byRank.set(c.tienLenRankOrder, g);
+  }
+  const subsets = (g: PlayingCard[], k: number): PlayingCard[][] =>
+    k === 0 ? [[]] : g.flatMap((c, i) => subsets(g.slice(i + 1), k - 1).map((rest) => [c, ...rest]));
+  // Rác, Đôi, Sám cô, Tứ quý
+  for (const g of byRank.values()) for (let k = 1; k <= g.length; k++) for (const s of subsets(g, k)) tryCombo(s);
+  const ranks = [...byRank.keys()].filter((r) => r < 12).sort((a, b) => a - b);
+  const runs = (minLen: number, needPairs: boolean) => {
+    for (let i = 0; i < ranks.length; i++) {
+      for (let j = i; j < ranks.length && ranks[j] - ranks[i] === j - i; j++) {
+        const len = j - i + 1;
+        if (len < minLen) continue;
+        const lower = ranks.slice(i, j);
+        const top = byRank.get(ranks[j])!;
+        if (!needPairs) {
+          // Sảnh: lá cao nhất quyết định thắng/thua; các số dưới chọn chất nào cũng được
+          for (const t of top) tryCombo([...lower.map((r) => byRank.get(r)![0]), t], lower.flatMap((r) => byRank.get(r)!));
+        } else if (len === 3 || len === 4) {
+          if (![...lower, ranks[j]].every((r) => byRank.get(r)!.length >= 2)) continue;
+          for (const tp of subsets(top, 2)) {
+            tryCombo([...lower.flatMap((r) => byRank.get(r)!.slice(0, 2)), ...tp], lower.flatMap((r) => byRank.get(r)!));
+          }
+        }
+      }
+    }
+  };
+  runs(3, false);
+  runs(3, true);
+  return out;
+}
