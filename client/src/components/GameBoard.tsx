@@ -785,6 +785,8 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   const singleUsable = (k: ActionKind) => {
     if (k === 'favor' || k === 'mark') return handTargets.length > 0;
     if (k === 'targeted_attack') return aliveOpponents.length > 0;
+    // Trộm Mộ: "You cannot play this card if there are no Dead players."
+    if (k === 'grave_robber') return view.players.some((p) => !p.alive);
     return true;
   };
   /** Lá sáng = bấm là đánh được ngay */

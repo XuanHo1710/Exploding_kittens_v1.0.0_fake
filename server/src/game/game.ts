@@ -263,6 +263,8 @@ export class Game {
     if (!p) return;
     this.run(() => {
       p.connected = connected;
+      // Mất kết nối khi đang phải trả bài (Thu Gom Rác / Trộm Mộ): chọn ngẫu nhiên, không bắt cả bàn chờ
+      if (!connected && this.phase === 'playing') this.returnOne(id);
       if (!connected && this.phase === 'lobby') {
         setTimeout(() => this.safe(() => {
           if (!p.connected && this.phase === 'lobby' && this.player(id)) this.removePlayer(id);
@@ -302,6 +304,9 @@ export class Game {
           this.finishWaitingFor(id);
           this.addLog(`${p.name} bỏ cuộc.`);
           this.eliminate(p);
+        } else if (this.phase === 'playing') {
+          // Người đã chết rời phòng khi đang phải trả bài cho Trộm Mộ: chọn ngẫu nhiên ngay
+          this.returnOne(id);
         }
       }
       if (this.hostId === id) this.pickHost();
@@ -975,6 +980,10 @@ export class Game {
         kind = copied;
       }
       const cloned = types.length === 1 && types[0] === 'clone';
+      // Trộm Mộ: "You cannot play this card if there are no Dead players."
+      if (kind === 'grave_robber' && !this.players.some((x) => !x.alive)) {
+        throw new GameError('Chưa có ai chết, chưa đánh được Trộm Mộ.');
+      }
 
       let target: Player | undefined;
       if (kind === 'targeted_attack') {
@@ -1637,8 +1646,8 @@ export class Game {
         ? `🪦 ${actor.name} đánh Trộm Mộ: ${who.map((pl) => pl.name).join(', ')} phải chọn 1 lá xáo vào chồng rút.`
         : `♻️ ${actor.name} đánh Thu Gom Rác: mọi người chọn 1 lá để xáo vào chồng rút.`,
     );
-    // Người đã rời bàn không chọn được: hệ thống chọn ngẫu nhiên ngay
-    for (const pl of who) if (pl.left) this.returnOne(pl.id);
+    // Người đã rời bàn / mất kết nối không chọn được: hệ thống chọn ngẫu nhiên ngay
+    for (const pl of who) if (pl.left || !pl.connected) this.returnOne(pl.id);
   }
 
   /** Một người trả 1 lá (không truyền cardId = chọn ngẫu nhiên) */

@@ -288,6 +288,7 @@ export function describeCard(type: CardType, rules: RoomRules): string {
   if (type === 'share_future') return `Xem và sắp xếp lại ${rules.futureCount} lá trên cùng của chồng bài rút, rồi cho người chơi kế tiếp xem các lá đó.`;
   if (type === 'super_skip') return `${CARD_INFO.super_skip.desc} Luật nhà: không ai Nope được lá này.`;
   if (type === 'nope') return `Chặn hành động trong ${rules.nopeSeconds} giây, cả ngoài lượt. Không chặn Mèo Nổ/Gỡ Bom, không chặn được Siêu Nope (luật nhà: cả Siêu Bỏ Lượt). ${rules.nopeChain ? 'Có thể Nope lại Nope.' : 'Không được Nope lại Nope.'}`;
+  if (type === 'grave_robber') return `${CARD_INFO.grave_robber.desc} Không đánh được khi chưa có ai chết.`;
   if (type === 'super_nope') return `${CARD_INFO.super_nope.desc} Đánh ra là chốt ngay, không chờ Nope.${rules.nopeChain ? '' : ' Luật phòng: không dùng để chặn lại một lá Nope.'}`;
   if (CARD_INFO[type].isCat) {
     const prefix = type === 'feral_cat' ? 'Dùng như bất kỳ lá mèo thường nào. ' : 'Đánh lẻ không có tác dụng. ';

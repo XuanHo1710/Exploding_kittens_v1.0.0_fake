@@ -77,3 +77,48 @@ test('Mèo Hoang chỉ thay lá mèo, không ghép với lá chức năng kể c
   assert.deepEqual(comboGroupFor(hand, 'skip', rules).map((c) => c.id), ['2']);
   assert.deepEqual(comboGroupFor(hand, 'feral_cat', rules).map((c) => c.id).sort(), ['1', '3']);
 });
+
+// ---------- Trộm Mộ ----------
+
+test('Trộm Mộ: chưa ai chết thì không đánh được (không mất lá)', (t) => {
+  const { game } = room(t);
+  start(game);
+  table(game, { [A]: ['grave_robber'], [B]: ['skip'], [C]: ['skip'] }, ['cat_melon']);
+  assert.throws(() => game.play(A, { cardIds: [`${A}-grave_robber-0`] }), /Chưa có ai chết/);
+  assert.equal(game.player(A).hand.length, 1);
+  assert.equal(game.pending, undefined);
+});
+
+test('Trộm Mộ: người chết đang online tự chọn; người chết mất kết nối được chọn ngẫu nhiên ngay', (t) => {
+  const { game } = room(t);
+  start(game);
+  table(game, { [A]: ['grave_robber'], [B]: ['skip', 'favor'], [C]: ['shuffle', 'nope'] }, ['cat_melon']);
+  game.player(B).alive = false;
+  game.player(C).alive = false;
+  game.setConnected(C, false);
+  game.play(A, { cardIds: [`${A}-grave_robber-0`] });
+  resolve(game);
+  assert.equal(game.waiting?.kind, 'return_card');
+  assert.deepEqual(game.waiting.pendingIds, [B], 'C mất kết nối đã được chọn ngẫu nhiên');
+  assert.equal(game.player(C).hand.length, 1);
+  game.returnCard(B, `${B}-favor-1`);
+  assert.equal(game.waiting, undefined);
+  assert.deepEqual(game.player(B).hand.map((c) => c.type), ['skip']);
+  assert.equal(game.deck.length, 3);
+  assert.ok(game.deck.some((c) => c.id === `${B}-favor-1`));
+});
+
+test('Trộm Mộ: người chết rời phòng khi đang phải chọn → chọn ngẫu nhiên, không bắt cả bàn chờ', (t) => {
+  const { game } = room(t);
+  start(game);
+  table(game, { [A]: ['grave_robber'], [B]: ['skip'], [C]: ['shuffle', 'nope'] }, ['cat_melon']);
+  game.player(C).alive = false;
+  game.play(A, { cardIds: [`${A}-grave_robber-0`] });
+  resolve(game);
+  assert.deepEqual(game.waiting.pendingIds, [C]);
+  game.removePlayer(C);
+  assert.equal(game.waiting, undefined);
+  assert.equal(game.player(C).hand.length, 1);
+  assert.equal(game.deck.length, 2);
+  assert.equal(game.current().id, A, 'vẫn là lượt A');
+});
