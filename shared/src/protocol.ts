@@ -195,6 +195,8 @@ export interface RoomView {
   hand: Card[];
   currentPlayerId?: string;
   turnsRemaining: number;
+  /** Chiều vòng chơi: 1 = theo thứ tự ghế, -1 = đã Đảo Chiều (để tính ai sẽ rút trúng lá vừa nhét) */
+  direction?: 1 | -1;
   turnDeadline?: number;
   deckCount: number;
   discardTop?: CardType;

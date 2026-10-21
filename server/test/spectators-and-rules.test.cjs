@@ -211,3 +211,28 @@ test('lật ngửa bài chỉ có ở Mèo Nổ: Tiến Lên không lộ bài ng
   game.removePlayer(C);
   assert.ok(game.viewFor(A).players.every((p) => p.revealed === undefined));
 });
+
+// ---------- nhét bom đúng vị trí ----------
+
+test('Gỡ Bom nhét vào lá thứ 2: người kế tiếp rút lá an toàn, người sau đó mới rút trúng (kể cả khi đang bị Tấn Công)', (t) => {
+  for (const turns of [1, 2]) {
+    const { game } = room(t);
+    start(game);
+    table(game, { [A]: ['defuse'], [B]: ['defuse'], [C]: ['defuse'] }, ['exploding', 'cat_melon', 'cat_beard', 'skip', 'nope']);
+    game.turnsRemaining = turns;
+    game.draw(A);
+    assert.equal(game.waiting?.kind, 'defuse_place');
+    game.placeBomb(A, 1);
+    assert.deepEqual(game.deck.map((c) => c.type), ['cat_melon', 'exploding', 'cat_beard', 'skip', 'nope']);
+    const order = [];
+    while (game.deck[0]?.type !== 'exploding') {
+      const who = game.current().id;
+      game.draw(who);
+      order.push(who);
+    }
+    // lá thứ 2: đúng 1 lần rút an toàn trước khi tới quả bom
+    assert.equal(order.length, 1, `turns=${turns}`);
+    assert.equal(order[0], turns === 2 ? A : B, 'đang có 2 lượt thì chính người nhét rút lá an toàn kế tiếp');
+    assert.equal(game.viewFor(A).direction, 1);
+  }
+});

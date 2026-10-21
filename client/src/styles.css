@@ -633,11 +633,22 @@ body.no-scroll { overflow: hidden; }
   position: absolute; top: -10px; left: -10px; z-index: 2; width: 28px; height: 28px; border-radius: 50%;
   background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 13px; display: grid; place-items: center; box-shadow: var(--shadow-card);
 }
-.bomb-track { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+.bomb-track { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; align-items: center; margin: 4px 0 8px; }
 .bomb-track .slot {
-  width: 24px; height: 34px; padding: 0; border-radius: 5px; font-size: 13px;
+  width: 34px; height: 44px; padding: 0; border-radius: 6px; font-size: 14px; font-weight: 700;
   background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+  display: inline-grid; place-items: center;
 }
+.bomb-track .slot.wide { width: auto; padding: 0 12px; font-size: 13px; font-weight: 600; }
+.bomb-track .slot-gap { color: var(--muted); font-weight: 700; padding: 0 2px; }
+/* chọn vị trí nhét bom: lên/xuống từng lá cho chính xác */
+.bomb-stepper { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 6px 0 10px; }
+.bomb-stepper > button { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; border-radius: 12px; }
+.bomb-pos-big {
+  min-width: 210px; text-align: center; font-size: 18px; font-weight: 700; padding: 8px 14px; border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+.bomb-pos-big.empty { color: var(--muted); font-weight: 600; background: var(--surface-2); border-color: var(--border); }
 .bomb-track .slot:hover { transform: translateY(-2px); border-color: var(--accent); }
 .bomb-track .slot.on { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateY(-4px); }
 
@@ -1403,8 +1414,10 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   .wiz-card .card-sm, .wiz-card .card-md { --w: 68px; }
   .future { gap: 10px; }
   .future .card-xl { --w: 92px; }
-  .bomb-track { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
-  .bomb-track .slot { flex: 0 0 28px; height: 36px; }
+  .bomb-track { gap: 5px; }
+  .bomb-track .slot { width: 36px; height: 44px; }
+  .bomb-track .slot.wide { width: auto; }
+  .bomb-pos-big { min-width: 0; flex: 1; font-size: 16px; }
   .rules-grid { grid-template-columns: 1fr; }
   .rule-item { padding: 8px; }
   .profile-head { flex-direction: column; align-items: stretch; gap: 10px; }

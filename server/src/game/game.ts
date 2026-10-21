@@ -1269,6 +1269,7 @@ export class Game {
       hand: this.player(id)?.hand ?? [],
       currentPlayerId: this.phase === 'playing' ? this.current()?.id : undefined,
       turnsRemaining: this.turnsRemaining,
+      direction: this.direction,
       turnDeadline: this.phase === 'playing' ? this.turnDeadline : undefined,
       deckCount: this.gameMode === 'blackjack_21' ? this.bjDeck.length : this.deck.length,
       discardTop: this.discard.at(-1)?.type,

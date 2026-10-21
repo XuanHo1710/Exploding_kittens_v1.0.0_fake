@@ -597,7 +597,8 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   const [stealIdx, setStealIdx] = useState<number | null>(null);
   /** Thu Gom Rác / Trộm Mộ: lá đang chọn để xáo vào chồng rút */
   const [returnId, setReturnId] = useState<string | null>(null);
-  const [bombPos, setBombPos] = useState(0);
+  /** Vị trí nhét bom (0 = trên cùng). null = chưa chọn: mỗi lần nhét đều phải chọn lại, không giữ vị trí cũ */
+  const [bombPos, setBombPos] = useState<number | null>(null);
   const [shuffling, setShuffling] = useState<string | null>(null);
   const [transferBanner, setTransferBanner] = useState<string | null>(null);
   const [kickAsk, setKickAsk] = useState<PublicPlayer | null>(null);
@@ -650,7 +651,54 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
   const returning = waiting?.kind === 'return_card' && waiting.pendingIds.includes(meId);
   const altering = waiting?.kind === 'alter_future' && waiting.playerId === meId && !!waiting.cards?.length;
   const stealing = waiting?.kind === 'steal_pick' && waiting.playerId === meId;
-  const canDraw = alive && myTurn && !pending && !waiting && view.phase === 'playing';
+  /** Vừa bấm rút: khoá tới khi server trả trạng thái mới, tránh bấm đúp rút 2 lá (khi đang có 2 lượt) */
+  const [drawSent, setDrawSent] = useState(false);
+  useEffect(() => {
+    setDrawSent(false);
+  }, [view.deckCount, view.currentPlayerId, view.turnsRemaining, waiting?.kind]);
+  useEffect(() => {
+    if (!drawSent) return;
+    const t = window.setTimeout(() => setDrawSent(false), 2500);
+    return () => clearTimeout(t);
+  }, [drawSent]);
+  const canDraw = alive && myTurn && !pending && !waiting && view.phase === 'playing' && !drawSent;
+  const drawCard = () => {
+    if (!canDraw) return;
+    setDrawSent(true);
+    emit('game:draw');
+  };
+  /**
+   * Ai sẽ rút lá ở từng vị trí trên cùng (nếu không ai xáo / đổi bài):
+   * người đang nhét còn lượt thì rút tiếp, sau đó lần lượt từng người còn sống theo chiều vòng chơi.
+   */
+  const upcomingDrawers = (placerId: string, count: number): string[] => {
+    const ps = view.players;
+    const n = ps.length;
+    const dir = view.direction ?? 1;
+    let idx = ps.findIndex((p) => p.id === placerId);
+    if (idx < 0) return [];
+    let extra = Math.max(0, view.turnsRemaining - 1);
+    const seq: string[] = [];
+    while (seq.length < count) {
+      if (extra > 0) {
+        seq.push(ps[idx].id);
+        extra--;
+        continue;
+      }
+      let next = -1;
+      for (let k = 1; k <= n; k++) {
+        const j = (((idx + k * dir) % n) + n) % n;
+        if (ps[j].alive && !ps[j].left) {
+          next = j;
+          break;
+        }
+      }
+      if (next < 0) break;
+      idx = next;
+      seq.push(ps[idx].id);
+    }
+    return seq;
+  };
 
   const alterKey = waiting?.kind === 'alter_future' && waiting.cards ? waiting.cards.map((c) => c.id).join(',') : '';
   useEffect(() => {
@@ -820,10 +868,11 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
     setWizardOpen(false);
   }, [myActionTime]);
 
+  // Mỗi lần phải nhét (Gỡ Bom / Chôn Bài) đều bắt đầu từ "chưa chọn"
+  const placeKey = placing && waiting?.kind === 'defuse_place' ? waiting.deadline : 0;
   useEffect(() => {
-    if (placing && waiting?.kind === 'defuse_place') setBombPos((p) => Math.min(p, waiting.deckCount));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [placing]);
+    setBombPos(null);
+  }, [placeKey]);
 
   // Âm thanh: tới lượt mình, có người đánh bài, có người Nope, bị xin bài
   useEffect(() => {
@@ -1273,7 +1322,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
             ref={deckRef}
             className={`deck${canDraw ? ' can-draw' : ''}${shuffling ? ' shuffling' : ''}`}
             disabled={!canDraw}
-            onClick={() => emit('game:draw')}
+            onClick={drawCard}
             title="Rút bài"
           >
             <span className="riffle" aria-hidden="true" ref={riffleRef}>
@@ -1554,7 +1603,7 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
                 </button>
               )}
               {canDraw && (
-                <button className="secondary" onClick={() => emit('game:draw')}>
+                <button className="secondary" onClick={drawCard}>
                   <Layers size={15} /> Rút bài
                 </button>
               )}
@@ -1682,66 +1731,64 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         </Modal>
       )}
 
-      {placing && waiting?.kind === 'defuse_place' && (
-        <Modal title={<span className="modal-title-icon"><ShieldCheck size={19} /> {waiting.bury ? 'Chôn Bài' : 'Gỡ bom thành công!'}</span>} width={480}>
-          <p>
-            {waiting.bury ? 'Bí mật nhét lá bạn vừa rút lại vào chồng bài' : 'Bí mật nhét Mèo Nổ lại vào chồng bài'}. Còn <b>{secs(waiting.deadline)}s</b>, hết giờ sẽ nhét ngẫu nhiên.
-          </p>
-          <div className="bomb-track">
-            {Array.from({ length: Math.min(waiting.deckCount, 24) + 1 }, (_, i) => {
-              const pos = waiting.deckCount <= 24 ? i : Math.round((i / 24) * waiting.deckCount);
-              return (
-                <button
-                  key={i}
-                  className={pos === bombPos ? 'slot on' : 'slot'}
-                  onClick={() => {
-                    sfx('tap');
-                    setBombPos(pos);
-                  }}
-                  title={`Vị trí ${pos + 1}`}
-                >
-                  {pos === bombPos ? <Bomb size={13} /> : ''}
+      {placing && waiting?.kind === 'defuse_place' && (() => {
+        const n = waiting.deckCount;
+        const pos = bombPos === null ? null : Math.min(bombPos, n);
+        const drawers = upcomingDrawers(waiting.playerId, Math.min(n, 60) + 1);
+        const drawer = pos === null ? undefined : drawers[pos];
+        const what = waiting.bury ? 'lá vừa rút' : 'Mèo Nổ';
+        const posLabel = pos === null ? 'Chưa chọn vị trí' : pos === 0 ? 'Lá thứ 1 · trên cùng' : pos === n ? `Dưới cùng · lá thứ ${n + 1}` : `Lá thứ ${pos + 1} từ trên xuống`;
+        // Ô chọn nhanh: đúng 1 ô = 1 vị trí (không co giãn), chồng bài dài thì dùng nút −/+ hoặc thanh kéo
+        const exact = Array.from({ length: Math.min(n, 9) + 1 }, (_, k) => k);
+        const quick: [string, number][] = [['Giữa', Math.floor(n / 2)], ['Dưới cùng', n]];
+        return (
+          <Modal title={<span className="modal-title-icon"><ShieldCheck size={19} /> {waiting.bury ? 'Chôn Bài' : 'Gỡ bom thành công!'}</span>} width={520}>
+            <p>
+              Bí mật nhét {what} lại vào chồng bài ({n} lá). Còn <b>{secs(waiting.deadline)}s</b>, hết giờ sẽ nhét ngẫu nhiên.
+            </p>
+            <div className="bomb-stepper">
+              <button type="button" className="secondary" aria-label="Lên trên 1 lá" disabled={pos === null || pos <= 0} onClick={() => setBombPos((p) => Math.max(0, (p ?? 0) - 1))}>
+                <ArrowUp size={16} />
+              </button>
+              <div className={`bomb-pos-big${pos === null ? ' empty' : ''}`} aria-live="polite">{posLabel}</div>
+              <button type="button" className="secondary" aria-label="Xuống dưới 1 lá" disabled={pos === n} onClick={() => setBombPos((p) => (p === null ? 0 : Math.min(n, p + 1)))}>
+                <ArrowDown size={16} />
+              </button>
+            </div>
+            <div className="bomb-track" role="group" aria-label="Chọn vị trí">
+              {exact.map((k) => (
+                <button key={k} type="button" className={k === pos ? 'slot on' : 'slot'} onClick={() => { sfx('tap'); setBombPos(k); }} title={`Lá thứ ${k + 1}`}>
+                  {k === pos ? <Bomb size={13} /> : k + 1}
                 </button>
-              );
-            })}
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={waiting.deckCount}
-            value={bombPos}
-            aria-label="Vị trí đặt lại Mèo Nổ trong chồng bài"
-            onChange={(e) => setBombPos(Number(e.target.value))}
-          />
-          <p className="center bomb-pos">
-            {bombPos === 0 ? (
-              <>
-                <ArrowUp size={14} className="inline-icon" /> Trên cùng: người kế tiếp rút trúng lá này ngay!
-              </>
-            ) : bombPos === waiting.deckCount ? (
-              <>
-                <ArrowDown size={14} className="inline-icon" /> Dưới cùng
-              </>
-            ) : (
-              `Lá thứ ${bombPos + 1} từ trên xuống`
+              ))}
+              {n > 9 && <span className="slot-gap">…</span>}
+              {quick.filter(([, k]) => k > 9).map(([label, k]) => (
+                <button key={label} type="button" className={k === pos ? 'slot wide on' : 'slot wide'} onClick={() => { sfx('tap'); setBombPos(k); }}>
+                  {label}
+                </button>
+              ))}
+              <button type="button" className="slot wide" onClick={() => { sfx('tap'); setBombPos(Math.floor(Math.random() * (n + 1))); }}>
+                Ngẫu nhiên
+              </button>
+            </div>
+            {n > 9 && (
+              <input type="range" min={0} max={n} value={pos ?? 0} aria-label={`Vị trí đặt lại ${what} trong chồng bài`} onChange={(e) => setBombPos(Number(e.target.value))} />
             )}
-          </p>
-          <div className="seg">
-            <button className={bombPos === 0 ? 'on' : ''} onClick={() => setBombPos(0)}>
-              Trên cùng
-            </button>
-            <button onClick={() => setBombPos(Math.floor(Math.random() * (waiting.deckCount + 1)))}>Ngẫu nhiên</button>
-            <button className={bombPos === waiting.deckCount ? 'on' : ''} onClick={() => setBombPos(waiting.deckCount)}>
-              Dưới cùng
-            </button>
-          </div>
-          <div className="modal-actions">
-            <button className="primary big" onClick={() => emit('game:place', { position: bombPos })}>
-              <Bomb size={17} /> Nhét vào
-            </button>
-          </div>
-        </Modal>
-      )}
+            <p className={`center bomb-pos${drawer === meId ? ' bad-text' : ''}`}>
+              {pos === null
+                ? 'Chọn vị trí: lá thứ 1 là lá người kế tiếp rút ngay.'
+                : drawer
+                  ? <>Nếu không ai xáo / đổi bài: <b>{drawer === meId ? 'chính bạn' : nameOf(drawer)}</b> sẽ rút trúng {what}{pos > 0 ? ` (sau ${pos} lá an toàn)` : ' ngay lượt rút kế tiếp'}.</>
+                  : `Còn ${pos} lá phía trên ${what}.`}
+            </p>
+            <div className="modal-actions">
+              <button className="primary big" disabled={pos === null} onClick={() => pos !== null && emit('game:place', { position: pos })}>
+                <Bomb size={17} /> {pos === null ? 'Chọn vị trí trước' : `Nhét vào lá thứ ${pos + 1}`}
+              </button>
+            </div>
+          </Modal>
+        );
+      })()}
 
       {wizardOpen && kind && canPlay && (
         <PlayWizard
