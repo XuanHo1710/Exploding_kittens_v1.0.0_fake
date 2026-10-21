@@ -571,6 +571,11 @@ button.card:not(:disabled):active { transform: scale(0.97) !important; }
 .my-area.my-turn { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent), var(--shadow); }
 .my-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .my-status { flex: 1; min-width: 200px; font-size: 14.5px; }
+/* Xì Dách / Tiến Lên: avatar luôn tròn (không giãn hết chiều ngang), tên & trạng thái nằm cạnh avatar */
+.bj-game .my-status, .tl-game .my-status { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.bj-game .my-status > .ring, .tl-game .my-status > .ring { flex: none; width: fit-content; }
+.bj-game .my-status > div:not(.ring):not(.quick-emotes),
+.tl-game .my-status > div:not(.ring):not(.quick-emotes) { flex: 1; min-width: 0; }
 .my-status.go { font-size: 15px; }
 .my-status.warn { color: var(--accent); font-weight: 600; }
 .my-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -2155,3 +2160,71 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 }
 
 
+
+/* =========================================================
+   MOBILE (≤760px): sửa lệch bố cục & gọn màn hình điện thoại
+   ========================================================= */
+@media (max-width: 760px) {
+  /* Ghế đang tới lượt: ghế xếp tĩnh nên không dịch -50% (trước bị lệch ra ngoài màn hình) */
+  .seat.turn, .seats.crowded .seat.turn { width: 76px; transform: scale(1.06); }
+
+  /* Thanh công cụ bàn Mèo Nổ: chỉ để icon cho vừa 1 hàng */
+  .arena-tools { flex-wrap: nowrap; }
+  .arena-tools .icon-btn > span:not(.badge) { display: none; }
+
+  /* Màn đăng nhập / trang chủ: thu nhỏ hình bìa để thấy form ngay màn đầu */
+  .landing { padding-top: 56px; gap: 14px; }
+  .landing-hero { gap: 8px; }
+  .hero { width: min(220px, 62vw); margin-bottom: 4px; }
+  .hero .hero-card { --w: min(108px, 30vw); }
+  .landing-title { font-size: 40px; margin-top: 2px; }
+  .landing-sub { font-size: 14px; margin: 0; }
+  .landing-panel .panel { padding: 18px 16px; gap: 14px; }
+
+  /* Phòng chờ: ghế trống gọn lại, không chiếm cả màn hình khi phòng 10 chỗ */
+  .lobby-seat.empty { flex-direction: row; justify-content: center; padding: 8px 6px; gap: 6px; }
+  .lobby-seat.empty .empty-avatar { width: 28px; height: 28px; }
+  .lobby-seat.empty .empty-avatar svg { width: 15px; height: 15px; }
+
+  /* Phòng chờ: nút Sẵn sàng / Bắt đầu dính đáy màn hình, không phải cuộn qua hết luật mới bấm được */
+  .lobby-actions {
+    position: sticky; bottom: 0; z-index: 6;
+    padding: 10px 8px max(10px, env(safe-area-inset-bottom)); border-radius: 12px;
+    background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border);
+  }
+  .lobby-actions > .ghost { padding: 4px; min-height: 0; }
+
+  /* Tên chế độ chơi trên thanh trên cùng: một dòng, dài quá thì cắt */
+  .mode-pill { max-width: 46vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Xì Dách / Tiến Lên: avatar mình là hình tròn (trước bị giãn thành bầu dục),
+     avatar + tên cùng một hàng, nút thao tác lên trước thanh biểu cảm */
+  .bj-game .my-bar, .tl-game .my-bar { flex-wrap: wrap; gap: 8px 10px; }
+  .bj-game .my-status, .tl-game .my-status { display: contents; }
+  .bj-game .my-status > .ring, .tl-game .my-status > .ring { flex: none; width: fit-content; order: 1; }
+  .bj-game .my-status > div:not(.ring):not(.quick-emotes),
+  .tl-game .my-status > div:not(.ring):not(.quick-emotes) { flex: 1; min-width: 0; order: 2; }
+  .bj-game .my-actions, .tl-game .my-actions { order: 3; flex-basis: 100%; }
+  .bj-game .my-actions:empty, .tl-game .my-actions:empty { display: none; }
+  .bj-game .quick-emotes, .tl-game .quick-emotes { order: 4; margin: 0 auto; }
+  .bj-game .my-actions button, .tl-game .my-actions button { flex: 1; justify-content: center; }
+  .bj-hand, .tl-hand { min-height: 0; padding: 14px 8px 10px; }
+
+  /* Xì Dách tới lượt mình: nút Rút / Dừng nổi ở đáy màn hình (bàn 10 người phải cuộn rất xa mới tới) */
+  .bj-game .my-area.my-turn .my-actions {
+    position: fixed; left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); z-index: 40;
+    display: flex; gap: 8px; padding: 8px; border-radius: 14px;
+    background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(8px);
+    border: 1px solid var(--border); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+  }
+  .bj-game:has(.my-area.my-turn) { padding-bottom: 92px; }
+
+  /* Xì Dách đông người: bài của người khác chồng sát lại, không tràn sang ghế bên cạnh */
+  .bj-seat-cards { max-width: 100%; }
+  .bj-seat-cards .card-xs { --w: 30px; margin: 0; }
+  .bj-seat-cards .card-xs + .card-xs { margin-left: -18px; }
+
+  /* Gợi ý luật trên nền xanh đậm: đủ tương phản để đọc */
+  .bj-turn-banner .muted { color: rgba(226, 232, 240, 0.82); }
+}
