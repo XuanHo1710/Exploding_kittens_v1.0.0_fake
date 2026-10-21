@@ -32,8 +32,18 @@ function start(game, bet = 0) {
   for (const p of game.players) if (p.id !== game.hostId) game.setReady(p.id, true, game.rulesVersion);
   game.bet = bet;
   game.pot = bet * game.players.length;
+  const order = game.players.map((p) => p.id);
   game.start(game.hostId);
+  keepSeats(game, order);
 }
+
+/** Mèo Nổ đổi chỗ ngẫu nhiên mỗi ván: test đưa chỗ ngồi về thứ tự vào phòng cho dễ kiểm tra */
+function keepSeats(game, order) {
+  const cur = game.players[game.currentIdx]?.id;
+  game.players.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+  if (cur) game.currentIdx = game.players.findIndex((p) => p.id === cur);
+}
+
 
 // ---------- phòng ----------
 

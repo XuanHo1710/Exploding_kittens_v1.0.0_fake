@@ -370,6 +370,10 @@ export class Game {
         return;
       }
 
+      // Mèo Nổ: mỗi ván xếp lại chỗ ngồi ngẫu nhiên (thứ tự lượt đi theo chỗ ngồi)
+      shuffle(this.players);
+      this.addLog(`🔀 Đổi chỗ ngẫu nhiên: ${this.players.map((p) => p.name).join(' → ')}.`);
+
       const n = this.players.length;
       const pool: Card[] = [];
       for (const [type, count] of Object.entries(this.roomRules.cardCounts) as [CardType, number][]) {

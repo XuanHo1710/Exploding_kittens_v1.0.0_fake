@@ -26,8 +26,18 @@ function gameFixture(t, rules = {}) {
 
 function start(game) {
   for (const p of game.players) if (p.id !== game.hostId) game.setReady(p.id, true, game.rulesVersion);
+  const order = game.players.map((p) => p.id);
   game.start(HOST);
+  keepSeats(game, order);
 }
+
+/** Mèo Nổ đổi chỗ ngẫu nhiên mỗi ván: test đưa chỗ ngồi về thứ tự vào phòng cho dễ kiểm tra */
+function keepSeats(game, order) {
+  const cur = game.players[game.currentIdx]?.id;
+  game.players.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+  if (cur) game.currentIdx = game.players.findIndex((p) => p.id === cur);
+}
+
 
 function roomsFixture(t) {
   const calls = [];
@@ -332,6 +342,7 @@ test('special cards (targeted_attack, personal_attack, super_skip, reverse, swap
   game.setReady(PEER, true, game.rulesVersion);
   game.setReady(THIRD, true, game.rulesVersion);
   game.start(HOST);
+  keepSeats(game, [HOST, PEER, THIRD]);
 
   // targeted_attack targets THIRD directly
   game.players[0].hand = [card('targeted_attack', 'tat-1')];

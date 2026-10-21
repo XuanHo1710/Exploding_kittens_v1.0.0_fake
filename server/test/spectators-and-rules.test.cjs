@@ -78,6 +78,22 @@ test('Mèo Hoang chỉ thay lá mèo, không ghép với lá chức năng kể c
   assert.deepEqual(comboGroupFor(hand, 'feral_cat', rules).map((c) => c.id).sort(), ['1', '3']);
 });
 
+// ---------- đổi chỗ ngẫu nhiên ----------
+
+test('Mèo Nổ: mỗi ván xếp lại chỗ ngồi ngẫu nhiên', (t) => {
+  const { game } = room(t);
+  const orders = new Set();
+  for (let i = 0; i < 30; i++) {
+    game.phase = 'lobby';
+    start(game);
+    assert.deepEqual(game.players.map((p) => p.id).sort(), [A, B, C].sort(), 'vẫn đủ người');
+    assert.equal(game.current().id, game.hostId, 'chủ phòng vẫn đi trước khi phòng chọn như vậy');
+    orders.add(game.players.map((p) => p.id).join());
+  }
+  assert.ok(orders.size > 1, 'thứ tự chỗ ngồi thay đổi giữa các ván');
+  assert.match(game.viewFor(A).log.join('\n'), /Đổi chỗ ngẫu nhiên/);
+});
+
 // ---------- Trộm Mộ ----------
 
 test('Trộm Mộ: chưa ai chết thì không đánh được (không mất lá)', (t) => {
