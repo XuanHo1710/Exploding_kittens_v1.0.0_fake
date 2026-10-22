@@ -837,7 +837,7 @@ export class Game {
       }
 
       // Kiểm tra lượt: 4 Đôi Thông được phép chặt bất cứ lúc nào khi trên bàn có Heo / Hàng; còn lại phải đúng lượt
-      const isFourPairsInterrupt = combo.kind === 'four_pairs' && !!this.tlTableCombo;
+      const isFourPairsInterrupt = combo.kind === 'four_pairs' && !!this.tlTableCombo && this.tlLastActorId !== playerId;
       if (!isFourPairsInterrupt) {
         if (this.current()?.id !== playerId) throw new GameError('Chưa tới lượt bạn.');
         if (this.tlPassedIds.has(playerId) && this.tlTableCombo) {
@@ -868,6 +868,7 @@ export class Game {
       const prevCombo = this.tlTableCombo;
       this.tlTableCombo = combo;
       this.tlLastActorId = playerId;
+      this.tlPassedIds.delete(playerId);
       this.tlFirstTurnOfMatch = false;
       this.tlLowestCardCode = undefined;
 
@@ -1905,7 +1906,6 @@ export class Game {
     }
     if (this.gameMode === 'tien_len') {
       const leftHand = this.tlHands.get(p.id) ?? [];
-      this.tlHands.delete(p.id);
       this.tlPassedIds.add(p.id);
       // Người giữ lá nhỏ nhất rời trước nước mở đầu: người kế tiếp được đánh tự do
       if (this.tlFirstTurnOfMatch && this.tlLowestCardCode && leftHand.some((c) => c.code === this.tlLowestCardCode)) {

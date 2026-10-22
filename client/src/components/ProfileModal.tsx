@@ -40,7 +40,7 @@ interface Props {
   account: AccountInfo | null;
   onDaily: () => void;
   onLogout: () => void;
-  onSave: (patch: { name: string; avatar?: string }) => Promise<void>;
+  onSave: (patch: { name: string; avatar?: string }, closeAfter?: boolean) => Promise<void>;
   onClose: () => void;
 }
 
@@ -50,8 +50,31 @@ export default function ProfileModal({ identity, account, onDaily, onLogout, onS
   const [seeds, setSeeds] = useState(randomSeeds);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savedNotice, setSavedNotice] = useState('');
   const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const persist = async (nextName: string, nextAvatar: string | undefined, closeAfter = false) => {
+    const trimmed = nextName.trim();
+    if (!trimmed || saving || uploading) return;
+    if (!closeAfter && trimmed === identity.name && nextAvatar === identity.avatar) return;
+    setSaving(true);
+    setError('');
+    setSavedNotice('');
+    try {
+      await onSave({ name: trimmed, avatar: nextAvatar }, closeAfter);
+      if (!closeAfter) setSavedNotice('✓ Đã tự động lưu');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Không lưu được hồ sơ. Vui lòng thử lại.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const pickAvatar = (nextAvatar: string | undefined) => {
+    setAvatar(nextAvatar);
+    void persist(name, nextAvatar, false);
+  };
 
   const upload = async (file?: File) => {
     if (!file || saving) return;
@@ -71,6 +94,8 @@ export default function ProfileModal({ identity, account, onDaily, onLogout, onS
       const json = await res.json();
       if (!res.ok) throw new Error(json?.message ?? 'Tải ảnh lỗi');
       setAvatar(json.url);
+      setUploading(false);
+      await persist(name, json.url, false);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Tải ảnh lỗi, thử lại nhé.');
     } finally {
@@ -83,16 +108,12 @@ export default function ProfileModal({ identity, account, onDaily, onLogout, onS
   const changed = name.trim() !== identity.name || avatar !== identity.avatar;
 
   const save = async () => {
-    if (saving || uploading || !name.trim() || !changed) return;
-    setSaving(true);
-    setError('');
-    try {
-      await onSave({ name: name.trim(), avatar });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Không lưu được hồ sơ. Vui lòng thử lại.');
-    } finally {
-      setSaving(false);
+    if (saving || uploading || !name.trim()) return;
+    if (!changed) {
+      onClose();
+      return;
     }
+    await persist(name, avatar, true);
   };
 
   return (
@@ -106,8 +127,22 @@ export default function ProfileModal({ identity, account, onDaily, onLogout, onS
           <label className="muted small" htmlFor="profile-name">
             Tên hiển thị
           </label>
-          <input id="profile-name" maxLength={20} value={name} disabled={saving} onChange={(e) => setName(e.target.value)} />
-          <span className="muted small">Đăng nhập máy khác bằng tên này + mã PIN</span>
+          <input
+            id="profile-name"
+            maxLength={20}
+            value={name}
+            disabled={saving}
+            onChange={(e) => {
+              setName(e.target.value);
+              setSavedNotice('');
+            }}
+            onBlur={() => {
+              if (name.trim() && name.trim() !== identity.name) void persist(name, avatar, false);
+            }}
+          />
+          <span className="muted small">
+            {saving ? '⏳ Đang tự động lưu…' : savedNotice || 'Đăng nhập máy khác bằng tên này + mã PIN'}
+          </span>
         </div>
       </div>
 
@@ -146,7 +181,7 @@ export default function ProfileModal({ identity, account, onDaily, onLogout, onS
         </div>
         <div className="avatar-grid">
           {options.map((a) => (
-            <button key={a ?? 'default'} className={`avatar-opt${a === avatar ? ' on' : ''}`} disabled={saving} onClick={() => setAvatar(a)} title={a ? 'Biểu tượng ngẫu nhiên' : 'Biểu tượng mặc định'}>
+            <button key={a ?? 'default'} className={`avatar-opt${a === avatar ? ' on' : ''}`} disabled={saving} onClick={() => pickAvatar(a)} title={a ? 'Biểu tượng ngẫu nhiên' : 'Biểu tượng mặc định'}>
               <PlayerAvatar id={identity.playerId} avatar={a} size={52} />
             </button>
           ))}
@@ -174,10 +209,10 @@ export default function ProfileModal({ identity, account, onDaily, onLogout, onS
           <LogOut size={16} /> Đăng xuất
         </button>
         <button className="ghost" disabled={saving} onClick={onClose}>
-          Huỷ
+          Đóng
         </button>
-        <button className="primary big" disabled={!name.trim() || uploading || saving || !changed} onClick={save}>
-          {saving ? 'Đang lưu…' : 'Lưu'}
+        <button className="primary big" disabled={!name.trim() || uploading || saving} onClick={save}>
+          {saving ? 'Đang lưu…' : changed ? 'Lưu & Đóng' : 'Xong'}
         </button>
       </div>
     </Modal>

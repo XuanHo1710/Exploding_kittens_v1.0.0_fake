@@ -843,20 +843,24 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
     return true;
   };
   /** Lá sáng = bấm là đánh được ngay */
+  const canPlaySingle = (c: Card) => {
+    if (!SINGLE.includes(c.type)) return false;
+    if (c.type === 'clone') return cloneKind !== 'clone' && singleUsable(cloneKind);
+    return singleUsable(c.type as ActionKind);
+  };
   const isPlayable = (c: Card) => {
     if (!alive || view.phase !== 'playing' || waiting) return false;
     if (pending) return NOPE_CARD_TYPES.includes(c.type) && canNopePending;
     if (!myActionTime) return false;
     if (SINGLE.includes(c.type)) {
-      // Nhân Bản: sáng khi lá trên đỉnh chồng bỏ là lá chức năng dùng được lúc này
-      if (c.type === 'clone') return (cloneKind !== 'clone' && singleUsable(cloneKind)) || canComboType(c.type);
-      return singleUsable(c.type as ActionKind);
+      return canPlaySingle(c) || canComboType(c.type);
     }
     return canComboType(c.type);
   };
   const nopeCard = canNopePending ? view.hand.find((c) => c.type === 'nope') : undefined;
   const superNopeCard = canNopePending ? view.hand.find((c) => c.type === 'super_nope') : undefined;
-  const canPlay = myActionTime && !!kind && (!needsTarget || targets.length > 0);
+  const singleKindValid = selCards.length !== 1 || (kind !== 'clone' && !!kind && singleUsable(kind));
+  const canPlay = myActionTime && !!kind && singleKindValid && (!needsTarget || targets.length > 0);
   /** Combo 5 lá khác nhau: lục chồng bài bỏ (gồm cả 5 lá vừa đánh) */
   const fiveDiscardTypes = [...new Set([...view.discardTypes, ...selCards.map((c) => c.type)])].filter((t) => t !== 'exploding');
   const canFive = rules.allowFive && new Set(view.hand.filter((c) => c.type !== 'exploding').map((c) => c.type)).size >= 5;
@@ -990,13 +994,13 @@ export default function GameBoard({ view, meId, emit, notice, onCloseNotice, rev
         sfx('deny');
         return;
       }
-      if (NOPE_CARD_TYPES.includes(card.type)) {
+      if (pending && NOPE_CARD_TYPES.includes(card.type)) {
         flyOut([card.id]);
         sfx('nope');
         emit('game:play', { cardIds: [card.id] });
         return;
       }
-      if (CARD_INFO[card.type].isCat || !SINGLE.includes(card.type)) {
+      if (CARD_INFO[card.type].isCat || !canPlaySingle(card)) {
         // bài ghép cặp (mèo, mèo đa năng hoặc bài khác khi comboScope='any'): bấm để nhấc lên / hạ xuống
         const on = sel.includes(card.id);
         sfx(on ? 'unselect' : 'select');
