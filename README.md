@@ -51,6 +51,28 @@ Server phục vụ luôn giao diện đã build, chỉ cần mở 1 cổng.
 | Tranh vector lá bài, avatar mèo | `client/src/art/` |
 | Màu nền sáng / tối | đầu file `client/src/styles.css` |
 
+## 🐜 Đế Chế Kiến (chiến thuật 2D thời gian thực)
+
+Chọn **Đế Chế Kiến** khi tạo phòng. Tối đa 10 đế chế (người + máy), bản đồ 2D rộng theo số đế chế, sáng toàn bộ (ai cũng thấy hết căn cứ, trụ và kiến).
+Chủ phòng chỉnh số máy, độ khó và thời gian trận trong phòng chờ.
+
+- **Vàng:** khởi đầu 500, mỗi 1 phút được cấp thêm (225 → 300 → 375 …).
+- **Tự ra quân:** bấm 1 ô trong danh sách 10 loại kiến – trại tự nở loại đó liên tục, từng con một (hiện "+1" mỗi con).
+  Mỗi con trừ vàng lúc bắt đầu nở; hết vàng thì chờ lần cấp vàng kế tiếp rồi tự ra tiếp. Bấm lại ô đó / chuột phải: dừng.
+- **3 trụ mỗi đế chế:** 2 Trụ Phụ (tầm 320) + 1 Trụ Chính (tầm 360), tự bắn kiến địch tới gần – ưu tiên con đang đánh trụ.
+  Mỗi phát đạn hạ gọn 1 kiến, nạp đạn 5 giây; không loại kiến nào đánh được trụ từ ngoài tầm bắn. Mất Trụ Chính là bị loại.
+- **Lệnh chung:** nút **⚔️ Tổng tấn công** (chọn đế chế gần nhất hoặc một đế chế cụ thể) – cả đạo quân tự hành quân,
+  phá Trụ Phụ rồi Trụ Chính, đổ trụ này tự sang trụ kế. Nút **🛡️ Phòng thủ** – cả đạo quân về giữ căn cứ. Quân mới nở tự theo lệnh đang chọn.
+- **Bản đồ chỉ để xem:** kéo chuột / 1 ngón để di chuyển, lăn chuột / chụm 2 ngón để phóng to, bấm bản đồ nhỏ để nhìn tới đó.
+- Phím tắt: `1–9, 0` chọn loại tự ra quân · `T` tổng tấn công · `P` phòng thủ · `WASD` di chuyển · `Space` về căn cứ.
+
+| Muốn đổi | Sửa ở |
+|---|---|
+| Giá, máu, sát thương kiến · trụ · vàng | `shared/src/ants.ts` |
+| Bản đồ, luật mô phỏng | `server/src/game/ants/world.ts` |
+| Cách máy chơi | `server/src/game/ants/bot.ts` |
+| Hình vẽ kiến / trụ / đạn / bản đồ | `client/src/ants/render.ts` |
+
 ## Luật & bộ bài tùy chỉnh
 
 **Tạo phòng** mở phần chọn luật trước khi tạo mã: Cân bằng, Ván nhanh, Căng thẳng, Luật cũ hoặc tự chỉnh số lượng bài, bom, Gỡ Bom, combo và thời gian. Trong phòng chờ, chủ phòng có thể **Sửa luật**; mọi người phải **Đồng ý luật & sẵn sàng** trước khi bắt đầu. Đổi luật hoặc mức cược sẽ yêu cầu xác nhận lại. Server kiểm tra đủ bài và khóa luật trong ván.
