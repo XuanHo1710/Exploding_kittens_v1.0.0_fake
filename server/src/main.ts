@@ -20,7 +20,8 @@ async function bootstrap() {
   await app.listen(port, '0.0.0.0');
   console.log(`🐱💣 Mèo Nổ server chạy ở http://localhost:${port}`);
 }
-bootstrap().catch(() => {
+bootstrap().catch((err) => {
   console.error('Không khởi động được backend. Kiểm tra cấu hình và kết nối nơi lưu tài khoản.');
+  console.error(err);
   process.exitCode = 1;
 });

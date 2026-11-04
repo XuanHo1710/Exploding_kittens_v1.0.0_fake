@@ -4,7 +4,14 @@ import { fileURLToPath } from 'node:url';
 
 // Cổng giao diện (mặc định 8801) và domain public trỏ qua cloudflared tunnel
 const PORT = Number(process.env.PORT) || 8801;
-const PUBLIC_HOSTS = ['dev.meo.no', 'meo.no', 'dev-ho.anai.io.vn'];
+const PUBLIC_HOSTS = [
+  'dev.meo.no',
+  'meo.no',
+  'dev-ho.anai.io.vn',
+  'dev.social-chat-xuanho.io.vn',
+  'social-chat-xuanho.io.vn',
+  '.trycloudflare.com',
+];
 
 export default defineConfig({
   plugins: [react()],
