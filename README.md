@@ -73,6 +73,32 @@ Chủ phòng chỉnh số máy, độ khó và thời gian trận trong phòng c
 | Cách máy chơi | `server/src/game/ants/bot.ts` |
 | Hình vẽ kiến / trụ / đạn / bản đồ | `client/src/ants/render.ts` |
 
+## ⚡ Nối Thú Đại Chiến (nối hình 2–6 người realtime)
+
+Chọn **Nối Thú Đại Chiến** khi tạo phòng. **2–6 người** (2 người là solo 1v1); chủ phòng thêm **máy** cho đủ chỗ và chọn độ khó Dễ / Thường / Khó
+(phòng chỉ có 1 người thì luôn có ít nhất 1 máy).
+Ô dùng 36 emoji con vật khác hẳn nhau (chó, mèo, gấu trúc, voi, cua…) cho dễ nhìn; máy không có font emoji thì dùng bộ thú vẽ tay.
+
+- **Luật nối:** bấm 2 ô cùng con thú; nối được nếu có đường đi qua ô trống, **gấp khúc tối đa 2 lần**, được vòng ra ngoài mép bàn.
+  Bàn 16×9, hai người cùng một đề. Hết nước đi thì bàn tự xáo. Gợi ý (phím `H`) hồi 15 giây, trừ 5 điểm.
+- **Màn 1 – Đua Nối (150 giây):** mỗi cặp 10 điểm, nối liên tiếp trong 3 giây thì combo (+5 mỗi bậc). Combo nạp ⚡ Sấm;
+  đầy Sấm tung **❄️ Đóng Băng** (6 ô đối thủ, 8 giây – phím `1`) hoặc **🌪️ Bão Xáo** (xáo bàn đối thủ – phím `2`).
+  Chiêu mặc định đánh **người đang dẫn đầu**; bấm vào bàn nhỏ của một đối thủ để nhắm người đó (bấm lại để bỏ chọn).
+  Dọn sạch bàn trước: +300 và +20 mỗi giây còn lại. Người dẫn trước vào Màn 2 với 50% Sấm.
+- **Màn 2 – Đấm Boss (180 giây):** cả phòng cùng đánh **Vua Sấm Sét** (4000 máu với 2 người, +1250 mỗi người thêm – 6 người là 9000). Mỗi cặp là một cú đấm (25 sát thương, combo nhân thêm,
+  đường dài hơn 10 ô là "Cú Đấm Xa" +20); Sấm đầy tung **⚡ Siêu Đấm** 400 (phím `Space`). Boss có 3 giai đoạn (66% / 33% máu),
+  ra đòn lên bàn cả hai người mỗi 12 / 9 / 6 giây: Mưa Băng, Bóng Tối, Lốc Xáo. Dọn sạch bàn thì nhận bàn mới.
+- **Thắng:** tổng = điểm Màn 1 + sát thương lên Boss + **K.O. +500** cho cú kết liễu. Cao nhất thắng cả hũ; ngang điểm đầu bảng hoặc máy thắng thì hoàn cược.
+- Rời trận giữa chừng là bỏ cuộc (không được thắng; trận vẫn tiếp cho người còn lại, chỉ còn 1 người thì người đó thắng). Server kiểm tra mọi nước nối và giới hạn 8 lệnh/giây; bàn của đối thủ chỉ gửi ô còn / trống.
+
+| Muốn đổi | Sửa ở |
+|---|---|
+| Thời gian, điểm, sát thương, máu Boss, bộ thú | `shared/src/link.ts` |
+| Sinh bàn, tìm đường nối | `server/src/game/link/board.ts` |
+| Luật trận, Boss | `server/src/game/link/duel.ts` |
+| Cách máy chơi | `server/src/game/link/bot.ts` |
+| Hình thú / Boss / hiệu ứng | `client/src/link/tiles.ts`, `client/src/link/fx.ts` |
+
 ## Luật & bộ bài tùy chỉnh
 
 **Tạo phòng** mở phần chọn luật trước khi tạo mã: Cân bằng, Ván nhanh, Căng thẳng, Luật cũ hoặc tự chỉnh số lượng bài, bom, Gỡ Bom, combo và thời gian. Trong phòng chờ, chủ phòng có thể **Sửa luật**; mọi người phải **Đồng ý luật & sẵn sàng** trước khi bắt đầu. Đổi luật hoặc mức cược sẽ yêu cầu xác nhận lại. Server kiểm tra đủ bài và khóa luật trong ván.
