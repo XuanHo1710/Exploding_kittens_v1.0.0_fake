@@ -10,7 +10,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
-import { isValidAvatar, type AntsCommand, type PlayRequest } from '../../../shared/src';
+import { isValidAvatar, type AntsCommand, type LinkCommand, type PlayRequest } from '../../../shared/src';
 import { GameError } from './game';
 import { RoomsService } from './rooms.service';
 import { AccountsService } from '../store/accounts.service';
@@ -286,6 +286,20 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('ants:config')
   antsConfig(@ConnectedSocket() c: Socket, @MessageBody() body: { config: unknown }) {
     return this.handle(c, (me) => this.rooms.setAntsConfig(me.playerId, body?.config));
+  }
+
+  // --- Nối Thú Đại Chiến ---
+  @SubscribeMessage('link:cmd')
+  linkCmd(@ConnectedSocket() c: Socket, @MessageBody() body: LinkCommand) {
+    return this.handle(c, (me) => {
+      if (!body || typeof body !== 'object' || typeof body.t !== 'string') throw new GameError('Lệnh không hợp lệ.');
+      this.game(me).linkCommand(me.playerId, body);
+    });
+  }
+
+  @SubscribeMessage('link:config')
+  linkConfig(@ConnectedSocket() c: Socket, @MessageBody() body: { config: unknown }) {
+    return this.handle(c, (me) => this.rooms.setLinkConfig(me.playerId, body?.config));
   }
 
   private game(me: SocketData) {

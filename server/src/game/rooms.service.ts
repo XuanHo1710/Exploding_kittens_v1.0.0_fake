@@ -35,6 +35,10 @@ export class RoomsService {
       if (this.playerRoom.get(playerId) !== game.code) return;
       this.server.to(`p:${playerId}`).volatile.emit('ants:frame', frame);
     },
+    linkState: (game, playerId, state) => {
+      if (this.playerRoom.get(playerId) !== game.code) return;
+      this.server.to(`p:${playerId}`).emit('link:state', state);
+    },
     removed: (playerId, code) => {
       if (this.playerRoom.get(playerId) !== code) return;
       this.playerRoom.delete(playerId);
@@ -341,8 +345,15 @@ export class RoomsService {
     game.setAntsConfig(playerId, raw);
   }
 
+  setLinkConfig(playerId: string, raw: unknown) {
+    const game = this.roomOf(playerId);
+    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
+    this.assertReady(game);
+    game.setLinkConfig(playerId, raw);
+  }
+
   create(playerId: string, name: string, avatar?: string, rules?: unknown, gameMode?: string) {
-    const mode: GameMode = gameMode === 'blackjack_21' || gameMode === 'tien_len' || gameMode === 'ant_empire' ? gameMode : 'exploding_kittens';
+    const mode: GameMode = gameMode === 'blackjack_21' || gameMode === 'tien_len' || gameMode === 'ant_empire' || gameMode === 'link_duel' ? gameMode : 'exploding_kittens';
     let normalized: RoomRules;
     try { normalized = normalizeRoomRules(rules); }
     catch (error) { throw new GameError(error instanceof Error ? error.message : 'Luật phòng không hợp lệ.'); }

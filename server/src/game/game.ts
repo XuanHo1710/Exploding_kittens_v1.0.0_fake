@@ -45,8 +45,17 @@ import {
   type AntsCommand,
   type AntsConfig,
   type AntsFrame,
+  DEFAULT_LINK_CONFIG,
+  LINK_BOT_LABEL,
+  LINK_MAX_PLAYERS,
+  LINK_STAGE1_S,
+  normalizeLinkConfig,
+  type LinkCommand,
+  type LinkConfig,
+  type LinkState,
 } from '../../../shared/src';
 import { AntWorld } from './ants/world';
+import { LinkDuel } from './link/duel';
 
 export class GameError extends Error {}
 
@@ -105,6 +114,8 @@ export interface GameHooks {
   removed(playerId: string, code: string): void;
   /** Đế Chế Kiến: gửi khung hình riêng cho từng người */
   antsFrame(game: Game, playerId: string, frame: AntsFrame): void;
+  /** Nối Thú Đại Chiến: gửi trạng thái realtime riêng cho từng người */
+  linkState(game: Game, playerId: string, state: LinkState): void;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -173,6 +184,10 @@ export class Game {
   antsConfig: AntsConfig = { ...DEFAULT_ANTS_CONFIG };
   private ants?: AntWorld;
 
+  // --- Trạng thái Nối Thú Đại Chiến ---
+  linkConfig: LinkConfig = { ...DEFAULT_LINK_CONFIG };
+  private link?: LinkDuel;
+
   constructor(
     readonly code: string,
     private hooks: GameHooks,
@@ -200,7 +215,7 @@ export class Game {
     if (this.gameMode === mode) return;
     this.run(() => {
       this.gameMode = mode;
-      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, mode === 'tien_len' ? 4 : mode === 'blackjack_21' || mode === 'ant_empire' ? 10 : this.roomRules.maxPlayers), GAME_MODES[mode].maxPlayers);
+      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, mode === 'tien_len' ? 4 : mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'link_duel' ? (mode === 'link_duel' ? 6 : 10) : this.roomRules.maxPlayers), GAME_MODES[mode].maxPlayers);
       this.invalidateReady();
       this.addLog(`🎮 Chủ phòng đổi sang chế độ: ${GAME_MODES[mode].emoji} ${GAME_MODES[mode].name}.`);
     });
@@ -251,6 +266,10 @@ export class Game {
     if (this.gameMode === 'exploding_kittens') {
       const summary = roomDeckSummary(this.roomRules, players.length);
       if (!summary.canStart) throw new GameError(summary.errors.join(' '));
+    }
+    if (this.gameMode === 'link_duel') {
+      const cfg = normalizeLinkConfig(this.linkConfig, players.length);
+      if (players.length + cfg.bots < 2) throw new GameError('Cần ít nhất 2 người chơi: thêm máy hoặc chờ thêm người.');
     }
     if (this.gameMode === 'ant_empire') {
       const cfg = normalizeAntsConfig(this.antsConfig, players.length);
@@ -477,6 +496,10 @@ export class Game {
         this.startAnts();
         return;
       }
+      if (this.gameMode === 'link_duel') {
+        this.startLink();
+        return;
+      }
 
       // Mèo Nổ: mỗi ván xếp lại chỗ ngồi ngẫu nhiên (thứ tự lượt đi theo chỗ ngồi)
       shuffle(this.players);
@@ -528,6 +551,8 @@ export class Game {
       this.tlFinishOrder = [];
       this.ants?.stop();
       this.ants = undefined;
+      this.link?.stop();
+      this.link = undefined;
       this.winnerId = undefined;
       this.winnerIds = [];
       this.payouts = {};
@@ -1292,7 +1317,7 @@ export class Game {
       })),
       spectators: this.spectators.map((x) => ({ id: x.id, name: x.name, avatar: x.avatar, connected: x.connected })),
       hand: this.player(id)?.hand ?? [],
-      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' ? this.current()?.id : undefined,
+      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' && this.gameMode !== 'link_duel' ? this.current()?.id : undefined,
       turnsRemaining: this.turnsRemaining,
       direction: this.direction,
       turnDeadline: this.phase === 'playing' ? this.turnDeadline : undefined,
@@ -1335,6 +1360,7 @@ export class Game {
       blackjack,
       tienLen,
       ants: this.gameMode === 'ant_empire' ? this.antsView(id) : undefined,
+      link: this.gameMode === 'link_duel' ? (this.link?.roomView(this.linkConfig) ?? { config: this.linkConfig }) : undefined,
       payouts: Object.keys(this.payouts).length ? this.payouts : undefined,
     };
   }
@@ -1437,6 +1463,90 @@ export class Game {
     };
   }
 
+  // ---------- NỐI THÚ ĐẠI CHIẾN ----------
+
+  setLinkConfig(byId: string, raw: unknown) {
+    this.requireLobbyHost(byId);
+    if (this.gameMode !== 'link_duel') throw new GameError('Không phải chế độ Nối Thú Đại Chiến.');
+    const next = normalizeLinkConfig(raw, this.players.length);
+    if (JSON.stringify(next) === JSON.stringify(this.linkConfig)) return;
+    this.run(() => {
+      this.linkConfig = next;
+      this.invalidateReady();
+      this.addLog(`⚡ Chủ phòng chỉnh: ${next.bots} máy (${LINK_BOT_LABEL[next.botLevel]}).`);
+    });
+  }
+
+  linkCommand(playerId: string, cmd: LinkCommand) {
+    if (this.gameMode !== 'link_duel' || this.phase !== 'playing' || !this.link) throw new GameError('Trận chưa bắt đầu.');
+    if (!this.link.player(playerId)) throw new GameError('Bạn đang xem trận này.');
+    const err = this.link.command(playerId, cmd);
+    // nối sai: client đã thấy 2 ô rung đỏ (fx miss), không cần hiện thông báo
+    if (err && !(cmd?.t === 'match' && err === 'Hai ô này không nối được.')) throw new GameError(err);
+  }
+
+  private startLink() {
+    const humans = this.players.filter((p) => p.connected).slice(0, LINK_MAX_PLAYERS);
+    const cfg = normalizeLinkConfig(this.linkConfig, humans.length);
+    this.linkConfig = cfg;
+    for (const p of this.players) {
+      p.alive = true;
+      p.hand = [];
+    }
+    const inits = humans.map((p) => ({ id: p.id, name: p.name, bot: false }));
+    const botNames = shuffle(['Sấm Nhí', 'Lá Xanh', 'Mây Bông', 'Sóng Biển', 'Lửa Hồng', 'Đá Quý']);
+    for (let i = 0; i < cfg.bots && inits.length < LINK_MAX_PLAYERS; i++) {
+      inits.push({ id: `bot:link${i}`, name: `🤖 ${botNames[i]} (${LINK_BOT_LABEL[cfg.botLevel]})`, bot: true });
+    }
+    this.link = new LinkDuel(inits, cfg, {
+      state: () => this.sendLinkStates(),
+      changed: () => this.safe(() => this.run(() => this.syncLink())),
+    });
+    this.phase = 'playing';
+    this.addLog(`⚡ Nối Thú Đại Chiến – ${inits.length} người: ${inits.map((x) => x.name).join(' 🆚 ')}! Màn 1 – Đua Nối ${LINK_STAGE1_S} giây.`);
+    this.link.start();
+    this.sendLinkStates();
+  }
+
+  /** Đồng bộ chuyển màn / kết quả vào phòng và trả cược */
+  private syncLink() {
+    const d = this.link;
+    if (!d) return;
+    if (d.stage === 'intermission' && !d.result) {
+      const w = d.stage1Winner ? d.player(d.stage1Winner) : undefined;
+      this.addLog(w ? `🏁 Hết Màn 1: ${w.name} dẫn trước! Boss Vua Sấm Sét xuất hiện…` : '🏁 Hết Màn 1: dẫn đầu ngang điểm! Boss Vua Sấm Sét xuất hiện…');
+    }
+    if (d.stage === 'stage2' && !d.result) this.addLog('👹 Màn 2: cùng nhau đấm Vua Sấm Sét!');
+    const r = d.result;
+    if (!r || this.phase !== 'playing') return;
+    this.phase = 'ended';
+    const totals = [...d.players].sort((a, b) => r.totals[b.id] - r.totals[a.id]).map((p) => `${p.name} ${r.totals[p.id]}`).join(' · ');
+    this.addLog(`🏆 ${r.reason} Tổng điểm: ${totals}.`);
+    const winner = r.winnerId ? d.player(r.winnerId) : undefined;
+    const human = winner && !winner.bot ? this.player(winner.id) : undefined;
+    this.winnerId = human?.id;
+    this.winnerIds = human ? [human.id] : [];
+    if (human) {
+      this.addLog(`🎉 ${human.name} thắng chung cuộc!`);
+    } else if (this.pot > 0) {
+      // Máy thắng hoặc hòa: hoàn cược cho người còn ở lại
+      for (const p of this.players) if (!p.left) this.payouts[p.id] = this.bet;
+      this.addLog(winner ? '💰 Máy thắng nên hoàn lại tiền cược.' : '🤝 Hòa điểm – hoàn lại tiền cược.');
+    }
+    this.sendLinkStates();
+  }
+
+  private sendLinkStates() {
+    const d = this.link;
+    if (!d) return;
+    const pack = d.drainFx();
+    for (const p of this.players) {
+      if (p.left || !p.connected) continue;
+      this.hooks.linkState(this, p.id, d.stateFor(d.player(p.id) ? p.id : undefined, pack));
+    }
+    for (const s of this.spectators) if (s.connected) this.hooks.linkState(this, s.id, d.stateFor(undefined, pack));
+  }
+
   note(msg: string) {
     this.addLog(msg);
   }
@@ -1452,6 +1562,7 @@ export class Game {
   dispose() {
     clearTimeout(this.timer);
     this.ants?.stop();
+    this.link?.stop();
   }
 
   // ---------- nội bộ ----------
@@ -2011,6 +2122,11 @@ export class Game {
     // Mèo Nổ: người chết vẫn giữ bài trên tay (lá Trộm Mộ: "all dead players with cards…")
     if (this.gameMode !== 'exploding_kittens') p.hand = [];
     p.alive = false;
+    if (this.gameMode === 'link_duel') {
+      // Rời trận = bỏ cuộc, đối thủ thắng (kết quả xử lý trong syncLink)
+      if (this.link?.player(p.id)) this.link.command(p.id, { t: 'resign' });
+      return;
+    }
     if (this.gameMode === 'ant_empire') {
       // Tổ sụp ở nhịp mô phỏng kế tiếp, kết quả xử lý trong syncAnts
       const e = this.ants?.empireById(p.id);

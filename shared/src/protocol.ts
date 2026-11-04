@@ -2,10 +2,11 @@ import type { Card, CardType } from './cards';
 import type { BlackjackEval, PlayingCard, TienLenCombo } from './playing-cards';
 import type { RoomRules } from './room-rules';
 import type { AntsRoomView } from './ants';
+import type { LinkRoomView } from './link';
 
 export type Phase = 'lobby' | 'playing' | 'ended';
 
-export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire';
+export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire' | 'link_duel';
 
 export const GAME_MODES: Record<
   GameMode,
@@ -42,6 +43,14 @@ export const GAME_MODES: Record<
     minPlayers: 1,
     maxPlayers: 10,
     desc: 'Chiến thuật 2D tới 10 đế chế: nhận vàng mỗi phút, chọn ô kiến là tự ra quân, phá 3 trụ của địch!',
+  },
+  link_duel: {
+    name: 'Nối Thú Đại Chiến',
+    shortName: 'Nối Thú',
+    emoji: '⚡🐾',
+    minPlayers: 1,
+    maxPlayers: 6,
+    desc: 'Nối hình 2–6 người realtime: Màn 1 đua dọn bàn, Màn 2 cả phòng cùng đấm Boss Vua Sấm Sét!',
   },
 };
 
@@ -228,6 +237,8 @@ export interface RoomView {
   tienLen?: TienLenRoomView;
   /** Trạng thái chung của Đế Chế Kiến (từng nhịp gửi riêng qua sự kiện 'ants:frame') */
   ants?: AntsRoomView;
+  /** Nối Thú Đại Chiến (trạng thái realtime gửi riêng qua 'link:state') */
+  link?: LinkRoomView;
   /** Thưởng xu từng người sau ván */
   payouts?: Record<string, number>;
 }
