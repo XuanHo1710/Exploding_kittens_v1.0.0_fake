@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { randomInt, randomUUID } from 'crypto';
 import type { Server } from 'socket.io';
-import { BET_OPTIONS, CHAT_MAX_LEN, EMOTES, THROWABLES, normalizeRoomRules, roomDeckSummary, type ChatMessage, type Emote, type RoomRules } from '../../../shared/src';
+import { BET_OPTIONS, CHAT_MAX_LEN, type GameMode, EMOTES, THROWABLES, normalizeRoomRules, roomDeckSummary, type ChatMessage, type Emote, type RoomRules } from '../../../shared/src';
 import { RateLimiter } from '../rate-limit';
 import { AccountsService } from '../store/accounts.service';
 import { Game, GameError, GameHooks } from './game';
@@ -31,6 +31,10 @@ export class RoomsService {
     changed: (game) => this.broadcast(game),
     notify: (playerId, notice) => this.server.to(`p:${playerId}`).emit('notice', notice),
     fx: (game, fx) => this.members(game).forEach((p) => this.server.to(`p:${p.id}`).emit('fx', fx)),
+    antsFrame: (game, playerId, frame) => {
+      if (this.playerRoom.get(playerId) !== game.code) return;
+      this.server.to(`p:${playerId}`).volatile.emit('ants:frame', frame);
+    },
     removed: (playerId, code) => {
       if (this.playerRoom.get(playerId) !== code) return;
       this.playerRoom.delete(playerId);
@@ -327,14 +331,18 @@ export class RoomsService {
     const game = this.roomOf(playerId);
     if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
     this.assertReady(game);
-    game.setGameMode(playerId, mode as 'exploding_kittens' | 'blackjack_21' | 'tien_len');
+    game.setGameMode(playerId, mode as GameMode);
+  }
+
+  setAntsConfig(playerId: string, raw: unknown) {
+    const game = this.roomOf(playerId);
+    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
+    this.assertReady(game);
+    game.setAntsConfig(playerId, raw);
   }
 
   create(playerId: string, name: string, avatar?: string, rules?: unknown, gameMode?: string) {
-    const mode = (gameMode === 'blackjack_21' || gameMode === 'tien_len' ? gameMode : 'exploding_kittens') as
-      | 'exploding_kittens'
-      | 'blackjack_21'
-      | 'tien_len';
+    const mode: GameMode = gameMode === 'blackjack_21' || gameMode === 'tien_len' || gameMode === 'ant_empire' ? gameMode : 'exploding_kittens';
     let normalized: RoomRules;
     try { normalized = normalizeRoomRules(rules); }
     catch (error) { throw new GameError(error instanceof Error ? error.message : 'Luật phòng không hợp lệ.'); }

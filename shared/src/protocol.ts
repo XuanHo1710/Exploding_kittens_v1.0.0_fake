@@ -1,10 +1,11 @@
 import type { Card, CardType } from './cards';
 import type { BlackjackEval, PlayingCard, TienLenCombo } from './playing-cards';
 import type { RoomRules } from './room-rules';
+import type { AntsRoomView } from './ants';
 
 export type Phase = 'lobby' | 'playing' | 'ended';
 
-export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len';
+export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire';
 
 export const GAME_MODES: Record<
   GameMode,
@@ -33,6 +34,14 @@ export const GAME_MODES: Record<
     minPlayers: 2,
     maxPlayers: 4,
     desc: 'Bài Tây 52 lá chuẩn 4 người (13 lá/người): Đánh Sảnh, Đôi thông, Tứ Quý chặt Heo ăn xu!',
+  },
+  ant_empire: {
+    name: 'Đế Chế Kiến (Chiến thuật)',
+    shortName: 'Đế Chế Kiến',
+    emoji: '🐜⚔️',
+    minPlayers: 1,
+    maxPlayers: 10,
+    desc: 'Chiến thuật 2D tới 10 đế chế: nhận vàng mỗi phút, chọn ô kiến là tự ra quân, phá 3 trụ của địch!',
   },
 };
 
@@ -217,6 +226,8 @@ export interface RoomView {
   blackjack?: BlackjackRoomView;
   /** Trạng thái riêng cho Tiến Lên Miền Nam */
   tienLen?: TienLenRoomView;
+  /** Trạng thái chung của Đế Chế Kiến (từng nhịp gửi riêng qua sự kiện 'ants:frame') */
+  ants?: AntsRoomView;
   /** Thưởng xu từng người sau ván */
   payouts?: Record<string, number>;
 }

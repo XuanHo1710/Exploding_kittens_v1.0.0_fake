@@ -38,7 +38,15 @@ import {
   CLONEABLE_KINDS,
   cloneCopyKind,
   MAX_SPECTATORS,
+  DEFAULT_ANTS_CONFIG,
+  EMPIRE_COLORS,
+  EMPIRE_NAMES_BOT,
+  normalizeAntsConfig,
+  type AntsCommand,
+  type AntsConfig,
+  type AntsFrame,
 } from '../../../shared/src';
+import { AntWorld } from './ants/world';
 
 export class GameError extends Error {}
 
@@ -95,6 +103,8 @@ export interface GameHooks {
   notify(playerId: string, notice: PrivateNotice): void;
   fx(game: Game, fx: GameFx): void;
   removed(playerId: string, code: string): void;
+  /** Đế Chế Kiến: gửi khung hình riêng cho từng người */
+  antsFrame(game: Game, playerId: string, frame: AntsFrame): void;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -159,6 +169,10 @@ export class Game {
   private tlHeoDelta = new Map<string, number>();
   private tlLastWinnerId?: string;
 
+  // --- Trạng thái Đế Chế Kiến ---
+  antsConfig: AntsConfig = { ...DEFAULT_ANTS_CONFIG };
+  private ants?: AntWorld;
+
   constructor(
     readonly code: string,
     private hooks: GameHooks,
@@ -186,7 +200,7 @@ export class Game {
     if (this.gameMode === mode) return;
     this.run(() => {
       this.gameMode = mode;
-      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, mode === 'tien_len' ? 4 : mode === 'blackjack_21' ? 10 : this.roomRules.maxPlayers), GAME_MODES[mode].maxPlayers);
+      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, mode === 'tien_len' ? 4 : mode === 'blackjack_21' || mode === 'ant_empire' ? 10 : this.roomRules.maxPlayers), GAME_MODES[mode].maxPlayers);
       this.invalidateReady();
       this.addLog(`🎮 Chủ phòng đổi sang chế độ: ${GAME_MODES[mode].emoji} ${GAME_MODES[mode].name}.`);
     });
@@ -237,6 +251,10 @@ export class Game {
     if (this.gameMode === 'exploding_kittens') {
       const summary = roomDeckSummary(this.roomRules, players.length);
       if (!summary.canStart) throw new GameError(summary.errors.join(' '));
+    }
+    if (this.gameMode === 'ant_empire') {
+      const cfg = normalizeAntsConfig(this.antsConfig, players.length);
+      if (players.length + cfg.bots < 2) throw new GameError('Cần ít nhất 2 đế chế: thêm máy hoặc chờ thêm người.');
     }
     const unready = players.filter((p) => p.id !== this.hostId && p.readyVersion !== this.rulesVersion);
     if (unready.length) throw new GameError(`Chờ xác nhận luật và mức cược: ${unready.map((p) => p.name).join(', ')}.`);
@@ -455,6 +473,10 @@ export class Game {
         this.startTienLen();
         return;
       }
+      if (this.gameMode === 'ant_empire') {
+        this.startAnts();
+        return;
+      }
 
       // Mèo Nổ: mỗi ván xếp lại chỗ ngồi ngẫu nhiên (thứ tự lượt đi theo chỗ ngồi)
       shuffle(this.players);
@@ -504,6 +526,8 @@ export class Game {
       this.tlChopLog = undefined;
       this.tlInstantWinText = undefined;
       this.tlFinishOrder = [];
+      this.ants?.stop();
+      this.ants = undefined;
       this.winnerId = undefined;
       this.winnerIds = [];
       this.payouts = {};
@@ -1268,7 +1292,7 @@ export class Game {
       })),
       spectators: this.spectators.map((x) => ({ id: x.id, name: x.name, avatar: x.avatar, connected: x.connected })),
       hand: this.player(id)?.hand ?? [],
-      currentPlayerId: this.phase === 'playing' ? this.current()?.id : undefined,
+      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' ? this.current()?.id : undefined,
       turnsRemaining: this.turnsRemaining,
       direction: this.direction,
       turnDeadline: this.phase === 'playing' ? this.turnDeadline : undefined,
@@ -1310,11 +1334,109 @@ export class Game {
       pot: this.pot,
       blackjack,
       tienLen,
+      ants: this.gameMode === 'ant_empire' ? this.antsView(id) : undefined,
       payouts: Object.keys(this.payouts).length ? this.payouts : undefined,
     };
   }
 
   /** Ghi thêm 1 dòng nhật ký từ bên ngoài (vd: trả hũ xu) – gọi trong lúc đang broadcast */
+  // ---------- ĐẾ CHẾ KIẾN ----------
+
+  setAntsConfig(byId: string, raw: unknown) {
+    this.requireLobbyHost(byId);
+    if (this.gameMode !== 'ant_empire') throw new GameError('Không phải chế độ Đế Chế Kiến.');
+    const next = normalizeAntsConfig(raw, this.players.length);
+    if (JSON.stringify(next) === JSON.stringify(this.antsConfig)) return;
+    this.run(() => {
+      this.antsConfig = next;
+      this.invalidateReady();
+      const lv = { easy: 'Dễ', normal: 'Thường', hard: 'Khó' }[next.botLevel];
+      this.addLog(`🐜 Chủ phòng chỉnh: ${next.bots} đế chế máy (${lv}), ${next.minutes ? `${next.minutes} phút` : 'không giới hạn thời gian'}.`);
+    });
+  }
+
+  antsCommand(playerId: string, cmd: AntsCommand) {
+    if (this.gameMode !== 'ant_empire' || this.phase !== 'playing' || !this.ants) throw new GameError('Trận Đế Chế Kiến chưa bắt đầu.');
+    const e = this.ants.empireById(playerId);
+    if (!e) throw new GameError('Bạn đang xem trận này.');
+    const err = this.ants.command(e.idx, cmd);
+    if (err) throw new GameError(err);
+  }
+
+  private startAnts() {
+    const cfg = normalizeAntsConfig(this.antsConfig, this.players.length);
+    this.antsConfig = cfg;
+    shuffle(this.players);
+    const botNames = shuffle([...EMPIRE_NAMES_BOT]);
+    const inits = [
+      ...this.players.map((p) => ({ id: p.id, name: p.name, bot: false })),
+      ...Array.from({ length: cfg.bots }, (_, i) => ({ id: `bot:${i}`, name: `🤖 ${botNames[i % botNames.length]}`, bot: true })),
+    ].map((x, i) => ({ ...x, color: EMPIRE_COLORS[i % EMPIRE_COLORS.length] }));
+    for (const p of this.players) {
+      p.alive = true;
+      p.hand = [];
+    }
+    this.ants = new AntWorld(inits, cfg, {
+      tick: () => this.sendAntsFrames(),
+      changed: () => this.safe(() => this.run(() => this.syncAnts())),
+    });
+    this.phase = 'playing';
+    const lv = { easy: 'Dễ', normal: 'Thường', hard: 'Khó' }[cfg.botLevel];
+    this.addLog(`🐜 Trận Đế Chế Kiến bắt đầu! ${inits.length} đế chế${cfg.bots ? ` (${cfg.bots} máy – ${lv})` : ''}${cfg.minutes ? `, ${cfg.minutes} phút` : ''}. Phá Trụ Chính của địch để thắng!`);
+    this.ants.start();
+  }
+
+  /** Đồng bộ kết quả mô phỏng (đế chế bị loại, hết trận) vào trạng thái phòng */
+  private syncAnts() {
+    const w = this.ants;
+    if (!w) return;
+    for (const msg of w.drainLogs()) this.addLog(msg);
+    for (const e of w.empires) {
+      const p = e.bot ? undefined : this.player(e.id);
+      if (p) p.alive = e.alive;
+    }
+    if (w.result && this.phase === 'playing') {
+      const win = w.empires[w.result.winnerIdx];
+      this.phase = 'ended';
+      const human = win && !win.bot ? this.player(win.id) : undefined;
+      this.winnerId = human?.id;
+      this.winnerIds = human ? [human.id] : [];
+      if (!human && this.pot > 0) {
+        // Máy thắng / không ai thắng: hoàn cược cho người còn ở lại
+        for (const p of this.players) if (!p.left) this.payouts[p.id] = this.bet;
+        this.addLog('💰 Máy thắng nên hoàn lại tiền cược cho người chơi.');
+      }
+      this.sendAntsFrames();
+    }
+  }
+
+  private sendAntsFrames() {
+    const w = this.ants;
+    if (!w) return;
+    for (const p of this.players) {
+      if (p.left || !p.connected) continue;
+      const e = w.empireById(p.id);
+      this.hooks.antsFrame(this, p.id, w.frameFor(e?.alive ? e.idx : undefined));
+    }
+    for (const s of this.spectators) if (s.connected) this.hooks.antsFrame(this, s.id, w.frameFor(undefined));
+  }
+
+  private antsView(id: string) {
+    const w = this.ants;
+    if (!w) return { config: this.antsConfig };
+    return {
+      config: this.antsConfig,
+      mapW: w.W,
+      mapH: w.H,
+      rocks: w.rockList(),
+      empires: w.publicInfo(),
+      myIdx: w.empireById(id)?.idx,
+      startedAt: w.startedAt,
+      endsAt: w.endsAt,
+      result: w.result,
+    };
+  }
+
   note(msg: string) {
     this.addLog(msg);
   }
@@ -1329,6 +1451,7 @@ export class Game {
 
   dispose() {
     clearTimeout(this.timer);
+    this.ants?.stop();
   }
 
   // ---------- nội bộ ----------
@@ -1888,6 +2011,12 @@ export class Game {
     // Mèo Nổ: người chết vẫn giữ bài trên tay (lá Trộm Mộ: "all dead players with cards…")
     if (this.gameMode !== 'exploding_kittens') p.hand = [];
     p.alive = false;
+    if (this.gameMode === 'ant_empire') {
+      // Tổ sụp ở nhịp mô phỏng kế tiếp, kết quả xử lý trong syncAnts
+      const e = this.ants?.empireById(p.id);
+      if (e) this.ants!.resign(e.idx);
+      return;
+    }
     if (this.gameMode === 'blackjack_21') {
       if (p.id === this.bjDealerId) {
         this.voidBlackjack(`🚪 Nhà Cái ${p.name} rời bàn – huỷ ván, hoàn cược cho mọi người.`);

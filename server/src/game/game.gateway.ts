@@ -10,7 +10,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
-import { isValidAvatar, type PlayRequest } from '../../../shared/src';
+import { isValidAvatar, type AntsCommand, type PlayRequest } from '../../../shared/src';
 import { GameError } from './game';
 import { RoomsService } from './rooms.service';
 import { AccountsService } from '../store/accounts.service';
@@ -272,6 +272,20 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('tienlen:pass')
   tienLenPass(@ConnectedSocket() c: Socket) {
     return this.handle(c, (me) => this.game(me).tienLenPass(me.playerId));
+  }
+
+  // --- Đế Chế Kiến ---
+  @SubscribeMessage('ants:cmd')
+  antsCmd(@ConnectedSocket() c: Socket, @MessageBody() body: AntsCommand) {
+    return this.handle(c, (me) => {
+      if (!body || typeof body !== 'object' || typeof body.t !== 'string') throw new GameError('Lệnh không hợp lệ.');
+      this.game(me).antsCommand(me.playerId, body);
+    });
+  }
+
+  @SubscribeMessage('ants:config')
+  antsConfig(@ConnectedSocket() c: Socket, @MessageBody() body: { config: unknown }) {
+    return this.handle(c, (me) => this.rooms.setAntsConfig(me.playerId, body?.config));
   }
 
   private game(me: SocketData) {
