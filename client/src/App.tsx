@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
-import { DEFAULT_ROOM_RULES, type AccountInfo, type ChatMessage, type Emote, type GameFx, type Identity, type PrivateNotice, type RoomView } from '../../shared/src';
+import { DEFAULT_ROOM_RULES, type AccountInfo, type AntsFrame, type ChatMessage, type Emote, type GameFx, type Identity, type PrivateNotice, type RoomView } from '../../shared/src';
 import { RoomPlayerCountContext, RoomRulesContext } from './roomRulesContext';
 import { clearIdentity, loadIdentity, updateIdentity } from './identity';
 import { logoutAccount } from './api';
@@ -14,6 +14,8 @@ import Lobby from './components/Lobby';
 import GameBoard from './components/GameBoard';
 import BlackjackBoard from './components/BlackjackBoard';
 import TienLenBoard from './components/TienLenBoard';
+import AntsBoard from './components/AntsBoard';
+import { antsStore } from './ants/store';
 import Rules from './components/Rules';
 import Modal from './components/Modal';
 import { CardPreviewLayer } from './components/CardPreview';
@@ -109,6 +111,7 @@ export default function App() {
       joinFromLink(s, v);
     });
     s.on('toast', showToast);
+    s.on('ants:frame', (f: AntsFrame) => antsStore.push(f));
     s.on('notice', (n: PrivateNotice) => (n.kind === 'future' ? setNotice(n) : setReveal({ ...n, key: Date.now() })));
     s.on('fx', (f: GameFx) => setFx({ id: ++fxSeq.current, fx: f }));
     s.on('emote', (e: Emote) => setEmote({ id: ++fxSeq.current, e }));
@@ -205,7 +208,9 @@ export default function App() {
         {loggedIn && view?.phase === 'lobby' && <Lobby view={view} meId={identity.playerId} emit={emit} chat={chatProps} account={account}
           onSaveRules={(rules) => emitConfirmed('room:rules', { rules })} />}
         {inGame && identity && view && (
-          view.gameMode === 'blackjack_21' ? (
+          view.gameMode === 'ant_empire' && view.ants ? (
+            <AntsBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
+          ) : view.gameMode === 'blackjack_21' ? (
             <BlackjackBoard
               view={view}
               meId={identity.playerId}

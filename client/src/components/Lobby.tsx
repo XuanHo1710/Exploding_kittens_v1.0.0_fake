@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { Check, Coins, Copy, Crown, Gamepad2, Link2, LogOut, Play, Settings2, Trophy, UserPlus, UserX } from 'lucide-react';
 import {
+  ANTS_MAX_EMPIRES,
+  ANTS_MINUTE_OPTIONS,
+  ANTS_START_GOLD,
+  antsIncome,
   BET_OPTIONS,
+  DEFAULT_ANTS_CONFIG,
   GAME_MODES,
   MIN_PLAYERS,
   roomDeckSummary,
@@ -45,8 +50,13 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
   const spectating = isSpectating(view, meId);
   const awaitingReady = view.players.filter((player) => player.connected && player.id !== view.hostId && !player.ready);
   const deck = roomDeckSummary(view.rules, online);
-  const deckOk = gameMode === 'exploding_kittens' ? deck.canStart : online <= modeInfo.maxPlayers;
+  const antsCfg = view.ants?.config ?? DEFAULT_ANTS_CONFIG;
+  const deckOk =
+    gameMode === 'exploding_kittens' ? deck.canStart
+      : gameMode === 'ant_empire' ? online + antsCfg.bots >= 2 && online + antsCfg.bots <= ANTS_MAX_EMPIRES
+      : online <= modeInfo.maxPlayers;
   const canStart = online >= modeInfo.minPlayers && awaitingReady.length === 0 && deckOk && poor.length === 0;
+  const setAnts = (patch: Partial<typeof antsCfg>) => emit('ants:config', { config: { ...antsCfg, ...patch } });
 
   const copyRoomCode = () => {
     void copyTextSafe(view.code).then((ok) => setCopied(ok));
@@ -218,6 +228,46 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                 <RoomRuleSummary rules={view.rules} playerCount={online} />
                 <p className="muted small">Nếu chữ trên ảnh lá bài khác luật ở đây, áp dụng luật phòng đã chốt.</p>
               </>
+            ) : gameMode === 'ant_empire' ? (
+              <>
+                <div className="ants-lobby-cfg">
+                  <div>
+                    <span className="muted small">Đế chế máy (🤖)</span>
+                    <div className="bet-chips">
+                      {Array.from({ length: Math.max(0, ANTS_MAX_EMPIRES - view.players.length) + 1 }, (_, n) => n).map((n) => (
+                        <button key={n} type="button" className={`bet-chip${n === antsCfg.bots ? ' on' : ''}`} disabled={!isHost} onClick={() => setAnts({ bots: n })}>{n}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="muted small">Độ khó của máy</span>
+                    <div className="bet-chips">
+                      {(['easy', 'normal', 'hard'] as const).map((lv) => (
+                        <button key={lv} type="button" className={`bet-chip${lv === antsCfg.botLevel ? ' on' : ''}`} disabled={!isHost} onClick={() => setAnts({ botLevel: lv })}>
+                          {{ easy: 'Dễ', normal: 'Thường', hard: 'Khó' }[lv]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="muted small">Thời gian trận</span>
+                    <div className="bet-chips">
+                      {ANTS_MINUTE_OPTIONS.map((m) => (
+                        <button key={m} type="button" className={`bet-chip${m === antsCfg.minutes ? ' on' : ''}`} disabled={!isHost} onClick={() => setAnts({ minutes: m })}>
+                          {m ? `${m} phút` : 'Không giới hạn'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <ul className="rule-summary-list">
+                  <li>Tổng <b>{online + antsCfg.bots}</b> đế chế (tối đa {ANTS_MAX_EMPIRES}) trên bản đồ 2D rộng theo số người, <b>sáng toàn bộ</b> – thấy hết căn cứ địch.</li>
+                  <li>Khởi đầu {ANTS_START_GOLD} vàng; <b>mỗi 1 phút được cấp thêm vàng</b>, lần sau nhiều hơn lần trước ({antsIncome(1)}, {antsIncome(2)}, {antsIncome(3)}…).</li>
+                  <li>Bấm 1 ô trong danh sách <b>10 loại kiến</b> là trại <b>tự ra quân liên tục</b> – từng con một, mỗi con trừ vàng lúc bắt đầu nở; hết vàng thì chờ vàng rồi tự ra tiếp.</li>
+                  <li>Mỗi đế chế có <b>3 trụ</b>: 2 Trụ Phụ + 1 Trụ Chính. Trụ tự bắn kiến địch tới gần, mỗi phát hạ gọn 1 con, nạp đạn 5 giây (Trụ Chính đạn to, bắn xa hơn).</li>
+                  <li><b>Phá Trụ Chính</b> của mọi đế chế khác để thắng.{antsCfg.minutes ? ` Hết ${antsCfg.minutes} phút: điểm sức mạnh cao nhất thắng.` : ''} Máy thắng thì hoàn cược.</li>
+                </ul>
+              </>
             ) : gameMode === 'blackjack_21' ? (
               <ul className="rule-summary-list">
                 <li>Bộ bài Tây 52 lá chuẩn (lưu trong <code>database/playing-cards/</code>). Chủ phòng làm <b>Nhà Cái</b>.</li>
@@ -247,7 +297,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                 {online < modeInfo.minPlayers ? (
                   `Cần ít nhất ${modeInfo.minPlayers} người`
                 ) : !deckOk ? (
-                  'Số người hoặc bộ bài chưa hợp lệ'
+                  gameMode === 'ant_empire' ? 'Cần ít nhất 2 đế chế – thêm máy nhé' : 'Số người hoặc bộ bài chưa hợp lệ'
                 ) : poor.length > 0 ? (
                   'Có người chưa đủ xu'
                 ) : awaitingReady.length > 0 ? (
