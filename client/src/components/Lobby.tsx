@@ -7,6 +7,13 @@ import {
   antsIncome,
   BET_OPTIONS,
   DEFAULT_ANTS_CONFIG,
+  DEFAULT_LINK_CONFIG,
+  LINK_BOT_LABEL,
+  LINK_KO_BONUS,
+  LINK_MAX_PLAYERS,
+  linkBossHp,
+  LINK_STAGE1_S,
+  LINK_STAGE2_S,
   GAME_MODES,
   MIN_PLAYERS,
   roomDeckSummary,
@@ -51,12 +58,17 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
   const awaitingReady = view.players.filter((player) => player.connected && player.id !== view.hostId && !player.ready);
   const deck = roomDeckSummary(view.rules, online);
   const antsCfg = view.ants?.config ?? DEFAULT_ANTS_CONFIG;
+  const linkCfgRaw = view.link?.config;
+  /** 1 người thì server luôn thêm ít nhất 1 máy */
+  const linkBots = Math.max(online < 2 ? 1 : 0, Math.min(LINK_MAX_PLAYERS - online, linkCfgRaw?.bots ?? 0));
   const deckOk =
     gameMode === 'exploding_kittens' ? deck.canStart
       : gameMode === 'ant_empire' ? online + antsCfg.bots >= 2 && online + antsCfg.bots <= ANTS_MAX_EMPIRES
-      : online <= modeInfo.maxPlayers;
+      : gameMode === 'link_duel' ? online + linkBots >= 2 && online + linkBots <= LINK_MAX_PLAYERS
+        : online <= modeInfo.maxPlayers;
   const canStart = online >= modeInfo.minPlayers && awaitingReady.length === 0 && deckOk && poor.length === 0;
   const setAnts = (patch: Partial<typeof antsCfg>) => emit('ants:config', { config: { ...antsCfg, ...patch } });
+  const linkCfg = view.link?.config ?? DEFAULT_LINK_CONFIG;
 
   const copyRoomCode = () => {
     void copyTextSafe(view.code).then((ok) => setCopied(ok));
@@ -268,6 +280,35 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                   <li><b>Phá Trụ Chính</b> của mọi đế chế khác để thắng.{antsCfg.minutes ? ` Hết ${antsCfg.minutes} phút: điểm sức mạnh cao nhất thắng.` : ''} Máy thắng thì hoàn cược.</li>
                 </ul>
               </>
+            ) : gameMode === 'link_duel' ? (
+              <>
+                <div className="ants-lobby-cfg">
+                  <div>
+                    <span className="muted small">Thêm máy (🤖) · tổng {online + linkBots}/{LINK_MAX_PLAYERS} người</span>
+                    <div className="bet-chips">
+                      {Array.from({ length: Math.max(0, LINK_MAX_PLAYERS - view.players.length) + 1 }, (_, n) => n).map((n) => (
+                        <button key={n} type="button" className={`bet-chip${n === linkBots ? ' on' : ''}`} disabled={!isHost || (online < 2 && n === 0)} onClick={() => emit('link:config', { config: { ...linkCfg, bots: n } })}>{n}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="muted small">Độ khó của máy</span>
+                    <div className="bet-chips">
+                      {(['easy', 'normal', 'hard'] as const).map((lv) => (
+                        <button key={lv} type="button" className={`bet-chip${lv === linkCfg.botLevel ? ' on' : ''}`} disabled={!isHost || linkBots === 0} onClick={() => emit('link:config', { config: { ...linkCfg, botLevel: lv } })}>
+                          {LINK_BOT_LABEL[lv]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <ul className="rule-summary-list">
+                  <li>2–{LINK_MAX_PLAYERS} người (2 người là solo 1v1). Nối 2 ô <b>cùng con thú</b> bằng đường gấp khúc <b>tối đa 2 lần</b> (được vòng ra ngoài mép bàn). Bàn 16×9, mọi người cùng một đề.</li>
+                  <li><b>Màn 1 – Đua Nối ({LINK_STAGE1_S} giây):</b> nối liên tiếp được combo, nạp ⚡ Sấm. Đầy Sấm tung <b>❄️ Đóng Băng</b> hoặc <b>🌪️ Bão Xáo</b> – mặc định vào <b>người dẫn đầu</b>, bấm vào bàn nhỏ của ai thì nhắm người đó. Dọn sạch bàn trước được thưởng lớn.</li>
+                  <li><b>Màn 2 – Đấm Boss ({LINK_STAGE2_S} giây):</b> cả phòng cùng đánh <b>Vua Sấm Sét</b> ({linkBossHp(online + linkBots)} máu với {online + linkBots} người) – mỗi cặp là một cú đấm, Sấm đầy tung <b>⚡ Siêu Đấm</b>. Boss có 3 giai đoạn, tung Mưa Băng / Bóng Tối / Lốc Xáo.</li>
+                  <li><b>Tổng điểm</b> = điểm Màn 1 + sát thương lên Boss + <b>K.O. +{LINK_KO_BONUS}</b> cho cú kết liễu. Cao hơn thì thắng cả hũ.</li>
+                </ul>
+              </>
             ) : gameMode === 'blackjack_21' ? (
               <ul className="rule-summary-list">
                 <li>Bộ bài Tây 52 lá chuẩn (lưu trong <code>database/playing-cards/</code>). Chủ phòng làm <b>Nhà Cái</b>.</li>
@@ -297,7 +338,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                 {online < modeInfo.minPlayers ? (
                   `Cần ít nhất ${modeInfo.minPlayers} người`
                 ) : !deckOk ? (
-                  gameMode === 'ant_empire' ? 'Cần ít nhất 2 đế chế – thêm máy nhé' : 'Số người hoặc bộ bài chưa hợp lệ'
+                  gameMode === 'ant_empire' ? 'Cần ít nhất 2 đế chế – thêm máy nhé' : gameMode === 'link_duel' ? 'Cần 2–6 người – thêm máy nhé' : 'Số người hoặc bộ bài chưa hợp lệ'
                 ) : poor.length > 0 ? (
                   'Có người chưa đủ xu'
                 ) : awaitingReady.length > 0 ? (
