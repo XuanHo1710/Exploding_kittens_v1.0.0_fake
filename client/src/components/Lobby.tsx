@@ -8,12 +8,16 @@ import {
   BET_OPTIONS,
   DEFAULT_ANTS_CONFIG,
   DEFAULT_LINK_CONFIG,
+  LINK_BOSSES,
+  LINK_BOSS_SKILL_NAME,
   LINK_BOT_LABEL,
+  LINK_FOG_MS,
   LINK_KO_BONUS,
   LINK_MAX_PLAYERS,
-  linkBossHp,
+  LINK_RAID_S,
+  LINK_SHUFFLE_CD_S,
+  linkBossMaxHp,
   LINK_STAGE1_S,
-  LINK_STAGE2_S,
   GAME_MODES,
   MIN_PLAYERS,
   roomDeckSummary,
@@ -51,7 +55,8 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
   const online = view.players.filter((p) => p.connected).length;
   const bet = view.bet;
   const poor = bet > 0 ? view.players.filter((p) => p.connected && (p.coins ?? 0) < bet) : [];
-  const maxPlayers = Math.min(view.rules.maxPlayers, modeInfo.maxPlayers);
+  // chỉ Mèo Nổ có chỉnh số chỗ trong luật phòng; chế độ khác luôn đủ chỗ tối đa (khớp Game.seatLimit ở server)
+  const maxPlayers = gameMode === 'exploding_kittens' ? Math.min(view.rules.maxPlayers, modeInfo.maxPlayers) : modeInfo.maxPlayers;
   const empty = Math.max(0, maxPlayers - view.players.length);
   const me = view.players.find((player) => player.id === meId);
   const spectating = isSpectating(view, meId);
@@ -304,9 +309,19 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                 </div>
                 <ul className="rule-summary-list">
                   <li>2–{LINK_MAX_PLAYERS} người (2 người là solo 1v1). Nối 2 ô <b>cùng con thú</b> bằng đường gấp khúc <b>tối đa 2 lần</b> (được vòng ra ngoài mép bàn). Bàn 16×9, mọi người cùng một đề.</li>
-                  <li><b>Màn 1 – Đua Nối ({LINK_STAGE1_S} giây):</b> nối liên tiếp được combo, nạp ⚡ Sấm. Đầy Sấm tung <b>❄️ Đóng Băng</b> hoặc <b>🌪️ Bão Xáo</b> – mặc định vào <b>người dẫn đầu</b>, bấm vào bàn nhỏ của ai thì nhắm người đó. Dọn sạch bàn trước được thưởng lớn.</li>
-                  <li><b>Màn 2 – Đấm Boss ({LINK_STAGE2_S} giây):</b> cả phòng cùng đánh <b>Vua Sấm Sét</b> ({linkBossHp(online + linkBots)} máu với {online + linkBots} người) – mỗi cặp là một cú đấm, Sấm đầy tung <b>⚡ Siêu Đấm</b>. Boss có 3 giai đoạn, tung Mưa Băng / Bóng Tối / Lốc Xáo.</li>
-                  <li><b>Tổng điểm</b> = điểm Màn 1 + sát thương lên Boss + <b>K.O. +{LINK_KO_BONUS}</b> cho cú kết liễu. Cao hơn thì thắng cả hũ.</li>
+                  <li><b>Màn 1 – Đua Nối ({LINK_STAGE1_S} giây):</b> nối liên tiếp được combo, nạp ⚡ Sấm. Đầy Sấm tung <b>❄️ Đóng Băng</b> hoặc <b>🌫️ Mây Mù</b> (che bàn {LINK_FOG_MS / 1000} giây) – mặc định vào <b>người dẫn đầu</b>, bấm vào bàn nhỏ của ai thì nhắm người đó. Dọn sạch bàn trước được thưởng lớn.</li>
+                  <li>
+                    <b>Liên hoàn {LINK_BOSSES.length} Boss:</b> cả phòng cùng đánh, mỗi cặp là một cú đấm, Sấm đầy tung <b>⚡ Siêu Đấm</b>. Boss trước hết máu thì Boss sau xuất hiện. Cả 3 Boss dùng chung <b>{LINK_RAID_S / 60} phút</b> (hạ nhanh thì dư giờ cho Boss sau); hết giờ thì trận kết thúc.
+                    <ul>
+                      {LINK_BOSSES.map((b, i) => (
+                        <li key={b.id}>
+                          {b.emoji} <b>{b.name}</b> – {linkBossMaxHp(i, online + linkBots)} máu – {b.skills.length} chiêu: {b.skills.map((k) => LINK_BOSS_SKILL_NAME[k]).join(' · ')}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                  <li><b>🔀 Đảo Bàn:</b> chiêu tự đảo bàn mình cho dễ nối, miễn phí, hồi chiêu {LINK_SHUFFLE_CD_S} giây (phím R).</li>
+                  <li><b>Tổng điểm</b> = điểm Màn 1 + sát thương lên Boss + <b>+{LINK_KO_BONUS}</b> cho mỗi Boss mình kết liễu. Cao hơn thì thắng cả hũ.</li>
                 </ul>
               </>
             ) : gameMode === 'blackjack_21' ? (
@@ -338,7 +353,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                 {online < modeInfo.minPlayers ? (
                   `Cần ít nhất ${modeInfo.minPlayers} người`
                 ) : !deckOk ? (
-                  gameMode === 'ant_empire' ? 'Cần ít nhất 2 đế chế – thêm máy nhé' : gameMode === 'link_duel' ? 'Cần 2–6 người – thêm máy nhé' : 'Số người hoặc bộ bài chưa hợp lệ'
+                  gameMode === 'ant_empire' ? 'Cần ít nhất 2 đế chế – thêm máy nhé' : gameMode === 'link_duel' ? `Cần 2–${LINK_MAX_PLAYERS} người – thêm máy nhé` : 'Số người hoặc bộ bài chưa hợp lệ'
                 ) : poor.length > 0 ? (
                   'Có người chưa đủ xu'
                 ) : awaitingReady.length > 0 ? (

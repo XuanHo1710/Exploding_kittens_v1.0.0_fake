@@ -1,6 +1,6 @@
 /**
- * Hình ô Nối Thú: emoji con vật to, rõ (mỗi con một dáng riêng nên rất dễ phân biệt) trên nền kem nổi khối
- * như bàn nối hình truyền thống. Máy không có font emoji màu thì tự dùng bộ thú vẽ tay (drawCritter) bên dưới.
+ * Hình ô Nối Thú: emoji con vật to, rõ trên nền xanh than tối (đỡ chói mắt), mỗi con có quầng màu và viền màu riêng
+ * nên phân biệt được bằng cả hình lẫn màu. Máy không có font emoji màu thì tự dùng bộ thú vẽ tay (drawCritter) bên dưới.
  */
 import { LINK_CRITTERS } from '../../../shared/src';
 
@@ -175,6 +175,17 @@ export function drawCritter(ctx: CanvasRenderingContext2D, id: number, x: number
 
 const cache = new Map<string, HTMLCanvasElement>();
 
+/** Màu nhận diện đủ sáng để nổi trên nền tối (con màu đen / xám đậm thì nâng sáng lên) */
+function markColor(hex: string) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  if (lum >= 110) return hex;
+  // nâng sáng, trả về dạng #rrggbb để còn ghép thêm độ trong suốt (#rrggbbaa)
+  const up = (v: number) => Math.min(255, Math.round(v + 140 - lum)).toString(16).padStart(2, '0');
+  return `#${up(r)}${up(g)}${up(b)}`;
+}
+
 const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla","EmojiOne Color",sans-serif';
 let emojiSupport: boolean | undefined;
 
@@ -220,28 +231,41 @@ export function tileCanvas(id: number, size: number, dpr: number, back = false):
     ctx.arcTo(x, y, x + w, y, r);
     ctx.closePath();
   };
+  const c0 = LINK_CRITTERS[id] ?? LINK_CRITTERS[0];
+  const mark = markColor(c0.color);
   // đáy (bóng nổi khối)
-  ctx.fillStyle = back ? '#4a2f6b' : '#b8875a';
+  ctx.fillStyle = back ? '#2b1a45' : '#0c1222';
   rr(s * 0.06, s * 0.08, s * 0.9, s * 0.9);
   ctx.fill();
-  // mặt ô
+  // mặt ô: xanh than tối, không chói
   const g = ctx.createLinearGradient(0, 0, s, s);
   if (back) {
-    g.addColorStop(0, '#8e5bd6');
-    g.addColorStop(1, '#5b3a99');
+    g.addColorStop(0, '#6a45a8');
+    g.addColorStop(1, '#43297a');
   } else {
-    g.addColorStop(0, '#fff8e8');
-    g.addColorStop(1, '#f1dcb4');
+    g.addColorStop(0, '#36425f');
+    g.addColorStop(1, '#232c44');
   }
   ctx.fillStyle = g;
   rr(s * 0.03, s * 0.03, s * 0.88, s * 0.88);
   ctx.fill();
-  ctx.strokeStyle = back ? 'rgba(255,255,255,0.35)' : 'rgba(120,80,40,0.55)';
-  ctx.lineWidth = Math.max(1, s * 0.03);
+  if (!back) {
+    // quầng màu riêng của từng con sau hình
+    const halo = ctx.createRadialGradient(s * 0.47, s * 0.45, s * 0.04, s * 0.47, s * 0.45, s * 0.42);
+    halo.addColorStop(0, `${mark}66`);
+    halo.addColorStop(1, `${mark}00`);
+    ctx.fillStyle = halo;
+    rr(s * 0.03, s * 0.03, s * 0.88, s * 0.88);
+    ctx.fill();
+  }
+  // viền: màu riêng của con thú (ô úp: viền trắng mờ)
+  ctx.strokeStyle = back ? 'rgba(255,255,255,0.35)' : `${mark}cc`;
+  ctx.lineWidth = Math.max(1.2, s * 0.04);
+  rr(s * 0.05, s * 0.05, s * 0.84, s * 0.84);
   ctx.stroke();
-  // ánh sáng mép trên
-  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-  ctx.lineWidth = Math.max(1, s * 0.03);
+  // ánh sáng mép trên (nhẹ)
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = Math.max(1, s * 0.025);
   ctx.beginPath();
   ctx.moveTo(s * 0.12, s * 0.07);
   ctx.lineTo(s * 0.78, s * 0.07);
@@ -253,21 +277,18 @@ export function tileCanvas(id: number, size: number, dpr: number, back = false):
     ctx.textBaseline = 'middle';
     ctx.fillText('?', s * 0.47, s * 0.5);
   } else if (emojiOk()) {
-    const c0 = LINK_CRITTERS[id] ?? LINK_CRITTERS[0];
     // vệt màu riêng của từng con ở đáy ô: thêm một dấu hiệu nữa để phân biệt nhanh
-    ctx.fillStyle = c0.color;
-    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = mark;
     ctx.beginPath();
-    ctx.roundRect(s * 0.2, s * 0.78, s * 0.54, s * 0.07, s * 0.035);
+    ctx.roundRect(s * 0.22, s * 0.79, s * 0.5, s * 0.06, s * 0.03);
     ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.font = `${Math.round(s * 0.6)}px ${EMOJI_FONT}`;
+    ctx.font = `${Math.round(s * 0.62)}px ${EMOJI_FONT}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(60,30,10,0.35)';
-    ctx.shadowBlur = s * 0.05;
+    ctx.shadowColor = 'rgba(0,0,0,0.55)';
+    ctx.shadowBlur = s * 0.06;
     ctx.shadowOffsetY = s * 0.02;
-    ctx.fillText(c0.emoji, s * 0.47, s * 0.45);
+    ctx.fillText(c0.emoji, s * 0.47, s * 0.44);
     ctx.shadowColor = 'transparent';
   } else {
     drawCritter(ctx, id, s * 0.47, s * 0.5, s * 0.84);
