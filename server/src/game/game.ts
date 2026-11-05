@@ -47,6 +47,7 @@ import {
   type AntsFrame,
   DEFAULT_LINK_CONFIG,
   LINK_BOT_LABEL,
+  LINK_BOSSES,
   LINK_MAX_PLAYERS,
   LINK_STAGE1_S,
   normalizeLinkConfig,
@@ -201,6 +202,15 @@ export class Game {
     }
   }
 
+  /**
+   * Số chỗ ngồi của phòng. Chỉ Mèo Nổ có chỉnh "Số người tối đa" trong luật phòng;
+   * các chế độ khác luôn mở đủ số người tối đa của chế độ (phòng tạo từ bản cũ cũng tự lên đủ).
+   */
+  seatLimit() {
+    const modeMax = GAME_MODES[this.gameMode].maxPlayers;
+    return this.gameMode === 'exploding_kittens' ? Math.min(this.roomRules.maxPlayers, modeMax) : modeMax;
+  }
+
   /** Return a copy so consumers cannot change the rules during a game. */
   get rules(): RoomRules {
     return { ...this.roomRules, cardCounts: { ...this.roomRules.cardCounts } };
@@ -215,7 +225,7 @@ export class Game {
     if (this.gameMode === mode) return;
     this.run(() => {
       this.gameMode = mode;
-      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, mode === 'tien_len' ? 4 : mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'link_duel' ? (mode === 'link_duel' ? 6 : 10) : this.roomRules.maxPlayers), GAME_MODES[mode].maxPlayers);
+      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, mode === 'tien_len' ? 4 : mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'link_duel' ? 10 : this.roomRules.maxPlayers), GAME_MODES[mode].maxPlayers);
       this.invalidateReady();
       this.addLog(`🎮 Chủ phòng đổi sang chế độ: ${GAME_MODES[mode].emoji} ${GAME_MODES[mode].name}.`);
     });
@@ -286,7 +296,7 @@ export class Game {
       // Khán giả xin vào bàn: chỉ được khi đang ở phòng chờ
       if (this.spectator(id)) {
         if (this.phase !== 'lobby') throw new GameError('Ván đang chơi, đợi ván sau để vào bàn nhé.');
-        const maxP = Math.min(this.roomRules.maxPlayers, GAME_MODES[this.gameMode].maxPlayers);
+        const maxP = this.seatLimit();
         if (this.players.length >= maxP) throw new GameError(`Bàn đã đủ ${maxP} người.`);
         this.spectators = this.spectators.filter((x) => x.id !== id);
         this.players.push({ id, name, avatar, connected: true, alive: true, hand: [] });
@@ -308,7 +318,7 @@ export class Game {
         return;
       }
       if (this.phase !== 'lobby') throw new GameError('Phòng đang chơi, đợi ván sau hoặc bấm "Xem" để vào xem nhé.');
-      const maxP = Math.min(this.roomRules.maxPlayers, GAME_MODES[this.gameMode].maxPlayers);
+      const maxP = this.seatLimit();
       if (this.players.length >= maxP) throw new GameError(`Phòng đã đủ ${maxP} người. Bấm "Xem" để vào xem nhé.`);
       this.players.push({ id, name, avatar, connected: true, alive: true, hand: [] });
       if (!this.hostId) this.hostId = id;
@@ -1494,7 +1504,7 @@ export class Game {
       p.hand = [];
     }
     const inits = humans.map((p) => ({ id: p.id, name: p.name, bot: false }));
-    const botNames = shuffle(['Sấm Nhí', 'Lá Xanh', 'Mây Bông', 'Sóng Biển', 'Lửa Hồng', 'Đá Quý']);
+    const botNames = shuffle(['Sấm Nhí', 'Lá Xanh', 'Mây Bông', 'Sóng Biển', 'Lửa Hồng', 'Đá Quý', 'Gió Lốc', 'Trăng Bạc', 'Nắng Mai', 'Tuyết Trắng']);
     for (let i = 0; i < cfg.bots && inits.length < LINK_MAX_PLAYERS; i++) {
       inits.push({ id: `bot:link${i}`, name: `🤖 ${botNames[i]} (${LINK_BOT_LABEL[cfg.botLevel]})`, bot: true });
     }
@@ -1503,7 +1513,7 @@ export class Game {
       changed: () => this.safe(() => this.run(() => this.syncLink())),
     });
     this.phase = 'playing';
-    this.addLog(`⚡ Nối Thú Đại Chiến – ${inits.length} người: ${inits.map((x) => x.name).join(' 🆚 ')}! Màn 1 – Đua Nối ${LINK_STAGE1_S} giây.`);
+    this.addLog(`⚡ Nối Thú Đại Chiến – ${inits.length} người: ${inits.map((x) => x.name).join(' 🆚 ')}! Màn 1 – Đua Nối ${LINK_STAGE1_S} giây, rồi đánh liên hoàn ${LINK_BOSSES.map((b) => `${b.emoji} ${b.name}`).join(' → ')}.`);
     this.link.start();
     this.sendLinkStates();
   }

@@ -127,7 +127,7 @@ test('hết nước đi thì tự xáo cho tới khi có nước', () => {
 
 function duel({ bot = false, level = 'normal', seed = 777, n = 2 } = {}) {
   const ev = { changed: 0, state: 0 };
-  const names = ['An', bot ? 'Máy' : 'Bình', 'Chi', 'Dũng', 'Em', 'Giang'];
+  const names = ['An', bot ? 'Máy' : 'Bình', 'Chi', 'Dũng', 'Em', 'Giang', 'Hà', 'Khoa', 'Lan', 'Minh', 'Nam'];
   const d = new LinkDuel(
     names.slice(0, n).map((name, i) => ({ id: `p${i}`, name, bot: i === 1 && bot })),
     { botLevel: level },
@@ -201,10 +201,13 @@ test('chiêu Đóng Băng / Bão Xáo: cần đầy Sấm, băng 6 ô đối th�
   steps(d, S.LINK_FREEZE.ms + 250);
   assert.equal(p1.board.ice.size, 0, 'băng tự tan');
   p0.thunder = 100;
-  const before = [...p1.board.cells].sort();
-  assert.equal(d.command('p0', { t: 'skill', kind: 'storm' }), undefined);
-  assert.deepEqual([...p1.board.cells].sort(), before, 'bão xáo chỉ đổi chỗ');
-  assert.ok(p1.board.hasMove(d.t));
+  const before = [...p1.board.cells];
+  assert.equal(d.command('p0', { t: 'skill', kind: 'fog' }), undefined);
+  assert.deepEqual([...p1.board.cells], before, 'Mây Mù không đảo bàn');
+  assert.equal(d.stateFor('p1', { fx: [], seq: 0 }).me.dark, S.LINK_FOG_MS, 'Mây Mù che bàn đối thủ');
+  assert.equal(d.stateFor('p0', { fx: [], seq: 0 }).me.dark, 0);
+  p0.thunder = 100;
+  assert.equal(d.command('p0', { t: 'skill', kind: 'storm' }), 'Lệnh không hợp lệ.', 'Bão Xáo đã bỏ');
 });
 
 test('dọn sạch Màn 1: thưởng điểm, nghỉ 5 giây rồi sang Màn 2, người thắng Màn 1 được 50 Sấm', () => {
@@ -283,7 +286,8 @@ test('Màn 2: mỗi cặp đấm boss, Cú Đấm Xa +20, Siêu Đấm 400', () 
   const long = LinkBoard.pathLength(p0.board.findPath(h[0], h[1], d.t)) > S.LINK_LONG_PATH;
   d.command('p0', { t: 'match', a: h[0], b: h[1] });
   assert.equal(p0.damage, S.linkPairDamage(0, long));
-  assert.equal(d.boss.hp, S.LINK_BOSS_HP - p0.damage);
+  assert.equal(d.boss.maxHp, S.linkBossMaxHp(0, 2));
+  assert.equal(d.boss.hp, d.boss.maxHp - p0.damage);
   assert.equal(S.linkPairDamage(0, true) - S.linkPairDamage(0, false), 20);
   assert.equal(d.command('p0', { t: 'skill', kind: 'freeze' }), 'Chiêu này chỉ dùng ở Màn 1.');
   assert.equal(d.command('p0', { t: 'super' }), 'Chưa đủ Sấm.');
@@ -293,7 +297,7 @@ test('Màn 2: mỗi cặp đấm boss, Cú Đấm Xa +20, Siêu Đấm 400', () 
   assert.equal(d.boss.hp, hp - S.LINK_SUPER_DMG);
 });
 
-test('Boss: 3 giai đoạn, nổi giận, đòn Mưa Băng → Bóng Tối → Lốc Xáo đánh cả 2 bàn theo nhịp 12/9/6 giây', () => {
+test('Vua Sấm Sét: 3 giai đoạn, nổi giận, Sét Đánh → Mưa Băng → Sét Lan → Bóng Tối theo nhịp 12/9/6 giây', () => {
   const { d, p0, p1 } = duel();
   toStage2(d);
   assert.equal(d.boss.phase, 1);
@@ -303,23 +307,36 @@ test('Boss: 3 giai đoạn, nổi giận, đòn Mưa Băng → Bóng Tối → L
   assert.equal(d.drainFx().fx.filter((f) => f.k === 'boss').length, 0);
   steps(d, 500);
   let fx = d.drainFx().fx;
-  assert.ok(fx.some((f) => f.k === 'boss' && f.kind === 'ice'));
-  assert.equal(p0.board.ice.size, S.LINK_BOSS_ICE.cells);
-  assert.equal(p1.board.ice.size, S.LINK_BOSS_ICE.cells);
+  assert.ok(fx.some((f) => f.k === 'boss' && f.kind === 'bolt'), 'đòn đầu là Sét Đánh');
+  for (const p of [p0, p1]) {
+    assert.equal(p.board.ice.size, S.LINK_BOSS_BOLT.cells);
+    assert.ok(p.board.iceList(d.t).every((x) => x[2] === 3), 'ô bị điện giật');
+  }
   // đánh boss xuống dưới 66%: giai đoạn 2, nổi giận
   d.boss.hp = Math.floor(d.boss.maxHp * 0.66) + 5;
   steps(d, 250);
   play(d, p0);
   assert.equal(d.boss.phase, 2);
   assert.ok(d.drainFx().fx.some((f) => f.k === 'boss' && f.kind === 'rage' && f.phase === 2));
-  // đòn kế: trong ≤ 9 giây là Bóng Tối
+  // đòn kế: trong ≤ 9 giây là Mưa Băng
   const t0 = d.t;
-  while (!d.drainFx().fx.some((f) => f.k === 'boss' && f.kind === 'dark')) steps(d, 250);
+  while (!d.drainFx().fx.some((f) => f.k === 'boss' && f.kind === 'ice')) steps(d, 250);
   assert.ok(d.t - t0 <= 9000);
-  assert.equal(d.stateFor('p1', { fx: [], seq: 0 }).me.dark, S.LINK_BOSS_DARK_MS);
+  // Sét Lan: nhảy vào người gây sát thương nhiều nhất, mất combo
+  p1.damage = p0.damage + 500;
+  p1.chain = 3;
+  p1.lastMatchAt = d.t;
   const t1 = d.t;
-  while (!d.drainFx().fx.some((f) => f.k === 'boss' && f.kind === 'shuffle')) steps(d, 250);
+  const cellsBefore = [...p0.board.cells];
+  let chain;
+  while (!(chain = d.drainFx().fx.find((f) => f.k === 'boss' && f.kind === 'chain'))) steps(d, 250);
   assert.equal(d.t - t1, 9000);
+  assert.equal(chain.to, 'p1');
+  assert.equal(p1.chain, 0);
+  assert.ok(p1.board.iceList(d.t).filter((x) => x[2] === 3).length >= S.LINK_BOSS_CHAIN.cells);
+  while (!d.drainFx().fx.some((f) => f.k === 'boss' && f.kind === 'dark')) steps(d, 250);
+  assert.equal(d.stateFor('p1', { fx: [], seq: 0 }).me.dark, S.LINK_BOSS_DARK_MS);
+  assert.deepEqual([...p0.board.cells], cellsBefore, 'Boss không đảo bàn');
   // giai đoạn 3: nhịp 6 giây
   d.boss.hp = Math.floor(d.boss.maxHp * 0.33) + 5;
   steps(d, 250);
@@ -327,35 +344,73 @@ test('Boss: 3 giai đoạn, nổi giận, đòn Mưa Băng → Bóng Tối → L
   assert.equal(d.boss.phase, 3);
   d.drainFx();
   const t2 = d.boss.nextSkillAt;
-  while (!d.drainFx().fx.some((f) => f.k === 'boss' && f.kind === 'ice')) steps(d, 250);
+  while (!d.drainFx().fx.some((f) => f.k === 'boss' && f.kind === 'bolt')) steps(d, 250);
   assert.equal(d.boss.nextSkillAt - d.t, 6000);
   assert.ok(d.t >= t2);
 });
 
-test('K.O.: người ra đòn cuối +500, ai tổng điểm cao hơn thắng', () => {
+test('K.O. Boss 1 → nghỉ → Nữ Hoàng Nhện; mỗi Boss gục +500 cho người kết liễu', () => {
+  const { d, ev, p0, p1 } = duel();
+  p0.thunder = 0;
+  toStage2(d);
+  assert.equal(d.stageEndsAt - d.t, S.LINK_RAID_S * 1000, 'một đồng hồ chung cho cả 3 Boss');
+  steps(d, 30_000);
+  d.boss.hp = 5;
+  p1.thunder = 40;
+  const raidLeft = d.stageEndsAt - d.t;
+  assert.equal(play(d, p1), undefined);
+  assert.equal(d.stage, 'intermission');
+  assert.equal(p1.kos, 1);
+  assert.ok(d.drainFx().fx.some((f) => f.k === 'ko' && f.who === 'p1'));
+  assert.equal(d.command('p0', { t: 'hint' }), 'Chờ chút, màn mới sắp bắt đầu.');
+  steps(d, S.LINK_INTERMISSION_S * 1000);
+  assert.equal(d.stage, 'stage2');
+  assert.equal(d.boss.id, 'spider');
+  assert.equal(d.boss.no, 1);
+  assert.equal(d.boss.maxHp, S.linkBossMaxHp(1, 2));
+  assert.equal(d.stageEndsAt - d.t, raidLeft, 'giờ còn lại chuyển sang Boss sau, lúc nghỉ không bị trừ');
+  assert.ok(p1.thunder >= 40, 'giữ Sấm sang Boss mới');
+  assert.equal(p0.board.remaining(), LINK_CELLS, 'bàn mới');
+  assert.deepEqual([...p0.board.cells], [...p1.board.cells]);
+  const st = d.stateFor('p0', d.drainFx());
+  assert.equal(st.boss.id, 'spider');
+  assert.equal(st.foes[0].kos, 1);
+});
+
+test('hạ cả 3 Boss: phá đảo, người kết liễu Bạo Chúa là result.ko, ai tổng điểm cao hơn thắng', () => {
   const { d, ev, p0, p1 } = duel();
   p0.score1 = 300;
   p1.score1 = 100;
   toStage2(d);
-  d.boss.hp = 5;
+  const order = [];
+  for (let i = 0; i < 3; i++) {
+    order.push(d.boss.id);
+    d.boss.hp = 5;
+    d.boss.shield = 0;
+    assert.equal(play(d, p1), undefined);
+    if (i < 2) steps(d, S.LINK_INTERMISSION_S * 1000);
+  }
+  assert.deepEqual(order, ['thunder', 'spider', 'tyrant']);
   const changed = ev.changed;
-  assert.equal(play(d, p1), undefined);
   assert.equal(d.stage, 'ended');
-  assert.equal(p1.ko, true);
+  assert.equal(p1.kos, 3);
   assert.equal(d.result.ko, 'p1');
-  assert.equal(d.result.totals.p1, 100 + 5 + S.LINK_KO_BONUS);
+  assert.equal(d.result.bossesDown, 3);
+  assert.equal(d.result.totals.p1, 100 + 15 + 3 * S.LINK_KO_BONUS);
   assert.equal(d.result.totals.p0, 300);
   assert.equal(d.result.winnerId, 'p1');
-  assert.ok(ev.changed > changed);
+  assert.ok(ev.changed >= changed);
   assert.equal(d.command('p0', { t: 'hint' }), 'Trận chưa bắt đầu.');
 });
 
-test('hết giờ đánh Boss: không ai K.O., bằng điểm thì hòa', () => {
+test('hết giờ đánh Boss: Boss thoát, trận kết thúc, bằng điểm thì hòa', () => {
   const { d } = duel();
   toStage2(d);
-  steps(d, S.LINK_STAGE2_S * 1000);
+  steps(d, S.LINK_RAID_S * 1000);
   assert.equal(d.stage, 'ended');
   assert.equal(d.result.ko, undefined);
+  assert.equal(d.result.bossesDown, 0);
+  assert.match(d.result.reason, /Vua Sấm Sét/);
   assert.equal(d.result.winnerId, undefined);
 });
 
@@ -371,9 +426,168 @@ test('dọn sạch bàn khi đánh Boss thì nhận bàn mới; bỏ cuộc thì
   assert.equal(d.result.winnerId, 'p1');
 });
 
+// ---------------- Nữ Hoàng Nhện, Bạo Chúa ----------------
+
+/** Đi thẳng tới Boss thứ `no` */
+function toBoss(d, no) {
+  toStage2(d);
+  for (let i = 0; i < no; i++) {
+    d.boss.hp = 1;
+    d.boss.shield = 0;
+    d['hitBoss'](d.players[0], 1);
+    steps(d, S.LINK_INTERMISSION_S * 1000);
+  }
+  assert.equal(d.boss.no, no);
+  for (const p of d.players) p.kos = 0;
+}
+/** Chạy tới khi Boss ra chiêu `kind`, trả fx của chiêu đó */
+function untilSkill(d, kind) {
+  for (let i = 0; i < 400; i++) {
+    steps(d, 250);
+    const f = d.drainFx().fx.find((x) => x.k === 'boss' && x.kind === kind);
+    if (f) return f;
+  }
+  assert.fail(`Boss không ra ${kind}`);
+}
+const lockKinds = (p, d) => p.board.iceList(d.t).map((x) => x[2]);
+
+test('Nữ Hoàng Nhện: Lưới Tơ → Nọc Độc → Kén Tơ → Hút Sinh Lực', () => {
+  const { d, p0, p1 } = duel({ n: 3 });
+  toBoss(d, 1);
+  assert.deepEqual(S.LINK_BOSSES[1].skills, ['web', 'venom', 'cocoon', 'drain']);
+  // Lưới Tơ: khoá ô loại tơ (1) trên bàn mọi người
+  const web = untilSkill(d, 'web');
+  assert.equal(web.boss, 'spider');
+  for (const p of d.players) {
+    assert.equal(p.board.ice.size, S.LINK_BOSS_WEB.cells);
+    assert.ok(lockKinds(p, d).every((k) => k === 1));
+  }
+  // Nọc Độc: mất combo, sát thương còn một nửa
+  p0.chain = 3;
+  p0.lastMatchAt = d.t;
+  untilSkill(d, 'venom');
+  assert.equal(p0.chain, 0);
+  assert.equal(d.stateFor('p0', { fx: [], seq: 0 }).me.venom, S.LINK_BOSS_VENOM_MS);
+  const h = p0.board.hint(d.t);
+  const long = LinkBoard.pathLength(p0.board.findPath(h[0], h[1], d.t)) > S.LINK_LONG_PATH;
+  const dmg0 = p0.damage;
+  d.command('p0', { t: 'match', a: h[0], b: h[1] });
+  assert.equal(p0.damage - dmg0, Math.round(S.linkPairDamage(0, long) / 2));
+  // Kén Tơ: nhắm người gây nhiều sát thương nhất
+  steps(d, S.LINK_BOSS_WEB.ms);
+  p1.damage = 9999;
+  const before0 = p0.board.ice.size;
+  const cocoon = untilSkill(d, 'cocoon');
+  assert.equal(cocoon.to, 'p1');
+  assert.ok(p1.board.ice.size >= S.LINK_BOSS_COCOON.cells);
+  assert.ok(p0.board.ice.size <= before0, 'người khác không bị Kén Tơ');
+  // Hút Sinh Lực: hồi 5% máu, không quá máu tối đa
+  d.boss.hp = d.boss.maxHp - 10_000 > 0 ? d.boss.maxHp - 10_000 : Math.floor(d.boss.maxHp / 2);
+  const hp = d.boss.hp;
+  untilSkill(d, 'drain');
+  assert.equal(d.boss.hp, Math.min(d.boss.maxHp, hp + Math.round(d.boss.maxHp * S.LINK_BOSS_DRAIN)));
+  d.boss.hp = d.boss.maxHp - 1;
+  untilSkill(d, 'drain');
+  assert.equal(d.boss.hp, d.boss.maxHp);
+});
+
+test('Bạo Chúa: 8 chiêu (nhiều nhất), Khiên Đá hút sát thương, Động Đất mất combo + Sấm, Thiên Thạch thiêu ô, Gầm Thét gây choáng', () => {
+  const { d, p0, p1 } = duel();
+  toBoss(d, 2);
+  assert.equal(d.boss.id, 'tyrant');
+  assert.equal(d.boss.maxHp, S.linkBossMaxHp(2, 2));
+  assert.ok(S.LINK_BOSSES[2].skills.length > S.LINK_BOSSES[1].skills.length);
+  assert.ok(S.LINK_BOSSES[2].skills.length > S.LINK_BOSSES[0].skills.length);
+  const seen = new Set();
+  // Thiên Thạch: ô lửa (2)
+  untilSkill(d, 'meteor');
+  seen.add('meteor');
+  assert.equal(p0.board.ice.size, S.LINK_BOSS_METEOR.cells);
+  assert.ok(lockKinds(p0, d).every((k) => k === 2));
+  // Động Đất
+  p0.chain = 4;
+  p0.lastMatchAt = d.t;
+  p0.thunder = 60;
+  p1.thunder = 10;
+  untilSkill(d, 'quake');
+  seen.add('quake');
+  assert.equal(p0.chain, 0);
+  assert.equal(p0.thunder, 60 - S.LINK_BOSS_QUAKE_THUNDER);
+  assert.equal(p1.thunder, 0);
+  // Khiên Đá: hút sát thương trước khi trừ máu
+  untilSkill(d, 'shield');
+  seen.add('shield');
+  const shield = Math.round(d.boss.maxHp * S.LINK_BOSS_SHIELD);
+  assert.equal(d.boss.shield, shield);
+  assert.equal(d.stateFor('p0', { fx: [], seq: 0 }).boss.shield, shield);
+  const hp = d.boss.hp;
+  p0.thunder = 100;
+  d.command('p0', { t: 'super' });
+  assert.equal(d.boss.shield, 0);
+  assert.equal(d.boss.hp, hp - (S.LINK_SUPER_DMG - shield));
+  assert.equal(p0.damage >= S.LINK_SUPER_DMG, true, 'đánh vào khiên vẫn tính sát thương');
+  untilSkill(d, 'ice');
+  seen.add('ice');
+  // Gầm Thét: choáng, chưa nối được
+  untilSkill(d, 'roar');
+  seen.add('roar');
+  assert.equal(d.stateFor('p0', { fx: [], seq: 0 }).me.stun, S.LINK_BOSS_ROAR_MS);
+  steps(d, 250);
+  const h = p0.board.hint(d.t);
+  assert.equal(d.command('p0', { t: 'match', a: h[0], b: h[1] }), 'Bạn đang bị choáng!');
+  steps(d, S.LINK_BOSS_ROAR_MS);
+  for (const k of ['dark', 'venom', 'meteor', 'quake', 'bolt']) {
+    untilSkill(d, k);
+    seen.add(k);
+  }
+  assert.equal(seen.size, 8);
+});
+
+test('không còn chiêu nào (Boss hay người) đảo bàn người khác', () => {
+  for (const b of S.LINK_BOSSES) assert.ok(!b.skills.includes('shuffle'));
+  const { d, p0, p1 } = duel();
+  toBoss(d, 2);
+  const cells = [...p1.board.cells];
+  for (const k of S.LINK_BOSSES[2].skills) untilSkill(d, k);
+  assert.deepEqual([...p1.board.cells], cells);
+});
+
+// ---------------- Đảo Bàn (chiêu người chơi, hồi 1 phút) ----------------
+
+test('Đảo Bàn: chiêu tự đảo bàn mình, hồi 1 phút, nối được cặp không làm hồi lại', () => {
+  const { d, p0, p1 } = duel();
+  assert.equal(S.LINK_SHUFFLE_CD_S, 60);
+  assert.equal(d.command('p0', { t: 'shuffle' }), 'Đảo Bàn đang hồi chiêu.');
+  assert.equal(d.stateFor('p0', { fx: [], seq: 0 }).me.shuffleIn, S.LINK_SHUFFLE_CD_S * 1000);
+  steps(d, 30_000);
+  play(d, p0); // nối cặp: đồng hồ hồi chiêu vẫn chạy tiếp
+  steps(d, (S.LINK_SHUFFLE_CD_S - 31) * 1000);
+  assert.equal(d.stateFor('p0', { fx: [], seq: 0 }).me.shuffleIn, 1000);
+  assert.ok(d.command('p0', { t: 'shuffle' }));
+  steps(d, 1000);
+  assert.equal(d.stateFor('p0', { fx: [], seq: 0 }).me.shuffleIn, 0);
+  const before = [...p0.board.cells].sort();
+  const p1Cells = [...p1.board.cells];
+  d.drainFx();
+  assert.equal(d.command('p0', { t: 'shuffle' }), undefined);
+  assert.deepEqual([...p0.board.cells].sort(), before, 'chỉ đổi chỗ, không mất ô');
+  assert.ok(p0.board.hasMove(d.t) || p0.board.ice.size > 0);
+  assert.deepEqual([...p1.board.cells], p1Cells, 'không đụng bàn người khác');
+  assert.ok(d.drainFx().fx.some((f) => f.k === 'shuffle' && f.who === 'p0'));
+  assert.equal(d.stateFor('p0', { fx: [], seq: 0 }).me.shuffleIn, S.LINK_SHUFFLE_CD_S * 1000);
+  assert.equal(d.command('p0', { t: 'shuffle' }), 'Đảo Bàn đang hồi chiêu.', 'dùng xong phải chờ lại 1 phút');
+});
+
+test('Đảo Bàn dùng được khi đánh Boss', () => {
+  const { d, p0 } = duel();
+  toStage2(d);
+  steps(d, S.LINK_SHUFFLE_CD_S * 1000);
+  assert.equal(d.command('p0', { t: 'shuffle' }), undefined);
+});
+
 // ---------------- Máy ----------------
 
-test('máy (Khó) tự chơi trọn 2 màn và không bao giờ nối sai', () => {
+test('máy (Khó) tự chơi trọn trận và không bao giờ nối sai', () => {
   const { d, p1 } = duel({ bot: true, level: 'hard' });
   const orig = d.command.bind(d);
   const botErrors = [];
@@ -382,7 +596,8 @@ test('máy (Khó) tự chơi trọn 2 màn và không bao giờ nối sai', () =
     if (id === 'p1' && e) botErrors.push(e);
     return e;
   };
-  steps(d, (S.LINK_STAGE1_S + S.LINK_INTERMISSION_S + S.LINK_STAGE2_S + 10) * 1000);
+  const all = S.LINK_STAGE1_S + S.LINK_RAID_S + 3 * S.LINK_INTERMISSION_S + 10;
+  for (let x = 0; x < all * 1000 && d.stage !== 'ended'; x += 250) d.tick(250);
   assert.ok(p1.score1 > 0, 'máy có điểm Màn 1');
   assert.ok(p1.damage > 0, 'máy có đánh boss');
   assert.equal(d.stage, 'ended');
@@ -394,10 +609,14 @@ test('cấu hình: độ khó lạ về Thường', () => {
   assert.deepEqual(S.normalizeLinkConfig({ botLevel: 'x' }, 2), { botLevel: 'normal', bots: 0 });
   assert.deepEqual(S.normalizeLinkConfig({ botLevel: 'hard', bots: 3 }, 2), { botLevel: 'hard', bots: 3 });
   assert.equal(S.normalizeLinkConfig({ bots: 0 }, 1).bots, 1, '1 người thì luôn có ít nhất 1 máy');
-  assert.equal(S.normalizeLinkConfig({ bots: 9 }, 4).bots, 2, 'tổng tối đa 6');
-  assert.equal(S.normalizeLinkConfig({ bots: 9 }, 6).bots, 0);
+  assert.equal(S.normalizeLinkConfig({ bots: 9 }, 4).bots, 6, 'tổng tối đa 10');
+  assert.equal(S.normalizeLinkConfig({ bots: 9 }, 10).bots, 0);
+  assert.equal(S.normalizeLinkConfig({ bots: 3 }, 12).bots, 0, 'phòng đông hơn 10 vẫn không thêm máy');
+  assert.equal(S.LINK_MAX_PLAYERS, 10);
   assert.equal(S.linkBossHp(2), S.LINK_BOSS_HP);
-  assert.equal(S.linkBossHp(6), 9000);
+  assert.equal(S.linkBossHp(6), 6600);
+  assert.equal(S.linkBossHp(10), 10200);
+  assert.equal(S.linkBossHp(15), 10200, 'máu Boss không vượt mức 10 người');
 });
 
 test('tích hợp phòng: 1 người + máy, gửi trạng thái riêng, bỏ cuộc thì máy thắng và hoàn cược', () => {
@@ -436,9 +655,9 @@ test('tích hợp phòng: 1 người + máy, gửi trạng thái riêng, bỏ cu
   }
 });
 
-// ---------------- 4–6 người ----------------
+// ---------------- 4–10 người ----------------
 
-test('6 người: cùng một đề, mỗi người thấy 5 đối thủ, Boss 9000 máu', () => {
+test('6 người: cùng một đề, mỗi người thấy 5 đối thủ, Boss theo máu 6 người', () => {
   const { d } = duel({ n: 6 });
   assert.equal(d.players.length, 6);
   for (const p of d.players) assert.deepEqual([...p.board.cells], [...d.players[0].board.cells]);
@@ -446,7 +665,18 @@ test('6 người: cùng một đề, mỗi người thấy 5 đối thủ, Boss 
   assert.equal(st.foes.length, 5);
   assert.ok(!st.foes.some((f) => f.id === 'p3'));
   toStage2(d);
-  assert.equal(d.boss.maxHp, 9000);
+  assert.equal(d.boss.maxHp, S.linkBossMaxHp(0, 6));
+  assert.equal(S.linkBossHp(6), 6600);
+});
+
+test('10 người: ai cũng thấy 9 đối thủ, người thứ 11 không vào trận, Boss theo máu 10 người', () => {
+  const { d } = duel({ n: 11 });
+  assert.equal(d.players.length, 10);
+  for (const p of d.players) assert.deepEqual([...p.board.cells], [...d.players[0].board.cells]);
+  const st = d.stateFor('p9', d.drainFx());
+  assert.equal(st.foes.length, 9);
+  toStage2(d);
+  assert.equal(d.boss.maxHp, S.linkBossMaxHp(0, 10));
 });
 
 test('nhiều người: chiêu mặc định đánh người dẫn đầu, hoặc người được chọn', () => {
@@ -485,13 +715,13 @@ test('nhiều người: hết giờ thì người tổng điểm cao nhất th�
   d.players[1].score1 = 50;
   d.players[3].score1 = 80;
   toStage2(d);
-  steps(d, S.LINK_STAGE2_S * 1000);
+  steps(d, S.LINK_RAID_S * 1000);
   assert.equal(d.result.winnerId, 'p3');
   ({ d } = duel({ n: 4 }));
   d.players[1].score1 = 80;
   d.players[3].score1 = 80;
   toStage2(d);
-  steps(d, S.LINK_STAGE2_S * 1000);
+  steps(d, S.LINK_RAID_S * 1000);
   assert.equal(d.result.winnerId, undefined);
 });
 
@@ -500,7 +730,7 @@ test('Boss ra đòn lên bàn của mọi người còn trong trận', () => {
   d.command('p4', { t: 'resign' });
   toStage2(d);
   steps(d, 12000);
-  for (const p of d.players.slice(0, 4)) assert.equal(p.board.ice.size, S.LINK_BOSS_ICE.cells);
+  for (const p of d.players.slice(0, 4)) assert.equal(p.board.ice.size, S.LINK_BOSS_BOLT.cells);
   assert.equal(d.players[4].board.ice.size, 0, 'người đã bỏ cuộc không bị đánh');
 });
 
@@ -520,5 +750,25 @@ test('tích hợp phòng: 1 người + 3 máy (4 người), máy tự chơi', ()
     assert.equal(sent.at(-1)[1].foes.length, 3);
   } finally {
     game.dispose();
+  }
+});
+
+test('phòng Nối Thú tạo từ bản cũ (luật lưu "tối đa 6") vẫn đủ 10 chỗ; Mèo Nổ vẫn theo luật phòng', () => {
+  const { Game } = require('../dist/server/src/game/game.js');
+  const hooks = { changed() {}, removed() {}, fx() {}, notify() {}, antsFrame() {}, linkState() {} };
+  const game = new Game('LNK6', hooks, { maxPlayers: 6 }, 'link_duel');
+  try {
+    assert.equal(game.seatLimit(), 10);
+    for (let i = 0; i < 10; i++) game.addPlayer(`player_seat${i}`, `Người ${i}`);
+    assert.equal(game.players.length, 10);
+    assert.throws(() => game.addPlayer('player_seat10', 'Người 10'), /đủ 10 người/);
+  } finally {
+    game.dispose();
+  }
+  const ek = new Game('EKS6', hooks, { maxPlayers: 6 }, 'exploding_kittens');
+  try {
+    assert.equal(ek.seatLimit(), 6);
+  } finally {
+    ek.dispose?.();
   }
 });

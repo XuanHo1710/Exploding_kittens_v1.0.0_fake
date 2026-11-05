@@ -2,7 +2,7 @@
  * Bàn nối hình 16×9: sinh bàn luôn giải được, tìm đường nối gấp khúc ≤ 2 lần (được vòng ra ngoài mép),
  * gợi ý, xáo bàn và đóng băng ô.
  */
-import { LINK_CELLS, LINK_H, LINK_KINDS, LINK_MAX_TURNS, LINK_W } from '../../../../shared/src';
+import { LINK_CELLS, LINK_H, LINK_KINDS, LINK_MAX_TURNS, LINK_W, type LinkLock } from '../../../../shared/src';
 
 /** Lưới có viền 1 ô quanh bàn để đường nối đi vòng ngoài mép */
 const PW = LINK_W + 2;
@@ -34,6 +34,8 @@ export class LinkBoard {
   cells = new Int8Array(LINK_CELLS).fill(-1);
   /** ô → thời điểm (ms trận) hết băng */
   ice = new Map<number, number>();
+  /** loại khoá của ô đang khoá (không có = băng) */
+  lockKind = new Map<number, LinkLock>();
 
   constructor(private rng: Rng) {}
 
@@ -203,6 +205,8 @@ export class LinkBoard {
     this.cells[b] = -1;
     this.ice.delete(a);
     this.ice.delete(b);
+    this.lockKind.delete(a);
+    this.lockKind.delete(b);
   }
 
   /** Một cặp nối được ngay bây giờ (bỏ qua ô băng) */
@@ -266,32 +270,46 @@ export class LinkBoard {
     for (let attempt = 0; attempt < 50; attempt++) {
       this.cells.fill(-1);
       this.ice.clear();
+      this.lockKind.clear();
       if (this.placePairs(this.shuffled(pairKinds))) return true;
     }
     return true;
   }
 
-  /** Đóng băng n ô còn hình (chưa băng) trong ms */
-  freeze(n: number, ms: number, now: number): number[] {
+  /** Khoá n ô còn hình (chưa khoá) trong ms: băng (0), tơ nhện (1) hay lửa (2) */
+  freeze(n: number, ms: number, now: number, kind: LinkLock = 0): number[] {
     const cand: number[] = [];
     for (let i = 0; i < LINK_CELLS; i++) if (this.cells[i] >= 0 && !this.frozen(i, now)) cand.push(i);
     const pick = this.shuffled(cand).slice(0, n);
-    for (const i of pick) this.ice.set(i, now + ms);
+    for (const i of pick) {
+      this.ice.set(i, now + ms);
+      if (kind) this.lockKind.set(i, kind);
+      else this.lockKind.delete(i);
+    }
     return pick;
   }
 
-  /** Xoá băng đã tan */
+  /** Bỏ khoá đã hết hạn */
   thaw(now: number) {
-    for (const [i, t] of this.ice) if (t <= now) this.ice.delete(i);
+    for (const [i, t] of this.ice) {
+      if (t > now) continue;
+      this.ice.delete(i);
+      this.lockKind.delete(i);
+    }
+  }
+
+  clearLocks() {
+    this.ice.clear();
+    this.lockKind.clear();
   }
 
   filledBits(): number[] {
     return Array.from(this.cells, (k) => (k >= 0 ? 1 : 0));
   }
 
-  iceList(now: number): [number, number][] {
-    const out: [number, number][] = [];
-    for (const [i, t] of this.ice) if (t > now) out.push([i, t - now]);
+  iceList(now: number): [number, number, LinkLock][] {
+    const out: [number, number, LinkLock][] = [];
+    for (const [i, t] of this.ice) if (t > now) out.push([i, t - now, this.lockKind.get(i) ?? 0]);
     return out;
   }
 }
