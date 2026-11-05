@@ -73,22 +73,33 @@ Chủ phòng chỉnh số máy, độ khó và thời gian trận trong phòng c
 | Cách máy chơi | `server/src/game/ants/bot.ts` |
 | Hình vẽ kiến / trụ / đạn / bản đồ | `client/src/ants/render.ts` |
 
-## ⚡ Nối Thú Đại Chiến (nối hình 2–6 người realtime)
+## ⚡ Nối Thú Đại Chiến (nối hình 2–10 người realtime, liên hoàn 3 Boss)
 
-Chọn **Nối Thú Đại Chiến** khi tạo phòng. **2–6 người** (2 người là solo 1v1); chủ phòng thêm **máy** cho đủ chỗ và chọn độ khó Dễ / Thường / Khó
+Chọn **Nối Thú Đại Chiến** khi tạo phòng. **2–10 người** (2 người là solo 1v1); chủ phòng thêm **máy** cho đủ chỗ và chọn độ khó Dễ / Thường / Khó
 (phòng chỉ có 1 người thì luôn có ít nhất 1 máy).
 Ô dùng 36 emoji con vật khác hẳn nhau (chó, mèo, gấu trúc, voi, cua…) cho dễ nhìn; máy không có font emoji thì dùng bộ thú vẽ tay.
 
 - **Luật nối:** bấm 2 ô cùng con thú; nối được nếu có đường đi qua ô trống, **gấp khúc tối đa 2 lần**, được vòng ra ngoài mép bàn.
-  Bàn 16×9, hai người cùng một đề. Hết nước đi thì bàn tự xáo. Gợi ý (phím `H`) hồi 15 giây, trừ 5 điểm.
+  Bàn 16×9, mọi người cùng một đề. Hết nước đi thì bàn tự xáo. Gợi ý (phím `H`) hồi 15 giây, trừ 5 điểm.
+- **🔀 Đảo Bàn:** chiêu tự đảo bàn mình cho dễ nối, miễn phí, **hồi chiêu 1 phút** (phím `R`; đầu trận cũng chờ 1 phút).
+  Không chiêu nào của Boss hay đối thủ đảo bàn của bạn.
 - **Màn 1 – Đua Nối (150 giây):** mỗi cặp 10 điểm, nối liên tiếp trong 3 giây thì combo (+5 mỗi bậc). Combo nạp ⚡ Sấm;
-  đầy Sấm tung **❄️ Đóng Băng** (6 ô đối thủ, 8 giây – phím `1`) hoặc **🌪️ Bão Xáo** (xáo bàn đối thủ – phím `2`).
+  đầy Sấm tung **❄️ Đóng Băng** (6 ô đối thủ, 8 giây – phím `1`) hoặc **🌫️ Mây Mù** (che bàn đối thủ 4 giây – phím `2`).
   Chiêu mặc định đánh **người đang dẫn đầu**; bấm vào bàn nhỏ của một đối thủ để nhắm người đó (bấm lại để bỏ chọn).
-  Dọn sạch bàn trước: +300 và +20 mỗi giây còn lại. Người dẫn trước vào Màn 2 với 50% Sấm.
-- **Màn 2 – Đấm Boss (180 giây):** cả phòng cùng đánh **Vua Sấm Sét** (4000 máu với 2 người, +1250 mỗi người thêm – 6 người là 9000). Mỗi cặp là một cú đấm (25 sát thương, combo nhân thêm,
-  đường dài hơn 10 ô là "Cú Đấm Xa" +20); Sấm đầy tung **⚡ Siêu Đấm** 400 (phím `Space`). Boss có 3 giai đoạn (66% / 33% máu),
-  ra đòn lên bàn cả hai người mỗi 12 / 9 / 6 giây: Mưa Băng, Bóng Tối, Lốc Xáo. Dọn sạch bàn thì nhận bàn mới.
-- **Thắng:** tổng = điểm Màn 1 + sát thương lên Boss + **K.O. +500** cho cú kết liễu. Cao nhất thắng cả hũ; ngang điểm đầu bảng hoặc máy thắng thì hoàn cược.
+  Dọn sạch bàn trước: +300 và +20 mỗi giây còn lại. Người dẫn trước vào Boss đầu với 50% Sấm.
+- **Liên hoàn 3 Boss:** cả phòng cùng đánh. Mỗi cặp là một cú đấm (25 sát thương, combo nhân thêm, đường dài hơn 10 ô là "Cú Đấm Xa" +20);
+  Sấm đầy tung **⚡ Siêu Đấm** 400 (phím `Space`). **Boss trước hết máu thì Boss sau xuất hiện** (nghỉ 5 giây, bàn mới, giữ nguyên Sấm).
+  Cả 3 Boss dùng **chung 6 phút** (không tính lúc nghỉ): hạ nhanh thì dư giờ cho Boss sau; hết giờ thì trận kết thúc.
+  Mỗi Boss có 3 giai đoạn (66% / 33% máu), càng về sau ra đòn càng dồn dập. Máu gốc: 3000 với 2 người, +900 mỗi người thêm (10 người là 10200), nhân hệ số của từng Boss:
+
+  | Boss | Máu | Chiêu | Nhịp ra đòn |
+  |---|---|---|---|
+  | ⚡ Vua Sấm Sét | ×0.7 | Sét Đánh (giật điện 4 ô), Mưa Băng (băng 4 ô), Sét Lan (giật 9 ô + mất combo người gây sát thương nhiều nhất), Bóng Tối | 12 / 9 / 6 s |
+  | 🕷️ Nữ Hoàng Nhện | ×1.0 | Lưới Tơ (trói 5 ô), Nọc Độc (6 giây: mất combo, sát thương còn một nửa), Kén Tơ (trói 12 ô người gây sát thương nhiều nhất), Hút Sinh Lực (hồi 5% máu) | 11 / 8 / 6 s |
+  | 👹 Bạo Chúa | ×1.4 | 8 chiêu: Thiên Thạch (thiêu 6 ô), Động Đất (mất combo, −25 Sấm), Sét Đánh, Khiên Đá (khiên 6% máu), Mưa Băng, Gầm Thét (choáng 2,5 giây), Bóng Tối, Nọc Độc | 10 / 7 / 5 s |
+
+  Chơi thử bằng máy: 2 máy Thường hạ đủ 3 Boss; 2 máy Dễ hạ 2 Boss và đánh tới Bạo Chúa.
+- **Thắng:** tổng = điểm Màn 1 + sát thương lên Boss + **+500 cho mỗi Boss mình kết liễu**. Cao nhất thắng cả hũ; ngang điểm đầu bảng hoặc máy thắng thì hoàn cược.
 - Rời trận giữa chừng là bỏ cuộc (không được thắng; trận vẫn tiếp cho người còn lại, chỉ còn 1 người thì người đó thắng). Server kiểm tra mọi nước nối và giới hạn 8 lệnh/giây; bàn của đối thủ chỉ gửi ô còn / trống.
 
 | Muốn đổi | Sửa ở |
