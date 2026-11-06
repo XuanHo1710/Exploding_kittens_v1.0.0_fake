@@ -111,21 +111,65 @@ export const linkIdx = (x: number, y: number) => y * LINK_W + x;
 export interface LinkCritter {
   id: number;
   name: string;
-  /** hình hiển thị trên ô (emoji con vật – mỗi con một dáng riêng, rất dễ phân biệt) */
+  /** mã ảnh chuẩn hóa trong thư mục database-pikachu/ (Pika-001 .. Pika-036) */
+  code: string;
+  /** tên Pokémon tương ứng 1-1 từ bộ Pikachu cổ điển trên web */
+  pokemon: string;
+  /** đường dẫn ảnh hiển thị trên ô */
+  image: string;
+  /** hình hiển thị dự phòng (emoji) khi ảnh chưa tải xong */
   emoji: string;
   /** màu chủ đạo (hạt nổ, viền) */
   color: string;
 }
 
-/** 36 con vật, chọn sao cho không con nào giống con nào (không lấy 2 con cùng dáng / cùng màu) */
+/** 36 con vật mapping 1-1 với 36 ảnh Pikachu cổ điển trên web trong thư mục database-pikachu/ */
 export const LINK_CRITTERS: LinkCritter[] = ([
-  ['Cún', '🐶', '#c68642'], ['Mèo', '🐱', '#ffb84d'], ['Chuột', '🐭', '#adb5bd'], ['Thỏ', '🐰', '#f8f9fa'], ['Cáo', '🦊', '#fd7e14'], ['Gấu', '🐻', '#8d5524'],
-  ['Gấu Trúc', '🐼', '#343a40'], ['Koala', '🐨', '#868e96'], ['Hổ', '🐯', '#f76707'], ['Sư Tử', '🦁', '#fab005'], ['Bò', '🐮', '#f1f3f5'], ['Heo', '🐷', '#faa2c1'],
-  ['Ếch', '🐸', '#51cf66'], ['Khỉ', '🐵', '#a0522d'], ['Gà', '🐔', '#fa5252'], ['Cánh Cụt', '🐧', '#212529'], ['Gà Con', '🐤', '#ffd43b'], ['Vịt', '🦆', '#2f9e44'],
-  ['Cú', '🦉', '#9c6644'], ['Kỳ Lân', '🦄', '#e599f7'], ['Ong', '🐝', '#fcc419'], ['Bọ Rùa', '🐞', '#e03131'], ['Bướm', '🦋', '#339af0'], ['Ốc Sên', '🐌', '#d9a066'],
-  ['Rùa', '🐢', '#2b8a3e'], ['Rắn', '🐍', '#94d82d'], ['Bạch Tuộc', '🐙', '#e64980'], ['Cua', '🦀', '#f03e3e'], ['Cá Cảnh', '🐠', '#ff922b'], ['Cá Heo', '🐬', '#4dabf7'],
-  ['Cá Mập', '🦈', '#748ffc'], ['Voi', '🐘', '#909296'], ['Hươu Cao Cổ', '🦒', '#e8a33d'], ['Ngựa Vằn', '🦓', '#495057'], ['Nhím', '🦔', '#a47148'], ['Vẹt', '🦜', '#37b24d'],
-] as const).map(([name, emoji, color], id) => ({ id, name, emoji, color }));
+  ['Cún', '🐶', '#c68642', 'Pika-001', 'Arcanine'],
+  ['Mèo', '🐱', '#ffb84d', 'Pika-002', 'Meowth'],
+  ['Chuột', '🐭', '#adb5bd', 'Pika-003', 'Raichu'],
+  ['Thỏ', '🐰', '#f8f9fa', 'Pika-004', 'Nidorina'],
+  ['Cáo', '🦊', '#fd7e14', 'Pika-005', 'Flareon'],
+  ['Gấu', '🐻', '#8d5524', 'Pika-006', 'Clefable'],
+  ['Gấu Trúc', '🐼', '#343a40', 'Pika-007', 'Poliwhirl'],
+  ['Koala', '🐨', '#868e96', 'Pika-008', 'Marill'],
+  ['Hổ', '🐯', '#f76707', 'Pika-009', 'Charmander'],
+  ['Sư Tử', '🦁', '#fab005', 'Pika-010', 'Mareep'],
+  ['Bò', '🐮', '#f1f3f5', 'Pika-011', 'Miltank'],
+  ['Heo', '🐷', '#faa2c1', 'Pika-012', 'Mew'],
+  ['Ếch', '🐸', '#51cf66', 'Pika-013', 'Politoed'],
+  ['Khỉ', '🐵', '#a0522d', 'Pika-014', 'Aipom'],
+  ['Gà', '🐔', '#fa5252', 'Pika-015', 'Togetic'],
+  ['Cánh Cụt', '🐧', '#212529', 'Pika-016', 'Delibird'],
+  ['Gà Con', '🐤', '#ffd43b', 'Pika-017', 'Togepi'],
+  ['Vịt', '🦆', '#2f9e44', 'Pika-018', 'Psyduck'],
+  ['Cú', '🦉', '#9c6644', 'Pika-019', 'Pidgeotto'],
+  ['Kỳ Lân', '🦄', '#e599f7', 'Pika-020', 'Ponyta'],
+  ['Ong', '🐝', '#fcc419', 'Pika-021', 'Beedrill'],
+  ['Bọ Rùa', '🐞', '#e03131', 'Pika-022', 'Ledyba'],
+  ['Bướm', '🦋', '#339af0', 'Pika-023', 'Butterfree'],
+  ['Ốc Sên', '🐌', '#d9a066', 'Pika-024', 'Omanyte'],
+  ['Rùa', '🐢', '#2b8a3e', 'Pika-025', 'Wartortle'],
+  ['Rắn', '🐍', '#94d82d', 'Pika-026', 'Caterpie'],
+  ['Bạch Tuộc', '🐙', '#e64980', 'Pika-027', 'Corsola'],
+  ['Cua', '🦀', '#f03e3e', 'Pika-028', 'Gligar'],
+  ['Cá Cảnh', '🐠', '#ff922b', 'Pika-029', 'Horsea'],
+  ['Cá Heo', '🐬', '#4dabf7', 'Pika-030', 'Vaporeon'],
+  ['Cá Mập', '🦈', '#748ffc', 'Pika-031', 'Totodile'],
+  ['Voi', '🐘', '#909296', 'Pika-032', 'Bulbasaur'],
+  ['Hươu Cao Cổ', '🦒', '#e8a33d', 'Pika-033', 'Ampharos'],
+  ['Ngựa Vằn', '🦓', '#495057', 'Pika-034', 'Dewgong'],
+  ['Nhím', '🦔', '#a47148', 'Pika-035', 'Chikorita'],
+  ['Vẹt', '🦜', '#37b24d', 'Pika-036', 'Natu'],
+] as const).map(([name, emoji, color, code, pokemon], id) => ({
+  id,
+  name,
+  code,
+  pokemon,
+  image: `/database-pikachu/${code}.png`,
+  emoji,
+  color,
+}));
 
 export type LinkStage = 'stage1' | 'intermission' | 'stage2' | 'ended';
 export type LinkBotLevel = 'easy' | 'normal' | 'hard';
