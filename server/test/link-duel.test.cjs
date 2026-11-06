@@ -377,26 +377,26 @@ test('K.O. Boss 1 → nghỉ → Nữ Hoàng Nhện; mỗi Boss gục +500 cho n
   assert.equal(st.foes[0].kos, 1);
 });
 
-test('hạ cả 3 Boss: phá đảo, người kết liễu Bạo Chúa là result.ko, ai tổng điểm cao hơn thắng', () => {
+test('hạ hết các màn Boss (bao gồm 2 Boss Co-op cuối): phá đảo, người kết liễu cuối là result.ko', () => {
   const { d, ev, p0, p1 } = duel();
   p0.score1 = 300;
   p1.score1 = 100;
   toStage2(d);
   const order = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < S.LINK_BOSSES.length; i++) {
     order.push(d.boss.id);
     d.boss.hp = 5;
     d.boss.shield = 0;
     assert.equal(play(d, p1), undefined);
-    if (i < 2) steps(d, S.LINK_INTERMISSION_S * 1000);
+    if (i < S.LINK_BOSSES.length - 1) steps(d, S.LINK_INTERMISSION_S * 1000);
   }
-  assert.deepEqual(order, ['thunder', 'spider', 'tyrant']);
+  assert.deepEqual(order, ['thunder', 'spider', 'tyrant', 'twins']);
   const changed = ev.changed;
   assert.equal(d.stage, 'ended');
-  assert.equal(p1.kos, 3);
+  assert.equal(p1.kos, 4);
   assert.equal(d.result.ko, 'p1');
-  assert.equal(d.result.bossesDown, 3);
-  assert.equal(d.result.totals.p1, 100 + 15 + 3 * S.LINK_KO_BONUS);
+  assert.equal(d.result.bossesDown, 4);
+  assert.equal(d.result.totals.p1, 100 + 20 + 4 * S.LINK_KO_BONUS);
   assert.equal(d.result.totals.p0, 300);
   assert.equal(d.result.winnerId, 'p1');
   assert.ok(ev.changed >= changed);
@@ -541,6 +541,67 @@ test('Bạo Chúa: 8 chiêu (nhiều nhất), Khiên Đá hút sát thương, Đ
     seen.add(k);
   }
   assert.equal(seen.size, 8);
+});
+
+test('2 Boss Co-op Siêu Khó (Hắc Long Hư Không & Phượng Hoàng Hỗn Mang): 6 chiêu mới + triệu hồi nhanh coop_raid', () => {
+  const { d, p0, p1 } = duel();
+  const twinsDef = S.LINK_BOSSES[3];
+  assert.equal(twinsDef.id, 'twins');
+  assert.equal(twinsDef.coop, true);
+  assert.equal(twinsDef.partners.length, 2);
+  assert.deepEqual(
+    twinsDef.skills,
+    ['blackhole', 'hellfire', 'soul_chain', 'nirvana', 'eclipse', 'judgment'],
+  );
+
+  // Triệu hồi ngay 2 Boss Co-op từ Màn 1
+  p0.score1 = 50;
+  assert.equal(d.command('p0', { t: 'coop_raid' }), undefined);
+  assert.equal(d.stage, 'stage2');
+  assert.equal(d.boss.id, 'twins');
+  assert.equal(d.boss.maxHp, S.linkBossMaxHp(3, 2));
+  assert.equal(p0.thunder, 50, 'người dẫn đầu Màn 1 được 50 Sấm');
+
+  // 1. blackhole: khoá 8 ô Ấn Hư Không (loại 4) + trừ 20 Sấm
+  untilSkill(d, 'blackhole');
+  assert.equal(p0.board.ice.size, S.LINK_BOSS_BLACKHOLE.cells);
+  assert.ok(lockKinds(p0, d).every((k) => k === 4));
+  assert.equal(p0.thunder, 50 - S.LINK_BOSS_BLACKHOLE.thunder);
+
+  // 2. hellfire: thiêu đốt 9 ô lửa (loại 2) + mất combo
+  p0.chain = 3;
+  p0.lastMatchAt = d.t;
+  untilSkill(d, 'hellfire');
+  assert.equal(p0.chain, 0);
+  assert.ok(lockKinds(p0, d).includes(2));
+
+  // 3. soul_chain: nhắm người dẫn đầu sát thương, khoá 14 ô Ấn Hư Không + choáng 1.5s
+  p1.damage = 9999;
+  p1.chain = 4;
+  p1.lastMatchAt = d.t;
+  const sc = untilSkill(d, 'soul_chain');
+  assert.equal(sc.to, 'p1');
+  assert.equal(p1.chain, 0);
+  assert.equal(d.stateFor('p1', { fx: [], seq: 0 }).me.stun, S.LINK_BOSS_SOUL_CHAIN.stunMs);
+
+  // 4. nirvana: hồi 8% máu + dựng Khiên Hỗn Mang 10% máu
+  d.boss.hp = Math.floor(d.boss.maxHp * 0.5);
+  const hpBefore = d.boss.hp;
+  untilSkill(d, 'nirvana');
+  assert.equal(d.boss.hp, hpBefore + Math.round(d.boss.maxHp * S.LINK_BOSS_NIRVANA.heal));
+  assert.equal(d.boss.shield, Math.round(d.boss.maxHp * S.LINK_BOSS_NIRVANA.shield));
+
+  // 5. eclipse: Bóng Tối 5s + Độc Hư Không 7s
+  untilSkill(d, 'eclipse');
+  const st0 = d.stateFor('p0', { fx: [], seq: 0 }).me;
+  assert.equal(st0.dark, S.LINK_BOSS_ECLIPSE.darkMs);
+  assert.equal(st0.venom, S.LINK_BOSS_ECLIPSE.venomMs);
+
+  // 6. judgment (Song Tuyệt Hủy Diệt): khoá 5 ô Ấn Hư Không + 5 ô Lửa + choáng 2s + trừ 30 Sấm
+  p0.thunder = 80;
+  untilSkill(d, 'judgment');
+  assert.equal(p0.thunder, 80 - S.LINK_BOSS_JUDGMENT.thunder);
+  assert.equal(d.stateFor('p0', { fx: [], seq: 0 }).me.stun, S.LINK_BOSS_JUDGMENT.stunMs);
 });
 
 test('không còn chiêu nào (Boss hay người) đảo bàn người khác', () => {

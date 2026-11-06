@@ -7,10 +7,16 @@
  */
 import {
   LINK_BOSSES,
+  LINK_BOSS_BLACKHOLE,
   LINK_BOSS_BOLT,
   LINK_BOSS_CHAIN,
   LINK_BOSS_DRAIN,
+  LINK_BOSS_ECLIPSE,
+  LINK_BOSS_HELLFIRE,
+  LINK_BOSS_JUDGMENT,
+  LINK_BOSS_NIRVANA,
   LINK_BOSS_ROAR_MS,
+  LINK_BOSS_SOUL_CHAIN,
   LINK_RAID_S,
   LINK_BOSS_COCOON,
   LINK_BOSS_DARK_MS,
@@ -295,6 +301,22 @@ export class LinkDuel {
         this.emit();
         return undefined;
       }
+      case 'coop_raid': {
+        const coopIdx = LINK_BOSSES.findIndex((b) => b.id === 'twins');
+        if (coopIdx < 0) return 'Không tìm thấy Boss Co-op.';
+        if (this.stage === 'stage2' && this.boss?.id === 'twins') return 'Đang chiến đấu với 2 Boss Co-op!';
+        if (this.stage === 'stage1') {
+          this.stage1Winner = this.topOf(this.active(), (x) => x.score1);
+          for (const x of this.players) {
+            if (x.id === this.stage1Winner) x.thunder = Math.max(x.thunder, 50);
+          }
+        } else if (this.stage === 'stage2') {
+          this.raidLeft = Math.max(120_000, this.stageEndsAt - this.t);
+        }
+        this.nextBossNo = coopIdx;
+        this.beginStage2();
+        return undefined;
+      }
       default:
         return 'Lệnh không hợp lệ.';
     }
@@ -442,14 +464,18 @@ export class LinkDuel {
     const kind = skills[boss.skillIdx++ % skills.length];
     const alive = this.active();
     let to: string | undefined;
-    // người đang gây nhiều sát thương nhất (Kén Tơ, Sét Lan nhắm vào)
+    // người đang gây nhiều sát thương nhất (Kén Tơ, Sét Lan, Xiềng Xích Linh Hồn nhắm vào)
     const top = [...alive].sort((a, b) => b.damage - a.damage)[0];
-    if (kind === 'cocoon' || kind === 'chain') {
+    if (kind === 'cocoon' || kind === 'chain' || kind === 'soul_chain') {
       if (top) {
         if (kind === 'cocoon') top.board.freeze(LINK_BOSS_COCOON.cells, LINK_BOSS_COCOON.ms, this.t, 1);
-        else {
+        else if (kind === 'chain') {
           top.board.freeze(LINK_BOSS_CHAIN.cells, LINK_BOSS_CHAIN.ms, this.t, 3);
           top.chain = 0;
+        } else {
+          top.board.freeze(LINK_BOSS_SOUL_CHAIN.cells, LINK_BOSS_SOUL_CHAIN.ms, this.t, 4);
+          top.chain = 0;
+          top.stunUntil = this.t + LINK_BOSS_SOUL_CHAIN.stunMs;
         }
         top.hint = undefined;
         to = top.id;
@@ -459,7 +485,16 @@ export class LinkDuel {
     } else if (kind === 'shield') {
       boss.maxShield = Math.round(boss.maxHp * LINK_BOSS_SHIELD);
       boss.shield = boss.maxShield;
+    } else if (kind === 'nirvana') {
+      boss.hp = Math.min(boss.maxHp, boss.hp + Math.round(boss.maxHp * LINK_BOSS_NIRVANA.heal));
+      boss.maxShield = Math.round(boss.maxHp * LINK_BOSS_NIRVANA.shield);
+      boss.shield = boss.maxShield;
     } else {
+      if (kind === 'judgment') {
+        const sh = Math.round(boss.maxHp * LINK_BOSS_JUDGMENT.shield);
+        boss.maxShield = Math.max(boss.maxShield, sh);
+        boss.shield = Math.max(boss.shield, sh);
+      }
       for (const p of alive) {
         if (kind === 'ice') p.board.freeze(LINK_BOSS_ICE.cells, LINK_BOSS_ICE.ms, this.t, 0);
         else if (kind === 'web') p.board.freeze(LINK_BOSS_WEB.cells, LINK_BOSS_WEB.ms, this.t, 1);
@@ -476,8 +511,26 @@ export class LinkDuel {
         } else if (kind === 'quake') {
           p.chain = 0;
           p.thunder = Math.max(0, p.thunder - LINK_BOSS_QUAKE_THUNDER);
+        } else if (kind === 'blackhole') {
+          p.board.freeze(LINK_BOSS_BLACKHOLE.cells, LINK_BOSS_BLACKHOLE.ms, this.t, 4);
+          p.thunder = Math.max(0, p.thunder - LINK_BOSS_BLACKHOLE.thunder);
+        } else if (kind === 'hellfire') {
+          p.board.freeze(LINK_BOSS_HELLFIRE.cells, LINK_BOSS_HELLFIRE.ms, this.t, 2);
+          p.chain = 0;
+        } else if (kind === 'eclipse') {
+          p.darkUntil = this.t + LINK_BOSS_ECLIPSE.darkMs;
+          p.venomUntil = this.t + LINK_BOSS_ECLIPSE.venomMs;
+          p.chain = 0;
+        } else if (kind === 'judgment') {
+          p.board.freeze(LINK_BOSS_JUDGMENT.voidCells, LINK_BOSS_JUDGMENT.ms, this.t, 4);
+          p.board.freeze(LINK_BOSS_JUDGMENT.fireCells, LINK_BOSS_JUDGMENT.ms, this.t, 2);
+          p.stunUntil = this.t + LINK_BOSS_JUDGMENT.stunMs;
+          p.chain = 0;
+          p.thunder = Math.max(0, p.thunder - LINK_BOSS_JUDGMENT.thunder);
         }
-        if (kind === 'ice' || kind === 'web' || kind === 'meteor' || kind === 'bolt') p.hint = undefined;
+        if (kind === 'ice' || kind === 'web' || kind === 'meteor' || kind === 'bolt' || kind === 'blackhole' || kind === 'hellfire' || kind === 'judgment') {
+          p.hint = undefined;
+        }
       }
     }
     boss.nextSkillAt = this.t + boss.def.skillS[boss.phase - 1] * 1000;

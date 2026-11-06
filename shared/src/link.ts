@@ -14,10 +14,10 @@ export const LINK_MAX_TURNS = 2;
 
 export const LINK_STAGE1_S = 150;
 /**
- * Đồng hồ chung cho cả 3 Boss (không tính lúc nghỉ giữa 2 Boss): Boss trước gục thì Boss sau ra ngay,
+ * Đồng hồ chung cho các màn đánh Boss (không tính lúc nghỉ giữa 2 Boss): Boss trước gục thì Boss sau ra ngay,
  * hạ nhanh thì dư giờ cho Boss sau. Hết giờ mà chưa hạ hết thì trận kết thúc.
  */
-export const LINK_RAID_S = 360;
+export const LINK_RAID_S = 480;
 export const LINK_INTERMISSION_S = 5;
 /** Nối cặp kế tiếp trong vòng 3 giây thì tính combo */
 export const LINK_COMBO_WINDOW_S = 3;
@@ -60,16 +60,38 @@ export const LINK_BOSS_DRAIN = 0.05;
 export const LINK_BOSS_ROAR_MS = 2500;
 /** Khiên Đá: % máu tối đa */
 export const LINK_BOSS_SHIELD = 0.06;
+/** Bộ chiêu mới của 2 Boss Co-op Siêu Khó (Hắc Long Hư Không & Phượng Hoàng Hỗn Mang) */
+export const LINK_BOSS_BLACKHOLE = { cells: 8, ms: 8000, thunder: 20 } as const;
+export const LINK_BOSS_HELLFIRE = { cells: 9, ms: 7000 } as const;
+export const LINK_BOSS_SOUL_CHAIN = { cells: 14, ms: 9000, stunMs: 1500 } as const;
+export const LINK_BOSS_NIRVANA = { heal: 0.08, shield: 0.1 } as const;
+export const LINK_BOSS_ECLIPSE = { darkMs: 5000, venomMs: 7000 } as const;
+export const LINK_BOSS_JUDGMENT = { voidCells: 5, fireCells: 5, ms: 8000, stunMs: 2000, thunder: 30, shield: 0.06 } as const;
 /** Đảo Bàn (chiêu người chơi): tự đảo bàn mình, hồi chiêu 1 phút (đầu trận cũng phải chờ 1 phút) */
 export const LINK_SHUFFLE_CD_S = 60;
 
-export type LinkBossId = 'thunder' | 'spider' | 'tyrant';
+export type LinkBossId = 'thunder' | 'spider' | 'tyrant' | 'twins';
 export type LinkBossSkill =
   | 'ice' | 'dark' | 'bolt' | 'chain'
   | 'web' | 'venom' | 'cocoon' | 'drain'
-  | 'meteor' | 'quake' | 'shield' | 'roar';
-/** Loại ô bị khoá: 0 băng, 1 tơ nhện, 2 lửa, 3 điện giật */
-export type LinkLock = 0 | 1 | 2 | 3;
+  | 'meteor' | 'quake' | 'shield' | 'roar'
+  | 'blackhole' | 'hellfire' | 'soul_chain' | 'nirvana' | 'eclipse' | 'judgment';
+/** Loại ô bị khoá: 0 băng, 1 tơ nhện, 2 lửa, 3 điện giật, 4 ấn hư không */
+export type LinkLock = 0 | 1 | 2 | 3 | 4;
+
+export interface LinkCoopPartner {
+  id: 'abyss_dragon' | 'chaos_phoenix';
+  name: string;
+  title: string;
+  emoji: string;
+  color: string;
+}
+
+/** 2 Boss siêu khó cùng xuất hiện Co-op trong 1 trận */
+export const LINK_COOP_PARTNERS: readonly [LinkCoopPartner, LinkCoopPartner] = [
+  { id: 'abyss_dragon', name: 'Hắc Long Hư Không', title: 'Chúa Tể Hố Đen', emoji: '🐉', color: '#9775fa' },
+  { id: 'chaos_phoenix', name: 'Phượng Hoàng Hỗn Mang', title: 'Bạo Quân Huyết Hỏa', emoji: '🔥', color: '#ff6b6b' },
+];
 
 export interface LinkBossDef {
   id: LinkBossId;
@@ -81,9 +103,12 @@ export interface LinkBossDef {
   skills: LinkBossSkill[];
   /** giây giữa 2 đòn theo giai đoạn 1 / 2 / 3 */
   skillS: readonly [number, number, number];
+  /** màn Co-op 2 Boss xuất hiện cùng lúc */
+  coop?: boolean;
+  partners?: readonly [LinkCoopPartner, LinkCoopPartner];
 }
 
-/** 3 Boss đánh lần lượt (Boss cuối là trùm) */
+/** Các màn Boss đánh lần lượt (màn cuối là 2 Boss Co-op Siêu Khó: Hắc Long Hư Không & Phượng Hoàng Hỗn Mang) */
 export const LINK_BOSSES: readonly LinkBossDef[] = [
   { id: 'thunder', name: 'Vua Sấm Sét', emoji: '⚡', hpMul: 0.7, skills: ['bolt', 'ice', 'chain', 'dark'], skillS: LINK_BOSS_SKILL_S },
   { id: 'spider', name: 'Nữ Hoàng Nhện', emoji: '🕷️', hpMul: 1, skills: ['web', 'venom', 'cocoon', 'drain'], skillS: [11, 8, 6] },
@@ -91,11 +116,24 @@ export const LINK_BOSSES: readonly LinkBossDef[] = [
     id: 'tyrant', name: 'Bạo Chúa', emoji: '👹', hpMul: 1.4,
     skills: ['meteor', 'quake', 'bolt', 'shield', 'ice', 'roar', 'dark', 'venom'], skillS: [10, 7, 5],
   },
+  {
+    id: 'twins',
+    name: 'Song Sát: Hắc Long & Phượng Hoàng',
+    emoji: '🐉🔥',
+    coop: true,
+    partners: LINK_COOP_PARTNERS,
+    hpMul: 2.0,
+    skills: ['blackhole', 'hellfire', 'soul_chain', 'nirvana', 'eclipse', 'judgment'],
+    skillS: [8, 6, 4],
+  },
 ];
 export const LINK_BOSS_SKILL_NAME: Record<LinkBossSkill, string> = {
   ice: 'Mưa Băng', dark: 'Bóng Tối', bolt: 'Sét Đánh', chain: 'Sét Lan',
   web: 'Lưới Tơ', venom: 'Nọc Độc', cocoon: 'Kén Tơ', drain: 'Hút Sinh Lực',
   meteor: 'Thiên Thạch', quake: 'Động Đất', shield: 'Khiên Đá', roar: 'Gầm Thét',
+  blackhole: 'Hố Đen Hư Không', hellfire: 'Bão Lửa Địa Ngục',
+  soul_chain: 'Xiềng Xích Linh Hồn', nirvana: 'Niết Bàn Tái Sinh',
+  eclipse: 'Nhật Thực Vĩnh Cửu', judgment: 'Song Tuyệt Hủy Diệt',
 };
 /** Máu của Boss thứ `no` (0, 1, 2) theo số người */
 export const linkBossMaxHp = (no: number, players: number) => Math.round(linkBossHp(players) * (LINK_BOSSES[no]?.hpMul ?? 1));
@@ -202,6 +240,8 @@ export type LinkCommand =
   | { t: 'super' }
   /** Đảo Bàn: tự đảo bàn mình, hồi chiêu 1 phút */
   | { t: 'shuffle' }
+  /** Khiêu chiến ngay màn 2 Boss Co-op Siêu Khó (Hắc Long & Phượng Hoàng) */
+  | { t: 'coop_raid' }
   | { t: 'resign' };
 
 /** Hiệu ứng mới để client vẽ (server chỉ báo, không tính gì thêm) */
