@@ -174,6 +174,30 @@ export function drawCritter(ctx: CanvasRenderingContext2D, id: number, x: number
 }
 
 const cache = new Map<string, HTMLCanvasElement>();
+const pikaImages = new Map<number, HTMLImageElement>();
+
+/** Tải trước ảnh Pikachu 1-1 từ thư mục database-pikachu/ và xoá cache của ô đó ngay khi ảnh tải xong */
+function getPikaImage(id: number): HTMLImageElement | undefined {
+  if (typeof Image === 'undefined') return undefined;
+  let img = pikaImages.get(id);
+  if (!img) {
+    const c = LINK_CRITTERS[id] ?? LINK_CRITTERS[0];
+    img = new Image();
+    img.decoding = 'async';
+    img.onload = () => {
+      for (const k of cache.keys()) {
+        if (k.startsWith(`${id}:`)) cache.delete(k);
+      }
+    };
+    img.src = c.image;
+    pikaImages.set(id, img);
+  }
+  return img.complete && img.naturalWidth > 0 ? img : undefined;
+}
+
+if (typeof Image !== 'undefined') {
+  for (const c of LINK_CRITTERS) getPikaImage(c.id);
+}
 
 /** Màu nhận diện đủ sáng để nổi trên nền tối (con màu đen / xám đậm thì nâng sáng lên) */
 function markColor(hex: string) {
@@ -209,9 +233,10 @@ function emojiOk() {
   return emojiSupport;
 }
 
-/** Ô dựng sẵn (nền kem nổi khối + thú), cache theo id / cỡ / dpr */
+/** Ô dựng sẵn (nền nổi khối + ảnh Pikachu từ database-pikachu/), cache theo id / cỡ / dpr */
 export function tileCanvas(id: number, size: number, dpr: number, back = false): HTMLCanvasElement {
-  const key = `${id}:${Math.round(size)}:${dpr}:${back ? 1 : 0}`;
+  const img = back ? undefined : getPikaImage(id);
+  const key = `${id}:${Math.round(size)}:${dpr}:${back ? 1 : 0}:${img ? 1 : 0}`;
   let c = cache.get(key);
   if (c) return c;
   c = document.createElement('canvas');
@@ -276,6 +301,20 @@ export function tileCanvas(id: number, size: number, dpr: number, back = false):
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('?', s * 0.47, s * 0.5);
+  } else if (img) {
+    ctx.fillStyle = mark;
+    ctx.beginPath();
+    ctx.roundRect(s * 0.22, s * 0.79, s * 0.5, s * 0.06, s * 0.03);
+    ctx.fill();
+    const ih = s * 0.68;
+    const iw = ih * (img.naturalWidth / Math.max(1, img.naturalHeight));
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.shadowColor = 'rgba(0,0,0,0.55)';
+    ctx.shadowBlur = s * 0.05;
+    ctx.shadowOffsetY = s * 0.02;
+    ctx.drawImage(img, s * 0.47 - iw / 2, s * 0.43 - ih / 2, iw, ih);
+    ctx.restore();
   } else if (emojiOk()) {
     // vệt màu riêng của từng con ở đáy ô: thêm một dấu hiệu nữa để phân biệt nhanh
     ctx.fillStyle = mark;
