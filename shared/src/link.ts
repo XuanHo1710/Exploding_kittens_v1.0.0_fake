@@ -166,7 +166,7 @@ export const LINK_CRITTERS: LinkCritter[] = ([
   name,
   code,
   pokemon,
-  image: `/database-pikachu/${code}.png`,
+  image: `/database-pikachu/${code}.png?v=2`,
   emoji,
   color,
 }));
