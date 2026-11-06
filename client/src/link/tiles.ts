@@ -233,7 +233,7 @@ function emojiOk() {
   return emojiSupport;
 }
 
-/** Ô dựng sẵn (nền nổi khối + ảnh Pikachu từ database-pikachu/), cache theo id / cỡ / dpr */
+/** Ô dựng sẵn (nền kem sáng chuẩn Pikachu cổ điển + hình Pokémon to rõ), cache theo id / cỡ / dpr */
 export function tileCanvas(id: number, size: number, dpr: number, back = false): HTMLCanvasElement {
   const img = back ? undefined : getPikaImage(id);
   const key = `${id}:${Math.round(size)}:${dpr}:${back ? 1 : 0}:${img ? 1 : 0}`;
@@ -246,7 +246,7 @@ export function tileCanvas(id: number, size: number, dpr: number, back = false):
   const ctx = c.getContext('2d')!;
   ctx.scale(dpr, dpr);
   const s = size;
-  const r = s * 0.14;
+  const r = Math.max(3, s * 0.13);
   const rr = (x: number, y: number, w: number, h: number) => {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -257,80 +257,53 @@ export function tileCanvas(id: number, size: number, dpr: number, back = false):
     ctx.closePath();
   };
   const c0 = LINK_CRITTERS[id] ?? LINK_CRITTERS[0];
-  const mark = markColor(c0.color);
-  // đáy (bóng nổi khối)
-  ctx.fillStyle = back ? '#2b1a45' : '#0c1222';
-  rr(s * 0.06, s * 0.08, s * 0.9, s * 0.9);
+  // Đáy 3D nổi khối (viền dưới đậm kiểu gạch Pikachu cổ điển)
+  ctx.fillStyle = back ? '#4c1d95' : '#b89b72';
+  rr(s * 0.02, s * 0.04, s * 0.96, s * 0.94);
   ctx.fill();
-  // mặt ô: xanh than tối, không chói
-  const g = ctx.createLinearGradient(0, 0, s, s);
+
+  // Mặt ô: nền trắng kem sáng dịu mắt, giúp viền đen và màu Pokémon nổi bật rõ nét
+  const g = ctx.createLinearGradient(0, 0, 0, s);
   if (back) {
-    g.addColorStop(0, '#6a45a8');
-    g.addColorStop(1, '#43297a');
+    g.addColorStop(0, '#7c3aed');
+    g.addColorStop(1, '#5b21b6');
   } else {
-    g.addColorStop(0, '#36425f');
-    g.addColorStop(1, '#232c44');
+    g.addColorStop(0, '#ffffff');
+    g.addColorStop(1, '#fdf6e7');
   }
   ctx.fillStyle = g;
-  rr(s * 0.03, s * 0.03, s * 0.88, s * 0.88);
+  rr(s * 0.02, s * 0.02, s * 0.96, s * 0.91);
   ctx.fill();
-  if (!back) {
-    // quầng màu riêng của từng con sau hình
-    const halo = ctx.createRadialGradient(s * 0.47, s * 0.45, s * 0.04, s * 0.47, s * 0.45, s * 0.42);
-    halo.addColorStop(0, `${mark}66`);
-    halo.addColorStop(1, `${mark}00`);
-    ctx.fillStyle = halo;
-    rr(s * 0.03, s * 0.03, s * 0.88, s * 0.88);
-    ctx.fill();
-  }
-  // viền: màu riêng của con thú (ô úp: viền trắng mờ)
-  ctx.strokeStyle = back ? 'rgba(255,255,255,0.35)' : `${mark}cc`;
-  ctx.lineWidth = Math.max(1.2, s * 0.04);
-  rr(s * 0.05, s * 0.05, s * 0.84, s * 0.84);
-  ctx.stroke();
-  // ánh sáng mép trên (nhẹ)
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+
+  // Viền mảnh đồng nhất (không tô 36 màu sặc sỡ gây rối mắt)
+  ctx.strokeStyle = back ? 'rgba(255,255,255,0.4)' : '#d6c2a3';
   ctx.lineWidth = Math.max(1, s * 0.025);
-  ctx.beginPath();
-  ctx.moveTo(s * 0.12, s * 0.07);
-  ctx.lineTo(s * 0.78, s * 0.07);
+  rr(s * 0.025, s * 0.025, s * 0.95, s * 0.9);
   ctx.stroke();
+
   if (back) {
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.font = `900 ${s * 0.42}px system-ui, sans-serif`;
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = `900 ${s * 0.46}px system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('?', s * 0.47, s * 0.5);
+    ctx.fillText('?', s * 0.5, s * 0.48);
   } else if (img) {
-    ctx.fillStyle = mark;
-    ctx.beginPath();
-    ctx.roundRect(s * 0.22, s * 0.79, s * 0.5, s * 0.06, s * 0.03);
-    ctx.fill();
-    const ih = s * 0.68;
-    const iw = ih * (img.naturalWidth / Math.max(1, img.naturalHeight));
+    // Vẽ Pokémon to tối đa (84% ô) và giữ nét pixel sắc cạnh
+    const box = s * 0.84;
+    const ratio = img.naturalWidth / Math.max(1, img.naturalHeight);
+    const iw = ratio >= 1 ? box : box * ratio;
+    const ih = ratio >= 1 ? box / ratio : box;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
-    ctx.shadowColor = 'rgba(0,0,0,0.55)';
-    ctx.shadowBlur = s * 0.05;
-    ctx.shadowOffsetY = s * 0.02;
-    ctx.drawImage(img, s * 0.47 - iw / 2, s * 0.43 - ih / 2, iw, ih);
+    ctx.drawImage(img, s * 0.5 - iw / 2, s * 0.47 - ih / 2, iw, ih);
     ctx.restore();
   } else if (emojiOk()) {
-    // vệt màu riêng của từng con ở đáy ô: thêm một dấu hiệu nữa để phân biệt nhanh
-    ctx.fillStyle = mark;
-    ctx.beginPath();
-    ctx.roundRect(s * 0.22, s * 0.79, s * 0.5, s * 0.06, s * 0.03);
-    ctx.fill();
-    ctx.font = `${Math.round(s * 0.62)}px ${EMOJI_FONT}`;
+    ctx.font = `${Math.round(s * 0.68)}px ${EMOJI_FONT}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.55)';
-    ctx.shadowBlur = s * 0.06;
-    ctx.shadowOffsetY = s * 0.02;
-    ctx.fillText(c0.emoji, s * 0.47, s * 0.44);
-    ctx.shadowColor = 'transparent';
+    ctx.fillText(c0.emoji, s * 0.5, s * 0.48);
   } else {
-    drawCritter(ctx, id, s * 0.47, s * 0.5, s * 0.84);
+    drawCritter(ctx, id, s * 0.5, s * 0.48, s * 0.88);
   }
   cache.set(key, c);
   if (cache.size > 600) cache.delete(cache.keys().next().value!);

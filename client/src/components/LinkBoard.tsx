@@ -43,7 +43,7 @@ interface Props {
 }
 
 /** Bố cục cốt lõi để inline: phủ kín màn hình kể cả khi CSS tải chậm */
-const FULL_SCREEN = { position: 'fixed', inset: 0, zIndex: 20, overflow: 'hidden', background: '#0b1630' } as const;
+const FULL_SCREEN = { position: 'fixed', inset: 0, zIndex: 20, overflow: 'hidden', background: '#f1f5f9' } as const;
 
 const fmtTime = (ms: number) => {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -141,8 +141,9 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
       const mh = main.clientHeight - parseFloat(ms.paddingTop) - parseFloat(ms.paddingBottom);
       const portrait = mh > mw * 1.05;
       const cols = portrait ? LINK_H : LINK_W, rows = portrait ? LINK_W : LINK_H;
-      const tile = Math.max(14, Math.floor(Math.min(mw / (cols + 1), mh / (rows + 1))));
-      const bw = (cols + 1) * tile, bh = (rows + 1) * tile;
+      const tile = Math.max(16, Math.floor(Math.min(mw / (cols + 0.44), mh / (rows + 0.44))));
+      const pad = tile * 0.22;
+      const bw = Math.round(cols * tile + pad * 2), bh = Math.round(rows * tile + pad * 2);
       if (board.width !== Math.round(bw * dpr) || board.height !== Math.round(bh * dpr)) {
         board.width = Math.round(bw * dpr);
         board.height = Math.round(bh * dpr);
@@ -155,12 +156,12 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
       const ctx = board.getContext('2d')!;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, bw, bh);
-      // khay bàn
-      ctx.fillStyle = 'rgba(8,20,48,0.55)';
-      ctx.strokeStyle = 'rgba(116,192,252,0.25)';
+      // khay bàn sáng sạch, nổi rõ các ô Pikachu kem trắng
+      ctx.fillStyle = 'rgba(203,213,225,0.65)';
+      ctx.strokeStyle = 'rgba(148,163,184,0.65)';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(1, 1, bw - 2, bh - 2, tile * 0.3);
+      ctx.roundRect(1, 1, bw - 2, bh - 2, tile * 0.24);
       ctx.fill();
       ctx.stroke();
       const disp = (i: number) => {
@@ -174,7 +175,7 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
           const k = cells[i];
           if (k < 0 || linkStore.pending.has(i)) continue;
           const { dx, dy } = disp(i);
-          let px = tile * 0.5 + dx * tile, py = tile * 0.5 + dy * tile;
+          let px = pad + dx * tile, py = pad + dy * tile;
           const missUntil = linkStore.miss.get(i);
           if (missUntil && missUntil > now) px += Math.sin(now / 22) * tile * 0.08;
           const sel = selected.current === i;
@@ -182,28 +183,28 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
           ctx.drawImage(tileCanvas(k, tile, dpr, dark), px, py, tile, tile);
           if (sel) {
             ctx.save();
-            ctx.strokeStyle = '#ffd43b';
-            ctx.shadowColor = '#ffd43b';
-            ctx.shadowBlur = 14;
-            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#ef4444';
+            ctx.shadowColor = 'rgba(239,68,68,0.55)';
+            ctx.shadowBlur = 10;
+            ctx.lineWidth = 3.5;
             ctx.beginPath();
-            ctx.roundRect(px + 1.5, py + 1.5, tile * 0.88, tile * 0.88, tile * 0.14);
+            ctx.roundRect(px + tile * 0.02, py + tile * 0.02, tile * 0.96, tile * 0.93, tile * 0.13);
             ctx.stroke();
             ctx.restore();
           }
           if (hint && (hint[0] === i || hint[1] === i)) {
             ctx.save();
-            ctx.strokeStyle = `rgba(105,219,124,${0.5 + pulse * 0.5})`;
-            ctx.lineWidth = 3;
+            ctx.strokeStyle = `rgba(22,163,74,${0.55 + pulse * 0.45})`;
+            ctx.lineWidth = 3.5;
             ctx.beginPath();
-            ctx.roundRect(px + 1.5, py + 1.5, tile * 0.88, tile * 0.88, tile * 0.14);
+            ctx.roundRect(px + tile * 0.02, py + tile * 0.02, tile * 0.96, tile * 0.93, tile * 0.13);
             ctx.stroke();
             ctx.restore();
           }
           if (missUntil && missUntil > now) {
-            ctx.fillStyle = 'rgba(255,60,60,0.35)';
+            ctx.fillStyle = 'rgba(239,68,68,0.32)';
             ctx.beginPath();
-            ctx.roundRect(px + 1, py + 1, tile * 0.9, tile * 0.9, tile * 0.14);
+            ctx.roundRect(px + tile * 0.02, py + tile * 0.02, tile * 0.96, tile * 0.94, tile * 0.13);
             ctx.fill();
           }
         }
@@ -211,26 +212,26 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
         for (const [i, msLeft, kind] of iceList) {
           if (cells[i] < 0) continue;
           const { dx, dy } = disp(i);
-          const px = tile * 0.5 + dx * tile, py = tile * 0.5 + dy * tile;
+          const px = pad + dx * tile, py = pad + dy * tile;
           ctx.save();
           drawLock(ctx, px, py, tile, kind ?? 0, now + i * 97);
           if (s?.me) {
             const left = Math.max(0, msLeft - (now - linkStore.at));
-            ctx.fillStyle = kind === 3 ? '#5f3dc4' : kind === 2 ? '#fff4e6' : kind === 1 ? '#343a40' : '#1c7ed6';
+            ctx.fillStyle = kind === 3 ? '#5f3dc4' : kind === 2 ? '#fff4e6' : kind === 1 ? '#1e293b' : '#1d4ed8';
             ctx.font = `800 ${Math.round(tile * 0.28)}px system-ui, sans-serif`;
             ctx.textAlign = 'center';
-            ctx.fillText(`${Math.ceil(left / 1000)}`, px + tile * 0.45, py + tile * 0.86);
+            ctx.fillText(`${Math.ceil(left / 1000)}`, px + tile * 0.5, py + tile * 0.86);
           }
           ctx.restore();
         }
         if (dark) {
-          ctx.fillStyle = 'rgba(20,5,40,0.35)';
+          ctx.fillStyle = 'rgba(30,27,75,0.28)';
           ctx.fillRect(0, 0, bw, bh);
         }
         if (venom) {
           // Nọc Độc: viền xanh độc nhịp đập
           ctx.save();
-          ctx.strokeStyle = `rgba(148,216,45,${0.45 + Math.sin(now / 140) * 0.25})`;
+          ctx.strokeStyle = `rgba(101,163,13,${0.45 + Math.sin(now / 140) * 0.25})`;
           ctx.lineWidth = tile * 0.12;
           ctx.strokeRect(tile * 0.06, tile * 0.06, bw - tile * 0.12, bh - tile * 0.12);
           ctx.restore();
@@ -256,7 +257,7 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
         for (let i = 0; i < LINK_CELLS; i++) {
           if (!foe.filled[i]) continue;
           const x = i % LINK_W, y = Math.floor(i / LINK_W);
-          f.fillStyle = foe.out ? '#6c7a96' : ice.has(i) ? '#a5d8ff' : '#9fb0d6';
+          f.fillStyle = foe.out ? '#94a3b8' : ice.has(i) ? '#06b6d4' : '#3b82f6';
           f.fillRect(ox + x * ct + 0.5, oy + y * ct + 0.5, ct - 1, ct - 1);
         }
       }
@@ -292,7 +293,7 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
       const G = geo.current;
       const point = (x: number, y: number) => {
         const dx = portrait ? y : x, dy = portrait ? x : y;
-        return { x: G.left + tile + dx * tile, y: G.top + tile + dy * tile };
+        return { x: G.left + pad + (dx + 0.5) * tile, y: G.top + pad + (dy + 0.5) * tile };
       };
       const L: FxLayout = {
         cell: (i) => point(i % LINK_W, Math.floor(i / LINK_W)),
@@ -325,8 +326,8 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
     if (!s?.me || (s.stage !== 'stage1' && s.stage !== 'stage2')) return;
     const r = e.currentTarget.getBoundingClientRect();
     const { tile, portrait } = geo.current;
-    const dx = Math.floor((e.clientX - r.left - tile * 0.5) / tile);
-    const dy = Math.floor((e.clientY - r.top - tile * 0.5) / tile);
+    const dx = Math.floor((e.clientX - r.left - tile * 0.22) / tile);
+    const dy = Math.floor((e.clientY - r.top - tile * 0.22) / tile);
     const x = portrait ? dy : dx, y = portrait ? dx : dy;
     if (x < 0 || y < 0 || x >= LINK_W || y >= LINK_H) {
       selected.current = null;

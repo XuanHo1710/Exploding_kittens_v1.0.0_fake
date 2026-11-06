@@ -145,15 +145,15 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
       case 'match': {
         const color = LINK_CRITTERS[f.kind]?.color ?? '#ffd43b';
         if (mine) {
-          // đường nối phát sáng
+          // đường nối phát sáng (đỏ cam viền vàng nổi bật trên nền sáng chuẩn Pikachu cổ điển)
           if (age < 320) {
             ctx.save();
             ctx.globalAlpha = 1 - age / 320;
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
-            ctx.shadowColor = '#ffe066';
-            ctx.shadowBlur = 18;
-            for (const [w, c] of [[L.tile * 0.22, '#ffd43b'], [L.tile * 0.08, '#fff']] as const) {
+            ctx.shadowColor = 'rgba(239,68,68,0.65)';
+            ctx.shadowBlur = 12;
+            for (const [w, c] of [[L.tile * 0.16, '#ef4444'], [L.tile * 0.06, '#fef08a']] as const) {
               ctx.strokeStyle = c;
               ctx.lineWidth = w;
               ctx.beginPath();
