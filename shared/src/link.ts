@@ -240,8 +240,6 @@ export type LinkCommand =
   | { t: 'super' }
   /** Đảo Bàn: tự đảo bàn mình, hồi chiêu 1 phút */
   | { t: 'shuffle' }
-  /** Khiêu chiến ngay màn 2 Boss Co-op Siêu Khó (Hắc Long & Phượng Hoàng) */
-  | { t: 'coop_raid' }
   | { t: 'resign' };
 
 /** Hiệu ứng mới để client vẽ (server chỉ báo, không tính gì thêm) */

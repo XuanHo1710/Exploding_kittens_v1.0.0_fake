@@ -543,7 +543,7 @@ test('Bạo Chúa: 8 chiêu (nhiều nhất), Khiên Đá hút sát thương, Đ
   assert.equal(seen.size, 8);
 });
 
-test('2 Boss Co-op Siêu Khó (Hắc Long Hư Không & Phượng Hoàng Hỗn Mang): 6 chiêu mới + triệu hồi nhanh coop_raid', () => {
+test('Màn Boss 4 – 2 Boss Co-op Siêu Khó (Hắc Long Hư Không & Phượng Hoàng Hỗn Mang): tự xuất hiện sau khi hạ 3 Boss đầu, đủ 6 chiêu mới', () => {
   const { d, p0, p1 } = duel();
   const twinsDef = S.LINK_BOSSES[3];
   assert.equal(twinsDef.id, 'twins');
@@ -554,13 +554,13 @@ test('2 Boss Co-op Siêu Khó (Hắc Long Hư Không & Phượng Hoàng Hỗn Ma
     ['blackhole', 'hellfire', 'soul_chain', 'nirvana', 'eclipse', 'judgment'],
   );
 
-  // Triệu hồi ngay 2 Boss Co-op từ Màn 1
-  p0.score1 = 50;
-  assert.equal(d.command('p0', { t: 'coop_raid' }), undefined);
+  // Hạ tuần tự Màn 1 Boss → Màn 2 Boss → Màn 3 Boss để sang Màn 4 Co-op 2 Boss
+  toBoss(d, 3);
   assert.equal(d.stage, 'stage2');
   assert.equal(d.boss.id, 'twins');
+  assert.equal(d.boss.no, 3);
   assert.equal(d.boss.maxHp, S.linkBossMaxHp(3, 2));
-  assert.equal(p0.thunder, 50, 'người dẫn đầu Màn 1 được 50 Sấm');
+  p0.thunder = 50;
 
   // 1. blackhole: khoá 8 ô Ấn Hư Không (loại 4) + trừ 20 Sấm
   untilSkill(d, 'blackhole');

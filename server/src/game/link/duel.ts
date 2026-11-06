@@ -301,22 +301,6 @@ export class LinkDuel {
         this.emit();
         return undefined;
       }
-      case 'coop_raid': {
-        const coopIdx = LINK_BOSSES.findIndex((b) => b.id === 'twins');
-        if (coopIdx < 0) return 'Không tìm thấy Boss Co-op.';
-        if (this.stage === 'stage2' && this.boss?.id === 'twins') return 'Đang chiến đấu với 2 Boss Co-op!';
-        if (this.stage === 'stage1') {
-          this.stage1Winner = this.topOf(this.active(), (x) => x.score1);
-          for (const x of this.players) {
-            if (x.id === this.stage1Winner) x.thunder = Math.max(x.thunder, 50);
-          }
-        } else if (this.stage === 'stage2') {
-          this.raidLeft = Math.max(120_000, this.stageEndsAt - this.t);
-        }
-        this.nextBossNo = coopIdx;
-        this.beginStage2();
-        return undefined;
-      }
       default:
         return 'Lệnh không hợp lệ.';
     }

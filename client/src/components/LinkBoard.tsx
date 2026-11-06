@@ -579,16 +579,6 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
             >
               <Shuffle size={16} /> {shuffleIn > 0 ? fmtTime(shuffleIn) : 'Đảo Bàn'}
             </button>
-            {isHost && !ended && boss?.id !== 'twins' && (
-              <button
-                className="link-btn coop-summon"
-                disabled={stage === 'intermission'}
-                onClick={() => send({ t: 'coop_raid' })}
-                title="Khiêu chiến ngay 2 Boss Co-op Siêu Khó: Hắc Long Hư Không & Phượng Hoàng Hỗn Mang"
-              >
-                🐉🔥 Đấu 2 Boss Co-op
-              </button>
-            )}
             {stage === 'stage2' && (
               <button className={`link-btn super${ready ? ' ready' : ''}`} disabled={!ready} onClick={() => send({ t: 'super' })} title="400 sát thương · phím Space">
                 ⚡ SIÊU ĐẤM

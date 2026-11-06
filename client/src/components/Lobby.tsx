@@ -311,7 +311,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                   <li>2–{LINK_MAX_PLAYERS} người (2 người là solo 1v1). Nối 2 ô <b>cùng con thú</b> bằng đường gấp khúc <b>tối đa 2 lần</b> (được vòng ra ngoài mép bàn). Bàn 16×9, mọi người cùng một đề.</li>
                   <li><b>Màn 1 – Đua Nối ({LINK_STAGE1_S} giây):</b> nối liên tiếp được combo, nạp ⚡ Sấm. Đầy Sấm tung <b>❄️ Đóng Băng</b> hoặc <b>🌫️ Mây Mù</b> (che bàn {LINK_FOG_MS / 1000} giây) – mặc định vào <b>người dẫn đầu</b>, bấm vào bàn nhỏ của ai thì nhắm người đó. Dọn sạch bàn trước được thưởng lớn.</li>
                   <li>
-                    <b>Liên hoàn {LINK_BOSSES.length} Màn Boss (Màn cuối: 2 Boss Co-op Siêu Khó):</b> cả phòng cùng đánh, mỗi cặp là một cú đấm, Sấm đầy tung <b>⚡ Siêu Đấm</b>. Dùng chung <b>{LINK_RAID_S / 60} phút</b> (chủ phòng có thể bấm <b>🐉🔥 Đấu 2 Boss Co-op</b> để khiêu chiến ngay cặp Boss cuối).
+                    <b>Liên hoàn {LINK_BOSSES.length} Màn Boss (Màn 1 → 2 → 3 → Màn 4 Co-op 2 Boss Siêu Khó):</b> cả phòng cùng đánh, mỗi cặp là một cú đấm, Sấm đầy tung <b>⚡ Siêu Đấm</b>. Boss trước hết máu thì Boss sau tự xuất hiện. Dùng chung <b>{LINK_RAID_S / 60} phút</b> (hạ nhanh thì dư giờ cho Boss sau); hết giờ thì trận kết thúc.
                     <ul>
                       {LINK_BOSSES.map((b, i) => (
                         <li key={b.id}>
