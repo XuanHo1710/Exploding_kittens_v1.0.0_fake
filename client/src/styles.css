@@ -21,6 +21,11 @@
   --shadow-card: 0 3px 8px rgba(15, 23, 42, 0.14);
   --paper: #fffdf9;
   --radius: 14px;
+  /* màu cố định, giống nhau ở cả nền sáng / tối */
+  --ink: #181a20;
+  --card-back: #272a36;
+  --gold-grad: linear-gradient(135deg, #f59f00, #f97316);
+  --shadow-pop: 0 20px 50px rgba(0, 0, 0, 0.3);
   color-scheme: light;
 }
 [data-theme='dark'] {
@@ -65,8 +70,6 @@ p { margin: 0; }
 .muted { color: var(--muted); }
 .small { font-size: 12px; }
 .center { text-align: center; }
-.row { display: flex; gap: 8px; flex-wrap: wrap; }
-.row > * { flex: 1; min-width: 0; }
 
 /* ---------- Icon helpers ---------- */
 .inline-icon { vertical-align: -0.16em; display: inline-block; flex-shrink: 0; }
@@ -134,7 +137,7 @@ input[type='range'] { padding: 0; width: 100%; accent-color: var(--accent); bord
 input[type='range']:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---------- khung ---------- */
-.app { min-height: 100%; display: flex; flex-direction: column; }
+.app { min-height: 100%; display: flex; flex-direction: column; padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left); }
 .logo { font-weight: 800; font-size: 18px; display: flex; align-items: center; gap: 6px; letter-spacing: -0.02em; }
 .logo-icon { color: var(--accent); }
 .room-tag {
@@ -145,7 +148,8 @@ input[type='range']:focus-visible { outline: 2px solid var(--accent); outline-of
 
 /* ===== thanh nổi thay header ===== */
 .floating-top {
-  position: fixed; top: 12px; left: 16px; right: 16px; z-index: 40;
+  position: fixed; z-index: 40;
+  top: max(12px, env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right));
   display: flex; justify-content: space-between; align-items: center; gap: 10px; pointer-events: none;
 }
 .floating-top > * { pointer-events: auto; }
@@ -235,7 +239,6 @@ input[type='range']:focus-visible { outline: 2px solid var(--accent); outline-of
   box-shadow: var(--shadow);
   max-width: 100%;
 }
-.panel.narrow { width: 380px; }
 .divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 .code-input { text-transform: uppercase; letter-spacing: 8px; font-weight: 700; text-align: center; font-size: 20px; padding: 10px 12px; }
@@ -286,7 +289,7 @@ input[type='range']:focus-visible { outline: 2px solid var(--accent); outline-of
 .lobby-seats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
 @media (max-width: 640px) { .lobby-seats { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); } }
 .lobby-seat {
-  background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 6px 10px;
+  position: relative; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 6px 10px;
   display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
 }
 .lobby-seat.me { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
@@ -297,8 +300,8 @@ input[type='range']:focus-visible { outline: 2px solid var(--accent); outline-of
 .lobby-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 
 .toast {
-  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
-  background: #181a20; color: #fff; padding: 10px 18px; border-radius: 10px;
+  position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translateX(-50%);
+  background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28); z-index: 85; max-width: calc(100% - 32px);
   font-size: 13.5px; font-weight: 500; pointer-events: auto; cursor: pointer;
@@ -318,7 +321,7 @@ input[type='range']:focus-visible { outline: 2px solid var(--accent); outline-of
   background: var(--paper);
   box-shadow: var(--shadow-card);
   border: 1px solid rgba(0, 0, 0, 0.1);
-  color: #181a20; text-align: left;
+  color: var(--ink); text-align: left;
   overflow: hidden;
   transition: transform 0.16s ease, box-shadow 0.16s ease;
 }
@@ -348,7 +351,7 @@ button.card:not(:disabled):active { transform: scale(0.97) !important; }
 }
 .cf-title {
   font-weight: 700; text-transform: uppercase;
-  font-size: calc(var(--w) * 0.095); line-height: 1.1; color: #181a20;
+  font-size: calc(var(--w) * 0.095); line-height: 1.1; color: var(--ink);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .cf-art {
@@ -376,7 +379,7 @@ button.card:not(:disabled):active { transform: scale(0.97) !important; }
 /* Mặt sau lá bài */
 .card-back-box {
   position: relative; width: 100%; height: 100%; aspect-ratio: 3 / 4; border-radius: calc(var(--w, 108px) * 0.08);
-  background: linear-gradient(145deg, #272a36, #181a22);
+  background: linear-gradient(145deg, var(--card-back), #181a22);
   padding: 6px; box-shadow: var(--shadow-card); display: flex;
 }
 .card-back-inner {
@@ -404,7 +407,6 @@ button.card:not(:disabled):active { transform: scale(0.97) !important; }
   height: 100vh; height: 100dvh;
 }
 .arena { grid-area: arena; position: relative; min-height: 380px; min-width: 0; }
-.my-area { grid-area: me; }
 .game.with-chat { grid-template-columns: minmax(0, 1fr) 330px; grid-template-areas: 'arena chat' 'me chat'; }
 .chat-col { grid-area: chat; min-height: 0; display: flex; contain: size; }
 
@@ -428,6 +430,7 @@ button.card:not(:disabled):active { transform: scale(0.97) !important; }
   transform: translate(-50%, -50%);
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   width: 106px; pointer-events: auto;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), filter 0.25s ease;
 }
 /* người đã nổ: mờ đi, riêng xấp bài lật ngửa vẫn rõ màu để cả bàn xem */
 .seat.dead > :not(.seat-cards), .seat.dead .seat-dead { filter: grayscale(0.85); opacity: 0.65; }
@@ -448,7 +451,7 @@ button.card:not(:disabled):active { transform: scale(0.97) !important; }
 .mini-backs { position: relative; width: 34px; height: 20px; }
 .mini-back {
   position: absolute; left: calc(var(--k) * 5px); top: 0; width: 14px; height: 20px; border-radius: 3px;
-  background: #272a36; border: 1px solid rgba(255, 255, 255, 0.35);
+  background: var(--card-back); border: 1px solid rgba(255, 255, 255, 0.35);
   transform: rotate(calc((var(--k) - 2) * 6deg));
 }
 .seat-count { font-weight: 700; font-size: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 0 7px; }
@@ -543,13 +546,13 @@ button.card:not(:disabled):active { transform: scale(0.97) !important; }
 .announce {
   position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%);
   font-weight: 700; font-size: 24px; text-align: center;
-  padding: 12px 24px; border-radius: 14px; color: #fff; z-index: 10; max-width: 90%;
+  padding: 12px 24px; border-radius: var(--radius); color: #fff; z-index: 10; max-width: 90%;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
   animation: boom-in 0.35s ease-out;
 }
 .announce.boom { background: var(--bad); }
 .announce.defuse { background: var(--good); }
-.announce.win { background: var(--accent-2); color: #181a20; }
+.announce.win { background: var(--accent-2); color: var(--ink); }
 
 .ended {
   position: absolute; inset: 0; z-index: 12; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
@@ -567,6 +570,7 @@ button.card:not(:disabled):active { transform: scale(0.97) !important; }
 
 /* khu của mình */
 .my-area {
+  grid-area: me;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 10px 14px 0; box-shadow: var(--shadow); transition: border-color 0.2s, box-shadow 0.2s;
   position: relative;
@@ -686,10 +690,9 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
   display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
   background: var(--bad); color: #fff; font-size: 11px; font-weight: 700; line-height: 1;
 }
-.drawer-wrap { position: fixed; inset: 0; z-index: 55; pointer-events: none; }
 .drawer {
   pointer-events: auto; position: absolute; top: 12px; right: 12px; bottom: 12px; width: min(360px, calc(100% - 24px));
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-pop);
   display: flex; flex-direction: column; overflow: hidden; animation: drawer-in 0.22s ease-out;
 }
 .drawer .log, .chat-panel > .log { flex: 1; min-height: 0; }
@@ -704,7 +707,7 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
 .field input { font-size: 15px; font-weight: 500; color: var(--text); }
 .pin-row { display: flex; gap: 8px; }
 .pin-row .icon-btn { height: auto; width: 44px; padding: 0; }
-.pin-input { flex: 1; letter-spacing: 8px; font-size: 20px !important; font-weight: 700 !important; text-align: center; }
+.pin-input { flex: 1; min-width: 0; letter-spacing: 8px; font-size: 20px !important; font-weight: 700 !important; text-align: center; }
 .pin-input::placeholder { letter-spacing: 6px; }
 
 /* ====== ví xu ====== */
@@ -769,7 +772,6 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
   animation: chat-new-in 0.18s ease-out;
 }
 @keyframes chat-new-in { from { opacity: 0; transform: translate(-50%, 6px); } }
-@media (prefers-reduced-motion: reduce) { .chat-new { animation: none; } }
 .chat-typing {
   min-height: 20px; padding: 0 14px; font-size: 12px; color: var(--muted);
   display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -865,7 +867,7 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
 .emote-btn.on { background: var(--surface-2); }
 .emote-picker {
   position: absolute; right: 14px; bottom: calc(100% + 60px); z-index: 30; width: 290px;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
   padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; animation: pop 0.15s ease-out;
 }
 .emote-title { font-size: 12px; font-weight: 700; color: var(--muted); }
@@ -1024,7 +1026,7 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
 .so-anim { position: relative; width: 74px; height: 62px; }
 .so-anim i {
   position: absolute; left: 50%; top: 50%; width: 30px; height: 42px; margin: -21px 0 0 -15px; border-radius: 5px;
-  background: #272a36; border: 1px solid rgba(255, 255, 255, 0.35);
+  background: var(--card-back); border: 1px solid rgba(255, 255, 255, 0.35);
 }
 .so-riffle i:nth-child(odd) { animation: so-riffle-l 1.4s ease-in-out infinite; }
 .so-riffle i:nth-child(even) { animation: so-riffle-r 1.4s ease-in-out infinite; }
@@ -1048,9 +1050,7 @@ button.secondary.on { border-color: var(--accent); color: var(--accent); }
 .exit-btn:hover { background: color-mix(in srgb, var(--bad) 10%, var(--surface)); border-color: color-mix(in srgb, var(--bad) 30%, var(--border)); }
 button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8px rgba(224, 49, 49, 0.3); }
 
-/* xếp bài + lá mới */
-.small-seg { padding: 3px; gap: 2px; }
-.small-seg button { padding: 5px 10px; font-size: 12px; white-space: nowrap; flex: none; }
+/* lá mới */
 .hand > .card.fresh::after {
   content: 'MỚI'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
   background: var(--good); color: #fff; font-size: 10.5px; font-weight: 700; letter-spacing: 0.4px;
@@ -1110,7 +1110,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 @media (max-width: 640px) { .reveal { left: 50%; right: auto; transform: translateX(-50%); top: 64px; } .reveal .card { --w: 96px; } }
 .reveal-box {
   display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 24px;
-  background: var(--surface); border-radius: 16px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-pop);
   animation: boom-in-plain 0.3s ease-out;
 }
 .reveal.received .reveal-box { border: 2px solid var(--good); }
@@ -1124,7 +1124,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 /* bong bóng trên ghế */
 .seat-bubble {
   position: absolute; top: -14px; left: 50%; transform: translateX(-50%); white-space: nowrap;
-  background: #181a20; color: #fff; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px;
+  background: var(--ink); color: #fff; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px;
   animation: pop 0.2s ease-out; z-index: 3;
 }
 
@@ -1132,7 +1132,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 .fly-card {
   position: fixed; left: 0; top: 0; z-index: 80; pointer-events: none;
   width: 64px; height: 90px; border-radius: 8px; overflow: hidden;
-  background: #272a36;
+  background: var(--card-back);
   border: 1.5px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -1143,7 +1143,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 .deck.shuffling > .card-back-box { visibility: hidden; }
 .deck .riffle span {
   position: absolute; inset: 0; border-radius: 10px; border: 1.5px solid rgba(255, 255, 255, 0.3);
-  background: #272a36; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  background: var(--card-back); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 .arena.shake { animation: shake-arena 0.55s ease-in-out; }
 .announce.shuffle { background: #3b4254; top: 30%; font-size: 20px; }
@@ -1182,21 +1182,6 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 .card-preview.side-sheet .preview-card { --w: 132px; }
 .card-preview.side-sheet .preview-name { font-size: 17px; }
 .card-preview.side-sheet .preview-section p { font-size: 12.5px; line-height: 1.4; }
-@media (max-width: 639px) {
-  .card-preview {
-    flex-direction: column;
-    align-items: center;
-    text-align: left;
-    width: min(340px, calc(100vw - 20px));
-    max-height: calc(100dvh - 16px);
-    padding: 12px;
-    gap: 10px;
-    overflow-y: auto;
-  }
-  .card-preview .preview-card { --w: 132px; }
-  .preview-name { font-size: 17px; }
-  .preview-section p { font-size: 12.5px; line-height: 1.4; }
-}
 @keyframes preview-in { from { opacity: 0; transform: scale(0.96); } }
 
 /* bảng luật */
@@ -1220,7 +1205,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 @keyframes boom-in { from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; } }
 
 @media (max-width: 900px) {
-  .landing { grid-template-columns: 1fr; gap: 20px; padding: 20px 16px 32px; }
+  .landing { grid-template-columns: minmax(0, 1fr); gap: 20px; padding: 20px 16px 32px; }
   .hero { width: min(320px, 84vw); }
   .landing-chips { display: none; }
 }
@@ -1285,26 +1270,25 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   .hint-chip { font-size: 12px; padding: 4px 10px; }
   .my-actions button { padding: 6px 12px; font-size: 13px; }
   .feed-item { font-size: 12px; padding: 3px 10px; }
-  .quick-emotes { gap: 4px; padding: 4px; }
   .quick-emotes button { width: 34px; height: 34px; font-size: 19px; }
 }
 @media (max-width: 1100px) {
   .game.with-chat { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'arena' 'me'; }
   .chat-col {
-    position: fixed; top: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); z-index: 48; width: min(360px, calc(100% - 24px));
+    position: fixed; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); z-index: 48; width: min(360px, calc(100% - 24px));
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35); border-radius: var(--radius); animation: drawer-in 0.22s ease-out;
   }
 }
 @media (min-width: 761px) and (max-width: 1100px) {
   .arena-tools .hide-sm { display: none; }
-  .arena-tools { flex-wrap: wrap; max-width: 65%; }
+  .arena-tools { max-width: 65%; }
   .arena-tools .pot-chip { font-size: 12px; padding: 4px 10px; }
   .hint-chip { display: none; }
   .feed { max-width: 46%; }
 }
 @media (max-width: 760px) {
   .hide-sm { display: none; }
-  .floating-top { top: 8px; left: 8px; right: 8px; gap: 6px; }
+  .floating-top { top: max(8px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); gap: 6px; }
   .brand { padding: 4px 6px 4px 10px; gap: 6px; min-width: 0; }
   .room-tag { padding: 3px 7px; font-size: 11.5px; }
   .dock { padding: 3px; gap: 2px; }
@@ -1313,7 +1297,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   .game { padding: 8px 8px max(8px, env(safe-area-inset-bottom)); grid-template-rows: auto auto; height: auto; min-height: 100dvh; }
   .feed { position: static; max-width: none; align-items: center; }
   .feed-item { align-self: center; }
-  .arena-tools { position: static; align-self: stretch; max-width: none; order: -2; flex-wrap: wrap; }
+  .arena-tools { position: static; align-self: stretch; max-width: none; order: -2; }
   .arena-dock { position: static; align-self: flex-end; order: -1; }
   .quick-emotes { position: static; transform: none; margin: 0 auto 8px; width: fit-content; max-width: 100%; }
   .quick-emotes button { width: 36px; height: 36px; font-size: 20px; }
@@ -1322,7 +1306,8 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   .arena { min-height: 0; display: flex; flex-direction: column; gap: 8px; }
   .felt { display: none; }
   .seats { position: static; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-  .seat { position: static; transform: none; width: 76px; }
+  /* relative (không static) để nhãn NOPE! / bong bóng của ghế bám theo ghế, không bay lên góc màn hình */
+  .seat { position: relative; left: auto; top: auto; transform: none; width: 76px; }
   .seat .avatar, .seats.crowded .seat .avatar { --av-size: 44px; }
   .table-center {
     position: static; transform: none; justify-content: center; gap: 10px; padding: 10px 8px; border-radius: var(--radius);
@@ -1342,147 +1327,6 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   .lobby-head { flex-direction: column; align-items: flex-start; }
   .room-code { font-size: 36px; }
 }
-@media (max-width: 640px) {
-  .modal {
-    padding: 0;
-    align-items: stretch;
-    justify-items: stretch;
-  }
-  .modal-panel {
-    width: 100vw !important;
-    width: 100% !important;
-    height: 100vh;
-    height: 100dvh;
-    max-height: 100vh;
-    max-height: 100dvh;
-    border-radius: 0;
-    border: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  .modal-head {
-    padding: max(14px, env(safe-area-inset-top, 14px)) 16px 12px;
-  }
-  .modal-head h2 { font-size: 17px; }
-  .modal-body {
-    flex: 1;
-    padding: 14px 16px calc(20px + env(safe-area-inset-bottom, 0px));
-    gap: 14px;
-  }
-  .modal-actions {
-    flex-direction: column-reverse;
-    align-items: stretch;
-    gap: 8px;
-  }
-  .modal-actions > button,
-  .modal-actions .primary,
-  .modal-actions .logout {
-    flex: 1 1 auto;
-    width: 100%;
-    min-width: 0;
-    margin-right: 0;
-    justify-content: center;
-    white-space: normal;
-    text-align: center;
-    line-height: 1.35;
-  }
-  .seg {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
-  }
-  .seg button {
-    width: 100%;
-    flex: 1 1 auto;
-    justify-content: center;
-    font-size: 13px;
-    padding: 9px 12px;
-    white-space: normal;
-  }
-  .chat-col {
-    inset: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    border-radius: 0;
-  }
-  .wiz-targets { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
-  .wiz-target { padding: 10px 4px 8px; }
-  .wiz-grid, .give-grid { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
-  .give-grid { max-height: none; }
-  .wiz-card .card-sm, .wiz-card .card-md { --w: 68px; }
-  .future { gap: 10px; }
-  .future .card-xl { --w: 92px; }
-  .bomb-track { gap: 5px; }
-  .bomb-track .slot { width: 36px; height: 44px; }
-  .bomb-track .slot.wide { width: auto; }
-  .bomb-pos-big { min-width: 0; flex: 1; font-size: 16px; }
-  .rules-grid { grid-template-columns: 1fr; }
-  .rule-item { padding: 8px; }
-  .profile-head { flex-direction: column; align-items: stretch; gap: 10px; }
-  .wallet {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    padding: 12px;
-  }
-  .wallet > button,
-  .profile-section > button {
-    width: 100%;
-    justify-content: center;
-  }
-  .profile-section-head {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-  .profile-section-head button {
-    width: 100%;
-    justify-content: center;
-  }
-  .wallet-amt { font-size: 20px; }
-  .avatar-grid { grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; }
-  .panel-block > button,
-  .join-row > button {
-    width: 100%;
-    justify-content: center;
-  }
-  .join-row { grid-template-columns: 1fr; }
-  .ended-actions {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-    gap: 8px;
-  }
-  .ended-actions > button {
-    width: 100%;
-    justify-content: center;
-  }
-  .my-actions {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .my-actions > .play-combo,
-  .my-actions > button.primary,
-  .my-actions > .hint-chip,
-  .my-actions > .kind-chip {
-    flex: 1 1 100%;
-    width: 100%;
-    justify-content: center;
-    text-align: center;
-  }
-  .my-actions > button.secondary,
-  .my-actions > button.ghost {
-    flex: 1 1 calc(50% - 4px);
-    min-width: 130px;
-    justify-content: center;
-    white-space: normal;
-    text-align: center;
-  }
-}
 @media (max-width: 420px) {
   .brand .logo-text { display: none; }
   .my-status { min-width: 120px; font-size: 13px; }
@@ -1490,7 +1334,10 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   .hand { min-height: 152px; padding: 26px 14px 10px; }
 }
 @media (max-height: 500px) and (orientation: landscape) {
-  .game { padding: 6px 10px; gap: 6px; }
+  .game {
+    gap: 6px;
+    padding: max(6px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  }
   .arena { min-height: 170px; }
   .seat .avatar, .seats.crowded .seat .avatar, .my-bar .avatar { --av-size: 34px; }
   .card-lg { --w: 72px; }
@@ -1498,6 +1345,9 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   .deck, .empty-slot { width: 64px; height: 86px; }
   .hand { min-height: 120px; padding: 14px 12px 6px; }
   .quick-emotes { display: none; }
+  /* thanh công cụ gọn 1 hàng để đỡ che ghế phía trên bàn */
+  .arena-tools .icon-btn > span:not(.badge), .brand .logo-text { display: none; }
+  .arena > .top-bar { flex-direction: row; flex-wrap: wrap; align-items: center; } /* > tăng độ ưu tiên: .top-bar gốc nằm sau */
 }
 
 /* Room creation and shared house rules */
@@ -1551,69 +1401,10 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 .rule-card-counts > span { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12.5px; line-height: 1.5; }
 .seat-readiness { color: var(--muted); line-height: 1.4; display: inline-flex; align-items: center; gap: 3px; }
 .seat-readiness.ready { color: var(--good); }
-@media (max-width: 640px) {
-  .rule-presets { grid-template-columns: 1fr; }
-  .rule-preset { padding: 10px 12px; }
-  .rule-fields, .rule-toggles, .rule-card-inputs { grid-template-columns: 1fr; }
-  .rule-card-inputs { gap: 8px; }
-  .rule-card-counts { grid-template-columns: 1fr; }
-  .rule-preview-head { flex-direction: column; align-items: flex-start; }
-  .rule-reset {
-    width: calc(100% - 24px);
-    margin: 0 12px 12px;
-    justify-content: center;
-    white-space: normal;
-    text-align: center;
-  }
-  .lobby-rules-head {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-  .lobby-rules-head button {
-    width: 100%;
-    justify-content: center;
-  }
-  .lobby-actions {
-    flex-direction: column-reverse;
-    align-items: stretch;
-    gap: 8px;
-  }
-  .lobby-actions > button,
-  .lobby-actions .big {
-    flex: 1 1 auto;
-    width: 100%;
-    justify-content: center;
-    font-size: 14.5px;
-    white-space: normal;
-    text-align: center;
-  }
-  .rule-editor-actions {
-    flex-direction: column-reverse;
-    align-items: stretch;
-    gap: 8px;
-    margin: 0 -16px calc(-20px - env(safe-area-inset-bottom, 0px));
-    padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
-  }
-  .rule-editor-actions > button,
-  .rule-editor-actions .primary {
-    flex: 1 1 auto;
-    width: 100%;
-    min-width: 0;
-    justify-content: center;
-    font-size: 14px;
-    white-space: normal;
-    text-align: center;
-  }
-}
 
 /* =========================================================
    NỔI BẬT LƯỢT ĐÁNH (ACTIVE TURN AVATAR) + KICK + CƯỚP BÀI + ALTER FUTURE DND
    ========================================================= */
-.lobby-seat {
-  position: relative;
-}
-
 .seat-kick-btn {
   position: absolute;
   top: -6px;
@@ -1642,9 +1433,6 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 }
 
 /* Nổi bật người đang tới lượt */
-.seat {
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), filter 0.25s ease;
-}
 .seat.turn {
   z-index: 16;
   width: 126px;
@@ -1659,13 +1447,13 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 .seat.turn .ring {
   padding: 4px;
   box-shadow:
-    0 0 0 3px #f59f00,
+    0 0 0 3px var(--accent-2),
     0 0 22px 6px rgba(249, 115, 22, 0.65),
     var(--shadow-card);
   animation: turn-avatar-glow 1.35s ease-in-out infinite;
 }
 .seat.turn .seat-name {
-  background: linear-gradient(135deg, #f97316, #f59f00);
+  background: linear-gradient(135deg, #f97316, var(--accent-2));
   color: #fff;
   border-color: #fff3bf;
   font-weight: 800;
@@ -1674,8 +1462,8 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   box-shadow: 0 4px 14px rgba(249, 115, 22, 0.45);
 }
 .turn-badge {
-  background: linear-gradient(135deg, #f59f00, #f97316);
-  color: #181a20;
+  background: var(--gold-grad);
+  color: var(--ink);
   font-weight: 900;
   font-size: 10.5px;
   letter-spacing: 0.4px;
@@ -1689,7 +1477,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 @keyframes turn-avatar-glow {
   0%, 100% {
     box-shadow:
-      0 0 0 3px #f59f00,
+      0 0 0 3px var(--accent-2),
       0 0 18px 4px rgba(249, 115, 22, 0.55),
       var(--shadow-card);
   }
@@ -1710,7 +1498,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   position: relative;
   padding: 4px !important;
   box-shadow:
-    0 0 0 3px #f59f00,
+    0 0 0 3px var(--accent-2),
     0 0 22px 5px rgba(249, 115, 22, 0.65),
     var(--shadow-card) !important;
   animation: turn-avatar-glow 1.35s ease-in-out infinite;
@@ -1720,8 +1508,8 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   bottom: -7px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, #f59f00, #f97316);
-  color: #181a20;
+  background: var(--gold-grad);
+  color: var(--ink);
   font-weight: 900;
   font-size: 9.5px;
   padding: 1px 7px;
@@ -1767,7 +1555,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 .fly-transfer-card {
   border-color: #ffd43b !important;
   box-shadow:
-    0 0 0 3px #f59f00,
+    0 0 0 3px var(--accent-2),
     0 18px 38px rgba(249, 115, 22, 0.65) !important;
   overflow: visible !important;
 }
@@ -1778,7 +1566,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   transform: translateX(-50%);
   background: rgba(24, 26, 32, 0.94);
   color: #ffd43b;
-  border: 1.5px solid #f59f00;
+  border: 1.5px solid var(--accent-2);
   border-radius: 999px;
   padding: 3px 11px;
   font-size: 12px;
@@ -1789,7 +1577,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 }
 .announce.transfer {
   background: linear-gradient(135deg, rgba(24, 26, 32, 0.95), rgba(43, 47, 60, 0.95));
-  border: 2px solid #f59f00;
+  border: 2px solid var(--accent-2);
   color: #ffd43b;
   font-size: 18px;
   padding: 10px 20px;
@@ -1813,7 +1601,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   align-items: center;
   gap: 8px;
   padding: 12px 10px;
-  border-radius: 14px;
+  border-radius: var(--radius);
   background: var(--surface-2);
   border: 2px solid var(--border);
   cursor: grab;
@@ -1833,8 +1621,8 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   border-style: dashed;
 }
 .alter-item.drag-over {
-  border-color: #f59f00;
-  background: color-mix(in srgb, #f59f00 14%, var(--surface-2));
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-2) 14%, var(--surface-2));
   transform: scale(1.05);
   box-shadow: 0 0 0 3px rgba(245, 159, 0, 0.35);
 }
@@ -1880,53 +1668,6 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   padding: 5px 8px;
   font-size: 12px;
   justify-content: center;
-}
-@media (max-width: 640px) {
-  .seat.turn {
-    width: 102px;
-    transform: translate(-50%, -50%) scale(1.12);
-  }
-  /* điện thoại: 3 lá nằm cùng một hàng để thấy hết và bấm đổi chỗ dễ */
-  .alter-grid {
-    gap: 6px;
-    flex-wrap: nowrap;
-    margin: 6px 0 4px;
-  }
-  .alter-item {
-    flex: 1 1 0;
-    min-width: 0;
-    padding: 6px 4px;
-    gap: 6px;
-  }
-  .alter-item:hover {
-    transform: none;
-  }
-  .alter-item.picked {
-    transform: translateY(-3px);
-  }
-  .alter-item .card-xl {
-    --w: min(84px, 24vw);
-  }
-  .alter-pos-badge {
-    font-size: 10.5px;
-    padding: 1px 6px;
-    white-space: nowrap;
-  }
-  .alter-card-name {
-    font-size: 11.5px;
-    text-align: center;
-    overflow-wrap: anywhere;
-  }
-  .alter-btn-text {
-    display: none;
-  }
-  .alter-move-btns button {
-    padding: 6px 0;
-    font-size: 13px;
-  }
-  .alter-actions .primary {
-    width: 100%;
-  }
 }
 
 /* =========================================================
@@ -2005,7 +1746,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   font-weight: 800;
   padding: 2px 8px;
   border-radius: 999px;
-  border: 1px solid #f59f00;
+  border: 1px solid var(--accent-2);
   white-space: nowrap;
 }
 
@@ -2017,8 +1758,8 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   background: radial-gradient(ellipse at 50% 45%, #1e3a8a, #172554 82%);
 }
 .dealer-badge {
-  background: linear-gradient(135deg, #ffd43b, #f59f00);
-  color: #181a20;
+  background: linear-gradient(135deg, #ffd43b, var(--accent-2));
+  color: var(--ink);
   font-size: 10.5px;
   font-weight: 800;
   padding: 2px 8px;
@@ -2049,8 +1790,8 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 .bj-eval-tag.xi_bang,
 .bj-eval-tag.xi_dach,
 .bj-eval-tag.ngu_linh {
-  background: linear-gradient(135deg, #f59f00, #f97316);
-  color: #181a20;
+  background: var(--gold-grad);
+  color: var(--ink);
   border-color: #fff;
 }
 .bj-eval-tag.bust {
@@ -2096,7 +1837,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   background: rgba(15, 23, 42, 0.82);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 14px;
+  border-radius: var(--radius);
   padding: 14px 20px;
   max-width: 420px;
   text-align: center;
@@ -2156,7 +1897,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 .tl-hand.my-turn .playing-card:not(.playable):not(.selected) { opacity: 0.45; filter: grayscale(0.5); }
 .tl-rank-tag {
   font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 999px;
-  background: linear-gradient(135deg, #f59f00, #f97316); color: #181a20;
+  background: var(--gold-grad); color: var(--ink);
 }
 .tl-ranking { list-style: none; padding: 0; margin: 10px auto; display: grid; gap: 6px; max-width: 360px; text-align: left; }
 .tl-ranking li { display: flex; gap: 10px; align-items: center; padding: 6px 12px; border-radius: 10px; background: rgba(15, 23, 42, 0.55); color: #f1f5f9; }
@@ -2167,6 +1908,233 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   opacity: 0.68;
 }
 @media (max-width: 640px) {
+  .modal {
+    padding: 0;
+    align-items: stretch;
+    justify-items: stretch;
+  }
+  .modal-panel {
+    width: 100% !important;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-head {
+    padding: max(14px, env(safe-area-inset-top, 14px)) 16px 12px;
+  }
+  .modal-head h2 { font-size: 17px; }
+  .modal-body {
+    flex: 1;
+    padding: 14px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    gap: 14px;
+  }
+  .modal-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .modal-actions > button,
+  .modal-actions .primary,
+  .modal-actions .logout {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    margin-right: 0;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.35;
+  }
+  .seg {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .seg button {
+    width: 100%;
+    flex: 1 1 auto;
+    justify-content: center;
+    font-size: 13px;
+    padding: 9px 12px;
+    white-space: normal;
+  }
+  .chat-col {
+    inset: 0; width: 100%; border-radius: 0;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); background: var(--surface);
+  }
+  .wiz-targets { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+  .wiz-target { padding: 10px 4px 8px; }
+  .wiz-grid, .give-grid { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+  .give-grid { max-height: none; }
+  .wiz-card .card-sm, .wiz-card .card-md { --w: 68px; }
+  .future { gap: 10px; }
+  .future .card-xl { --w: 92px; }
+  .bomb-track { gap: 5px; }
+  .bomb-track .slot { width: 36px; height: 44px; }
+  .bomb-track .slot.wide { width: auto; }
+  .bomb-pos-big { min-width: 0; flex: 1; font-size: 16px; }
+  .rules-grid { grid-template-columns: 1fr; }
+  .rule-item { padding: 8px; }
+  .profile-head { flex-direction: column; align-items: stretch; gap: 10px; }
+  .wallet {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+  .wallet > button,
+  .profile-section > button {
+    width: 100%;
+    justify-content: center;
+  }
+  .profile-section-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .profile-section-head button {
+    width: 100%;
+    justify-content: center;
+  }
+  .avatar-grid { grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; }
+  .panel-block > button,
+  .join-row > button {
+    width: 100%;
+    justify-content: center;
+  }
+  .join-row { grid-template-columns: 1fr; }
+  .ended-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 8px;
+  }
+  .ended-actions > button {
+    width: 100%;
+    justify-content: center;
+  }
+  .my-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .my-actions > .play-combo,
+  .my-actions > button.primary,
+  .my-actions > .hint-chip,
+  .my-actions > .kind-chip {
+    flex: 1 1 100%;
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+  .my-actions > button.secondary,
+  .my-actions > button.ghost {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 130px;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
+  .rule-presets { grid-template-columns: 1fr; }
+  .rule-preset { padding: 10px 12px; }
+  .rule-fields, .rule-toggles, .rule-card-inputs { grid-template-columns: 1fr; }
+  .rule-card-inputs { gap: 8px; }
+  .rule-card-counts { grid-template-columns: 1fr; }
+  .rule-preview-head { flex-direction: column; align-items: flex-start; }
+  .rule-reset {
+    width: calc(100% - 24px);
+    margin: 0 12px 12px;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
+  .lobby-rules-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .lobby-rules-head button {
+    width: 100%;
+    justify-content: center;
+  }
+  .lobby-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .lobby-actions > button,
+  .lobby-actions .big {
+    flex: 1 1 auto;
+    width: 100%;
+    justify-content: center;
+    font-size: 14.5px;
+    white-space: normal;
+    text-align: center;
+  }
+  .rule-editor-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 8px;
+    margin: 0 -16px calc(-20px - env(safe-area-inset-bottom, 0px));
+    padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+  .rule-editor-actions > button,
+  .rule-editor-actions .primary {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    font-size: 14px;
+    white-space: normal;
+    text-align: center;
+  }
+  /* điện thoại: 3 lá nằm cùng một hàng để thấy hết và bấm đổi chỗ dễ */
+  .alter-grid {
+    gap: 6px;
+    flex-wrap: nowrap;
+    margin: 6px 0 4px;
+  }
+  .alter-item {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 6px 4px;
+    gap: 6px;
+  }
+  .alter-item:hover {
+    transform: none;
+  }
+  .alter-item.picked {
+    transform: translateY(-3px);
+  }
+  .alter-item .card-xl {
+    --w: min(84px, 24vw);
+  }
+  .alter-pos-badge {
+    font-size: 10.5px;
+    padding: 1px 6px;
+    white-space: nowrap;
+  }
+  .alter-card-name {
+    font-size: 11.5px;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+  .alter-btn-text {
+    display: none;
+  }
+  .alter-move-btns button {
+    padding: 6px 0;
+    font-size: 13px;
+  }
+  .alter-actions .primary {
+    width: 100%;
+  }
   .bj-center {
     flex-direction: column;
     gap: 10px;
@@ -2181,76 +2149,6 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   .bj-hand .card-lg {
     --w: 72px;
   }
-}
-
-
-
-/* =========================================================
-   MOBILE (≤760px): sửa lệch bố cục & gọn màn hình điện thoại
-   ========================================================= */
-@media (max-width: 760px) {
-  /* Ghế đang tới lượt: ghế xếp tĩnh nên không dịch -50% (trước bị lệch ra ngoài màn hình) */
-  .seat.turn, .seats.crowded .seat.turn { width: 76px; transform: scale(1.06); }
-
-  /* Thanh công cụ bàn Mèo Nổ: chỉ để icon cho vừa 1 hàng */
-  .arena-tools { flex-wrap: nowrap; }
-  .arena-tools .icon-btn > span:not(.badge) { display: none; }
-
-  /* Màn đăng nhập / trang chủ: thu nhỏ hình bìa để thấy form ngay màn đầu */
-  .landing { padding-top: 56px; gap: 14px; }
-  .landing-hero { gap: 8px; }
-  .hero { width: min(220px, 62vw); margin-bottom: 4px; }
-  .hero .hero-card { --w: min(108px, 30vw); }
-  .landing-title { font-size: 40px; margin-top: 2px; }
-  .landing-sub { font-size: 14px; margin: 0; }
-  .landing-panel .panel { padding: 18px 16px; gap: 14px; }
-
-  /* Phòng chờ: ghế trống gọn lại, không chiếm cả màn hình khi phòng 10 chỗ */
-  .lobby-seat.empty { flex-direction: row; justify-content: center; padding: 8px 6px; gap: 6px; }
-  .lobby-seat.empty .empty-avatar { width: 28px; height: 28px; }
-  .lobby-seat.empty .empty-avatar svg { width: 15px; height: 15px; }
-
-  /* Phòng chờ: nút Sẵn sàng / Bắt đầu dính đáy màn hình, không phải cuộn qua hết luật mới bấm được */
-  .lobby-actions {
-    position: sticky; bottom: 0; z-index: 6;
-    padding: 10px 8px max(10px, env(safe-area-inset-bottom)); border-radius: 12px;
-    background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(8px);
-    border-top: 1px solid var(--border);
-  }
-  .lobby-actions > .ghost { padding: 4px; min-height: 0; }
-
-  /* Tên chế độ chơi trên thanh trên cùng: một dòng, dài quá thì cắt */
-  .mode-pill { max-width: 46vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-  /* Xì Dách / Tiến Lên: avatar mình là hình tròn (trước bị giãn thành bầu dục),
-     avatar + tên cùng một hàng, nút thao tác lên trước thanh biểu cảm */
-  .bj-game .my-bar, .tl-game .my-bar { flex-wrap: wrap; gap: 8px 10px; }
-  .bj-game .my-status, .tl-game .my-status { display: contents; }
-  .bj-game .my-status > .ring, .tl-game .my-status > .ring { flex: none; width: fit-content; order: 1; }
-  .bj-game .my-status > div:not(.ring):not(.quick-emotes),
-  .tl-game .my-status > div:not(.ring):not(.quick-emotes) { flex: 1; min-width: 0; order: 2; }
-  .bj-game .my-actions, .tl-game .my-actions { order: 3; flex-basis: 100%; }
-  .bj-game .my-actions:empty, .tl-game .my-actions:empty { display: none; }
-  .bj-game .quick-emotes, .tl-game .quick-emotes { order: 4; margin: 0 auto; }
-  .bj-game .my-actions button, .tl-game .my-actions button { flex: 1; justify-content: center; }
-  .bj-hand, .tl-hand { min-height: 0; padding: 14px 8px 10px; }
-
-  /* Xì Dách tới lượt mình: nút Rút / Dừng nổi ở đáy màn hình (bàn 10 người phải cuộn rất xa mới tới) */
-  .bj-game .my-area.my-turn .my-actions {
-    position: fixed; left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); z-index: 40;
-    display: flex; gap: 8px; padding: 8px; border-radius: 14px;
-    background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(8px);
-    border: 1px solid var(--border); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
-  }
-  .bj-game:has(.my-area.my-turn) { padding-bottom: 92px; }
-
-  /* Xì Dách đông người: bài của người khác chồng sát lại, không tràn sang ghế bên cạnh */
-  .bj-seat-cards { max-width: 100%; }
-  .bj-seat-cards .card-xs { --w: 30px; margin: 0; }
-  .bj-seat-cards .card-xs + .card-xs { margin-left: -18px; }
-
-  /* Gợi ý luật trên nền xanh đậm: đủ tương phản để đọc */
-  .bj-turn-banner .muted { color: rgba(226, 232, 240, 0.82); }
 }
 
 /* khán giả */
@@ -2311,16 +2209,91 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 .dead-hand:hover .dead-thumb { transform: translateY(-3px) rotate(calc((var(--k) - 2) * 7deg)); }
 .dead-more { font-size: 11px; font-weight: 700; }
 .dead-grid .wiz-card { cursor: default; }
-@media (max-width: 760px) {
-  .dead-thumb { width: 18px; height: 25px; }
-  .dead-thumb + .dead-thumb { margin-left: -8px; }
-}
-@media (prefers-reduced-motion: reduce) { .dead-thumb { transition: none; } }
 
 /* Phòng chờ: nút gửi link mời (?roomid=XXXX) */
 .invite-link-btn { margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 6px 12px; }
 
-
 /* Đế Chế Kiến – cấu hình trong phòng chờ (màn chơi dùng client/src/ants/ants.css) */
 .ants-lobby-cfg { display: grid; gap: 10px; margin-bottom: 10px; }
 .ants-lobby-cfg > div { display: flex; flex-direction: column; gap: 5px; }
+
+/* màn cảm ứng: nới vùng bấm của các nút icon nhỏ (không đổi hình) */
+@media (pointer: coarse) {
+  .room-tag { min-height: 32px; }
+  .spectator-kick { position: relative; }
+  .seat-kick-btn::after, .spectator-kick::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
+  input[type='range'] { min-height: 32px; }
+}
+
+/* =========================================================
+   MOBILE (≤760px): sửa lệch bố cục & gọn màn hình điện thoại
+   (đặt cuối file để thắng các luật cùng độ ưu tiên ở trên)
+   ========================================================= */
+@media (max-width: 760px) {
+  /* Ghế đang tới lượt: ghế xếp tĩnh nên không dịch -50% (trước bị lệch ra ngoài màn hình) */
+  .seat.turn, .seats.crowded .seat.turn { width: 76px; transform: scale(1.06); }
+
+  /* Thanh công cụ bàn Mèo Nổ: chỉ để icon; không đủ chỗ (khán giả, hũ xu…) thì xuống dòng thay vì bóp mã phòng / tràn màn hình */
+  .arena-tools .icon-btn > span:not(.badge) { display: none; }
+  .arena-tools .brand { flex: none; }
+
+  /* Màn đăng nhập / trang chủ: thu nhỏ hình bìa để thấy form ngay màn đầu */
+  .landing { padding-top: 56px; gap: 14px; }
+  .landing-hero { gap: 8px; }
+  .hero { width: min(220px, 62vw); margin-bottom: 4px; }
+  .hero .hero-card { --w: min(108px, 30vw); }
+  .landing-title { font-size: 40px; margin-top: 2px; }
+  .landing-sub { font-size: 14px; margin: 0; }
+  .landing-panel .panel { padding: 18px 16px; gap: 14px; }
+
+  /* Phòng chờ: ghế trống gọn lại, không chiếm cả màn hình khi phòng 10 chỗ */
+  .lobby-seat.empty { flex-direction: row; justify-content: center; padding: 8px 6px; gap: 6px; }
+  .lobby-seat.empty .empty-avatar { width: 28px; height: 28px; }
+  .lobby-seat.empty .empty-avatar svg { width: 15px; height: 15px; }
+
+  /* Phòng chờ: nút Sẵn sàng / Bắt đầu dính đáy màn hình, không phải cuộn qua hết luật mới bấm được */
+  .lobby-actions {
+    position: sticky; bottom: 0; z-index: 6;
+    padding: 10px 8px max(10px, env(safe-area-inset-bottom)); border-radius: 12px;
+    background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border);
+  }
+  .lobby-actions > .ghost { padding: 4px; min-height: 36px; }
+
+  /* Tên chế độ chơi trên thanh trên cùng: một dòng, dài quá thì cắt */
+  .mode-pill { max-width: 46vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Xì Dách / Tiến Lên: avatar mình là hình tròn (trước bị giãn thành bầu dục),
+     avatar + tên cùng một hàng, nút thao tác lên trước thanh biểu cảm */
+  .bj-game .my-bar, .tl-game .my-bar { flex-wrap: wrap; gap: 8px 10px; }
+  .bj-game .my-status, .tl-game .my-status { display: contents; }
+  .bj-game .my-status > .ring, .tl-game .my-status > .ring { flex: none; width: fit-content; order: 1; }
+  .bj-game .my-status > div:not(.ring):not(.quick-emotes),
+  .tl-game .my-status > div:not(.ring):not(.quick-emotes) { flex: 1; min-width: 0; order: 2; }
+  .bj-game .my-actions, .tl-game .my-actions { order: 3; flex-basis: 100%; }
+  .bj-game .my-actions:empty, .tl-game .my-actions:empty { display: none; }
+  .bj-game .quick-emotes, .tl-game .quick-emotes { order: 4; margin: 0 auto; }
+  .bj-game .my-actions button, .tl-game .my-actions button { flex: 1; justify-content: center; }
+  .bj-hand, .tl-hand { min-height: 0; padding: 14px 8px 10px; }
+
+  /* Xì Dách tới lượt mình: nút Rút / Dừng nổi ở đáy màn hình (bàn 10 người phải cuộn rất xa mới tới) */
+  .bj-game .my-area.my-turn .my-actions {
+    position: fixed; left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); z-index: 40;
+    width: auto; display: flex; gap: 8px; padding: 8px; border-radius: var(--radius);
+    background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(8px);
+    border: 1px solid var(--border); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+  }
+  .bj-game:has(.my-area.my-turn) { padding-bottom: 92px; }
+
+  /* Xì Dách đông người: bài của người khác chồng sát lại, không tràn sang ghế bên cạnh */
+  .bj-seat-cards { max-width: 100%; }
+  .bj-seat-cards .card-xs { --w: 30px; margin: 0; }
+  .bj-seat-cards .card-xs + .card-xs { margin-left: -18px; }
+
+  /* Gợi ý luật trên nền xanh đậm: đủ tương phản để đọc */
+  .bj-turn-banner .muted { color: rgba(226, 232, 240, 0.82); }
+
+  /* Mèo Nổ: bài lật ngửa của người đã nổ, nhỏ lại */
+  .dead-thumb { width: 18px; height: 25px; }
+  .dead-thumb + .dead-thumb { margin-left: -8px; }
+}

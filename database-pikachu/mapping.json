@@ -1,0 +1,794 @@
+[
+  {
+    "id": 0,
+    "code": "Pika-001",
+    "pokemon": "Arcanine",
+    "pokedex": 59,
+    "oldCritterName": "Cún",
+    "oldEmoji": "🐶",
+    "color": "#c68642",
+    "fgIndex": 6,
+    "classicSection": 32,
+    "files": {
+      "sprite": "Pika-001.png",
+      "classicTile": "Tile-001.png",
+      "webSection": "Section-001.png",
+      "officialArt": "Art-001.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section32.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/59.png"
+    }
+  },
+  {
+    "id": 1,
+    "code": "Pika-002",
+    "pokemon": "Meowth",
+    "pokedex": 52,
+    "oldCritterName": "Mèo",
+    "oldEmoji": "🐱",
+    "color": "#ffb84d",
+    "fgIndex": 34,
+    "classicSection": 3,
+    "files": {
+      "sprite": "Pika-002.png",
+      "classicTile": "Tile-002.png",
+      "webSection": "Section-002.png",
+      "officialArt": "Art-002.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section3.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/52.png"
+    }
+  },
+  {
+    "id": 2,
+    "code": "Pika-003",
+    "pokemon": "Raichu",
+    "pokedex": 26,
+    "oldCritterName": "Chuột",
+    "oldEmoji": "🐭",
+    "color": "#adb5bd",
+    "fgIndex": 35,
+    "classicSection": 2,
+    "files": {
+      "sprite": "Pika-003.png",
+      "classicTile": "Tile-003.png",
+      "webSection": "Section-003.png",
+      "officialArt": "Art-003.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section2.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/26.png"
+    }
+  },
+  {
+    "id": 3,
+    "code": "Pika-004",
+    "pokemon": "Nidorina",
+    "pokedex": 30,
+    "oldCritterName": "Thỏ",
+    "oldEmoji": "🐰",
+    "color": "#f8f9fa",
+    "fgIndex": 9,
+    "classicSection": 27,
+    "files": {
+      "sprite": "Pika-004.png",
+      "classicTile": "Tile-004.png",
+      "webSection": "Section-004.png",
+      "officialArt": "Art-004.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section27.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/30.png"
+    }
+  },
+  {
+    "id": 4,
+    "code": "Pika-005",
+    "pokemon": "Flareon",
+    "pokedex": 136,
+    "oldCritterName": "Cáo",
+    "oldEmoji": "🦊",
+    "color": "#fd7e14",
+    "fgIndex": 1,
+    "classicSection": 33,
+    "files": {
+      "sprite": "Pika-005.png",
+      "classicTile": "Tile-005.png",
+      "webSection": "Section-005.png",
+      "officialArt": "Art-005.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section33.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/136.png"
+    }
+  },
+  {
+    "id": 5,
+    "code": "Pika-006",
+    "pokemon": "Clefable",
+    "pokedex": 36,
+    "oldCritterName": "Gấu",
+    "oldEmoji": "🐻",
+    "color": "#8d5524",
+    "fgIndex": 21,
+    "classicSection": 12,
+    "files": {
+      "sprite": "Pika-006.png",
+      "classicTile": "Tile-006.png",
+      "webSection": "Section-006.png",
+      "officialArt": "Art-006.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section12.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/36.png"
+    }
+  },
+  {
+    "id": 6,
+    "code": "Pika-007",
+    "pokemon": "Poliwhirl",
+    "pokedex": 61,
+    "oldCritterName": "Gấu Trúc",
+    "oldEmoji": "🐼",
+    "color": "#343a40",
+    "fgIndex": 28,
+    "classicSection": 1,
+    "files": {
+      "sprite": "Pika-007.png",
+      "classicTile": "Tile-007.png",
+      "webSection": "Section-007.png",
+      "officialArt": "Art-007.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section1.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/61.png"
+    }
+  },
+  {
+    "id": 7,
+    "code": "Pika-008",
+    "pokemon": "Marill",
+    "pokedex": 183,
+    "oldCritterName": "Koala",
+    "oldEmoji": "🐨",
+    "color": "#868e96",
+    "fgIndex": 8,
+    "classicSection": 17,
+    "files": {
+      "sprite": "Pika-008.png",
+      "classicTile": "Tile-008.png",
+      "webSection": "Section-008.png",
+      "officialArt": "Art-008.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section17.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/183.png"
+    }
+  },
+  {
+    "id": 8,
+    "code": "Pika-009",
+    "pokemon": "Charmander",
+    "pokedex": 4,
+    "oldCritterName": "Hổ",
+    "oldEmoji": "🐯",
+    "color": "#f76707",
+    "fgIndex": 20,
+    "classicSection": 31,
+    "files": {
+      "sprite": "Pika-009.png",
+      "classicTile": "Tile-009.png",
+      "webSection": "Section-009.png",
+      "officialArt": "Art-009.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section31.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png"
+    }
+  },
+  {
+    "id": 9,
+    "code": "Pika-010",
+    "pokemon": "Mareep",
+    "pokedex": 179,
+    "oldCritterName": "Sư Tử",
+    "oldEmoji": "🦁",
+    "color": "#fab005",
+    "fgIndex": 26,
+    "classicSection": 5,
+    "files": {
+      "sprite": "Pika-010.png",
+      "classicTile": "Tile-010.png",
+      "webSection": "Section-010.png",
+      "officialArt": "Art-010.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section5.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/179.png"
+    }
+  },
+  {
+    "id": 10,
+    "code": "Pika-011",
+    "pokemon": "Miltank",
+    "pokedex": 241,
+    "oldCritterName": "Bò",
+    "oldEmoji": "🐮",
+    "color": "#f1f3f5",
+    "fgIndex": 15,
+    "classicSection": 24,
+    "files": {
+      "sprite": "Pika-011.png",
+      "classicTile": "Tile-011.png",
+      "webSection": "Section-011.png",
+      "officialArt": "Art-011.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section24.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/241.png"
+    }
+  },
+  {
+    "id": 11,
+    "code": "Pika-012",
+    "pokemon": "Mew",
+    "pokedex": 151,
+    "oldCritterName": "Heo",
+    "oldEmoji": "🐷",
+    "color": "#faa2c1",
+    "fgIndex": 5,
+    "classicSection": 23,
+    "files": {
+      "sprite": "Pika-012.png",
+      "classicTile": "Tile-012.png",
+      "webSection": "Section-012.png",
+      "officialArt": "Art-012.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section23.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/151.png"
+    }
+  },
+  {
+    "id": 12,
+    "code": "Pika-013",
+    "pokemon": "Politoed",
+    "pokedex": 186,
+    "oldCritterName": "Ếch",
+    "oldEmoji": "🐸",
+    "color": "#51cf66",
+    "fgIndex": 14,
+    "classicSection": 20,
+    "files": {
+      "sprite": "Pika-013.png",
+      "classicTile": "Tile-013.png",
+      "webSection": "Section-013.png",
+      "officialArt": "Art-013.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section20.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/186.png"
+    }
+  },
+  {
+    "id": 13,
+    "code": "Pika-014",
+    "pokemon": "Aipom",
+    "pokedex": 190,
+    "oldCritterName": "Khỉ",
+    "oldEmoji": "🐵",
+    "color": "#a0522d",
+    "fgIndex": 22,
+    "classicSection": 35,
+    "files": {
+      "sprite": "Pika-014.png",
+      "classicTile": "Tile-014.png",
+      "webSection": "Section-014.png",
+      "officialArt": "Art-014.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section35.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/190.png"
+    }
+  },
+  {
+    "id": 14,
+    "code": "Pika-015",
+    "pokemon": "Togetic",
+    "pokedex": 176,
+    "oldCritterName": "Gà",
+    "oldEmoji": "🐔",
+    "color": "#fa5252",
+    "fgIndex": 2,
+    "classicSection": 9,
+    "files": {
+      "sprite": "Pika-015.png",
+      "classicTile": "Tile-015.png",
+      "webSection": "Section-015.png",
+      "officialArt": "Art-015.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section9.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/176.png"
+    }
+  },
+  {
+    "id": 15,
+    "code": "Pika-016",
+    "pokemon": "Delibird",
+    "pokedex": 225,
+    "oldCritterName": "Cánh Cụt",
+    "oldEmoji": "🐧",
+    "color": "#212529",
+    "fgIndex": 27,
+    "classicSection": 22,
+    "files": {
+      "sprite": "Pika-016.png",
+      "classicTile": "Tile-016.png",
+      "webSection": "Section-016.png",
+      "officialArt": "Art-016.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section22.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/225.png"
+    }
+  },
+  {
+    "id": 16,
+    "code": "Pika-017",
+    "pokemon": "Togepi",
+    "pokedex": 175,
+    "oldCritterName": "Gà Con",
+    "oldEmoji": "🐤",
+    "color": "#ffd43b",
+    "fgIndex": 29,
+    "classicSection": 30,
+    "files": {
+      "sprite": "Pika-017.png",
+      "classicTile": "Tile-017.png",
+      "webSection": "Section-017.png",
+      "officialArt": "Art-017.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section30.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/175.png"
+    }
+  },
+  {
+    "id": 17,
+    "code": "Pika-018",
+    "pokemon": "Psyduck",
+    "pokedex": 54,
+    "oldCritterName": "Vịt",
+    "oldEmoji": "🦆",
+    "color": "#2f9e44",
+    "fgIndex": 4,
+    "classicSection": 14,
+    "files": {
+      "sprite": "Pika-018.png",
+      "classicTile": "Tile-018.png",
+      "webSection": "Section-018.png",
+      "officialArt": "Art-018.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section14.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/54.png"
+    }
+  },
+  {
+    "id": 18,
+    "code": "Pika-019",
+    "pokemon": "Pidgeotto",
+    "pokedex": 17,
+    "oldCritterName": "Cú",
+    "oldEmoji": "🦉",
+    "color": "#9c6644",
+    "fgIndex": 11,
+    "classicSection": 19,
+    "files": {
+      "sprite": "Pika-019.png",
+      "classicTile": "Tile-019.png",
+      "webSection": "Section-019.png",
+      "officialArt": "Art-019.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section19.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/17.png"
+    }
+  },
+  {
+    "id": 19,
+    "code": "Pika-020",
+    "pokemon": "Ponyta",
+    "pokedex": 77,
+    "oldCritterName": "Kỳ Lân",
+    "oldEmoji": "🦄",
+    "color": "#e599f7",
+    "fgIndex": 17,
+    "classicSection": 26,
+    "files": {
+      "sprite": "Pika-020.png",
+      "classicTile": "Tile-020.png",
+      "webSection": "Section-020.png",
+      "officialArt": "Art-020.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section26.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/77.png"
+    }
+  },
+  {
+    "id": 20,
+    "code": "Pika-021",
+    "pokemon": "Beedrill",
+    "pokedex": 15,
+    "oldCritterName": "Ong",
+    "oldEmoji": "🐝",
+    "color": "#fcc419",
+    "fgIndex": 31,
+    "classicSection": 18,
+    "files": {
+      "sprite": "Pika-021.png",
+      "classicTile": "Tile-021.png",
+      "webSection": "Section-021.png",
+      "officialArt": "Art-021.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section18.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/15.png"
+    }
+  },
+  {
+    "id": 21,
+    "code": "Pika-022",
+    "pokemon": "Ledyba",
+    "pokedex": 165,
+    "oldCritterName": "Bọ Rùa",
+    "oldEmoji": "🐞",
+    "color": "#e03131",
+    "fgIndex": 23,
+    "classicSection": 21,
+    "files": {
+      "sprite": "Pika-022.png",
+      "classicTile": "Tile-022.png",
+      "webSection": "Section-022.png",
+      "officialArt": "Art-022.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section21.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/165.png"
+    }
+  },
+  {
+    "id": 22,
+    "code": "Pika-023",
+    "pokemon": "Butterfree",
+    "pokedex": 12,
+    "oldCritterName": "Bướm",
+    "oldEmoji": "🦋",
+    "color": "#339af0",
+    "fgIndex": 0,
+    "classicSection": 29,
+    "files": {
+      "sprite": "Pika-023.png",
+      "classicTile": "Tile-023.png",
+      "webSection": "Section-023.png",
+      "officialArt": "Art-023.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section29.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/12.png"
+    }
+  },
+  {
+    "id": 23,
+    "code": "Pika-024",
+    "pokemon": "Omanyte",
+    "pokedex": 138,
+    "oldCritterName": "Ốc Sên",
+    "oldEmoji": "🐌",
+    "color": "#d9a066",
+    "fgIndex": 18,
+    "classicSection": 13,
+    "files": {
+      "sprite": "Pika-024.png",
+      "classicTile": "Tile-024.png",
+      "webSection": "Section-024.png",
+      "officialArt": "Art-024.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section13.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/138.png"
+    }
+  },
+  {
+    "id": 24,
+    "code": "Pika-025",
+    "pokemon": "Wartortle",
+    "pokedex": 8,
+    "oldCritterName": "Rùa",
+    "oldEmoji": "🐢",
+    "color": "#2b8a3e",
+    "fgIndex": 25,
+    "classicSection": 36,
+    "files": {
+      "sprite": "Pika-025.png",
+      "classicTile": "Tile-025.png",
+      "webSection": "Section-025.png",
+      "officialArt": "Art-025.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section36.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/8.png"
+    }
+  },
+  {
+    "id": 25,
+    "code": "Pika-026",
+    "pokemon": "Caterpie",
+    "pokedex": 10,
+    "oldCritterName": "Rắn",
+    "oldEmoji": "🐍",
+    "color": "#94d82d",
+    "fgIndex": 33,
+    "classicSection": 10,
+    "files": {
+      "sprite": "Pika-026.png",
+      "classicTile": "Tile-026.png",
+      "webSection": "Section-026.png",
+      "officialArt": "Art-026.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section10.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10.png"
+    }
+  },
+  {
+    "id": 26,
+    "code": "Pika-027",
+    "pokemon": "Corsola",
+    "pokedex": 222,
+    "oldCritterName": "Bạch Tuộc",
+    "oldEmoji": "🐙",
+    "color": "#e64980",
+    "fgIndex": 24,
+    "classicSection": 4,
+    "files": {
+      "sprite": "Pika-027.png",
+      "classicTile": "Tile-027.png",
+      "webSection": "Section-027.png",
+      "officialArt": "Art-027.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section4.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/222.png"
+    }
+  },
+  {
+    "id": 27,
+    "code": "Pika-028",
+    "pokemon": "Gligar",
+    "pokedex": 207,
+    "oldCritterName": "Cua",
+    "oldEmoji": "🦀",
+    "color": "#f03e3e",
+    "fgIndex": 16,
+    "classicSection": 15,
+    "files": {
+      "sprite": "Pika-028.png",
+      "classicTile": "Tile-028.png",
+      "webSection": "Section-028.png",
+      "officialArt": "Art-028.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section15.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/207.png"
+    }
+  },
+  {
+    "id": 28,
+    "code": "Pika-029",
+    "pokemon": "Horsea",
+    "pokedex": 116,
+    "oldCritterName": "Cá Cảnh",
+    "oldEmoji": "🐠",
+    "color": "#ff922b",
+    "fgIndex": 7,
+    "classicSection": 28,
+    "files": {
+      "sprite": "Pika-029.png",
+      "classicTile": "Tile-029.png",
+      "webSection": "Section-029.png",
+      "officialArt": "Art-029.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section28.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/116.png"
+    }
+  },
+  {
+    "id": 29,
+    "code": "Pika-030",
+    "pokemon": "Vaporeon",
+    "pokedex": 134,
+    "oldCritterName": "Cá Heo",
+    "oldEmoji": "🐬",
+    "color": "#4dabf7",
+    "fgIndex": 30,
+    "classicSection": 8,
+    "files": {
+      "sprite": "Pika-030.png",
+      "classicTile": "Tile-030.png",
+      "webSection": "Section-030.png",
+      "officialArt": "Art-030.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section8.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/134.png"
+    }
+  },
+  {
+    "id": 30,
+    "code": "Pika-031",
+    "pokemon": "Totodile",
+    "pokedex": 158,
+    "oldCritterName": "Cá Mập",
+    "oldEmoji": "🦈",
+    "color": "#748ffc",
+    "fgIndex": 13,
+    "classicSection": 11,
+    "files": {
+      "sprite": "Pika-031.png",
+      "classicTile": "Tile-031.png",
+      "webSection": "Section-031.png",
+      "officialArt": "Art-031.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section11.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/158.png"
+    }
+  },
+  {
+    "id": 31,
+    "code": "Pika-032",
+    "pokemon": "Bulbasaur",
+    "pokedex": 1,
+    "oldCritterName": "Voi",
+    "oldEmoji": "🐘",
+    "color": "#909296",
+    "fgIndex": 10,
+    "classicSection": 34,
+    "files": {
+      "sprite": "Pika-032.png",
+      "classicTile": "Tile-032.png",
+      "webSection": "Section-032.png",
+      "officialArt": "Art-032.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section34.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"
+    }
+  },
+  {
+    "id": 32,
+    "code": "Pika-033",
+    "pokemon": "Ampharos",
+    "pokedex": 181,
+    "oldCritterName": "Hươu Cao Cổ",
+    "oldEmoji": "🦒",
+    "color": "#e8a33d",
+    "fgIndex": 3,
+    "classicSection": 16,
+    "files": {
+      "sprite": "Pika-033.png",
+      "classicTile": "Tile-033.png",
+      "webSection": "Section-033.png",
+      "officialArt": "Art-033.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section16.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/181.png"
+    }
+  },
+  {
+    "id": 33,
+    "code": "Pika-034",
+    "pokemon": "Dewgong",
+    "pokedex": 87,
+    "oldCritterName": "Ngựa Vằn",
+    "oldEmoji": "🦓",
+    "color": "#495057",
+    "fgIndex": 12,
+    "classicSection": 6,
+    "files": {
+      "sprite": "Pika-034.png",
+      "classicTile": "Tile-034.png",
+      "webSection": "Section-034.png",
+      "officialArt": "Art-034.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section6.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/87.png"
+    }
+  },
+  {
+    "id": 34,
+    "code": "Pika-035",
+    "pokemon": "Chikorita",
+    "pokedex": 152,
+    "oldCritterName": "Nhím",
+    "oldEmoji": "🦔",
+    "color": "#a47148",
+    "fgIndex": 19,
+    "classicSection": 25,
+    "files": {
+      "sprite": "Pika-035.png",
+      "classicTile": "Tile-035.png",
+      "webSection": "Section-035.png",
+      "officialArt": "Art-035.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section25.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/152.png"
+    }
+  },
+  {
+    "id": 35,
+    "code": "Pika-036",
+    "pokemon": "Natu",
+    "pokedex": 177,
+    "oldCritterName": "Vẹt",
+    "oldEmoji": "🦜",
+    "color": "#37b24d",
+    "fgIndex": 32,
+    "classicSection": 7,
+    "files": {
+      "sprite": "Pika-036.png",
+      "classicTile": "Tile-036.png",
+      "webSection": "Section-036.png",
+      "officialArt": "Art-036.png"
+    },
+    "urls": {
+      "classicForeground": "https://raw.githubusercontent.com/toaranotdev/llk/master/resources/texture/foreground.png",
+      "classicSection": "https://raw.githubusercontent.com/Loc203/PikachuGame/main/images/section7.png",
+      "officialArtwork": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/177.png"
+    }
+  }
+]

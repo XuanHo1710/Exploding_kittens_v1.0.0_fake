@@ -1,17 +1,33 @@
 /**
- * Màn chơi Nối Thú Đại Chiến (2–6 người realtime; 2 người là solo 1v1).
+ * Màn chơi Nối Thú Đại Chiến (2–10 người realtime; 2 người là solo 1v1).
  * - Bấm 2 ô cùng con thú, nối được bằng đường gấp khúc ≤ 2 lần (được vòng ra ngoài mép).
- * - Màn 1: đua dọn bàn, combo nạp ⚡ Sấm để tung Đóng Băng / Bão Xáo – mặc định vào người dẫn đầu,
+ * - Màn 1: đua dọn bàn, combo nạp ⚡ Sấm để tung Đóng Băng / Mây Mù – mặc định vào người dẫn đầu,
  *   bấm vào bàn nhỏ của một đối thủ để nhắm người đó.
- * - Màn 2: cả phòng cùng đấm Boss Vua Sấm Sét; ai kết liễu được +500.
+ * - Sau đó cả phòng đánh liên hoàn 3 Boss: Vua Sấm Sét → Nữ Hoàng Nhện → Bạo Chúa; kết liễu mỗi Boss +500.
+ * - Đảo Bàn: chiêu tự đảo bàn mình, hồi chiêu 1 phút (phím R).
  * Bàn của mình vẽ trên canvas; điện thoại dọc thì bàn xoay thành 9 cột × 16 hàng (chỉ đổi cách vẽ).
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Lightbulb, LogOut, MessageSquare, RotateCcw, Trophy, Zap } from 'lucide-react';
-import { LINK_CELLS, LINK_H, LINK_KO_BONUS, LINK_W, type LinkFoe, type LinkState, type LinkStatePlayer, type RoomView } from '../../../shared/src';
+import { Lightbulb, LogOut, MessageSquare, RotateCcw, Shuffle, Trophy, Zap } from 'lucide-react';
+import {
+  LINK_BOSSES,
+  LINK_BOSS_SKILL_NAME,
+  LINK_CELLS,
+  LINK_FOG_MS,
+  LINK_H,
+  LINK_KO_BONUS,
+  LINK_RAID_S,
+  LINK_SHUFFLE_CD_S,
+  LINK_W,
+  type LinkFoe,
+  type LinkLock,
+  type LinkState,
+  type LinkStatePlayer,
+  type RoomView,
+} from '../../../shared/src';
 import { linkStore } from '../link/store';
 import { tileCanvas } from '../link/tiles';
-import { drawBoss, drawFx, type FxLayout, type Rect } from '../link/fx';
+import { drawBoss, drawFx, drawLock, type FxLayout, type Rect } from '../link/fx';
 import ChatPanel, { useChatState, type RoomChat } from './ChatPanel';
 import { roomPeople } from './Spectators';
 import { fmtCoins } from './Dock';
@@ -33,8 +49,6 @@ const fmtTime = (ms: number) => {
   const s = Math.max(0, Math.ceil(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
-
-const BOSS_SKILL_NAME = { ice: 'Mưa Băng', dark: 'Bóng Tối', shuffle: 'Lốc Xáo' } as const;
 
 interface Geo {
   tile: number;
@@ -116,11 +130,15 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       const s = linkStore.state;
       const cells: number[] | undefined = s?.me?.cells ?? s?.players?.[0]?.cells;
-      const iceList: [number, number][] = s?.me?.ice ?? (s?.players?.[0]?.ice ?? []).map((i) => [i, 1] as [number, number]);
+      const iceList: [number, number, LinkLock][] = s?.me?.ice ?? (s?.players?.[0]?.ice ?? []).map((i) => [i, 1, 0] as [number, number, LinkLock]);
       const dark = (s?.me?.dark ?? 0) - (now - linkStore.at) > 0;
+      const venom = (s?.me?.venom ?? 0) - (now - linkStore.at) > 0;
 
       // --- bàn chính ---
-      const mw = main.clientWidth, mh = main.clientHeight;
+      // clientWidth tính cả padding (chỗ chừa cho cột đối thủ) nên phải trừ ra, không thì bàn chui dưới cột đối thủ
+      const ms = getComputedStyle(main);
+      const mw = main.clientWidth - parseFloat(ms.paddingLeft) - parseFloat(ms.paddingRight);
+      const mh = main.clientHeight - parseFloat(ms.paddingTop) - parseFloat(ms.paddingBottom);
       const portrait = mh > mw * 1.05;
       const cols = portrait ? LINK_H : LINK_W, rows = portrait ? LINK_W : LINK_H;
       const tile = Math.max(14, Math.floor(Math.min(mw / (cols + 1), mh / (rows + 1))));
@@ -189,28 +207,16 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
             ctx.fill();
           }
         }
-        // ô băng
-        for (const [i, msLeft] of iceList) {
+        // ô bị khoá: băng / tơ nhện / lửa
+        for (const [i, msLeft, kind] of iceList) {
           if (cells[i] < 0) continue;
           const { dx, dy } = disp(i);
           const px = tile * 0.5 + dx * tile, py = tile * 0.5 + dy * tile;
           ctx.save();
-          const g = ctx.createLinearGradient(px, py, px + tile, py + tile);
-          g.addColorStop(0, 'rgba(208,235,255,0.82)');
-          g.addColorStop(1, 'rgba(116,192,252,0.7)');
-          ctx.fillStyle = g;
-          ctx.beginPath();
-          ctx.roundRect(px + 1, py + 1, tile * 0.9, tile * 0.9, tile * 0.14);
-          ctx.fill();
-          ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.moveTo(px + tile * 0.2, py + tile * 0.25); ctx.lineTo(px + tile * 0.45, py + tile * 0.5); ctx.lineTo(px + tile * 0.35, py + tile * 0.75);
-          ctx.moveTo(px + tile * 0.45, py + tile * 0.5); ctx.lineTo(px + tile * 0.75, py + tile * 0.4);
-          ctx.stroke();
+          drawLock(ctx, px, py, tile, kind ?? 0, now + i * 97);
           if (s?.me) {
             const left = Math.max(0, msLeft - (now - linkStore.at));
-            ctx.fillStyle = '#1c7ed6';
+            ctx.fillStyle = kind === 3 ? '#5f3dc4' : kind === 2 ? '#fff4e6' : kind === 1 ? '#343a40' : '#1c7ed6';
             ctx.font = `800 ${Math.round(tile * 0.28)}px system-ui, sans-serif`;
             ctx.textAlign = 'center';
             ctx.fillText(`${Math.ceil(left / 1000)}`, px + tile * 0.45, py + tile * 0.86);
@@ -220,6 +226,14 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
         if (dark) {
           ctx.fillStyle = 'rgba(20,5,40,0.35)';
           ctx.fillRect(0, 0, bw, bh);
+        }
+        if (venom) {
+          // Nọc Độc: viền xanh độc nhịp đập
+          ctx.save();
+          ctx.strokeStyle = `rgba(148,216,45,${0.45 + Math.sin(now / 140) * 0.25})`;
+          ctx.lineWidth = tile * 0.12;
+          ctx.strokeRect(tile * 0.06, tile * 0.06, bw - tile * 0.12, bh - tile * 0.12);
+          ctx.restore();
         }
       }
 
@@ -242,7 +256,7 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
         for (let i = 0; i < LINK_CELLS; i++) {
           if (!foe.filled[i]) continue;
           const x = i % LINK_W, y = Math.floor(i / LINK_W);
-          f.fillStyle = foe.out ? '#6c7a96' : ice.has(i) ? '#a5d8ff' : '#f6e7c8';
+          f.fillStyle = foe.out ? '#6c7a96' : ice.has(i) ? '#a5d8ff' : '#9fb0d6';
           f.fillRect(ox + x * ct + 0.5, oy + y * ct + 0.5, ct - 1, ct - 1);
         }
       }
@@ -258,7 +272,7 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
         const b = bossC.getContext('2d')!;
         b.setTransform(dpr, 0, 0, dpr, 0, 0);
         b.clearRect(0, 0, cw, ch);
-        drawBoss(b, cw / 2, ch * 0.55, ch * 1.05, now, s.boss.phase, now - linkStore.bossHitAt, s.boss.hp <= 0);
+        drawBoss(b, s.boss.id ?? 'thunder', cw / 2, ch * 0.55, ch * 1.05, now, s.boss.phase, now - linkStore.bossHitAt, s.boss.hp <= 0, s.boss.shield > 0);
       }
 
       // --- lớp hiệu ứng phủ toàn màn ---
@@ -352,7 +366,8 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
       const k = e.key.toLowerCase();
       if (k === 'h') send({ t: 'hint' });
       else if (k === 'escape') selected.current = null;
-      else if (s.me.thunder >= 100 && s.stage === 'stage1' && (k === '1' || k === '2')) send({ t: 'skill', kind: k === '1' ? 'freeze' : 'storm', target: targetRef.current });
+      else if (k === 'r' && s.me.shuffleIn - (performance.now() - linkStore.at) <= 0) send({ t: 'shuffle' });
+      else if (s.me.thunder >= 100 && s.stage === 'stage1' && (k === '1' || k === '2')) send({ t: 'skill', kind: k === '1' ? 'freeze' : 'fog', target: targetRef.current });
       else if (s.me.thunder >= 100 && s.stage === 'stage2' && k === ' ') {
         e.preventDefault();
         send({ t: 'super' });
@@ -366,16 +381,25 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
   // ---------- HUD ----------
   const me = st?.me;
   const foes: LinkFoe[] = st?.foes ?? st?.players?.slice(1) ?? [];
-  const meP = me ? { id: meId, name: view.players.find((p) => p.id === meId)?.name ?? 'Bạn', score1: me.score1, damage: me.damage, combo: me.combo, thunder: me.thunder } : mainP;
+  const meP = me
+    ? { id: meId, name: view.players.find((p) => p.id === meId)?.name ?? 'Bạn', score1: me.score1, damage: me.damage, combo: me.combo, thunder: me.thunder, kos: me.kos ?? 0 }
+    : mainP;
   const stage = st?.stage ?? link.stage ?? 'stage1';
   const left = linkStore.left();
   const boss = st?.boss;
   const ended = view.phase === 'ended' || stage === 'ended';
   const result = st?.result ?? link.result;
-  const total = (p?: { score1: number; damage: number; id?: string }, id?: string) =>
-    p ? p.score1 + p.damage + (result?.ko && result.ko === (id ?? p.id) ? LINK_KO_BONUS : 0) : 0;
+  const total = (p?: { score1: number; damage: number; kos?: number }) => (p ? p.score1 + p.damage + (p.kos ?? 0) * LINK_KO_BONUS : 0);
+  const bossDef = boss ? (LINK_BOSSES.find((b) => b.id === boss.id) ?? LINK_BOSSES[0]) : undefined;
+  const bossNo = boss?.no ?? 0;
+  /** đang nghỉ giữa 2 Boss (Boss trước vừa gục) */
+  const betweenBosses = stage === 'intermission' && !!boss && boss.hp <= 0;
+  const nextBoss = betweenBosses ? LINK_BOSSES[bossNo + 1] : LINK_BOSSES[0];
+  const shuffleIn = me ? Math.max(0, (me.shuffleIn ?? LINK_SHUFFLE_CD_S * 1000) - (performance.now() - linkStore.at)) : 0;
+  const venomLeft = me ? Math.max(0, (me.venom ?? 0) - (performance.now() - linkStore.at)) : 0;
+  const stunLeft = me ? Math.max(0, (me.stun ?? 0) - (performance.now() - linkStore.at)) : 0;
   const everyone = [...(meP ? [{ ...meP, id: mainId ?? '', bot: false, out: false }] : []), ...foes];
-  const totalOf = (p: { id: string; score1: number; damage: number }) => (result ? (result.totals[p.id] ?? 0) : total(p, p.id));
+  const totalOf = (p: { id: string; score1: number; damage: number; kos?: number }) => (result ? (result.totals[p.id] ?? 0) : total(p));
   /** Màn 1 xếp theo điểm, từ Màn 2 theo tổng */
   const standing = (p: { id: string; score1: number; damage: number }) => (boss ? totalOf(p) : p.score1);
   const ranking = [...everyone].sort((a, b) => Number(a.out) - Number(b.out) || standing(b) - standing(a));
@@ -384,20 +408,22 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
   const leader = [...activeFoes].sort((a, b) => standing(b) - standing(a))[0];
   const target = activeFoes.find((f) => f.id === targetId) ?? leader;
   const many = foes.length >= 3;
+  /** 6–9 đối thủ: lưới 3 cột cho vừa màn hình */
+  const crowd = foes.length >= 6;
   const ready = (me?.thunder ?? 0) >= 100;
   const hintIn = me ? Math.max(0, me.hintIn - (performance.now() - linkStore.at)) : 0;
   const othersDmg = foes.reduce((n, f) => n + f.damage, 0);
   const dmgShare = meP && meP.damage + othersDmg > 0 ? meP.damage / (meP.damage + othersDmg) : foes.length ? 1 / (foes.length + 1) : 0.5;
   const nameOf = (id?: string) => everyone.find((p) => p.id === id)?.name ?? '';
   targetRef.current = targetId && target?.id === targetId ? targetId : undefined;
-  const skill = (kind: 'freeze' | 'storm') => send({ t: 'skill', kind, target: targetRef.current });
+  const skill = (kind: 'freeze' | 'fog') => send({ t: 'skill', kind, target: targetRef.current });
   const won = result?.winnerId === meId;
   if (result && resultSeenAt.current === null) resultSeenAt.current = performance.now();
   if (!result) resultSeenAt.current = null;
   const showEnd = !!result && performance.now() - (resultSeenAt.current ?? 0) > (result.ko ? 2400 : 600);
 
   return (
-    <div ref={rootRef} className={`link-game${chatOpen ? ' chat-on' : ''}${boss ? ' has-boss' : ''}${many ? ' many-foes' : ''}`} style={FULL_SCREEN}>
+    <div ref={rootRef} className={`link-game${chatOpen ? ' chat-on' : ''}${boss ? ' has-boss' : ''}${many ? ' many-foes' : ''}${crowd ? ' crowd-foes' : ''}`} style={FULL_SCREEN}>
       <div ref={shakeRef} className="link-shake">
         {/* thanh trên */}
         <div className="link-top">
@@ -409,7 +435,9 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
             {(meP?.combo ?? 0) > 1 && <span className="link-combo">COMBO x{meP?.combo}</span>}
           </div>
           <div className="link-center">
-            <span className="link-stage">{stage === 'stage2' || boss ? 'MÀN 2 · ĐẤM BOSS' : stage === 'intermission' ? 'NGHỈ GIỮA MÀN' : 'MÀN 1 · ĐUA NỐI'}</span>
+            <span className="link-stage">
+              {ended ? 'KẾT THÚC' : stage === 'stage2' && bossDef ? `BOSS ${bossNo + 1}/${LINK_BOSSES.length} · ${bossDef.name.toUpperCase()}` : stage === 'intermission' ? 'NGHỈ GIỮA MÀN' : 'MÀN 1 · ĐUA NỐI'}
+            </span>
             <span className={`link-clock${left < 15000 && !ended ? ' hurry' : ''}`}>⏱ {fmtTime(left)}</span>
             {view.pot > 0 && <span className="link-pot" title={`Mỗi người cược ${view.bet} xu`}>🪙 {fmtCoins(view.pot)}</span>}
           </div>
@@ -427,18 +455,29 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
 
         {/* Boss */}
         {boss && (
-          <div className="link-boss">
+          <div className={`link-boss boss-${boss.id ?? 'thunder'}`}>
             <canvas ref={bossRef} className="link-boss-canvas" />
             <div className="link-boss-info">
               <div className="link-boss-name">
-                👑 VUA SẤM SÉT <span className={`phase p${boss.phase}`}>Giai đoạn {boss.phase}</span>
-                {stage === 'stage2' && <span className="muted small"> · đòn kế: {BOSS_SKILL_NAME[boss.nextSkill]} sau {Math.ceil(Math.max(0, boss.nextSkillIn - (performance.now() - linkStore.at)) / 1000)}s</span>}
+                <span className="link-boss-track" title={`Boss ${bossNo + 1}/${LINK_BOSSES.length}`}>
+                  {LINK_BOSSES.map((b, i) => (
+                    <i key={b.id} className={i < bossNo || (i === bossNo && boss.hp <= 0) ? 'down' : i === bossNo ? 'now' : ''}>{b.emoji}</i>
+                  ))}
+                </span>
+                {bossDef?.name.toUpperCase()} <span className={`phase p${boss.phase}`}>Giai đoạn {boss.phase}</span>
+                {stage === 'stage2' && <span className="muted small"> · đòn kế: {LINK_BOSS_SKILL_NAME[boss.nextSkill] ?? boss.nextSkill} sau {Math.ceil(Math.max(0, boss.nextSkillIn - (performance.now() - linkStore.at)) / 1000)}s</span>}
               </div>
               <div className="link-hp">
                 <i className="trail" style={{ width: `${(boss.hp / boss.maxHp) * 100}%` }} />
                 <i className={`fill p${boss.phase}`} style={{ width: `${(boss.hp / boss.maxHp) * 100}%` }} />
                 <span>{boss.hp} / {boss.maxHp}</span>
               </div>
+              {boss.shield > 0 && (
+                <div className="link-shield" title="Khiên Đá: hút sát thương trước khi trừ máu">
+                  <i style={{ width: `${(boss.shield / Math.max(1, boss.maxShield)) * 100}%` }} />
+                  <span>🛡️ Khiên Đá {boss.shield}</span>
+                </div>
+              )}
               <div className="link-share" title="Tỉ lệ sát thương">
                 <i style={{ width: `${dmgShare * 100}%` }} />
                 <span className="l">{meP?.name}: {meP?.damage ?? 0}</span>
@@ -455,7 +494,7 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
 
         {/* các đối thủ: bấm vào bàn nhỏ để chọn người bị tung chiêu */}
         {foes.length > 0 && (
-          <div className={`link-foes${many ? ' many' : ''}`}>
+          <div className={`link-foes${many ? ' many' : ''}${crowd ? ' crowd' : ''}`}>
             {foes.map((foe) => {
               const isTarget = !!me && !foe.out && target?.id === foe.id && stage === 'stage1';
               const rank = ranking.findIndex((p) => p.id === foe.id) + 1;
@@ -510,11 +549,21 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
                 <button className="link-btn skill freeze" disabled={!ready} onClick={() => skill('freeze')} title="Đóng băng 6 ô của đối thủ trong 8 giây · phím 1">
                   ❄️ Đóng Băng
                 </button>
-                <button className="link-btn skill storm" disabled={!ready} onClick={() => skill('storm')} title="Xáo tung bàn đối thủ · phím 2">
-                  🌪️ Bão Xáo
+                <button className="link-btn skill fog" disabled={!ready} onClick={() => skill('fog')} title={`Thả mây mù che bàn đối thủ ${LINK_FOG_MS / 1000} giây · phím 2`}>
+                  🌫️ Mây Mù
                 </button>
               </>
             )}
+            {stunLeft > 0 && <span className="link-venom stun" title="Gầm Thét: chưa nối được">😵 Choáng {Math.ceil(stunLeft / 1000)}s</span>}
+            {venomLeft > 0 && <span className="link-venom" title="Nọc Độc: sát thương giảm một nửa">☠️ Độc {Math.ceil(venomLeft / 1000)}s</span>}
+            <button
+              className={`link-btn shuffle${shuffleIn <= 0 ? ' ready' : ''}`}
+              disabled={shuffleIn > 0 || stage === 'intermission' || ended}
+              onClick={() => send({ t: 'shuffle' })}
+              title={`Đảo Bàn: tự đảo bàn mình cho dễ nối, hồi chiêu ${LINK_SHUFFLE_CD_S} giây · phím R`}
+            >
+              <Shuffle size={16} /> {shuffleIn > 0 ? fmtTime(shuffleIn) : 'Đảo Bàn'}
+            </button>
             {stage === 'stage2' && (
               <button className={`link-btn super${ready ? ' ready' : ''}`} disabled={!ready} onClick={() => send({ t: 'super' })} title="400 sát thương · phím Space">
                 ⚡ SIÊU ĐẤM
@@ -530,8 +579,17 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
       {stage === 'intermission' && !ended && (
         <div className="link-overlay">
           <div className="link-card">
-            <h2>🏁 MÀN 1 KẾT THÚC</h2>
-            {everyone.length === 2 ? (
+            <h2>{betweenBosses ? `💥 ĐÃ HẠ ${bossDef?.name.toUpperCase()}!` : '🏁 MÀN 1 KẾT THÚC'}</h2>
+            {betweenBosses ? (
+              <ol className="link-rank-list">
+                {ranking.map((p) => (
+                  <li key={p.id} className={p.id === mainId ? 'me' : ''}>
+                    <span>{p.name}{p.out ? ' 🏳️' : ''}{'kos' in p && p.kos ? ` · ${'💀'.repeat(p.kos)}` : ''}</span>
+                    <b>{totalOf(p)}</b>
+                  </li>
+                ))}
+              </ol>
+            ) : everyone.length === 2 ? (
               <div className="link-vs">
                 <div><span>{everyone[0].name}</span><b>{everyone[0].score1}</b></div>
                 <em>VS</em>
@@ -547,8 +605,14 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
                 ))}
               </ol>
             )}
-            <p className="link-boss-coming">👹 BOSS XUẤT HIỆN SAU <b>{Math.ceil(left / 1000)}</b></p>
-            <p className="muted small">Người dẫn trước được 50% Sấm. Nối thật nhanh để đấm Boss!</p>
+            <p className="link-boss-coming">
+              {nextBoss?.emoji} {nextBoss?.name.toUpperCase()} XUẤT HIỆN SAU <b>{Math.ceil(left / 1000)}</b>
+            </p>
+            <p className="muted small">
+              {betweenBosses
+                ? `Boss ${bossNo + 2}/${LINK_BOSSES.length} · còn ${fmtTime(boss?.raidLeft ?? 0)} cho các Boss còn lại. Giữ nguyên Sấm, bàn mới cho mọi người.`
+                : `Liên hoàn ${LINK_BOSSES.length} Boss trong ${LINK_RAID_S / 60} phút: Boss trước gục thì Boss sau ra. Người dẫn trước được 50% Sấm!`}
+            </p>
           </div>
         </div>
       )}
@@ -561,6 +625,12 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
               {spectating ? (result.winnerId ? `${nameOf(result.winnerId)} thắng!` : 'Hòa!') : won ? 'BẠN THẮNG!' : result.winnerId ? `${nameOf(result.winnerId)} thắng!` : 'HÒA!'}
             </h2>
             <p className="muted">{result.reason}</p>
+            <p className="link-bosses-down">
+              {LINK_BOSSES.map((b, i) => (
+                <span key={b.id} className={i < (result.bossesDown ?? 0) ? 'down' : ''} title={b.name}>{b.emoji}</span>
+              ))}
+              <b>Đã hạ {result.bossesDown ?? 0}/{LINK_BOSSES.length} Boss</b>
+            </p>
             <table className="link-score-table">
               <thead><tr><th /><th>Màn 1</th><th>Boss</th><th>K.O.</th><th>Tổng</th></tr></thead>
               <tbody>
@@ -569,7 +639,7 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
                     <td>{p.name}{p.out ? ' 🏳️' : ''}</td>
                     <td>{p.score1}</td>
                     <td>{p.damage}</td>
-                    <td>{result.ko === p.id ? `+${LINK_KO_BONUS}` : '–'}</td>
+                    <td>{'kos' in p && p.kos ? `${p.kos}× (+${p.kos * LINK_KO_BONUS})` : '–'}</td>
                     <td><b>{totalOf(p)}</b></td>
                   </tr>
                 ))}

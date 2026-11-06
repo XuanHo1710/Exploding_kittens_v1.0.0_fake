@@ -18,22 +18,24 @@ export function runLinkBot(duel: LinkDuel, p: LinkPlayer) {
   let wait = lv.min + Math.random() * (lv.max - lv.min);
   if (Math.random() < lv.slow) wait *= 2;
   p.nextBotAt = duel.t + wait;
-  // bị Bóng Tối che bàn: chờ
-  if (p.darkUntil > duel.t) return;
+  // bị Bóng Tối che bàn hoặc đang choáng: chờ
+  if (p.darkUntil > duel.t || p.stunUntil > duel.t) return;
 
   if (p.thunder >= 100) {
     if (duel.stage === 'stage2') {
       duel.command(p.id, { t: 'super' });
       return;
     }
-    // đánh người đang dẫn đầu (máy Khó: ai đang combo cao nhất thì Bão Xáo người đó)
+    // đánh người đang dẫn đầu (máy Khó: ai đang combo cao nhất thì thả Mây Mù che bàn người đó)
     const others = duel.active().filter((x) => x !== p);
     const comboKing = [...others].sort((a, b) => b.chain - a.chain)[0];
     const hard = duel.cfg.botLevel === 'hard' && comboKing && comboKing.chain >= 2;
-    const kind = duel.cfg.botLevel === 'easy' ? (Math.random() < 0.5 ? 'freeze' : 'storm') : hard ? 'storm' : 'freeze';
+    const kind = duel.cfg.botLevel === 'easy' ? (Math.random() < 0.5 ? 'freeze' : 'fog') : hard ? 'fog' : 'freeze';
     duel.command(p.id, { t: 'skill', kind, target: hard ? comboKing.id : undefined });
     return;
   }
   const h = p.board.hint(duel.t);
   if (h) duel.command(p.id, { t: 'match', a: h[0], b: h[1] });
+  // không thấy cặp nào (hiếm với máy): dùng Đảo Bàn nếu đã hồi
+  else if (duel.shuffleIn(p) === 0) duel.command(p.id, { t: 'shuffle' });
 }

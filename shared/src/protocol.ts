@@ -49,8 +49,8 @@ export const GAME_MODES: Record<
     shortName: 'Nối Thú',
     emoji: '⚡🐾',
     minPlayers: 1,
-    maxPlayers: 6,
-    desc: 'Nối hình 2–6 người realtime: Màn 1 đua dọn bàn, Màn 2 cả phòng cùng đấm Boss Vua Sấm Sét!',
+    maxPlayers: 10,
+    desc: 'Nối hình 2–10 người realtime: Màn 1 đua dọn bàn, rồi cả phòng đánh liên hoàn 3 Boss: Vua Sấm Sét → Nữ Hoàng Nhện → Bạo Chúa!',
   },
 };
 
