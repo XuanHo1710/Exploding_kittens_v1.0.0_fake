@@ -14,8 +14,10 @@ import { AccountController } from './store/account.controller';
     ServeStaticModule.forRoot(
       // Ảnh avatar người chơi đã tải lên
       { rootPath: AVATAR_DIR, serveRoot: '/avatars', serveStaticOptions: { maxAge: '7d', fallthrough: false } },
+      // Ảnh Pikachu 1-1 từ thư mục database-pikachu/ ở gốc project
+      { rootPath: join(__dirname, '..', '..', '..', '..', 'database-pikachu'), serveRoot: '/database-pikachu', serveStaticOptions: { maxAge: '7d', fallthrough: false } },
       // Bản build của client (client/dist) được server phục vụ luôn, chỉ cần chạy 1 tiến trình
-      { rootPath: join(__dirname, '..', '..', '..', '..', 'client', 'dist'), exclude: ['/api/{*path}', '/avatars/{*path}'] },
+      { rootPath: join(__dirname, '..', '..', '..', '..', 'client', 'dist'), exclude: ['/api/{*path}', '/avatars/{*path}', '/database-pikachu/{*path}'] },
     ),
   ],
   controllers: [AvatarController, AccountController],
