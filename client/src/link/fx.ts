@@ -31,7 +31,7 @@ const LIFE: Record<LinkFx['k'], number> = {
 };
 
 /** màu chữ / hạt của từng Boss */
-const BOSS_TINT: Record<LinkBossId, string> = { thunder: '#ffd43b', spider: '#da77f2', tyrant: '#ff6b2c' };
+const BOSS_TINT: Record<LinkBossId, string> = { thunder: '#ffd43b', spider: '#da77f2', tyrant: '#ff6b2c', twins: '#e599f7' };
 const bossName = (id?: LinkBossId) => (LINK_BOSSES.find((b) => b.id === id) ?? LINK_BOSSES[0]).name.toUpperCase();
 
 const center = (r: Rect): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
@@ -244,11 +244,24 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
         const tint = BOSS_TINT[f.boss] ?? '#ff6b6b';
         if (f.kind === 'rage') {
           ctx.save();
-          const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.75);
-          g.addColorStop(0, 'rgba(255,0,0,0)');
-          g.addColorStop(1, `rgba(255,30,30,${0.45 * (1 - t)})`);
-          ctx.fillStyle = g;
-          ctx.fillRect(0, 0, W, H);
+          if (f.boss === 'twins') {
+            const gL = ctx.createRadialGradient(W * 0.25, H * 0.35, 30, W * 0.25, H * 0.35, Math.max(W, H) * 0.75);
+            gL.addColorStop(0, `rgba(151,117,250,${0.48 * (1 - t)})`);
+            gL.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = gL;
+            ctx.fillRect(0, 0, W, H);
+            const gR = ctx.createRadialGradient(W * 0.75, H * 0.35, 30, W * 0.75, H * 0.35, Math.max(W, H) * 0.75);
+            gR.addColorStop(0, `rgba(255,107,107,${0.48 * (1 - t)})`);
+            gR.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = gR;
+            ctx.fillRect(0, 0, W, H);
+          } else {
+            const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.75);
+            g.addColorStop(0, 'rgba(255,0,0,0)');
+            g.addColorStop(1, `rgba(255,30,30,${0.45 * (1 - t)})`);
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, W, H);
+          }
           ctx.restore();
           if (f.boss === 'thunder' && age < 900) {
             // Vua Sấm Sét xuất hiện / nổi giận: sét giáng khắp màn
@@ -258,9 +271,35 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
               const x = r() * W;
               bolt(ctx, { x: x + (r() - 0.5) * 80, y: 0 }, { x, y: H * (0.4 + r() * 0.5) }, seed + i * 13 + Math.floor(age / 70), 3, '#ffe066', 40);
             }
+          } else if (f.boss === 'twins' && age < 1200) {
+            // 2 Boss Co-op xuất hiện / nổi giận: Sấm Hư Không tím-cyan + Lửa Hỗn Mang vàng-đỏ giáng toàn màn hình
+            if (age < 160) flash = Math.max(flash, 0.65 * (1 - age / 160));
+            if (age < 800) shake = Math.max(shake, 11 * (1 - age / 800));
+            const r = rand(seed + Math.floor(age / 80));
+            for (let i = 0; i < 6; i++) {
+              const x = r() * W;
+              const isVoid = i % 2 === 0;
+              bolt(
+                ctx,
+                { x: x + (r() - 0.5) * 100, y: 0 },
+                { x, y: H * (0.35 + r() * 0.55) },
+                seed + i * 19 + Math.floor(age / 65),
+                3.5,
+                isVoid ? '#b197fc' : '#ffd43b',
+                44,
+              );
+            }
+            burst(ctx, { x: bossP.x - 60, y: bossP.y }, t, seed + 11, '#9775fa', 22, 130, 6);
+            burst(ctx, { x: bossP.x + 60, y: bossP.y }, t, seed + 23, '#ff6b6b', 22, 130, 6);
           }
-          const name = bossName(f.boss);
-          bigText(ctx, f.phase === 1 ? `${name} XUẤT HIỆN!` : `${name} NỔI GIẬN!`, below, Math.min(f.phase === 1 ? 40 : 44, (W * 1.6) / name.length), f.phase === 1 ? tint : '#ff6b6b', 1 - t * t, 0.7 + ease(Math.min(1, t * 3)) * 0.4);
+          if (f.boss === 'twins') {
+            const title = f.phase === 1 ? '🐉 HẮC LONG × 🔥 PHƯỢNG HOÀNG XUẤT HIỆN!' : `🐉🔥 SONG SÁT CO-OP NỔI GIẬN! (P${f.phase})`;
+            bigText(ctx, title, below, Math.min(36, (W * 1.55) / title.length), f.phase === 1 ? '#ffe066' : '#ff6b6b', 1 - t * t, 0.75 + ease(Math.min(1, t * 3)) * 0.35);
+            bigText(ctx, '⚔️ 2 BOSS CO-OP SIÊU KHÓ · BỘ KỸ NĂNG HỦY DIỆT ⚔️', { x: below.x, y: below.y + 34 }, Math.min(20, W / 24), '#e599f7', 1 - t);
+          } else {
+            const name = bossName(f.boss);
+            bigText(ctx, f.phase === 1 ? `${name} XUẤT HIỆN!` : `${name} NỔI GIẬN!`, below, Math.min(f.phase === 1 ? 40 : 44, (W * 1.6) / name.length), f.phase === 1 ? tint : '#ff6b6b', 1 - t * t, 0.7 + ease(Math.min(1, t * 3)) * 0.4);
+          }
         } else if (f.kind === 'ice') {
           const r = rand(seed);
           ctx.save();
@@ -447,6 +486,194 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
           ctx.stroke();
           ctx.restore();
           bigText(ctx, 'KHIÊN ĐÁ!', below, 36, '#a5d8ff', 1 - t);
+        } else if (f.kind === 'blackhole') {
+          // Hố Đen Hư Không: xoáy chân không hút năng lượng từ bàn vào tâm + khóa 8 ô Ấn Hư Không
+          if (age < 700) shake = Math.max(shake, 8 * (1 - age / 700));
+          const mid = center(L.board);
+          const maxR = Math.min(L.board.w, L.board.h) * 0.42;
+          ctx.save();
+          ctx.translate(mid.x, mid.y);
+          ctx.rotate(-now / 180);
+          for (let ring = 3; ring >= 1; ring--) {
+            const rr = maxR * (ring / 3) * (1 - t * 0.35);
+            ctx.strokeStyle = ring === 1 ? '#74c0fc' : ring === 2 ? '#b197fc' : '#845ef7';
+            ctx.globalAlpha = (1 - t) * (0.9 - ring * 0.18);
+            ctx.lineWidth = 4 - ring * 0.7;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, rr * 1.25, rr * 0.78, ring * 0.6, 0, Math.PI * 1.7);
+            ctx.stroke();
+          }
+          const core = ctx.createRadialGradient(0, 0, 4, 0, 0, maxR * 0.48);
+          core.addColorStop(0, `rgba(5, 2, 18, ${0.95 * (1 - t)})`);
+          core.addColorStop(0.55, `rgba(95, 61, 196, ${0.72 * (1 - t)})`);
+          core.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = core;
+          ctx.beginPath();
+          ctx.arc(0, 0, maxR * 0.48, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          const r = rand(seed);
+          ctx.save();
+          for (let i = 0; i < 32; i++) {
+            const a = r() * Math.PI * 2 + t * 4;
+            const d = maxR * 1.4 * (1 - ease(Math.min(1, t * 1.3)));
+            ctx.globalAlpha = 1 - t;
+            ctx.fillStyle = i % 2 ? '#e599f7' : '#74c0fc';
+            ctx.beginPath();
+            ctx.arc(mid.x + Math.cos(a) * d, mid.y + Math.sin(a) * d, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+          bigText(ctx, '🌀 HỐ ĐEN HƯ KHÔNG! −20 SẤM', below, Math.min(36, W / 14), '#d0bfff', 1 - t);
+        } else if (f.kind === 'hellfire') {
+          // Bão Lửa Địa Ngục: Phượng Hoàng Hỗn Mang quạt bão lửa đỏ-vàng-tím thiêu đốt 9 ô
+          if (age < 750) shake = Math.max(shake, 10 * (1 - age / 750));
+          const r = rand(seed);
+          for (let i = 0; i < 9; i++) {
+            const tt = Math.min(1, Math.max(0, t * 1.9 - i * 0.06));
+            if (tt <= 0) continue;
+            const end = { x: L.board.x + (0.1 + r() * 0.8) * L.board.w, y: L.board.y + (0.12 + r() * 0.76) * L.board.h };
+            const start = { x: bossP.x + 50, y: bossP.y };
+            if (tt < 0.5) {
+              const k = tt / 0.5;
+              const p = { x: start.x + (end.x - start.x) * k, y: start.y + (end.y - start.y) * k };
+              ctx.save();
+              ctx.strokeStyle = i % 2 ? '#ff6b6b' : '#ffd43b';
+              ctx.shadowColor = '#ff922b';
+              ctx.shadowBlur = 18;
+              ctx.lineWidth = 8;
+              ctx.lineCap = 'round';
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p.x - (end.x - start.x) * 0.16, p.y - (end.y - start.y) * 0.16);
+              ctx.stroke();
+              ctx.restore();
+            } else {
+              burst(ctx, end, (tt - 0.5) / 0.5, seed + i * 7, i % 2 ? '#ff6b6b' : '#ffd43b', 16, 65, 5.5);
+            }
+          }
+          bigText(ctx, '🔥 BÃO LỬA ĐỊA NGỤC!', below, 38, '#ff8787', 1 - t);
+        } else if (f.kind === 'soul_chain') {
+          // Xiềng Xích Linh Hồn: trói người dẫn đầu sát thương bằng 14 ô Ấn Hư Không + choáng
+          const onMe = !f.to || f.to === L.mainId;
+          const target = onMe ? L.board : f.to ? L.foeRect(f.to) : undefined;
+          if (onMe && age < 600) shake = Math.max(shake, 10 * (1 - age / 600));
+          if (target) {
+            const c = center(target);
+            const reach = ease(Math.min(1, t * 2.4));
+            const r = rand(seed);
+            ctx.save();
+            ctx.globalAlpha = 1 - t * t;
+            ctx.strokeStyle = '#da77f2';
+            ctx.shadowColor = '#9775fa';
+            ctx.shadowBlur = 16;
+            ctx.lineWidth = onMe ? 3.5 : 2;
+            for (let i = 0; i < 8; i++) {
+              const a = (i / 8) * Math.PI * 2 + 0.3;
+              const rad = Math.min(target.w, target.h) * 0.48 * reach;
+              ctx.beginPath();
+              ctx.moveTo(c.x - Math.cos(a) * rad, c.y - Math.sin(a) * rad);
+              ctx.lineTo(c.x + Math.cos(a) * rad, c.y + Math.sin(a) * rad);
+              ctx.stroke();
+            }
+            ctx.strokeStyle = '#74c0fc';
+            ctx.lineWidth = onMe ? 3 : 1.5;
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, Math.min(target.w, target.h) * 0.34 * reach, 0, Math.PI * 2);
+            ctx.stroke();
+            for (let i = 0; i < 4; i++) {
+              const end = { x: target.x + (0.15 + r() * 0.7) * target.w, y: target.y + (0.15 + r() * 0.7) * target.h };
+              bolt(ctx, { x: bossP.x - 40, y: bossP.y }, end, seed + i * 29 + Math.floor(age / 70), onMe ? 3 : 1.5, '#e599f7', 24);
+            }
+            ctx.restore();
+            bigText(
+              ctx,
+              onMe ? '⛓️ XIỀNG XÍCH LINH HỒN! CHOÁNG!' : '⛓️ XIỀNG XÍCH!',
+              onMe ? below : { x: c.x, y: c.y - 16 },
+              onMe ? 36 : 20,
+              '#e599f7',
+              1 - t,
+            );
+          }
+        } else if (f.kind === 'nirvana') {
+          // Niết Bàn Tái Sinh: hồi 8% máu + dựng Khiên Hỗn Mang 10% máu
+          const r = rand(seed);
+          ctx.save();
+          for (let i = 0; i < 32; i++) {
+            const from = { x: bossP.x + (r() - 0.5) * 280, y: bossP.y + 90 - ease(t) * 140 };
+            ctx.globalAlpha = (1 - t) * 0.9;
+            ctx.fillStyle = i % 2 ? '#ffd43b' : '#ff8787';
+            ctx.beginPath();
+            ctx.arc(from.x, from.y, 3.5 + (1 - t) * 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1 - t;
+          const rad = (L.boss ? L.boss.h * 0.52 : 66) * (0.65 + ease(Math.min(1, t * 3)) * 0.45);
+          for (const [dx, col] of [[-52, '#b197fc'], [52, '#ffd43b']] as const) {
+            ctx.strokeStyle = col;
+            ctx.shadowColor = col;
+            ctx.shadowBlur = 18;
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            for (let i = 0; i <= 8; i++) {
+              const a = (i / 8) * Math.PI * 2;
+              ctx.lineTo(bossP.x + dx + Math.cos(a) * rad, bossP.y + Math.sin(a) * rad * 0.85);
+            }
+            ctx.stroke();
+          }
+          ctx.restore();
+          bigText(ctx, '🛡️ NIẾT BÀN TÁI SINH! HỒI MÁU + KHIÊN', below, Math.min(34, W / 15), '#ffd43b', 1 - t);
+        } else if (f.kind === 'eclipse') {
+          // Nhật Thực Vĩnh Cửu: Mặt Trời Đen che phủ bàn + Độc Hư Không
+          const mid = center(L.board);
+          const rad = Math.min(L.board.w, L.board.h) * 0.28 * (0.7 + ease(Math.min(1, t * 2.5)) * 0.3);
+          ctx.save();
+          ctx.globalAlpha = 1 - t * t;
+          const corona = ctx.createRadialGradient(mid.x, mid.y, rad * 0.85, mid.x, mid.y, rad * 2.1);
+          corona.addColorStop(0, '#ffd43b');
+          corona.addColorStop(0.35, 'rgba(177, 151, 252, 0.75)');
+          corona.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ctx.fillStyle = corona;
+          ctx.beginPath();
+          ctx.arc(mid.x, mid.y, rad * 2.1, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#070312';
+          ctx.strokeStyle = '#ffe066';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(mid.x, mid.y, rad * 0.88, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+          bigText(ctx, '🌑 NHẬT THỰC VĨNH CỬU! MÙ + ĐỘC', below, Math.min(34, W / 15), '#e599f7', 1 - t);
+        } else if (f.kind === 'judgment') {
+          // Song Tuyệt Hủy Diệt: 2 Boss Co-op cùng phóng đại tuyệt kỹ giao thoa nổ tung bàn chơi
+          if (age < 220) flash = Math.max(flash, 0.75 * (1 - age / 220));
+          if (age < 1000) shake = Math.max(shake, 16 * (1 - age / 1000));
+          const mid = center(L.board);
+          const leftBoss = { x: bossP.x - 56, y: bossP.y };
+          const rightBoss = { x: bossP.x + 56, y: bossP.y };
+          if (age < 850) {
+            const flick = Math.floor(age / 55);
+            bolt(ctx, leftBoss, mid, seed + 11 + flick, 5, '#b197fc', 38);
+            bolt(ctx, rightBoss, mid, seed + 29 + flick, 5, '#ff922b', 38);
+            const r = rand(seed);
+            for (let i = 0; i < 6; i++) {
+              const pt = { x: L.board.x + (0.1 + r() * 0.8) * L.board.w, y: L.board.y + (0.1 + r() * 0.8) * L.board.h };
+              bolt(ctx, mid, pt, seed + i * 41 + flick, 3, i % 2 ? '#74c0fc' : '#ffd43b', 28);
+            }
+          }
+          burst(ctx, mid, t, seed + 3, '#b197fc', 28, 190, 7);
+          burst(ctx, mid, t, seed + 17, '#ffd43b', 28, 190, 7);
+          bigText(
+            ctx,
+            '⚔️ SONG TUYỆT HỦY DIỆT! CO-OP ULTIMATE!',
+            below,
+            Math.min(38, W / 14),
+            '#ffe066',
+            1 - t * t,
+            0.8 + ease(Math.min(1, t * 4)) * 0.35,
+          );
         }
         break;
       }
@@ -565,6 +792,41 @@ export function drawLock(ctx: CanvasRenderingContext2D, px: number, py: number, 
       }
       ctx.stroke();
     }
+  } else if (kind === 4) {
+    // Ấn Hư Không / Xiềng Xích Hắc Ám (Boss Co-op): hố đen xoáy tím-cyan + xích chéo phát sáng
+    const g = ctx.createRadialGradient(px + tile * 0.45, py + tile * 0.45, tile * 0.06, px + tile * 0.45, py + tile * 0.45, tile * 0.56);
+    g.addColorStop(0, 'rgba(15, 5, 32, 0.88)');
+    g.addColorStop(0.55, 'rgba(103, 65, 217, 0.72)');
+    g.addColorStop(1, 'rgba(218, 119, 242, 0.55)');
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.clip();
+    // 2 đường xích chéo
+    ctx.strokeStyle = '#e599f7';
+    ctx.shadowColor = '#74c0fc';
+    ctx.shadowBlur = tile * 0.18;
+    ctx.lineWidth = Math.max(1.5, tile * 0.055);
+    ctx.beginPath();
+    ctx.moveTo(px + tile * 0.1, py + tile * 0.1);
+    ctx.lineTo(px + tile * 0.82, py + tile * 0.82);
+    ctx.moveTo(px + tile * 0.82, py + tile * 0.1);
+    ctx.lineTo(px + tile * 0.1, py + tile * 0.82);
+    ctx.stroke();
+    // tâm sao Hư Không xoay
+    ctx.save();
+    ctx.translate(px + tile * 0.46, py + tile * 0.46);
+    ctx.rotate(now / 360);
+    ctx.fillStyle = '#74c0fc';
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const rr = i % 2 === 0 ? tile * 0.2 : tile * 0.07;
+      if (i) ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+      else ctx.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
   } else if (kind === 2) {
     const flick = 0.75 + Math.sin(now / 90) * 0.12;
     const g = ctx.createLinearGradient(px, py + tile, px, py);
@@ -618,6 +880,10 @@ export function drawBoss(
   dead: boolean,
   shielded = false,
 ) {
+  if (id === 'twins') {
+    drawTwins(ctx, cx, cy + size * 0.04, size * 0.88, now, phase, hitAge, dead, shielded);
+    return;
+  }
   // sừng / vương miện của Bạo Chúa và chân Nhện vươn xa hơn: thu nhỏ để không bị cắt mép khung
   if (id === 'spider') drawSpider(ctx, cx, cy + size * 0.04, size * 0.9, now, phase, hitAge, dead);
   else if (id === 'tyrant') drawTyrant(ctx, cx, cy + size * 0.1, size * 0.78, now, phase, hitAge, dead);
@@ -641,6 +907,391 @@ export function drawBoss(
     ctx.stroke();
     ctx.restore();
   }
+}
+
+// ---------------- 2 Boss Co-op: Hắc Long Hư Không & Phượng Hoàng Hỗn Mang ----------------
+
+function drawTwins(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+  now: number,
+  phase: 1 | 2 | 3,
+  hitAge: number,
+  dead: boolean,
+  shielded: boolean,
+) {
+  const dx = size * 0.56;
+  const leftX = cx - dx;
+  const rightX = cx + dx;
+
+  // Cổng Giao Thoa Hư Không - Hỗn Mang (Co-op Nexus) ở giữa 2 Boss
+  if (!dead) {
+    ctx.save();
+    ctx.translate(cx, cy - size * 0.04);
+    const pulse = 0.85 + Math.sin(now / 180) * 0.15;
+    const g = ctx.createRadialGradient(0, 0, size * 0.02, 0, 0, size * 0.36 * pulse);
+    g.addColorStop(0, '#ffffff');
+    g.addColorStop(0.35, 'rgba(229, 153, 247, 0.75)');
+    g.addColorStop(0.7, 'rgba(255, 146, 43, 0.45)');
+    g.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.36 * pulse, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Vòng cổ ngữ xoay ngược chiều
+    ctx.rotate(now / 900);
+    ctx.strokeStyle = 'rgba(177, 151, 252, 0.75)';
+    ctx.lineWidth = Math.max(1.2, size * 0.018);
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.16, 0, Math.PI * 1.4);
+    ctx.stroke();
+    ctx.rotate(-now / 450);
+    ctx.strokeStyle = 'rgba(255, 212, 59, 0.8)';
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.11, 0, Math.PI * 1.4);
+    ctx.stroke();
+    ctx.restore();
+
+    // Tia năng lượng nối liền 2 Boss Co-op
+    const tick = Math.floor(now / 90);
+    bolt(ctx, { x: leftX + size * 0.12, y: cy - size * 0.05 }, { x: cx, y: cy - size * 0.04 }, tick * 13 + 1, Math.max(1.4, size * 0.018), '#b197fc', size * 0.09);
+    bolt(ctx, { x: rightX - size * 0.12, y: cy - size * 0.05 }, { x: cx, y: cy - size * 0.04 }, tick * 17 + 2, Math.max(1.4, size * 0.018), '#ffd43b', size * 0.09);
+  }
+
+  // Boss Trái: 🐉 Hắc Long Hư Không
+  drawAbyssDragon(ctx, leftX, cy, size * 0.78, now, phase, hitAge, dead);
+  // Boss Phải: 🔥 Phượng Hoàng Hỗn Mang
+  drawChaosPhoenix(ctx, rightX, cy, size * 0.78, now, phase, hitAge, dead);
+
+  if (shielded && !dead) {
+    for (const [bx, stroke, fill, rot] of [
+      [leftX, 'rgba(208, 191, 255, 0.9)', 'rgba(132, 94, 247, 0.16)', now / 1800],
+      [rightX, 'rgba(255, 236, 153, 0.9)', 'rgba(255, 146, 43, 0.16)', -now / 1800],
+    ] as const) {
+      ctx.save();
+      ctx.translate(bx, cy);
+      ctx.rotate(rot);
+      ctx.strokeStyle = stroke;
+      ctx.fillStyle = fill;
+      ctx.shadowColor = stroke;
+      ctx.shadowBlur = size * 0.08;
+      ctx.lineWidth = size * 0.022;
+      ctx.beginPath();
+      for (let i = 0; i <= 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        ctx.lineTo(Math.cos(a) * size * 0.42, Math.sin(a) * size * 0.36);
+      }
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
+function drawAbyssDragon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+  now: number,
+  phase: 1 | 2 | 3,
+  hitAge: number,
+  dead: boolean,
+) {
+  const s = size;
+  const hover = Math.sin(now / 340) * s * 0.03;
+  const recoil = hitAge < 160 ? (1 - hitAge / 160) * s * 0.06 : 0;
+  const wingFlap = Math.sin(now / 210) * 0.18 * (phase === 3 ? 1.4 : 1);
+  const coreCol = phase === 3 ? '#ff6b6b' : phase === 2 ? '#da77f2' : '#9775fa';
+  const neonCol = phase === 3 ? '#ffe066' : '#74c0fc';
+
+  ctx.save();
+  ctx.translate(cx + (phase >= 2 ? Math.sin(now / 38) * 1.2 : 0), cy + hover - recoil);
+  if (dead) {
+    ctx.globalAlpha = 0.25;
+    ctx.rotate(-0.4);
+  }
+
+  // Hào quang Hố Đen sau lưng Hắc Long
+  const aura = ctx.createRadialGradient(0, 0, s * 0.1, 0, 0, s * 0.72);
+  aura.addColorStop(0, 'rgba(15, 5, 35, 0.9)');
+  aura.addColorStop(0.5, `${coreCol}66`);
+  aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = aura;
+  ctx.beginPath();
+  ctx.arc(0, 0, s * 0.72, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 3 quả cầu Hắc Tinh xoay quanh
+  if (!dead) {
+    for (let i = 0; i < 3; i++) {
+      const a = now / 620 + (i * Math.PI * 2) / 3;
+      const ox = Math.cos(a) * s * 0.48;
+      const oy = Math.sin(a) * s * 0.28 - s * 0.08;
+      ctx.fillStyle = '#0b031a';
+      ctx.strokeStyle = neonCol;
+      ctx.lineWidth = s * 0.018;
+      ctx.beginPath();
+      ctx.arc(ox, oy, s * 0.055, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  // Đôi cánh Rồng Hư Không căng rộng
+  for (const sx of [-1, 1]) {
+    ctx.save();
+    ctx.rotate(sx * wingFlap);
+    const wg = ctx.createLinearGradient(0, -s * 0.2, sx * s * 0.72, s * 0.25);
+    wg.addColorStop(0, '#240b47');
+    wg.addColorStop(0.6, coreCol);
+    wg.addColorStop(1, '#110426');
+    ctx.fillStyle = wg;
+    ctx.strokeStyle = neonCol;
+    ctx.lineWidth = s * 0.022;
+    ctx.beginPath();
+    ctx.moveTo(sx * s * 0.12, -s * 0.06);
+    ctx.lineTo(sx * s * 0.46, -s * 0.36);
+    ctx.lineTo(sx * s * 0.68, -s * 0.14);
+    ctx.quadraticCurveTo(sx * s * 0.5, -s * 0.02, sx * s * 0.56, s * 0.16);
+    ctx.quadraticCurveTo(sx * s * 0.34, s * 0.06, sx * s * 0.32, s * 0.24);
+    ctx.quadraticCurveTo(sx * s * 0.18, s * 0.1, sx * s * 0.12, s * 0.08);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 4 Sừng Hắc Long uốn cong phát sáng
+  for (const sx of [-1, 1]) {
+    const hg = ctx.createLinearGradient(0, -s * 0.2, sx * s * 0.45, -s * 0.6);
+    hg.addColorStop(0, '#190733');
+    hg.addColorStop(0.5, coreCol);
+    hg.addColorStop(1, neonCol);
+    ctx.fillStyle = hg;
+    ctx.strokeStyle = '#090214';
+    ctx.lineWidth = s * 0.022;
+    ctx.beginPath();
+    ctx.moveTo(sx * s * 0.1, -s * 0.2);
+    ctx.quadraticCurveTo(sx * s * 0.44, -s * 0.28, sx * s * 0.42, -s * 0.58);
+    ctx.quadraticCurveTo(sx * s * 0.26, -s * 0.34, sx * s * 0.05, -s * 0.28);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  // Đầu & giáp ngực Hắc Long
+  const bg = ctx.createLinearGradient(0, -s * 0.3, 0, s * 0.32);
+  bg.addColorStop(0, '#3b156e');
+  bg.addColorStop(0.5, '#1b0838');
+  bg.addColorStop(1, '#090214');
+  ctx.fillStyle = bg;
+  ctx.strokeStyle = neonCol;
+  ctx.lineWidth = s * 0.022;
+  ctx.beginPath();
+  ctx.moveTo(0, -s * 0.32);
+  ctx.lineTo(s * 0.22, -s * 0.16);
+  ctx.lineTo(s * 0.26, s * 0.08);
+  ctx.lineTo(s * 0.14, s * 0.3);
+  ctx.lineTo(0, s * 0.36);
+  ctx.lineTo(-s * 0.14, s * 0.3);
+  ctx.lineTo(-s * 0.26, s * 0.08);
+  ctx.lineTo(-s * 0.22, -s * 0.16);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Ấn Hư Không trên trán
+  ctx.save();
+  ctx.shadowColor = neonCol;
+  ctx.shadowBlur = s * 0.09;
+  ctx.fillStyle = neonCol;
+  ctx.beginPath();
+  ctx.moveTo(0, -s * 0.25);
+  ctx.lineTo(s * 0.05, -s * 0.16);
+  ctx.lineTo(0, -s * 0.07);
+  ctx.lineTo(-s * 0.05, -s * 0.16);
+  ctx.closePath();
+  ctx.fill();
+
+  // 4 mắt rồng sắc lẹm rực sáng
+  for (const sx of [-1, 1]) {
+    ctx.fillStyle = neonCol;
+    ctx.beginPath();
+    ctx.moveTo(sx * s * 0.05, -s * 0.05);
+    ctx.lineTo(sx * s * 0.2, -s * 0.12);
+    ctx.lineTo(sx * s * 0.17, -s * 0.02);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#ff6b6b';
+    ctx.beginPath();
+    ctx.moveTo(sx * s * 0.07, -s * 0.14);
+    ctx.lineTo(sx * s * 0.18, -s * 0.2);
+    ctx.lineTo(sx * s * 0.15, -s * 0.13);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // Hàm rồng phun Hắc Hỏa
+  ctx.fillStyle = '#0d021f';
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.13, s * 0.08);
+  ctx.lineTo(s * 0.13, s * 0.08);
+  ctx.lineTo(s * 0.08, s * 0.25);
+  ctx.lineTo(-s * 0.08, s * 0.25);
+  ctx.closePath();
+  ctx.fill();
+  const breath = ctx.createRadialGradient(0, s * 0.16, 0, 0, s * 0.16, s * 0.14);
+  breath.addColorStop(0, '#ffffff');
+  breath.addColorStop(0.5, neonCol);
+  breath.addColorStop(1, 'rgba(151, 117, 250, 0)');
+  ctx.fillStyle = breath;
+  ctx.beginPath();
+  ctx.arc(0, s * 0.16, s * 0.12, 0, Math.PI * 2);
+  ctx.fill();
+
+  hitFlash(ctx, s, hitAge, dead);
+  ctx.restore();
+}
+
+function drawChaosPhoenix(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+  now: number,
+  phase: 1 | 2 | 3,
+  hitAge: number,
+  dead: boolean,
+) {
+  const s = size;
+  const hover = Math.cos(now / 310) * s * 0.032;
+  const recoil = hitAge < 160 ? (1 - hitAge / 160) * s * 0.06 : 0;
+  const wingFlap = Math.cos(now / 190) * 0.22 * (phase === 3 ? 1.45 : 1);
+  const fireCore = '#fff3bf';
+  const fireMid = phase === 3 ? '#ff2a2a' : '#ff6b2c';
+  const fireTip = phase === 3 ? '#862e9c' : '#c92a2a';
+
+  ctx.save();
+  ctx.translate(cx + (phase >= 2 ? Math.cos(now / 36) * 1.2 : 0), cy + hover - recoil);
+  if (dead) {
+    ctx.globalAlpha = 0.25;
+    ctx.rotate(0.4);
+  }
+
+  // Hào quang Lửa Hỗn Mang
+  const aura = ctx.createRadialGradient(0, 0, s * 0.1, 0, 0, s * 0.74);
+  aura.addColorStop(0, 'rgba(255, 224, 102, 0.65)');
+  aura.addColorStop(0.55, 'rgba(255, 107, 44, 0.35)');
+  aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = aura;
+  ctx.beginPath();
+  ctx.arc(0, 0, s * 0.74, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Đôi cánh Phượng Hoàng 5 tầng lông vũ rực lửa
+  for (const sx of [-1, 1]) {
+    ctx.save();
+    ctx.rotate(sx * wingFlap);
+    const wg = ctx.createLinearGradient(0, 0, sx * s * 0.75, -s * 0.35);
+    wg.addColorStop(0, fireCore);
+    wg.addColorStop(0.45, '#ffd43b');
+    wg.addColorStop(0.75, fireMid);
+    wg.addColorStop(1, fireTip);
+    ctx.fillStyle = wg;
+    ctx.strokeStyle = '#3b0a0a';
+    ctx.lineWidth = s * 0.02;
+    ctx.beginPath();
+    ctx.moveTo(sx * s * 0.1, 0);
+    ctx.quadraticCurveTo(sx * s * 0.38, -s * 0.44, sx * s * 0.72, -s * 0.28);
+    ctx.lineTo(sx * s * 0.54, -s * 0.12);
+    ctx.lineTo(sx * s * 0.68, -s * 0.04);
+    ctx.lineTo(sx * s * 0.48, s * 0.06);
+    ctx.lineTo(sx * s * 0.56, s * 0.18);
+    ctx.quadraticCurveTo(sx * s * 0.28, s * 0.18, sx * s * 0.1, s * 0.12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Đuôi lửa Phượng Hoàng rủ phía dưới
+  for (let k = -1; k <= 1; k++) {
+    const sway = Math.sin(now / 220 + k) * s * 0.05;
+    ctx.fillStyle = k === 0 ? '#ffd43b' : fireMid;
+    ctx.beginPath();
+    ctx.moveTo(k * s * 0.06, s * 0.18);
+    ctx.quadraticCurveTo(k * s * 0.14 + sway, s * 0.36, k * s * 0.09 + sway, s * 0.52);
+    ctx.quadraticCurveTo(k * s * 0.02, s * 0.36, k * s * 0.02, s * 0.18);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Thân & Đầu Phượng Hoàng
+  const bg = ctx.createRadialGradient(0, -s * 0.08, s * 0.03, 0, s * 0.04, s * 0.32);
+  bg.addColorStop(0, '#fff9db');
+  bg.addColorStop(0.35, '#ffd43b');
+  bg.addColorStop(0.75, fireMid);
+  bg.addColorStop(1, '#5c0b0b');
+  ctx.fillStyle = bg;
+  ctx.strokeStyle = '#2b0505';
+  ctx.lineWidth = s * 0.022;
+  ctx.beginPath();
+  ctx.ellipse(0, s * 0.02, s * 0.2, s * 0.25, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Mào Phượng Hoàng 3 ngọn lửa Hoàng Kim
+  ctx.fillStyle = '#ffe066';
+  ctx.strokeStyle = '#d9480f';
+  ctx.lineWidth = s * 0.018;
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.12, -s * 0.2);
+  ctx.lineTo(-s * 0.18, -s * 0.44);
+  ctx.lineTo(-s * 0.05, -s * 0.28);
+  ctx.lineTo(0, -s * 0.54);
+  ctx.lineTo(s * 0.05, -s * 0.28);
+  ctx.lineTo(s * 0.18, -s * 0.44);
+  ctx.lineTo(s * 0.12, -s * 0.2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Mắt Phượng Hoàng rực cháy + Mỏ sắc
+  ctx.save();
+  ctx.shadowColor = '#ffffff';
+  ctx.shadowBlur = s * 0.09;
+  ctx.fillStyle = '#ffffff';
+  for (const sx of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(sx * s * 0.04, -s * 0.06);
+    ctx.lineTo(sx * s * 0.17, -s * 0.14);
+    ctx.lineTo(sx * s * 0.14, -s * 0.02);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // Mỏ Hoàng Kim
+  ctx.fillStyle = '#fcc419';
+  ctx.strokeStyle = '#2b0505';
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.055, -s * 0.01);
+  ctx.lineTo(s * 0.055, -s * 0.01);
+  ctx.lineTo(0, s * 0.13);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  hitFlash(ctx, s, hitAge, dead);
+  ctx.restore();
 }
 
 /** chớp trắng khi bị đánh (gọi cuối cùng, trong save/translate của Boss) */

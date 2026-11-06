@@ -43,7 +43,7 @@ interface Props {
 }
 
 /** Bố cục cốt lõi để inline: phủ kín màn hình kể cả khi CSS tải chậm */
-const FULL_SCREEN = { position: 'fixed', inset: 0, zIndex: 20, overflow: 'hidden', background: '#f1f5f9' } as const;
+const FULL_SCREEN = { position: 'fixed', inset: 0, zIndex: 20, overflow: 'hidden', background: '#0b1630' } as const;
 
 const fmtTime = (ms: number) => {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -156,9 +156,9 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
       const ctx = board.getContext('2d')!;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, bw, bh);
-      // khay bàn sáng sạch, nổi rõ các ô Pikachu kem trắng
-      ctx.fillStyle = 'rgba(203,213,225,0.65)';
-      ctx.strokeStyle = 'rgba(148,163,184,0.65)';
+      // khay bàn tối màu sang trọng làm nổi bật các ô Pikachu nền kem sáng
+      ctx.fillStyle = 'rgba(8, 20, 48, 0.65)';
+      ctx.strokeStyle = 'rgba(116, 192, 252, 0.32)';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.roundRect(1, 1, bw - 2, bh - 2, tile * 0.24);
@@ -183,9 +183,9 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
           ctx.drawImage(tileCanvas(k, tile, dpr, dark), px, py, tile, tile);
           if (sel) {
             ctx.save();
-            ctx.strokeStyle = '#ef4444';
-            ctx.shadowColor = 'rgba(239,68,68,0.55)';
-            ctx.shadowBlur = 10;
+            ctx.strokeStyle = '#ffd43b';
+            ctx.shadowColor = '#ffd43b';
+            ctx.shadowBlur = 12;
             ctx.lineWidth = 3.5;
             ctx.beginPath();
             ctx.roundRect(px + tile * 0.02, py + tile * 0.02, tile * 0.96, tile * 0.93, tile * 0.13);
@@ -194,7 +194,7 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
           }
           if (hint && (hint[0] === i || hint[1] === i)) {
             ctx.save();
-            ctx.strokeStyle = `rgba(22,163,74,${0.55 + pulse * 0.45})`;
+            ctx.strokeStyle = `rgba(105, 219, 124, ${0.45 + pulse * 0.55})`;
             ctx.lineWidth = 3.5;
             ctx.beginPath();
             ctx.roundRect(px + tile * 0.02, py + tile * 0.02, tile * 0.96, tile * 0.93, tile * 0.13);
@@ -202,13 +202,13 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
             ctx.restore();
           }
           if (missUntil && missUntil > now) {
-            ctx.fillStyle = 'rgba(239,68,68,0.32)';
+            ctx.fillStyle = 'rgba(255, 107, 107, 0.35)';
             ctx.beginPath();
             ctx.roundRect(px + tile * 0.02, py + tile * 0.02, tile * 0.96, tile * 0.94, tile * 0.13);
             ctx.fill();
           }
         }
-        // ô bị khoá: băng / tơ nhện / lửa
+        // ô bị khoá: băng / tơ nhện / lửa / điện / ấn hư không
         for (const [i, msLeft, kind] of iceList) {
           if (cells[i] < 0) continue;
           const { dx, dy } = disp(i);
@@ -217,7 +217,9 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
           drawLock(ctx, px, py, tile, kind ?? 0, now + i * 97);
           if (s?.me) {
             const left = Math.max(0, msLeft - (now - linkStore.at));
-            ctx.fillStyle = kind === 3 ? '#5f3dc4' : kind === 2 ? '#fff4e6' : kind === 1 ? '#1e293b' : '#1d4ed8';
+            ctx.fillStyle = kind === 4 ? '#f3d9fa' : kind === 3 ? '#fff3bf' : kind === 2 ? '#fff4e6' : kind === 1 ? '#1e293b' : '#0b2545';
+            ctx.shadowColor = kind === 1 || kind === 0 ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.85)';
+            ctx.shadowBlur = 3;
             ctx.font = `800 ${Math.round(tile * 0.28)}px system-ui, sans-serif`;
             ctx.textAlign = 'center';
             ctx.fillText(`${Math.ceil(left / 1000)}`, px + tile * 0.5, py + tile * 0.86);
@@ -225,13 +227,13 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
           ctx.restore();
         }
         if (dark) {
-          ctx.fillStyle = 'rgba(30,27,75,0.28)';
+          ctx.fillStyle = 'rgba(5, 8, 18, 0.32)';
           ctx.fillRect(0, 0, bw, bh);
         }
         if (venom) {
           // Nọc Độc: viền xanh độc nhịp đập
           ctx.save();
-          ctx.strokeStyle = `rgba(101,163,13,${0.45 + Math.sin(now / 140) * 0.25})`;
+          ctx.strokeStyle = `rgba(148, 216, 45, ${0.35 + Math.sin(now / 140) * 0.25})`;
           ctx.lineWidth = tile * 0.12;
           ctx.strokeRect(tile * 0.06, tile * 0.06, bw - tile * 0.12, bh - tile * 0.12);
           ctx.restore();
@@ -257,7 +259,7 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
         for (let i = 0; i < LINK_CELLS; i++) {
           if (!foe.filled[i]) continue;
           const x = i % LINK_W, y = Math.floor(i / LINK_W);
-          f.fillStyle = foe.out ? '#94a3b8' : ice.has(i) ? '#06b6d4' : '#3b82f6';
+          f.fillStyle = foe.out ? '#495057' : ice.has(i) ? '#a5d8ff' : '#74c0fc';
           f.fillRect(ox + x * ct + 0.5, oy + y * ct + 0.5, ct - 1, ct - 1);
         }
       }
@@ -465,7 +467,19 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
                     <i key={b.id} className={i < bossNo || (i === bossNo && boss.hp <= 0) ? 'down' : i === bossNo ? 'now' : ''}>{b.emoji}</i>
                   ))}
                 </span>
-                {bossDef?.name.toUpperCase()} <span className={`phase p${boss.phase}`}>Giai đoạn {boss.phase}</span>
+                {bossDef?.coop && bossDef.partners ? (
+                  <>
+                    <span className="link-coop-badge">⚔️ CO-OP 2 BOSS</span>
+                    <span className="link-coop-duo">
+                      <span className="p-void">{bossDef.partners[0].emoji} {bossDef.partners[0].name}</span>
+                      <span className="vs-x">×</span>
+                      <span className="p-fire">{bossDef.partners[1].emoji} {bossDef.partners[1].name}</span>
+                    </span>
+                  </>
+                ) : (
+                  bossDef?.name.toUpperCase()
+                )}
+                <span className={`phase p${boss.phase}`}>Giai đoạn {boss.phase}</span>
                 {stage === 'stage2' && <span className="muted small"> · đòn kế: {LINK_BOSS_SKILL_NAME[boss.nextSkill] ?? boss.nextSkill} sau {Math.ceil(Math.max(0, boss.nextSkillIn - (performance.now() - linkStore.at)) / 1000)}s</span>}
               </div>
               <div className="link-hp">
@@ -474,9 +488,9 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
                 <span>{boss.hp} / {boss.maxHp}</span>
               </div>
               {boss.shield > 0 && (
-                <div className="link-shield" title="Khiên Đá: hút sát thương trước khi trừ máu">
+                <div className="link-shield" title="Khiên: hút sát thương trước khi trừ máu">
                   <i style={{ width: `${(boss.shield / Math.max(1, boss.maxShield)) * 100}%` }} />
-                  <span>🛡️ Khiên Đá {boss.shield}</span>
+                  <span>🛡️ {boss.id === 'twins' ? 'Khiên Hỗn Mang' : 'Khiên Đá'} {boss.shield}</span>
                 </div>
               )}
               <div className="link-share" title="Tỉ lệ sát thương">
@@ -565,6 +579,16 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
             >
               <Shuffle size={16} /> {shuffleIn > 0 ? fmtTime(shuffleIn) : 'Đảo Bàn'}
             </button>
+            {isHost && !ended && boss?.id !== 'twins' && (
+              <button
+                className="link-btn coop-summon"
+                disabled={stage === 'intermission'}
+                onClick={() => send({ t: 'coop_raid' })}
+                title="Khiêu chiến ngay 2 Boss Co-op Siêu Khó: Hắc Long Hư Không & Phượng Hoàng Hỗn Mang"
+              >
+                🐉🔥 Đấu 2 Boss Co-op
+              </button>
+            )}
             {stage === 'stage2' && (
               <button className={`link-btn super${ready ? ' ready' : ''}`} disabled={!ready} onClick={() => send({ t: 'super' })} title="400 sát thương · phím Space">
                 ⚡ SIÊU ĐẤM
