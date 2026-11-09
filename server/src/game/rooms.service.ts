@@ -351,11 +351,11 @@ export class RoomsService {
     game.setAntsConfig(playerId, raw);
   }
 
-  setLotoPick(playerId: string, sheets: unknown) {
+  setLotoPick(playerId: string, sheets: unknown, colors?: unknown) {
     const game = this.roomOf(playerId);
     if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
     this.assertReady(game);
-    game.setLotoPick(playerId, sheets);
+    game.setLotoPick(playerId, sheets, colors);
   }
 
   setLinkConfig(playerId: string, raw: unknown) {

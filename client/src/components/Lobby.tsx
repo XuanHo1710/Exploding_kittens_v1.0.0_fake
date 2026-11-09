@@ -20,7 +20,10 @@ import {
   LINK_STAGE1_S,
   GAME_MODES,
   LOTO_CALL_MS,
+  LOTO_COLORS,
+  LOTO_COLOR_ORDER,
   LOTO_SHEET_PRICE,
+  lotoDefaultColors,
   MIN_PLAYERS,
   roomDeckSummary,
   type AccountInfo,
@@ -59,6 +62,8 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
   /** Lô Tô: mỗi người cược theo số tờ tự mua (50 xu/tờ); chế độ khác cùng mức của phòng */
   const isLoto = gameMode === 'loto';
   const picks = view.loto?.picks ?? {};
+  const myColors = view.loto?.colors?.[meId] ?? lotoDefaultColors(Math.max(0, view.players.findIndex((p) => p.id === meId)));
+  const setSheetColor = (k: number, c: string) => emit('loto:pick', { colors: myColors.map((x, i) => (i === k ? c : x)) });
   const stakeOf = (id: string) => (isLoto ? LOTO_SHEET_PRICE * (picks[id] ?? 1) : bet);
   const poor = view.players.filter((p) => p.connected && stakeOf(p.id) > 0 && (p.coins ?? 0) < stakeOf(p.id));
   const lotoPot = view.players.filter((p) => p.connected).reduce((s, p) => s + stakeOf(p.id), 0);
@@ -189,7 +194,14 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                     <Coins size={12} className="inline-icon" /> {fmtCoins(p.coins)}
                   </span>
                 )}
-                {isLoto && <span className="seat-loto">🎫 {picks[p.id] ?? 1} tờ</span>}
+                {isLoto && (
+                  <span className="seat-loto">
+                    🎫 {picks[p.id] ?? 1} tờ
+                    {(view.loto?.colors?.[p.id] ?? []).slice(0, picks[p.id] ?? 1).map((c, k) => (
+                      <i key={k} className="loto-dot" style={{ background: LOTO_COLORS[c]?.main }} title={LOTO_COLORS[c]?.name} />
+                    ))}
+                  </span>
+                )}
               </div>
             ))}
             {Array.from({ length: empty }, (_, i) => (
@@ -222,6 +234,31 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                   </button>
                 ))}
               </div>
+              {me && !spectating && (
+                <div className="loto-color-pick">
+                  {Array.from({ length: picks[meId] ?? 1 }, (_, k) => (
+                    <div key={k} className="loto-color-row">
+                      <span className="muted small">Màu tờ {k + 1}</span>
+                      <div className="loto-swatches">
+                        {LOTO_COLOR_ORDER.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            className={`loto-swatch${myColors[k] === c ? ' on' : ''}`}
+                            style={{ background: LOTO_COLORS[c].main }}
+                            title={LOTO_COLORS[c].name}
+                            aria-label={`Tờ ${k + 1} màu ${LOTO_COLORS[c].name}`}
+                            aria-pressed={myColors[k] === c}
+                            onClick={() => setSheetColor(k, c)}
+                          />
+                        ))}
+                      </div>
+                      <span className="small">{LOTO_COLORS[myColors[k]]?.name}</span>
+                    </div>
+                  ))}
+                  {(picks[meId] ?? 1) === 2 && <p className="muted small">2 tờ chọn trùng màu hay khác màu đều được.</p>}
+                </div>
+              )}
               <p className="bet-note">
                 Hũ {fmtCoins(lotoPot)} xu – ai KINH trước (đủ 5 số một hàng ngang) ăn cả hũ <Trophy size={14} className="inline-icon" />
                 {me && account && account.coins < stakeOf(meId) && <span className="bad-text"> · Bạn thiếu xu, vào Hồ sơ nhận 500 xu/ngày nhé.</span>}

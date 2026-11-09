@@ -17,13 +17,27 @@ export const LOTO_CALL_MS = 5000;
 /** Chờ chút cho mọi người xem tờ trước khi gọi số đầu tiên */
 export const LOTO_FIRST_CALL_MS = 3000;
 
-export type LotoColor = 'blue' | 'red' | 'purple';
+export type LotoColor = 'blue' | 'red' | 'purple' | 'green' | 'orange' | 'yellow' | 'pink';
 export const LOTO_COLORS: Record<LotoColor, { name: string; main: string; soft: string; deep: string }> = {
   blue: { name: 'Xanh', main: '#1c7ed6', soft: '#a5d8ff', deep: '#0b3d91' },
   red: { name: 'Đỏ', main: '#e03131', soft: '#ffa8a8', deep: '#7d0a0a' },
   purple: { name: 'Tím', main: '#7048e8', soft: '#d0bfff', deep: '#3b1f8f' },
+  green: { name: 'Xanh lá', main: '#2f9e44', soft: '#b2f2bb', deep: '#14532d' },
+  orange: { name: 'Cam', main: '#f76707', soft: '#ffd8a8', deep: '#7c2d12' },
+  yellow: { name: 'Vàng', main: '#f2b705', soft: '#ffec99', deep: '#6b4e00' },
+  pink: { name: 'Hồng', main: '#e64980', soft: '#fcc2d7', deep: '#7a1c3f' },
 };
-export const LOTO_COLOR_ORDER: LotoColor[] = ['blue', 'red', 'purple'];
+/** thứ tự hiện ở bảng chọn màu; 3 màu đầu là màu mặc định */
+export const LOTO_COLOR_ORDER: LotoColor[] = ['blue', 'red', 'purple', 'green', 'orange', 'yellow', 'pink'];
+
+/** Màu mặc định cho người thứ i (2 tờ khác màu nhau) */
+export const lotoDefaultColors = (i: number): LotoColor[] => [LOTO_COLOR_ORDER[i % 3], LOTO_COLOR_ORDER[(i + 1) % 3]];
+
+/** Chuẩn hoá màu người chơi chọn cho từng tờ (được trùng màu); màu lạ thì dùng màu mặc định */
+export function normalizeLotoColors(raw: unknown, fallback: LotoColor[]): LotoColor[] {
+  const arr = Array.isArray(raw) ? raw : [];
+  return [0, 1].map((k) => (typeof arr[k] === 'string' && Object.hasOwn(LOTO_COLORS, arr[k]) ? (arr[k] as LotoColor) : fallback[k]));
+}
 
 export interface LotoSheet {
   color: LotoColor;
@@ -139,6 +153,8 @@ export interface LotoPlayerView {
 export interface LotoRoomView {
   /** số tờ mỗi người mua (phòng chờ chọn; mặc định 1) */
   picks: Record<string, number>;
+  /** màu từng tờ mỗi người chọn (2 phần tử; được trùng màu) */
+  colors: Record<string, LotoColor[]>;
   /** tờ của chính mình (khán giả không có) */
   mine?: LotoSheet[];
   /** các số đã gọi, theo thứ tự */

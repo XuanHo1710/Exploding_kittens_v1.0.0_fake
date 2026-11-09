@@ -304,8 +304,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   // --- Lô Tô Cân Đồ ---
   @SubscribeMessage('loto:pick')
-  lotoPick(@ConnectedSocket() c: Socket, @MessageBody() body: { sheets: unknown }) {
-    return this.handle(c, (me) => this.rooms.setLotoPick(me.playerId, body?.sheets));
+  lotoPick(@ConnectedSocket() c: Socket, @MessageBody() body: { sheets?: unknown; colors?: unknown }) {
+    return this.handle(c, (me) => this.rooms.setLotoPick(me.playerId, body?.sheets, body?.colors));
   }
 
   private game(me: SocketData) {

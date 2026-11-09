@@ -56,6 +56,24 @@ test('phòng chờ: mỗi người tự chọn 1 hoặc 2 tờ, cược 50 xu/t�
   g.dispose();
 });
 
+test('chọn màu từng tờ (được trùng màu), màu lạ thì giữ màu cũ; tờ phát ra đúng màu đã chọn', () => {
+  const g = lotoGame(2);
+  g.setLotoPick('p0', 2, ['green', 'green']);
+  assert.deepEqual(g.viewFor('p1').loto.colors.p0, ['green', 'green']);
+  g.setLotoPick('p1', undefined, ['pink', 'xyz']);
+  assert.equal(g.viewFor('p1').loto.colors.p1[0], 'pink');
+  assert.ok(Object.hasOwn(S.LOTO_COLORS, g.viewFor('p1').loto.colors.p1[1]));
+  g.setLotoPick('p1', 2, undefined);
+  assert.equal(g.viewFor('p1').loto.colors.p1[0], 'pink', 'đổi số tờ không mất màu');
+  g.start('p0');
+  try {
+    assert.deepEqual(g.viewFor('p0').loto.mine.map((s) => s.color), ['green', 'green']);
+    assert.equal(g.viewFor('p1').loto.mine[0].color, 'pink');
+  } finally {
+    g.dispose();
+  }
+});
+
 test('ván Lô Tô: phát đúng số tờ, mỗi người chỉ thấy tờ của mình; gọi số cho tới khi có người KINH theo hàng ngang', () => {
   const g = lotoGame(3);
   g.setLotoPick('p0', 2);
@@ -66,7 +84,7 @@ test('ván Lô Tô: phát đúng số tờ, mỗi người chỉ thấy tờ c�
     const v0 = g.viewFor('p0').loto;
     assert.equal(v0.mine.length, 2);
     assert.equal(g.viewFor('p1').loto.mine.length, 1);
-    assert.notEqual(v0.mine[0].color, v0.mine[1].color, '2 tờ khác màu');
+    assert.notEqual(v0.mine[0].color, v0.mine[1].color, 'chưa chọn màu thì 2 tờ mặc định khác màu');
     // 2 tờ của p0 chứa đủ 90 số
     assert.equal(new Set(v0.mine.flatMap((s) => s.rows.flat()).filter((x) => x > 0)).size, 90);
     let guard = 0;

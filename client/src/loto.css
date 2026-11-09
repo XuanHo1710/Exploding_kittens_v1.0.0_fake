@@ -151,8 +151,18 @@
 
 .loto-chat { position: absolute; right: 12px; top: 56px; bottom: 12px; width: min(360px, calc(100% - 24px)); z-index: 6; }
 
-/* phòng chờ: số tờ mỗi người */
-.seat-loto { font-size: 12px; font-weight: 700; color: var(--muted); }
+/* phòng chờ: số tờ + màu tờ mỗi người */
+.seat-loto { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.loto-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25); }
+.loto-color-pick { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.loto-color-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.loto-swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+.loto-swatch {
+  width: 28px; height: 28px; padding: 0; border-radius: 7px; cursor: pointer;
+  border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--border);
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.18) 0 4px, transparent 4px 9px) !important;
+}
+.loto-swatch.on { box-shadow: 0 0 0 3px var(--text); transform: scale(1.08); }
 
 @media (max-width: 860px) {
   .loto-main { flex-direction: column; overflow: auto; }

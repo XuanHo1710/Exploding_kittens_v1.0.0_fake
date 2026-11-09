@@ -52,7 +52,9 @@ import {
   LINK_STAGE1_S,
   normalizeLinkConfig,
   LOTO_CALL_MS,
-  LOTO_COLOR_ORDER,
+  lotoDefaultColors,
+  normalizeLotoColors,
+  type LotoColor,
   LOTO_FIRST_CALL_MS,
   LOTO_MAX,
   LOTO_SHEET_PRICE,
@@ -204,6 +206,8 @@ export class Game {
   // --- Trạng thái Lô Tô Cân Đồ ---
   /** số tờ mỗi người mua (1 hoặc 2), chọn ở phòng chờ */
   private lotoPicks = new Map<string, number>();
+  /** màu từng tờ mỗi người chọn */
+  private lotoColors = new Map<string, LotoColor[]>();
   private lotoSheets = new Map<string, LotoSheet[]>();
   private lotoCalled: number[] = [];
   /** các số chưa gọi (đã xáo) */
@@ -1513,16 +1517,24 @@ export class Game {
     return normalizeLotoPick(this.lotoPicks.get(playerId) ?? 1);
   }
 
-  /** Người chơi tự chọn mua 1 hoặc 2 tờ (chỉ ở phòng chờ) */
-  setLotoPick(playerId: string, sheets: unknown) {
+  /** Màu từng tờ của 1 người: tự chọn, chưa chọn thì theo thứ tự ghế (2 tờ khác màu) */
+  private lotoColorsOf(playerId: string): LotoColor[] {
+    const i = Math.max(0, this.players.findIndex((p) => p.id === playerId));
+    return this.lotoColors.get(playerId) ?? lotoDefaultColors(i);
+  }
+
+  /** Người chơi tự chọn mua 1 hoặc 2 tờ và màu từng tờ (được trùng màu) – chỉ ở phòng chờ */
+  setLotoPick(playerId: string, sheets: unknown, colors?: unknown) {
     if (this.gameMode !== 'loto') throw new GameError('Không phải chế độ Lô Tô.');
-    if (this.phase !== 'lobby') throw new GameError('Chỉ chọn số tờ trong phòng chờ.');
+    if (this.phase !== 'lobby') throw new GameError('Chỉ chọn tờ trong phòng chờ.');
     const p = this.player(playerId);
     if (!p) throw new GameError('Bạn đang xem, vào bàn chơi để mua tờ nhé.');
-    const n = normalizeLotoPick(sheets);
-    if (this.lotoPickOf(playerId) === n && this.lotoPicks.has(playerId)) return;
+    const n = sheets === undefined ? this.lotoPickOf(playerId) : normalizeLotoPick(sheets);
+    const cols = colors === undefined ? this.lotoColorsOf(playerId) : normalizeLotoColors(colors, this.lotoColorsOf(playerId));
+    if (this.lotoPicks.get(playerId) === n && JSON.stringify(this.lotoColors.get(playerId)) === JSON.stringify(cols)) return;
     this.run(() => {
       this.lotoPicks.set(playerId, n);
+      this.lotoColors.set(playerId, cols);
     });
   }
 
@@ -1532,10 +1544,10 @@ export class Game {
       p.hand = [];
     }
     this.lotoSheets.clear();
-    this.players.forEach((p, i) => {
+    this.players.forEach((p) => {
       const [a, b] = generateLotoPair();
       const n = this.lotoPickOf(p.id);
-      const colors = [LOTO_COLOR_ORDER[i % 3], LOTO_COLOR_ORDER[(i + 1) % 3]];
+      const colors = this.lotoColorsOf(p.id);
       this.lotoSheets.set(p.id, [a, b].slice(0, n).map((rows, k) => ({ color: colors[k], rows })));
     });
     this.lotoBag = shuffle(Array.from({ length: LOTO_MAX }, (_, i) => i + 1));
@@ -1601,11 +1613,16 @@ export class Game {
 
   private lotoView(viewerId: string): LotoRoomView {
     const picks: Record<string, number> = {};
-    for (const p of this.players) picks[p.id] = this.lotoPickOf(p.id);
-    if (this.phase === 'lobby') return { picks, called: [] };
+    const colors: Record<string, LotoColor[]> = {};
+    for (const p of this.players) {
+      picks[p.id] = this.lotoPickOf(p.id);
+      colors[p.id] = this.lotoColorsOf(p.id);
+    }
+    if (this.phase === 'lobby') return { picks, colors, called: [] };
     const called = new Set(this.lotoCalled);
     return {
       picks,
+      colors,
       mine: this.lotoSheets.get(viewerId),
       called: [...this.lotoCalled],
       nextIn: this.phase === 'playing' ? Math.max(0, this.lotoNextAt - Date.now()) : undefined,
