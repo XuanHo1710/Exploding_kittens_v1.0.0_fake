@@ -289,6 +289,35 @@ export class LinkBoard {
     return pick;
   }
 
+  /** Khoá đúng các ô cho trước (còn thú, chưa bị khoá); trả các ô đã khoá */
+  lockAt(idx: number[], ms: number, now: number, kind: LinkLock = 0): number[] {
+    const out: number[] = [];
+    for (const i of idx) {
+      if (i < 0 || i >= LINK_CELLS || this.cells[i] < 0 || this.frozen(i, now)) continue;
+      this.ice.set(i, now + ms);
+      if (kind) this.lockKind.set(i, kind);
+      else this.lockKind.delete(i);
+      out.push(i);
+    }
+    return out;
+  }
+
+  /**
+   * Lật bàn: 1 = lật ngang (trái ↔ phải), 2 = lật dọc (trên ↔ dưới), 3 = xoay 180°.
+   * Ô bị khoá đi theo con thú; bàn lật đối xứng nên vẫn giải được y như trước.
+   */
+  flip(mode: 1 | 2 | 3) {
+    const map = (i: number) => {
+      const x = i % LINK_W, y = Math.floor(i / LINK_W);
+      return (mode & 2 ? LINK_H - 1 - y : y) * LINK_W + (mode & 1 ? LINK_W - 1 - x : x);
+    };
+    const cells = new Int8Array(LINK_CELLS).fill(-1);
+    for (let i = 0; i < LINK_CELLS; i++) cells[map(i)] = this.cells[i];
+    this.cells = cells;
+    this.ice = new Map([...this.ice].map(([i, t]) => [map(i), t] as [number, number]));
+    this.lockKind = new Map([...this.lockKind].map(([i, k]) => [map(i), k] as [number, LinkLock]));
+  }
+
   /** Bỏ khoá đã hết hạn */
   thaw(now: number) {
     for (const [i, t] of this.ice) {

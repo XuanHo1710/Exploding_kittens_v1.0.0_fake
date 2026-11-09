@@ -179,12 +179,42 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
       };
       const hint = s?.me?.hint;
       const pulse = 0.5 + Math.sin(now / 160) * 0.5;
+      // Xoay Chuyển Càn Khôn: kiểu lật từng bàn của mình trong 0,9 giây vừa qua
+      const myId = s?.me ? meId : s?.players?.[0]?.id;
+      let spinFx: { modes: number[]; age: number } | undefined;
+      for (const it of linkStore.fx) {
+        const f = it.fx;
+        if (f.k === 'boss' && f.kind === 'board_spin' && now - it.t0 < 900 && myId && f.spin?.[myId]) spinFx = { modes: f.spin[myId], age: now - it.t0 };
+      }
       const sides: { cells?: number[]; ice: [number, number, LinkLock][] }[] = [{ cells, ice: iceList }];
       if (cells2) sides.push({ cells: cells2, ice: s?.me?.ice2 ?? [] });
       sides.forEach((sd, side) => {
         const base = side * LINK_CELLS;
         ctx.save();
         ctx.translate(side * sideW, 0);
+        const sp = spinFx?.modes[side];
+        if (sp && spinFx) {
+          // bàn lật từ hình cũ (gương của hình mới) sang hình mới: lật như lật bài, 180° thì xoay tròn
+          const e = Math.min(1, spinFx.age / 900);
+          const k = e * e * (3 - 2 * e);
+          ctx.translate(bw1 / 2, bh / 2);
+          if (sp === 3) {
+            // thu nhỏ lúc đang xoay để góc bàn không bị cắt
+            const th = Math.PI * (1 - k);
+            const c = Math.abs(Math.cos(th)), sn = Math.abs(Math.sin(th));
+            const shrink = Math.min(1, bw1 / (bw1 * c + bh * sn), bh / (bw1 * sn + bh * c));
+            ctx.rotate(th);
+            ctx.scale(shrink, shrink);
+          }
+          else {
+            const flipX = portrait ? sp === 2 : sp === 1;
+            const f = -Math.cos(Math.PI * k);
+            ctx.scale(flipX ? f : 1, flipX ? 1 : f);
+          }
+          ctx.translate(-bw1 / 2, -bh / 2);
+          ctx.shadowColor = '#ffd43b';
+          ctx.shadowBlur = 24 * (1 - k);
+        }
         // khay bàn tối màu sang trọng làm nổi bật các ô Pikachu nền kem sáng (bàn phải viền hồng)
         ctx.fillStyle = 'rgba(8, 20, 48, 0.65)';
         ctx.strokeStyle = side ? 'rgba(247, 131, 172, 0.5)' : nb === 2 ? 'rgba(116, 192, 252, 0.5)' : 'rgba(116, 192, 252, 0.32)';
@@ -312,7 +342,12 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
         const b = bossC.getContext('2d')!;
         b.setTransform(dpr, 0, 0, dpr, 0, 0);
         b.clearRect(0, 0, cw, ch);
-        drawBoss(b, s.boss.id ?? 'thunder', cw / 2, ch * 0.55, ch * 1.05, now, s.boss.phase, now - linkStore.bossHitAt, s.boss.hp <= 0, s.boss.shield > 0);
+        // chiêu Boss vừa ra (Boss diễn theo: giơ tay, mắt toé sét…)
+        let cast: { kind: string; age: number } | undefined;
+        for (const it of linkStore.fx) {
+          if (it.fx.k === 'boss' && it.fx.kind !== 'rage' && it.fx.kind !== 'bar' && now - it.t0 < 1700) cast = { kind: it.fx.kind, age: now - it.t0 };
+        }
+        drawBoss(b, s.boss.id ?? 'thunder', cw / 2, ch * 0.55, ch * 1.05, now, s.boss.phase, now - linkStore.bossHitAt, s.boss.hp <= 0, s.boss.shield > 0, cast);
       }
 
       // --- lớp hiệu ứng phủ toàn màn ---

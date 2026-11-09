@@ -16,6 +16,8 @@ import {
   LINK_BOSS_HELLFIRE,
   LINK_BOSS_JUDGMENT,
   LINK_BOSS_APOCALYPSE,
+  LINK_BOSS_ARM_CANNON,
+  LINK_BOSS_EYE_STORM,
   LINK_BOSS_LASER,
   LINK_BOSS_METEOR_RAIN,
   LINK_BOSS_SUPERNOVA,
@@ -37,6 +39,8 @@ import {
   LINK_MAX_PLAYERS,
   LINK_BOSS_ICE,
   LINK_CELLS,
+  LINK_H,
+  LINK_W,
   LINK_CLEAR_BONUS,
   LINK_CLEAR_PER_S,
   LINK_CMD_RATE,
@@ -510,6 +514,7 @@ export class LinkDuel {
     const alive = this.active();
     let to: string | undefined;
     let hits: Record<string, number[]> | undefined;
+    let spin: Record<string, number[]> | undefined;
     // người đang gây nhiều sát thương nhất (Kén Tơ, Sét Lan, Xiềng Xích Linh Hồn nhắm vào)
     const top = [...alive].sort((a, b) => b.damage - a.damage)[0];
     if (kind === 'cocoon' || kind === 'chain' || kind === 'soul_chain') {
@@ -573,6 +578,50 @@ export class LinkDuel {
         p.hint = undefined;
         p.chain = 0;
       }
+    } else if (kind === 'board_spin') {
+      // Xoay Chuyển Càn Khôn: mỗi bàn bị lật ngang / lật dọc / xoay 180° (ngẫu nhiên từng bàn), mất combo + gợi ý
+      spin = {};
+      for (const p of alive) {
+        spin[p.id] = this.boardsOf(p).map((b) => {
+          const m = (1 + Math.floor(Math.random() * 3)) as 1 | 2 | 3;
+          b.flip(m);
+          return m;
+        });
+        p.hint = undefined;
+        p.chain = 0;
+      }
+    } else if (kind === 'eye_storm') {
+      // Bão Sét Thiên Nhãn: sét từ 2 mắt giáng xuống mọi bàn – khoá điện + choáng ngắn, mất combo
+      const n = LINK_BOSS_EYE_STORM.cells[boss.phase - 1];
+      hits = {};
+      for (const p of alive) {
+        hits[p.id] = this.lock(p, n * this.boardsOf(p).length, LINK_BOSS_EYE_STORM.ms, 3);
+        p.stunUntil = Math.max(p.stunUntil, this.t + LINK_BOSS_EYE_STORM.stunMs);
+        p.chain = 0;
+      }
+    } else if (kind === 'arm_cannon') {
+      // Song Thủ Pháo Tinh Hà: mỗi tay bắn 1 tia quét ngang hàng đông thú nhất (trong 3 hàng chọn ngẫu nhiên) của 1 bàn
+      hits = {};
+      for (const p of alive) {
+        const all: number[] = [];
+        this.boardsOf(p).forEach((b, side) => {
+          let row = 0, most = -1;
+          for (let k = 0; k < 3; k++) {
+            const y = Math.floor(Math.random() * LINK_H);
+            let cnt = 0;
+            for (let x = 0; x < LINK_W; x++) if (b.cells[y * LINK_W + x] >= 0) cnt++;
+            if (cnt > most) [row, most] = [y, cnt];
+          }
+          const inRow: number[] = [];
+          for (let x = 0; x < LINK_W; x++) if (b.cells[row * LINK_W + x] >= 0) inRow.push(row * LINK_W + x);
+          // rải đều dọc theo hàng
+          const step = Math.max(1, inRow.length / LINK_BOSS_ARM_CANNON.cells);
+          const pick = [...new Set(Array.from({ length: Math.min(LINK_BOSS_ARM_CANNON.cells, inRow.length) }, (_, j) => inRow[Math.floor(j * step)]))];
+          for (const i of b.lockAt(pick, LINK_BOSS_ARM_CANNON.ms, this.t, 2)) all.push(side * LINK_CELLS + i);
+        });
+        hits[p.id] = all;
+        if (all.length) p.hint = undefined;
+      }
     } else if (kind === 'supernova') {
       // Siêu Tân Tinh: chói loá che bàn + dựng khiên
       for (const p of alive) p.darkUntil = Math.max(p.darkUntil, this.t + LINK_BOSS_SUPERNOVA.darkMs);
@@ -633,7 +682,7 @@ export class LinkDuel {
       }
     }
     boss.nextSkillAt = this.t + boss.def.skillS[boss.phase - 1] * 1000;
-    this.fx.push({ k: 'boss', boss: boss.def.id, kind, phase: boss.phase, to, ...(hits ? { hits } : {}) });
+    this.fx.push({ k: 'boss', boss: boss.def.id, kind, phase: boss.phase, to, ...(hits ? { hits } : {}), ...(spin ? { spin } : {}) });
     this.dirty = true;
   }
 

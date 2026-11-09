@@ -5,7 +5,7 @@
  */
 import { LINK_BOSSES, LINK_BOSS_BLACKHOLE, LINK_CELLS, LINK_CRITTERS, type LinkBossId, type LinkFx, type LinkLock } from '../../../shared/src';
 import { drawOverlord } from './overlord';
-import { drawTitan, TITAN_EYES } from './titan';
+import { drawTitan, TITAN_EYES, TITAN_HANDS_FIRE } from './titan';
 import type { FxItem } from './store';
 
 export interface Pt { x: number; y: number }
@@ -40,6 +40,14 @@ const SOULS = ['#ffd43b', '#da77f2', '#ff6b2c', '#74c0fc'];
 const bossName = (id?: LinkBossId) => (LINK_BOSSES.find((b) => b.id === id) ?? LINK_BOSSES[0]).name.toUpperCase();
 
 const center = (r: Rect): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
+/** điểm trên Cự Thần (toạ độ tương đối theo cỡ vẽ) → màn hình; khớp drawBoss: tâm 0.55h + 0.2h, cỡ 0.82h */
+const titanAt = (L: FxLayout, rel: readonly [number, number]): Pt | undefined => {
+  if (!L.boss) return undefined;
+  const h = L.boss.h, sz = h * 1.05 * 0.78;
+  return { x: L.boss.x + L.boss.w / 2 + rel[0] * sz, y: L.boss.y + h * 0.55 + h * 1.05 * 0.19 + rel[1] * sz };
+};
+/** sắp các ô trúng theo cột trên bàn (để tia quét đi đúng thứ tự dù bàn xoay dọc) */
+const byCol = (gs: number[]) => [...gs].sort((a, b) => ((a % LINK_CELLS) % 16) - ((b % LINK_CELLS) % 16));
 const ease = (t: number) => 1 - (1 - t) ** 3;
 
 /** số ngẫu nhiên ổn định theo hạt giống (để hạt không nhảy giữa các khung hình) */
@@ -1023,6 +1031,143 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
           }
           ctx.restore();
           bigText(ctx, '💫 SIÊU TÂN TINH! CHÓI LOÁ + KHIÊN SAO', below, Math.min(36, (W * 1.5) / 34), '#fff3bf', 1 - t * t, 0.8 + ease(Math.min(1, t * 3)) * 0.35);
+        } else if (f.kind === 'board_spin') {
+          // Xoay Chuyển Càn Khôn: vương miện phóng sét xuống 2 bàn, vòng xoáy vàng quấn quanh (bàn tự lật trên canvas bàn chính)
+          if (age < 800) shake = Math.max(shake, 8 * (1 - age / 800));
+          const B = L.board;
+          const mid = center(B);
+          const crown = titanAt(L, [0, -0.58]) ?? bossP;
+          if (age < 600) {
+            const flick = Math.floor(age / 60);
+            bolt(ctx, crown, { x: B.x + B.w * 0.25, y: mid.y }, seed + flick, 3.5, '#ffd43b', 50);
+            bolt(ctx, crown, { x: B.x + B.w * 0.75, y: mid.y }, seed + 9 + flick, 3.5, '#ffd43b', 50);
+          }
+          ctx.save();
+          ctx.translate(mid.x, mid.y);
+          for (let k = 0; k < 3; k++) {
+            ctx.save();
+            ctx.rotate((now / (140 + k * 50)) * (k % 2 ? -1 : 1));
+            ctx.globalAlpha = (1 - t) * 0.85;
+            ctx.strokeStyle = ['#ffd43b', '#74c0fc', '#f783ac'][k];
+            ctx.shadowColor = ctx.strokeStyle;
+            ctx.shadowBlur = 18;
+            ctx.lineWidth = 5 - k;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, B.w * (0.55 + k * 0.05), B.h * (0.6 + k * 0.06), 0, 0, Math.PI * 1.3);
+            ctx.stroke();
+            ctx.restore();
+          }
+          ctx.restore();
+          bigText(ctx, '🌀 XOAY CHUYỂN CÀN KHÔN! BÀN BỊ LẬT', below, Math.min(36, (W * 1.5) / 32), '#ffd43b', 1 - t * t, 0.8 + ease(Math.min(1, t * 3)) * 0.35);
+        } else if (f.kind === 'eye_storm') {
+          // Bão Sét Thiên Nhãn: trời tối sầm, sét giật liên hồi từ 2 mắt xuống từng con thú bị khoá
+          const eyes = [titanAt(L, TITAN_EYES[0]) ?? bossP, titanAt(L, TITAN_EYES[1]) ?? bossP];
+          const myHits = (L.mainId && f.hits?.[L.mainId]) || [];
+          ctx.save();
+          ctx.fillStyle = `rgba(8,10,28,${0.5 * (1 - t)})`;
+          ctx.fillRect(0, 0, W, H);
+          ctx.restore();
+          const flick = Math.floor(age / 55);
+          if (age < 1150) {
+            if (flick % 4 === 0) flash = Math.max(flash, 0.4 * (1 - t));
+            shake = Math.max(shake, 10 * (1 - t));
+            myHits.forEach((g, n) => {
+              if ((flick + n) % 3 === 0) return;
+              bolt(ctx, eyes[g >= LINK_CELLS ? 1 : 0], L.cell(g), seed + n * 29 + flick, 3, n % 2 ? '#ffe066' : '#a5d8ff', 60);
+            });
+            // sét lạc đánh lung tung xuống bàn
+            const r = rand(seed + flick);
+            for (let i = 0; i < 3; i++) {
+              bolt(ctx, eyes[i % 2], { x: L.board.x + r() * L.board.w, y: L.board.y + r() * L.board.h }, seed + flick * 3 + i, 1.8, '#e7f5ff', 70);
+            }
+            let n = 0;
+            for (const [id, cells] of Object.entries(f.hits ?? {})) {
+              if (id === L.mainId || !cells.length) continue;
+              const fr = L.foeRect(id);
+              if (fr && (flick + n) % 2 === 0) bolt(ctx, eyes[n % 2], center(fr), seed + flick + n * 41, 2, '#ffe066', 40);
+              n++;
+            }
+          }
+          myHits.forEach((g, n) => burst(ctx, L.cell(g), Math.min(1, t * 1.5), seed + n * 5, '#ffe066', 10, L.tile, L.tile * 0.1));
+          bigText(ctx, '⚡ BÃO SÉT THIÊN NHÃN! CHOÁNG + KHOÁ ĐIỆN', below, Math.min(36, (W * 1.5) / 36), '#ffe066', 1 - t * t, 0.8 + ease(Math.min(1, t * 3)) * 0.35);
+        } else if (f.kind === 'arm_cannon') {
+          // Song Thủ Pháo Tinh Hà: 2 tay giơ hành tinh nạp năng lượng, rồi mỗi tay bắn 1 tia lửa quét ngang 1 hàng của 1 bàn
+          const hands = [titanAt(L, TITAN_HANDS_FIRE[0]) ?? bossP, titanAt(L, TITAN_HANDS_FIRE[1]) ?? bossP];
+          const myHits = (L.mainId && f.hits?.[L.mainId]) || [];
+          const charge = 380;
+          if (age < charge) {
+            const k = age / charge;
+            ctx.save();
+            for (const hp of hands) {
+              const g = ctx.createRadialGradient(hp.x, hp.y, 1, hp.x, hp.y, 8 + k * 54);
+              g.addColorStop(0, '#ffffff');
+              g.addColorStop(0.4, 'rgba(255,146,43,0.9)');
+              g.addColorStop(1, 'rgba(255,146,43,0)');
+              ctx.fillStyle = g;
+              ctx.beginPath();
+              ctx.arc(hp.x, hp.y, 8 + k * 54, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            ctx.restore();
+          } else {
+            const ft = (age - charge) / (life - charge);
+            if (age < charge + 150) flash = Math.max(flash, 0.45);
+            shake = Math.max(shake, 13 * (1 - ft));
+            const alpha = Math.max(0, 1 - Math.max(0, ft - 0.55) / 0.45);
+            const sweep = Math.min(1, ft * 2.2);
+            ctx.save();
+            ctx.lineCap = 'round';
+            for (const side of [0, 1]) {
+              const pts = byCol(myHits.filter((g) => Math.floor(g / LINK_CELLS) === side)).map((g) => L.cell(g));
+              if (!pts.length) continue;
+              // tay trái quét từ trái sang, tay phải quét từ phải sang
+              const a = side ? pts[pts.length - 1] : pts[0];
+              const b = side ? pts[0] : pts[pts.length - 1];
+              const to = { x: a.x + (b.x - a.x) * sweep, y: a.y + (b.y - a.y) * sweep };
+              // vệt cháy dọc phần hàng đã quét
+              ctx.globalAlpha = alpha * 0.55;
+              ctx.strokeStyle = '#ff6b2c';
+              ctx.shadowColor = '#ff922b';
+              ctx.shadowBlur = 20;
+              ctx.lineWidth = L.tile * 0.55;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(to.x, to.y);
+              ctx.stroke();
+              const wob = Math.sin(now / 25 + side) * 2;
+              for (const [w, col] of [[30, 'rgba(255,146,43,0.4)'], [15, '#ff922b'], [5, '#ffffff']] as const) {
+                ctx.globalAlpha = alpha;
+                ctx.strokeStyle = col;
+                ctx.lineWidth = w + wob;
+                ctx.beginPath();
+                ctx.moveTo(hands[side].x, hands[side].y);
+                ctx.lineTo(to.x, to.y);
+                ctx.stroke();
+              }
+              pts.forEach((p, n) => {
+                const passed = Math.hypot(p.x - a.x, p.y - a.y) <= Math.hypot(to.x - a.x, to.y - a.y) + 1;
+                if (passed) burst(ctx, p, Math.min(1, ft * 1.5), seed + n * 11 + side * 97, '#ff922b', 8, L.tile * 0.9, L.tile * 0.09);
+              });
+            }
+            let n = 0;
+            for (const [id, cells] of Object.entries(f.hits ?? {})) {
+              if (id === L.mainId || !cells.length) continue;
+              const fr = L.foeRect(id);
+              if (fr && ft < 0.6) {
+                ctx.globalAlpha = 1 - ft / 0.6;
+                ctx.strokeStyle = '#ff922b';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(hands[n % 2].x, hands[n % 2].y);
+                const c0 = center(fr);
+                ctx.lineTo(c0.x, c0.y);
+                ctx.stroke();
+              }
+              n++;
+            }
+            ctx.restore();
+          }
+          bigText(ctx, '🪐 SONG THỦ PHÁO TINH HÀ!', below, Math.min(38, (W * 1.5) / 24), '#ff922b', 1 - t * t, 0.8 + ease(Math.min(1, t * 3)) * 0.35);
         } else if (f.kind === 'judgment') {
           // Song Tuyệt Hủy Diệt: 2 Boss Co-op cùng phóng đại tuyệt kỹ giao thoa nổ tung bàn chơi
           if (age < 220) flash = Math.max(flash, 0.75 * (1 - age / 220));
@@ -1284,9 +1429,11 @@ export function drawBoss(
   hitAge: number,
   dead: boolean,
   shielded = false,
+  /** chiêu Boss vừa ra (để Boss diễn theo: giơ tay, mắt toé sét…) */
+  cast?: { kind: string; age: number },
 ) {
   if (id === 'titan') {
-    drawTitan(ctx, cx, cy + size * 0.19, size * 0.78, now, phase, hitAge, dead, shielded);
+    drawTitan(ctx, cx, cy + size * 0.19, size * 0.78, now, phase, hitAge, dead, shielded, cast);
     return;
   }
   if (id === 'overlord') {

@@ -85,6 +85,10 @@ export const LINK_BOSS_APOCALYPSE = { perKind: 2, ms: 4000, thunder: 15 } as con
 export const LINK_BOSS_TWIN_LASER = { cells: [2, 3, 4] as const, ms: 4000 } as const;
 /** Cự Thần – Mưa Sao Băng Thiên Hà: thiêu cháy nhiều ô trên cả 2 bàn */
 export const LINK_BOSS_METEOR_RAIN = { cells: 8, ms: 4500 } as const;
+/** Cự Thần – Bão Sét Thiên Nhãn: sét từ 2 mắt giáng xuống, mỗi bàn khoá điện 3 / 4 / 5 ô + choáng ngắn */
+export const LINK_BOSS_EYE_STORM = { cells: [3, 4, 5] as const, ms: 4000, stunMs: 700 } as const;
+/** Cự Thần – Song Thủ Pháo Tinh Hà: 2 tay giơ hành tinh bắn tia quét ngang 1 hàng trên mỗi bàn */
+export const LINK_BOSS_ARM_CANNON = { cells: 6, ms: 4000 } as const;
 /** Cự Thần – Siêu Tân Tinh: chói loá che bàn + dựng khiên */
 export const LINK_BOSS_SUPERNOVA = { darkMs: 2500, shield: 0.02 } as const;
 /** Đảo Bàn (chiêu người chơi): tự đảo bàn mình, hồi chiêu 1 phút (đầu trận cũng phải chờ 1 phút) */
@@ -97,7 +101,8 @@ export type LinkBossSkill =
   | 'meteor' | 'quake' | 'shield' | 'roar'
   | 'blackhole' | 'hellfire' | 'soul_chain' | 'nirvana' | 'eclipse' | 'judgment'
   | 'vortex' | 'eye_laser' | 'apocalypse'
-  | 'twin_laser' | 'meteor_rain' | 'gravity' | 'supernova';
+  | 'twin_laser' | 'meteor_rain' | 'gravity' | 'supernova'
+  | 'board_spin' | 'eye_storm' | 'arm_cannon';
 /** Loại ô bị khoá: 0 băng, 1 tơ nhện, 2 lửa, 3 điện giật, 4 ấn hư không, 5 choáng laze (Trùm Cuối) */
 export type LinkLock = 0 | 1 | 2 | 3 | 4 | 5;
 
@@ -189,7 +194,7 @@ export const LINK_BOSSES: readonly LinkBossDef[] = [
     barShield: 0.01,
     raidS: LINK_TITAN_RAID_S,
     hpMul: 10,
-    skills: ['twin_laser', 'meteor_rain', 'vortex', 'gravity', 'bolt', 'twin_laser', 'supernova', 'blackhole', 'apocalypse', 'roar', 'gravity', 'meteor_rain'],
+    skills: ['twin_laser', 'board_spin', 'eye_storm', 'arm_cannon', 'meteor_rain', 'gravity', 'twin_laser', 'supernova', 'board_spin', 'eye_storm', 'arm_cannon', 'vortex', 'blackhole', 'apocalypse', 'roar'],
     skillS: [12, 10, 8],
   },
 ];
@@ -202,6 +207,7 @@ export const LINK_BOSS_SKILL_NAME: Record<LinkBossSkill, string> = {
   eclipse: 'Nhật Thực Vĩnh Cửu', judgment: 'Song Tuyệt Hủy Diệt',
   vortex: 'Lốc Xoáy Hỗn Nguyên', eye_laser: 'Ma Nhãn Laze', apocalypse: 'Tận Thế Tứ Linh',
   twin_laser: 'Song Nhãn Diệt Thế', meteor_rain: 'Mưa Sao Băng Thiên Hà', gravity: 'Trọng Lực Đảo Chiều', supernova: 'Siêu Tân Tinh',
+  board_spin: 'Xoay Chuyển Càn Khôn', eye_storm: 'Bão Sét Thiên Nhãn', arm_cannon: 'Song Thủ Pháo Tinh Hà',
 };
 /** Máu của Boss thứ `no` (0, 1, 2) theo số người */
 export const linkBossMaxHp = (no: number, players: number) => Math.round(linkBossHp(players) * (LINK_BOSSES[no]?.hpMul ?? 1));
@@ -321,8 +327,8 @@ export type LinkFx =
   | { k: 'skill'; from: string; to: string; kind: LinkSkill }
   /** to: người bị nhắm riêng (Kén Tơ) */
   /** hits: ô bị trúng trên bàn từng người (Ma Nhãn Laze) */
-  /** bar: vỡ 1 thanh máu (left = số thanh còn lại) */
-  | { k: 'boss'; boss: LinkBossId; kind: LinkBossSkill | 'rage' | 'bar'; phase: number; to?: string; hits?: Record<string, number[]>; left?: number }
+  /** bar: vỡ 1 thanh máu (left = số thanh còn lại); spin: kiểu lật từng bàn của mỗi người (1 ngang, 2 dọc, 3 xoay 180°) */
+  | { k: 'boss'; boss: LinkBossId; kind: LinkBossSkill | 'rage' | 'bar'; phase: number; to?: string; hits?: Record<string, number[]>; left?: number; spin?: Record<string, number[]> }
   | { k: 'shuffle'; who: string }
   | { k: 'clear'; who: string }
   | { k: 'ko'; who: string }

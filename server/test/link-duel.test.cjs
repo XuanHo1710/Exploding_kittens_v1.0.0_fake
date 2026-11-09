@@ -709,6 +709,37 @@ test('Trùm Cuối – Cự Thần Thiên Hà: 2 bàn trái + phải, sát thư�
   assert.equal(p1.board, right);
   assert.equal(p1.board2, left);
 
+  // Xoay Chuyển Càn Khôn: mỗi bàn bị lật (1 ngang / 2 dọc / 3 xoay 180°), thú và ô khoá đi theo
+  const before0 = [...p0.board.cells];
+  const before1 = [...p0.board2.cells];
+  const spinFx = untilSkill(d, 'board_spin');
+  assert.equal(spinFx.spin.p0.length, 2);
+  const flipIdx = (i, m) => {
+    const x = i % LINK_W, y = Math.floor(i / LINK_W);
+    return (m & 2 ? LINK_H - 1 - y : y) * LINK_W + (m & 1 ? LINK_W - 1 - x : x);
+  };
+  const [m0, m1] = spinFx.spin.p0;
+  // giữa 2 lần lấy mẫu Boss có thể ra chiêu khác, nên chỉ so khi bàn chưa bị nối/đổi
+  if (p0.board.remaining() === before0.filter((k) => k >= 0).length) for (let i = 0; i < LINK_CELLS; i++) assert.equal(p0.board.cells[flipIdx(i, m0)], before0[i]);
+  if (p0.board2.remaining() === before1.filter((k) => k >= 0).length) assert.ok([1, 2, 3].includes(m1));
+
+  // Bão Sét Thiên Nhãn: khoá điện trên cả 2 bàn + choáng
+  p0.board.clearLocks();
+  p0.board2.clearLocks();
+  const storm = untilSkill(d, 'eye_storm');
+  assert.ok(storm.hits.p0.some((g) => g < LINK_CELLS) && storm.hits.p0.some((g) => g >= LINK_CELLS));
+  assert.ok(lockKinds(p0, d).includes(3));
+  assert.ok(d.stateFor('p0', { fx: [], seq: 0 }).me.stun > 0);
+
+  // Song Thủ Pháo Tinh Hà: mỗi bàn bị bắn 1 hàng (các ô trúng cùng 1 hàng, khoá lửa)
+  p0.board.clearLocks();
+  p0.board2.clearLocks();
+  const cannon = untilSkill(d, 'arm_cannon');
+  for (const side of [0, 1]) {
+    const rows = new Set(cannon.hits.p0.filter((g) => Math.floor(g / LINK_CELLS) === side).map((g) => Math.floor((g % LINK_CELLS) / LINK_W)));
+    assert.equal(rows.size, 1, 'tia quét đúng 1 hàng mỗi bàn');
+  }
+
   // vỡ 1 thanh máu (10%): dựng khiên, báo fx 'bar' còn 9 thanh
   d.boss.shield = 0;
   d.boss.hp = d.boss.maxHp;
@@ -725,6 +756,25 @@ test('Trùm Cuối – Cự Thần Thiên Hà: 2 bàn trái + phải, sát thư�
   d['hitBoss'](p1, 1);
   assert.equal(d.stage, 'ended');
   assert.equal(d.result.bossesDown, S.LINK_BOSSES.length);
+});
+
+test('LinkBoard.flip: lật ngang / dọc / 180° giữ nguyên số thú, ô khoá đi theo, lật 2 lần là về như cũ', () => {
+  const b = LinkBoard.generate(4242);
+  b.freeze(5, 3000, 0, 3);
+  const cells = [...b.cells];
+  const locked = [...b.ice.keys()].map((i) => [i, b.cells[i]]);
+  for (const m of [1, 2, 3]) {
+    b.flip(m);
+    assert.equal(b.remaining(), cells.filter((k) => k >= 0).length);
+    for (const [i, k] of locked) {
+      const x = i % LINK_W, y = Math.floor(i / LINK_W);
+      const j = (m & 2 ? LINK_H - 1 - y : y) * LINK_W + (m & 1 ? LINK_W - 1 - x : x);
+      assert.equal(b.cells[j], k);
+      assert.equal(b.lockKind.get(j), 3);
+    }
+    b.flip(m);
+    assert.deepEqual([...b.cells], cells);
+  }
 });
 
 test('không còn chiêu nào (Boss hay người) đảo bàn người khác', () => {

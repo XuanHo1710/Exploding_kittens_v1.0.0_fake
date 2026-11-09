@@ -3,7 +3,8 @@
  *  - thân và đầu là bầu trời sao, giáp vai viền vàng khắc ngữ phát sáng
  *  - sừng là 2 vầng trăng lưỡi liềm, vương miện có 3 hành tinh bay quanh
  *  - 2 mắt khổng lồ (bắn Song Nhãn Diệt Thế), lõi ngực là hố đen có đĩa bồi tụ
- *  - 2 bàn tay nâng 2 hành tinh, thiên hà xoắn ốc xoay sau lưng
+ *  - 2 cánh tay giáp nâng 2 hành tinh (giơ lên bắn Song Thủ Pháo), thiên hà xoắn ốc xoay sau lưng
+ *  - đang ra chiêu thì diễn theo: giơ tay nạp pháo, mắt toé sét (Bão Sét), vương miện quay cuồng (Xoay Càn Khôn)
  */
 
 type Phase = 1 | 2 | 3;
@@ -39,6 +40,34 @@ function stars(ctx: CanvasRenderingContext2D, s: number, now: number, n: number,
     ctx.fill();
   }
   ctx.globalAlpha = 1;
+}
+
+/** tia sét lởm chởm từ (x0, y0) tới (x1, y1) */
+function crackle(ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number, seed: number, w: number, color: string) {
+  const r = rnd(seed);
+  const n = 6;
+  const dx = x1 - x0, dy = y1 - y0;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len, ny = dx / len;
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.shadowColor = color;
+  ctx.shadowBlur = w * 6;
+  for (const [lw, col] of [[w * 2.4, color], [w * 0.9, '#ffffff']] as const) {
+    ctx.strokeStyle = col;
+    ctx.lineWidth = lw;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    for (let i = 1; i < n; i++) {
+      const t = i / n;
+      const off = (r() - 0.5) * len * 0.45 * Math.sin(Math.PI * t);
+      ctx.lineTo(x0 + dx * t + nx * off, y0 + dy * t + ny * off);
+    }
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 /** thiên hà xoắn ốc sau lưng */
@@ -126,9 +155,20 @@ export function drawTitan(
   hitAge: number,
   dead: boolean,
   shielded: boolean,
+  cast?: { kind: string; age: number },
 ) {
   const c = TI_COLORS[phase - 1];
   const s = size;
+  /** mức "diễn" chiêu 0..1: lên nhanh, giữ, rồi hạ dần */
+  const act = (kind: string, hold = 1300) => {
+    if (dead || !cast || cast.kind !== kind) return 0;
+    const a = cast.age;
+    return a < 300 ? Math.sin((a / 300) * (Math.PI / 2)) : a < hold ? 1 : Math.max(0, 1 - (a - hold) / 300);
+  };
+  const raise = act('arm_cannon');
+  const storm = act('eye_storm', 1200);
+  const spinning = act('board_spin', 1000);
+  const lasering = Math.max(act('twin_laser', 900), storm);
   const breathe = Math.sin(now / 900) * s * 0.012;
   const recoil = hitAge < 180 ? (1 - hitAge / 180) * s * 0.035 : 0;
   ctx.save();
@@ -166,6 +206,46 @@ export function drawTitan(
   ctx.stroke();
   ctx.restore();
 
+  // 2 cánh tay giáp: từ vai vòng ra ngoài rồi lên tới cổ tay (giơ cao khi bắn Song Thủ Pháo)
+  for (const side of [-1, 1]) {
+    const hx = side * s * (0.98 - 0.08 * raise);
+    const hy = s * 0.05 + Math.sin(now / 700 + side) * s * 0.03 * (1 - raise) - raise * s * 0.3;
+    const sx = side * s * 0.66, sy = s * 0.22;
+    const ex = side * s * (1.08 - 0.05 * raise), ey = s * (0.42 - 0.12 * raise);
+    const wx = hx, wy = hy + s * 0.12;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = c.trim;
+    ctx.shadowBlur = s * 0.03;
+    ctx.strokeStyle = c.trim;
+    ctx.lineWidth = s * 0.135;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.quadraticCurveTo(ex, ey, wx, wy);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    const ag = ctx.createLinearGradient(sx, sy, wx, wy);
+    ag.addColorStop(0, c.deep);
+    ag.addColorStop(1, c.body);
+    ctx.strokeStyle = ag;
+    ctx.lineWidth = s * 0.11;
+    ctx.stroke();
+    // vòng ngữ phát sáng trên bắp tay + cẳng tay
+    for (const t of [0.35, 0.72]) {
+      const bx = (1 - t) * (1 - t) * sx + 2 * (1 - t) * t * ex + t * t * wx;
+      const by = (1 - t) * (1 - t) * sy + 2 * (1 - t) * t * ey + t * t * wy;
+      ctx.fillStyle = c.glow;
+      ctx.shadowColor = c.glow;
+      ctx.shadowBlur = s * (0.04 + raise * 0.06);
+      ctx.globalAlpha = 0.6 + Math.sin(now / 200 + t * 9) * 0.3 + raise * 0.3;
+      ctx.beginPath();
+      ctx.arc(bx, by, s * 0.022, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
   // giáp vai khắc ngữ
   for (const side of [-1, 1]) {
     ctx.save();
@@ -200,7 +280,8 @@ export function drawTitan(
 
   // 2 bàn tay nâng hành tinh
   for (const side of [-1, 1]) {
-    const hx = side * s * 0.98, hy = s * 0.05 + Math.sin(now / 700 + side) * s * 0.03;
+    const hx = side * s * (0.98 - 0.08 * raise);
+    const hy = s * 0.05 + Math.sin(now / 700 + side) * s * 0.03 * (1 - raise) - raise * s * 0.3;
     ctx.save();
     ctx.fillStyle = c.body;
     ctx.strokeStyle = c.trim;
@@ -216,13 +297,23 @@ export function drawTitan(
       ctx.fill();
       ctx.stroke();
     }
-    const pg = ctx.createRadialGradient(hx, hy - s * 0.06, 0, hx, hy - s * 0.06, s * 0.2);
-    pg.addColorStop(0, `${c.glow}aa`);
+    const glowR = s * (0.2 + raise * 0.22 * (0.85 + Math.sin(now / 60) * 0.15));
+    const pg = ctx.createRadialGradient(hx, hy - s * 0.06, 0, hx, hy - s * 0.06, glowR);
+    pg.addColorStop(0, raise > 0.5 ? '#ffffffee' : `${c.glow}aa`);
+    pg.addColorStop(0.35, `${c.glow}aa`);
     pg.addColorStop(1, `${c.glow}00`);
     ctx.fillStyle = pg;
     ctx.beginPath();
-    ctx.arc(hx, hy - s * 0.06, s * 0.2, 0, Math.PI * 2);
+    ctx.arc(hx, hy - s * 0.06, glowR, 0, Math.PI * 2);
     ctx.fill();
+    if (raise > 0.3) {
+      // năng lượng hút vào hành tinh trước khi bắn
+      const r = rnd(Math.floor(now / 70) + side * 99);
+      for (let k = 0; k < 4; k++) {
+        const a = r() * Math.PI * 2;
+        crackle(ctx, hx + Math.cos(a) * s * 0.28, hy - s * 0.06 + Math.sin(a) * s * 0.2, hx, hy - s * 0.06, Math.floor(now / 70) * 7 + k + side * 13, s * 0.006, c.glow);
+      }
+    }
     planet(ctx, hx, hy - s * 0.06, s * 0.075, side < 0 ? '#4dabf7' : '#ff922b', side > 0);
     ctx.restore();
   }
@@ -269,7 +360,7 @@ export function drawTitan(
     ['#ff8787', false],
   ] as const;
   orbit.forEach(([col, ring], i) => {
-    const a = now / 1200 + (i / 3) * Math.PI * 2;
+    const a = now / (1200 - spinning * 1050) + (i / 3) * Math.PI * 2;
     const behind = Math.sin(a) < 0;
     ctx.globalAlpha = behind ? 0.5 : 1;
     planet(ctx, Math.cos(a) * s * 0.32, Math.sin(a) * s * 0.07, s * (behind ? 0.025 : 0.035), col, ring);
@@ -278,18 +369,19 @@ export function drawTitan(
   ctx.restore();
 
   // 2 mắt khổng lồ
-  const charge = 0.6 + Math.sin(now / (200 - phase * 40)) * 0.4;
+  const charge = Math.max(0.6 + Math.sin(now / (200 - phase * 40)) * 0.4, lasering);
   for (const side of [-1, 1]) {
     ctx.save();
     ctx.translate(side * s * 0.1, -s * 0.28);
     ctx.rotate(side * 0.18);
-    const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, s * 0.12);
-    halo.addColorStop(0, `${c.eye}`);
+    const haloR = s * (0.12 + lasering * 0.1);
+    const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, haloR);
+    halo.addColorStop(0, storm > 0 ? '#ffffff' : `${c.eye}`);
     halo.addColorStop(1, `${c.eye}00`);
     ctx.globalAlpha = charge;
     ctx.fillStyle = halo;
     ctx.beginPath();
-    ctx.arc(0, 0, s * 0.12, 0, Math.PI * 2);
+    ctx.arc(0, 0, haloR, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
     ctx.shadowColor = c.eye;
@@ -305,6 +397,20 @@ export function drawTitan(
     ctx.arc(side * s * 0.008, -s * 0.004, s * 0.02, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
+  }
+  // Bão Sét Thiên Nhãn: sét toé ra từ 2 mắt, nối lên 2 sừng trăng
+  if (storm > 0.05) {
+    const tick = Math.floor(now / 60);
+    const r = rnd(tick);
+    for (const side of [-1, 1]) {
+      const ex = side * s * 0.1, ey = -s * 0.28;
+      for (let k = 0; k < 4; k++) {
+        const a = r() * Math.PI * 2;
+        const d = s * (0.18 + r() * 0.3) * storm;
+        crackle(ctx, ex, ey, ex + Math.cos(a) * d, ey + Math.sin(a) * d * 0.8, tick * 13 + k + side * 7, s * 0.007, '#ffe066');
+      }
+      crackle(ctx, ex, ey, side * s * 0.33, -s * 0.72, tick * 17 + side, s * 0.008, '#a5d8ff');
+    }
   }
   // mày giận dữ
   ctx.save();
@@ -453,6 +559,12 @@ export function drawTitan(
   }
   ctx.restore();
 }
+
+/** Toạ độ 2 hành tinh trên tay lúc giơ cao bắn Song Thủ Pháo (tương đối tâm vẽ, theo size) */
+export const TITAN_HANDS_FIRE = [
+  [-0.9, -0.31],
+  [0.9, -0.31],
+] as const;
 
 /** Toạ độ 2 mắt (tương đối tâm vẽ, theo size) để laze bắn ra đúng chỗ */
 export const TITAN_EYES = [

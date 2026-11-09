@@ -405,6 +405,31 @@ function bossSkill(kind: LinkBossSkill) {
       rumble(0.8, 0.3, 0.2);
       vibrate([80, 40, 80]);
       break;
+    case 'board_spin':
+      // Xoay Chuyển Càn Khôn: tiếng quay vù vù tăng tốc + gió cuốn + chuông vàng
+      tone(120, 0.9, { type: 'sawtooth', gain: 0.05, slide: 5, lowpass: 2500, vib: [14, 40], attack: 0.1 });
+      whoosh(0.9, 0, 0.2);
+      for (let i = 0; i < 8; i++) noise(0.04, { type: 'bandpass', freq: 900 + i * 250, q: 3, gain: 0.08, delay: i * 0.09 });
+      clang(0.85, 0.09);
+      vibrate([40, 30, 40, 30, 120]);
+      break;
+    case 'eye_storm':
+      // Bão Sét Thiên Nhãn: sét giật liên hồi + 3 tiếng sấm nổ nối nhau
+      for (let i = 0; i < 4; i++) zap(i * 0.2, 0.11);
+      thunderClap(0, 0.3, 1.4);
+      thunderClap(0.35, 0.26, 1.4);
+      thunderClap(0.75, 0.3, 2);
+      break;
+    case 'arm_cannon':
+      // Song Thủ Pháo: 2 hành tinh nạp năng lượng rít lên, rồi 2 tia pháo gầm quét ngang + nổ
+      tone(200, 0.4, { type: 'sawtooth', gain: 0.05, slide: 5, lowpass: 4000, attack: 0.3 });
+      tone(260, 0.4, { type: 'sawtooth', gain: 0.04, slide: 5, lowpass: 4000, attack: 0.3, delay: 0.02 });
+      tone(90, 0.9, { type: 'sawtooth', gain: 0.09, slide: 0.6, lowpass: 900, delay: 0.38, vib: [30, 10] });
+      noise(0.9, { type: 'bandpass', freq: 600, sweep: 3, q: 0.8, gain: 0.28, delay: 0.38 });
+      boom(0.45, 0.3);
+      boom(0.8, 0.22);
+      vibrate([30, 20, 200]);
+      break;
     case 'supernova':
       // Siêu Tân Tinh: rít lên chói tai rồi nổ trắng + ngân vang
       tone(200, 0.6, { type: 'sawtooth', gain: 0.05, slide: 12, lowpass: 8000, attack: 0.4 });
