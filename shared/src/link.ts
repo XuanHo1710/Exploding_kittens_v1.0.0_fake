@@ -14,10 +14,12 @@ export const LINK_MAX_TURNS = 2;
 
 export const LINK_STAGE1_S = 150;
 /**
- * Đồng hồ chung cho các màn đánh Boss (không tính lúc nghỉ giữa 2 Boss): Boss trước gục thì Boss sau ra ngay,
- * hạ nhanh thì dư giờ cho Boss sau. Hết giờ mà chưa hạ hết thì trận kết thúc.
+ * Đồng hồ chung cho 3 Boss đầu (không tính lúc nghỉ giữa 2 Boss): Boss trước gục thì Boss sau ra ngay,
+ * hạ nhanh thì dư giờ cho Boss sau. Riêng Màn Boss 4 (Co-op 2 Boss Siêu Khó) được cấp mới trọn 6 phút (LINK_COOP_RAID_S).
  */
-export const LINK_RAID_S = 480;
+export const LINK_RAID_S = 360;
+/** Thời gian riêng cho Màn Boss 4 (2 Boss Co-op Siêu Khó): 6 phút (360 giây) */
+export const LINK_COOP_RAID_S = 360;
 export const LINK_INTERMISSION_S = 5;
 /** Nối cặp kế tiếp trong vòng 3 giây thì tính combo */
 export const LINK_COMBO_WINDOW_S = 3;
@@ -106,6 +108,8 @@ export interface LinkBossDef {
   /** màn Co-op 2 Boss xuất hiện cùng lúc */
   coop?: boolean;
   partners?: readonly [LinkCoopPartner, LinkCoopPartner];
+  /** thời gian riêng (giây) được cấp mới khi bước vào màn Boss này */
+  raidS?: number;
 }
 
 /** Các màn Boss đánh lần lượt (màn cuối là 2 Boss Co-op Siêu Khó: Hắc Long Hư Không & Phượng Hoàng Hỗn Mang) */
@@ -122,6 +126,7 @@ export const LINK_BOSSES: readonly LinkBossDef[] = [
     emoji: '🐉🔥',
     coop: true,
     partners: LINK_COOP_PARTNERS,
+    raidS: LINK_COOP_RAID_S,
     hpMul: 2.0,
     skills: ['blackhole', 'hellfire', 'soul_chain', 'nirvana', 'eclipse', 'judgment'],
     skillS: [8, 6, 4],

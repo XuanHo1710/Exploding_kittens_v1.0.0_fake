@@ -554,12 +554,15 @@ test('Màn Boss 4 – 2 Boss Co-op Siêu Khó (Hắc Long Hư Không & Phượng
     ['blackhole', 'hellfire', 'soul_chain', 'nirvana', 'eclipse', 'judgment'],
   );
 
-  // Hạ tuần tự Màn 1 Boss → Màn 2 Boss → Màn 3 Boss để sang Màn 4 Co-op 2 Boss
+  // Hạ tuần tự Màn 1 Boss → Màn 2 Boss → Màn 3 Boss để sang Màn 4 Co-op 2 Boss (được cấp mới trọn 6 phút = 360s)
+  steps(d, 50_000);
   toBoss(d, 3);
   assert.equal(d.stage, 'stage2');
   assert.equal(d.boss.id, 'twins');
   assert.equal(d.boss.no, 3);
   assert.equal(d.boss.maxHp, S.linkBossMaxHp(3, 2));
+  assert.equal(d.stageEndsAt - d.t, S.LINK_COOP_RAID_S * 1000, 'Màn Boss 4 được cấp mới trọn 6 phút (360 giây)');
+  assert.equal(S.LINK_COOP_RAID_S, 360);
   p0.thunder = 50;
 
   // 1. blackhole: khoá 8 ô Ấn Hư Không (loại 4) + trừ 20 Sấm
@@ -657,7 +660,7 @@ test('máy (Khó) tự chơi trọn trận và không bao giờ nối sai', () =
     if (id === 'p1' && e) botErrors.push(e);
     return e;
   };
-  const all = S.LINK_STAGE1_S + S.LINK_RAID_S + 3 * S.LINK_INTERMISSION_S + 10;
+  const all = S.LINK_STAGE1_S + S.LINK_RAID_S + S.LINK_COOP_RAID_S + 4 * S.LINK_INTERMISSION_S + 10;
   for (let x = 0; x < all * 1000 && d.stage !== 'ended'; x += 250) d.tick(250);
   assert.ok(p1.score1 > 0, 'máy có điểm Màn 1');
   assert.ok(p1.damage > 0, 'máy có đánh boss');

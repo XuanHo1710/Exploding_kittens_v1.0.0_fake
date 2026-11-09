@@ -376,6 +376,7 @@ export class LinkDuel {
   private beginStage2() {
     const no = this.nextBossNo;
     const def = LINK_BOSSES[no];
+    if (def.raidS) this.raidLeft = def.raidS * 1000;
     this.stage = 'stage2';
     this.stageEndsAt = this.t + this.raidLeft;
     const hp = linkBossMaxHp(no, this.players.length);
@@ -424,9 +425,10 @@ export class LinkDuel {
         this.finish(`${p.name} hạ gục ${boss.def.name} – cả phòng phá đảo!`);
         return;
       }
-      // Boss kế xuất hiện sau màn nghỉ; đồng hồ đánh Boss dừng trong lúc nghỉ
+      // Boss kế xuất hiện sau màn nghỉ; đồng hồ đánh Boss dừng trong lúc nghỉ (riêng Màn Boss 4 có thời gian riêng 6 phút)
       this.nextBossNo = boss.no + 1;
-      this.raidLeft = Math.max(0, this.stageEndsAt - this.t);
+      const nextDef = LINK_BOSSES[this.nextBossNo];
+      this.raidLeft = nextDef?.raidS ? nextDef.raidS * 1000 : Math.max(0, this.stageEndsAt - this.t);
       this.stage = 'intermission';
       this.stageEndsAt = this.t + LINK_INTERMISSION_S * 1000;
       for (const x of this.players) x.chain = 0;

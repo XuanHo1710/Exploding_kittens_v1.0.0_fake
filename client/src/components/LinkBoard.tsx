@@ -625,8 +625,10 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
             </p>
             <p className="muted small">
               {betweenBosses
-                ? `Boss ${bossNo + 2}/${LINK_BOSSES.length} · còn ${fmtTime(boss?.raidLeft ?? 0)} cho các Boss còn lại. Giữ nguyên Sấm, bàn mới cho mọi người.`
-                : `Liên hoàn ${LINK_BOSSES.length} Boss trong ${LINK_RAID_S / 60} phút: Boss trước gục thì Boss sau ra. Người dẫn trước được 50% Sấm!`}
+                ? nextBoss?.raidS
+                  ? `Boss ${bossNo + 2}/${LINK_BOSSES.length} (Co-op 2 Boss Siêu Khó) được cấp mới ${nextBoss.raidS / 60} phút (${fmtTime(boss?.raidLeft ?? nextBoss.raidS * 1000)})! Giữ nguyên Sấm, bàn mới cho mọi người.`
+                  : `Boss ${bossNo + 2}/${LINK_BOSSES.length} · còn ${fmtTime(boss?.raidLeft ?? 0)} cho các Boss còn lại. Giữ nguyên Sấm, bàn mới cho mọi người.`
+                : `3 Boss đầu dùng chung ${LINK_RAID_S / 60} phút, riêng Màn 4 (2 Boss Co-op) có thêm 6 phút. Người dẫn trước được 50% Sấm!`}
             </p>
           </div>
         </div>

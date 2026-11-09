@@ -311,11 +311,11 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                   <li>2–{LINK_MAX_PLAYERS} người (2 người là solo 1v1). Nối 2 ô <b>cùng con thú</b> bằng đường gấp khúc <b>tối đa 2 lần</b> (được vòng ra ngoài mép bàn). Bàn 16×9, mọi người cùng một đề.</li>
                   <li><b>Màn 1 – Đua Nối ({LINK_STAGE1_S} giây):</b> nối liên tiếp được combo, nạp ⚡ Sấm. Đầy Sấm tung <b>❄️ Đóng Băng</b> hoặc <b>🌫️ Mây Mù</b> (che bàn {LINK_FOG_MS / 1000} giây) – mặc định vào <b>người dẫn đầu</b>, bấm vào bàn nhỏ của ai thì nhắm người đó. Dọn sạch bàn trước được thưởng lớn.</li>
                   <li>
-                    <b>Liên hoàn {LINK_BOSSES.length} Màn Boss (Màn 1 → 2 → 3 → Màn 4 Co-op 2 Boss Siêu Khó):</b> cả phòng cùng đánh, mỗi cặp là một cú đấm, Sấm đầy tung <b>⚡ Siêu Đấm</b>. Boss trước hết máu thì Boss sau tự xuất hiện. Dùng chung <b>{LINK_RAID_S / 60} phút</b> (hạ nhanh thì dư giờ cho Boss sau); hết giờ thì trận kết thúc.
+                    <b>Liên hoàn {LINK_BOSSES.length} Màn Boss (Màn 1 → 2 → 3 → Màn 4 Co-op 2 Boss Siêu Khó):</b> cả phòng cùng đánh, mỗi cặp là một cú đấm, Sấm đầy tung <b>⚡ Siêu Đấm</b>. 3 Boss đầu dùng chung <b>{LINK_RAID_S / 60} phút</b> (hạ nhanh thì dư giờ cho Boss sau); riêng <b>Màn Boss 4 (Co-op 2 Boss)</b> được cấp mới <b>6 phút</b> riêng!
                     <ul>
                       {LINK_BOSSES.map((b, i) => (
                         <li key={b.id}>
-                          {b.emoji} <b>{b.name}</b>{b.coop && b.partners ? <> (<b>Co-op 2 Boss:</b> {b.partners[0].emoji} {b.partners[0].name} × {b.partners[1].emoji} {b.partners[1].name})</> : null} – {linkBossMaxHp(i, online + linkBots)} máu – {b.skills.length} chiêu: {b.skills.map((k) => LINK_BOSS_SKILL_NAME[k]).join(' · ')}
+                          {b.emoji} <b>{b.name}</b>{b.coop && b.partners ? <> (<b>Co-op 2 Boss · 6 phút riêng:</b> {b.partners[0].emoji} {b.partners[0].name} × {b.partners[1].emoji} {b.partners[1].name})</> : null} – {linkBossMaxHp(i, online + linkBots)} máu – {b.skills.length} chiêu: {b.skills.map((k) => LINK_BOSS_SKILL_NAME[k]).join(' · ')}
                         </li>
                       ))}
                     </ul>
