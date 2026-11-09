@@ -302,6 +302,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return this.handle(c, (me) => this.rooms.setLinkConfig(me.playerId, body?.config));
   }
 
+  // --- Lô Tô Cân Đồ ---
+  @SubscribeMessage('loto:pick')
+  lotoPick(@ConnectedSocket() c: Socket, @MessageBody() body: { sheets: unknown }) {
+    return this.handle(c, (me) => this.rooms.setLotoPick(me.playerId, body?.sheets));
+  }
+
   private game(me: SocketData) {
     const game = this.rooms.roomOf(me.playerId);
     if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');

@@ -118,6 +118,19 @@ test('bulk game charge checks the whole table before debiting anyone', async () 
   assert.equal(accounts.get('player-001').games, 0);
 });
 
+test('per-player stakes (Lô Tô: 1 tờ 50, 2 tờ 100) charge and refund each account its own amount', async () => {
+  const { accounts } = await fixture();
+  await register(accounts);
+  await register(accounts, 'player-002', 'Mèo Hai');
+  await accounts.chargeGame(['player-001', 'player-002'], { 'player-001': 50, 'player-002': 100 }, 'charge:loto');
+  assert.equal(accounts.get('player-001').coins, 950);
+  assert.equal(accounts.get('player-002').coins, 900);
+  await accounts.refundGame(['player-001', 'player-002'], { 'player-001': 50, 'player-002': 100 }, 'refund:loto', 'charge:loto');
+  assert.equal(accounts.get('player-001').coins, 1000);
+  assert.equal(accounts.get('player-002').coins, 1000);
+  await assert.rejects(accounts.chargeGame(['player-001'], { 'player-001': -5 }));
+});
+
 test('charge, compensation and winner reward persist all balances and statistics', async () => {
   const { accounts, store } = await fixture();
   await register(accounts);

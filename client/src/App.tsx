@@ -18,6 +18,7 @@ import AntsBoard from './components/AntsBoard';
 import { antsStore } from './ants/store';
 import { linkStore } from './link/store';
 import LinkBoard from './components/LinkBoard';
+import LotoBoard from './components/LotoBoard';
 import Rules from './components/Rules';
 import Modal from './components/Modal';
 import { CardPreviewLayer } from './components/CardPreview';
@@ -215,6 +216,8 @@ export default function App() {
             <AntsBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'link_duel' && view.link ? (
             <LinkBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
+          ) : view.gameMode === 'loto' && view.loto ? (
+            <LotoBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'blackjack_21' ? (
             <BlackjackBoard
               view={view}

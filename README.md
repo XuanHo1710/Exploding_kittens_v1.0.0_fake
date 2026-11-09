@@ -83,6 +83,14 @@ Chủ phòng chỉnh số máy, độ khó và thời gian trận trong phòng c
 | Cách máy chơi | `server/src/game/ants/bot.ts` |
 | Hình vẽ kiến / trụ / đạn / bản đồ | `client/src/ants/render.ts` |
 
+## 🎱 Lô Tô Cân Đồ (1–10 người)
+
+Chọn **Lô Tô Cân Đồ** khi tạo phòng. Ở phòng chờ mỗi người tự chọn mua **1 tờ (50 xu)** hoặc **2 tờ (100 xu)**; hũ = tổng tiền mua tờ của cả bàn.
+
+- Mỗi tờ **9 hàng × 9 cột** (3 khối × 3 hàng), mỗi hàng **5 số**; cột theo chục: 1–9, 10–19 … 80–90. Mua 2 tờ thì 2 tờ ghép lại chứa **đủ 1–90**, mỗi số đúng 1 lần, rải đều giữa 2 tờ. Tờ có màu **xanh / đỏ / tím**.
+- Máy gọi ngẫu nhiên **1 số mỗi 5 giây** (trình duyệt đọc số bằng giọng tiếng Việt nếu có); số trúng tự đóng dấu trên tờ của mình, hàng còn thiếu 1 số sáng **CHỜ**.
+- Ai đủ **5 số trên một hàng ngang** trước là **KINH** – ăn cả hũ. Nhiều người KINH cùng một số thì chia đều. Rời ván giữa chừng thì tờ không được tính nữa.
+
 ## ⚡ Nối Thú Đại Chiến (nối hình 1–10 người realtime, liên hoàn 6 Boss, Trùm Cuối Cự Thần đánh trên 2 bàn)
 
 Chọn **Nối Thú Đại Chiến** khi tạo phòng. **1–10 người** (2 người là solo 1v1); chủ phòng thêm **máy** cho đủ chỗ và chọn độ khó Dễ / Thường / Khó

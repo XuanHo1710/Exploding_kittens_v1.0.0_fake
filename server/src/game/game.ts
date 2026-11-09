@@ -51,6 +51,18 @@ import {
   LINK_MAX_PLAYERS,
   LINK_STAGE1_S,
   normalizeLinkConfig,
+  LOTO_CALL_MS,
+  LOTO_COLOR_ORDER,
+  LOTO_FIRST_CALL_MS,
+  LOTO_MAX,
+  LOTO_SHEET_PRICE,
+  generateLotoPair,
+  lotoRowDone,
+  lotoRowHits,
+  normalizeLotoPick,
+  type LotoRoomView,
+  type LotoSheet,
+  type LotoWin,
   type LinkCommand,
   type LinkConfig,
   type LinkState,
@@ -189,6 +201,17 @@ export class Game {
   linkConfig: LinkConfig = { ...DEFAULT_LINK_CONFIG };
   private link?: LinkDuel;
 
+  // --- Trạng thái Lô Tô Cân Đồ ---
+  /** số tờ mỗi người mua (1 hoặc 2), chọn ở phòng chờ */
+  private lotoPicks = new Map<string, number>();
+  private lotoSheets = new Map<string, LotoSheet[]>();
+  private lotoCalled: number[] = [];
+  /** các số chưa gọi (đã xáo) */
+  private lotoBag: number[] = [];
+  private lotoTimer?: NodeJS.Timeout;
+  private lotoNextAt = 0;
+  private lotoWins: LotoWin[] = [];
+
   constructor(
     readonly code: string,
     private hooks: GameHooks,
@@ -225,7 +248,7 @@ export class Game {
     if (this.gameMode === mode) return;
     this.run(() => {
       this.gameMode = mode;
-      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, mode === 'tien_len' ? 4 : mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'link_duel' ? 10 : this.roomRules.maxPlayers), GAME_MODES[mode].maxPlayers);
+      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, mode === 'tien_len' ? 4 : mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'link_duel' || mode === 'loto' ? 10 : this.roomRules.maxPlayers), GAME_MODES[mode].maxPlayers);
       this.invalidateReady();
       this.addLog(`🎮 Chủ phòng đổi sang chế độ: ${GAME_MODES[mode].emoji} ${GAME_MODES[mode].name}.`);
     });
@@ -506,6 +529,10 @@ export class Game {
         this.startLink();
         return;
       }
+      if (this.gameMode === 'loto') {
+        this.startLoto();
+        return;
+      }
 
       // Mèo Nổ: mỗi ván xếp lại chỗ ngồi ngẫu nhiên (thứ tự lượt đi theo chỗ ngồi)
       shuffle(this.players);
@@ -559,6 +586,11 @@ export class Game {
       this.ants = undefined;
       this.link?.stop();
       this.link = undefined;
+      this.stopLoto();
+      this.lotoSheets.clear();
+      this.lotoCalled = [];
+      this.lotoBag = [];
+      this.lotoWins = [];
       this.winnerId = undefined;
       this.winnerIds = [];
       this.payouts = {};
@@ -1323,7 +1355,7 @@ export class Game {
       })),
       spectators: this.spectators.map((x) => ({ id: x.id, name: x.name, avatar: x.avatar, connected: x.connected })),
       hand: this.player(id)?.hand ?? [],
-      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' && this.gameMode !== 'link_duel' ? this.current()?.id : undefined,
+      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' && this.gameMode !== 'link_duel' && this.gameMode !== 'loto' ? this.current()?.id : undefined,
       turnsRemaining: this.turnsRemaining,
       direction: this.direction,
       turnDeadline: this.phase === 'playing' ? this.turnDeadline : undefined,
@@ -1367,6 +1399,7 @@ export class Game {
       tienLen,
       ants: this.gameMode === 'ant_empire' ? this.antsView(id) : undefined,
       link: this.gameMode === 'link_duel' ? (this.link?.roomView(this.linkConfig) ?? { config: this.linkConfig }) : undefined,
+      loto: this.gameMode === 'loto' ? this.lotoView(id) : undefined,
       payouts: Object.keys(this.payouts).length ? this.payouts : undefined,
     };
   }
@@ -1466,6 +1499,122 @@ export class Game {
       startedAt: w.startedAt,
       endsAt: w.endsAt,
       result: w.result,
+    };
+  }
+
+  // ---------- LÔ TÔ CÂN ĐỒ ----------
+
+  /** Mức cược của 1 người khi bắt đầu ván: Lô Tô theo số tờ mua (50 xu/tờ), chế độ khác theo mức của phòng */
+  stakeOf(playerId: string) {
+    return this.gameMode === 'loto' ? LOTO_SHEET_PRICE * this.lotoPickOf(playerId) : this.bet;
+  }
+
+  private lotoPickOf(playerId: string) {
+    return normalizeLotoPick(this.lotoPicks.get(playerId) ?? 1);
+  }
+
+  /** Người chơi tự chọn mua 1 hoặc 2 tờ (chỉ ở phòng chờ) */
+  setLotoPick(playerId: string, sheets: unknown) {
+    if (this.gameMode !== 'loto') throw new GameError('Không phải chế độ Lô Tô.');
+    if (this.phase !== 'lobby') throw new GameError('Chỉ chọn số tờ trong phòng chờ.');
+    const p = this.player(playerId);
+    if (!p) throw new GameError('Bạn đang xem, vào bàn chơi để mua tờ nhé.');
+    const n = normalizeLotoPick(sheets);
+    if (this.lotoPickOf(playerId) === n && this.lotoPicks.has(playerId)) return;
+    this.run(() => {
+      this.lotoPicks.set(playerId, n);
+    });
+  }
+
+  private startLoto() {
+    for (const p of this.players) {
+      p.alive = true;
+      p.hand = [];
+    }
+    this.lotoSheets.clear();
+    this.players.forEach((p, i) => {
+      const [a, b] = generateLotoPair();
+      const n = this.lotoPickOf(p.id);
+      const colors = [LOTO_COLOR_ORDER[i % 3], LOTO_COLOR_ORDER[(i + 1) % 3]];
+      this.lotoSheets.set(p.id, [a, b].slice(0, n).map((rows, k) => ({ color: colors[k], rows })));
+    });
+    this.lotoBag = shuffle(Array.from({ length: LOTO_MAX }, (_, i) => i + 1));
+    this.lotoCalled = [];
+    this.lotoWins = [];
+    this.phase = 'playing';
+    const sheets = this.players.reduce((s, p) => s + this.lotoPickOf(p.id), 0);
+    this.addLog(`🎱 Lô Tô bắt đầu! ${this.players.length} người, ${sheets} tờ. Máy gọi số mỗi ${LOTO_CALL_MS / 1000} giây – ai đủ 5 số một hàng ngang trước là KINH!`);
+    this.lotoSchedule(LOTO_FIRST_CALL_MS);
+  }
+
+  private stopLoto() {
+    clearTimeout(this.lotoTimer);
+    this.lotoTimer = undefined;
+  }
+
+  private lotoSchedule(ms: number) {
+    this.stopLoto();
+    this.lotoNextAt = Date.now() + ms;
+    this.lotoTimer = setTimeout(() => this.safe(() => this.run(() => this.lotoCall())), ms);
+  }
+
+  /** Máy gọi 1 số ngẫu nhiên chưa gọi; ai có hàng vừa đủ 5 số là KINH (cùng lúc nhiều người thì chia hũ) */
+  lotoCall() {
+    if (this.gameMode !== 'loto' || this.phase !== 'playing') return;
+    const n = this.lotoBag.pop();
+    if (n === undefined) {
+      this.phase = 'ended';
+      if (this.pot > 0) for (const p of this.players) if (!p.left) this.payouts[p.id] = this.stakeOf(p.id);
+      this.addLog('Đã gọi hết 90 số mà chưa ai KINH – hoàn lại tiền mua tờ.');
+      return;
+    }
+    this.lotoCalled.push(n);
+    const called = new Set(this.lotoCalled);
+    const wins: LotoWin[] = [];
+    for (const p of this.players) {
+      if (p.left) continue;
+      (this.lotoSheets.get(p.id) ?? []).forEach((sheet, s) => {
+        sheet.rows.forEach((row, r) => {
+          if (row.includes(n) && lotoRowDone(row, called)) wins.push({ playerId: p.id, sheet: s, row: r, numbers: row.filter((x) => x > 0), color: sheet.color });
+        });
+      });
+    }
+    if (!wins.length) {
+      this.lotoSchedule(LOTO_CALL_MS);
+      return;
+    }
+    this.lotoWins = wins;
+    this.phase = 'ended';
+    this.stopLoto();
+    const winnerIds = [...new Set(wins.map((w) => w.playerId))];
+    this.winnerIds = winnerIds;
+    this.winnerId = winnerIds[0];
+    const names = winnerIds.map((id) => this.player(id)?.name ?? id).join(', ');
+    this.addLog(`🎉 KINH! Số ${n} – ${names} cân hàng ${wins.map((w) => `[${w.numbers.join(' ')}]`).join(', ')}!`);
+    if (winnerIds.length > 1 && this.pot > 0) {
+      // nhiều người KINH cùng 1 số: chia đều hũ (phần lẻ cho người đầu)
+      const share = Math.floor(this.pot / winnerIds.length);
+      winnerIds.forEach((id, i) => (this.payouts[id] = share + (i === 0 ? this.pot - share * winnerIds.length : 0)));
+      this.addLog(`🤝 ${winnerIds.length} người cùng KINH – chia đều hũ ${this.pot} xu.`);
+    }
+  }
+
+  private lotoView(viewerId: string): LotoRoomView {
+    const picks: Record<string, number> = {};
+    for (const p of this.players) picks[p.id] = this.lotoPickOf(p.id);
+    if (this.phase === 'lobby') return { picks, called: [] };
+    const called = new Set(this.lotoCalled);
+    return {
+      picks,
+      mine: this.lotoSheets.get(viewerId),
+      called: [...this.lotoCalled],
+      nextIn: this.phase === 'playing' ? Math.max(0, this.lotoNextAt - Date.now()) : undefined,
+      players: this.players.map((p) => {
+        const rows = (this.lotoSheets.get(p.id) ?? []).flatMap((s) => s.rows);
+        const hits = rows.map((row) => lotoRowHits(row, called));
+        return { id: p.id, name: p.name, sheets: this.lotoSheets.get(p.id)?.length ?? 0, best: Math.max(0, ...hits), waiting: hits.filter((h) => h === 4).length };
+      }),
+      wins: this.lotoWins.length ? this.lotoWins : undefined,
     };
   }
 
@@ -1569,6 +1718,7 @@ export class Game {
     clearTimeout(this.timer);
     this.ants?.stop();
     this.link?.stop();
+    this.stopLoto();
   }
 
   // ---------- nội bộ ----------
@@ -2128,6 +2278,10 @@ export class Game {
     // Mèo Nổ: người chết vẫn giữ bài trên tay (lá Trộm Mộ: "all dead players with cards…")
     if (this.gameMode !== 'exploding_kittens') p.hand = [];
     p.alive = false;
+    if (this.gameMode === 'loto') {
+      // Rời ván Lô Tô: tờ của người đó không được tính KINH nữa, ván vẫn chạy cho người còn lại
+      return;
+    }
     if (this.gameMode === 'link_duel') {
       // Rời trận = bỏ cuộc, đối thủ thắng (kết quả xử lý trong syncLink)
       if (this.link?.player(p.id)) this.link.command(p.id, { t: 'resign' });

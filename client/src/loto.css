@@ -1,0 +1,176 @@
+/* Lô Tô Cân Đồ – không khí đêm hội Tết: nền đỏ thẫm, viền vàng, tờ giấy in màu */
+.loto-game {
+  position: fixed; inset: 0; z-index: 20; overflow: hidden;
+  display: flex; flex-direction: column;
+  color: #fff8e7;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(255, 212, 59, 0.22), transparent 55%),
+    radial-gradient(ellipse at 100% 100%, rgba(240, 101, 149, 0.18), transparent 50%),
+    linear-gradient(180deg, #5c0b0b 0%, #2b0606 100%);
+}
+
+/* thanh trên */
+.loto-top {
+  display: flex; align-items: center; gap: 10px; flex: none;
+  padding: calc(6px + env(safe-area-inset-top)) 14px 6px;
+  border-bottom: 1px solid rgba(255, 212, 59, 0.35);
+  background: rgba(0, 0, 0, 0.22);
+}
+.loto-brand { font-size: 17px; letter-spacing: 0.08em; color: #ffd43b; text-shadow: 0 0 10px rgba(255, 212, 59, 0.5); white-space: nowrap; }
+.loto-top-mid { flex: 1; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.loto-pot, .loto-count {
+  padding: 3px 12px; border-radius: 999px; font-weight: 800; font-size: 14px;
+  background: rgba(255, 212, 59, 0.14); border: 1px solid rgba(255, 212, 59, 0.45);
+}
+.loto-pot { color: #ffe066; }
+.loto-top-right { display: flex; align-items: center; gap: 6px; }
+.loto-icon {
+  position: relative; display: grid; place-items: center; width: 36px; height: 36px; padding: 0;
+  border-radius: 10px; border: 1px solid rgba(255, 212, 59, 0.35); background: rgba(0, 0, 0, 0.25); color: #fff8e7;
+}
+.loto-icon.on { background: rgba(255, 212, 59, 0.25); }
+.loto-badge { position: absolute; top: -5px; right: -5px; min-width: 18px; padding: 0 4px; border-radius: 999px; background: #fa5252; color: #fff; font-size: 11px; font-weight: 800; }
+.loto-dock { display: flex; align-items: center; }
+
+/* khu gọi số */
+.loto-caller { display: flex; align-items: center; gap: 18px; padding: 10px 18px; flex: none; }
+.loto-ball-wrap { position: relative; width: 104px; height: 104px; flex: none; }
+.loto-timer { position: absolute; inset: -6px; width: calc(100% + 12px); height: calc(100% + 12px); transform: rotate(-90deg); }
+.loto-timer circle { fill: none; stroke: rgba(255, 255, 255, 0.12); stroke-width: 5; }
+.loto-timer circle.fill { stroke: #ffd43b; stroke-dasharray: 289; transition: stroke-dashoffset 0.2s linear; filter: drop-shadow(0 0 4px #ffd43b); }
+.loto-ball {
+  --ball: #e03131;
+  display: inline-grid; place-items: center; border-radius: 50%; font-weight: 900; color: #1a1a1a;
+  background: radial-gradient(circle at 35% 30%, #fff 0 18%, var(--ball) 19% 100%);
+  box-shadow: inset -4px -6px 10px rgba(0, 0, 0, 0.35), 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+.loto-ball span {
+  display: grid; place-items: center; width: 62%; height: 62%; border-radius: 50%;
+  background: #fffdf5; box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+}
+.loto-ball.big { width: 100%; height: 100%; font-size: 40px; animation: loto-drop 0.55s cubic-bezier(0.2, 1.4, 0.4, 1); }
+.loto-ball.big.idle { animation: none; --ball: #868e96; }
+.loto-ball.small { width: 34px; height: 34px; font-size: 13px; margin: 2px; background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.9) 0 8%, var(--ball) 12% 100%); }
+.loto-ball.small span { width: 70%; height: 70%; letter-spacing: -0.03em; }
+.loto-ball.small.pulse { animation: loto-pulse 0.8s infinite; }
+@keyframes loto-drop {
+  0% { transform: translateY(-80px) scale(0.4) rotate(-120deg); opacity: 0; }
+  70% { transform: translateY(6px) scale(1.08) rotate(10deg); opacity: 1; }
+  100% { transform: none; }
+}
+@keyframes loto-pulse { 50% { transform: scale(1.18); box-shadow: 0 0 16px #ffd43b; } }
+.loto-caller-info { min-width: 0; }
+.loto-call-text { font-size: 22px; font-weight: 900; color: #ffe066; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5); }
+.loto-recent { display: flex; flex-wrap: wrap; margin-top: 4px; }
+.loto-game .muted { color: rgba(255, 248, 231, 0.65); }
+
+/* tờ + cột bên */
+.loto-main { flex: 1; min-height: 0; display: flex; gap: 14px; padding: 0 14px 14px; }
+.loto-sheets { flex: 1; min-width: 0; overflow: auto; display: flex; flex-wrap: wrap; gap: 14px; align-content: flex-start; justify-content: center; }
+.loto-empty { margin: 40px auto; }
+.loto-side { width: 290px; flex: none; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+
+/* tờ lô tô giấy */
+.loto-sheet {
+  --sheet: #e03131; --sheet-soft: #ffa8a8; --sheet-deep: #7d0a0a;
+  width: min(420px, 100%); padding: 8px; border-radius: 6px; color: #111;
+  background: #fffdf6;
+  border: 3px double var(--sheet);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45), inset 0 0 0 4px #fffdf6, inset 0 0 0 5px var(--sheet-soft);
+}
+.loto-sheet-head { display: flex; justify-content: space-between; align-items: center; padding: 0 4px 4px; font-size: 12px; color: var(--sheet-deep); }
+.loto-sheet-head span { letter-spacing: 0.2em; font-weight: 800; }
+.loto-block { position: relative; }
+.loto-row { position: relative; display: grid; grid-template-columns: repeat(9, 1fr); border-left: 1px solid #333; }
+.loto-block .loto-row:first-child { border-top: 1px solid #333; }
+.loto-cell {
+  position: relative; display: grid; place-items: center; aspect-ratio: 1 / 1.05;
+  font: 900 clamp(15px, 2.1vw, 24px) / 1 'Arial Narrow', 'Roboto Condensed', system-ui, sans-serif;
+  letter-spacing: -0.04em; border-right: 1px solid #333; border-bottom: 1px solid #333; background: #fff;
+}
+.loto-cell.blank { background: var(--sheet); background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.12) 0 4px, transparent 4px 9px); }
+/* đóng dấu số đã gọi */
+.loto-cell.hit::after {
+  content: ''; position: absolute; inset: 9%; border-radius: 50%;
+  border: 3px solid rgba(201, 42, 42, 0.85); background: rgba(250, 82, 82, 0.18);
+  transform: rotate(-12deg);
+}
+.loto-cell.fresh::after { animation: loto-stamp 0.45s cubic-bezier(0.2, 1.6, 0.4, 1); }
+@keyframes loto-stamp { 0% { transform: scale(2.4) rotate(-40deg); opacity: 0; } 100% { transform: scale(1) rotate(-12deg); opacity: 1; } }
+.loto-row.wait { box-shadow: 0 0 0 3px #fcc419, 0 0 18px rgba(252, 196, 25, 0.8); z-index: 1; animation: loto-wait 1s infinite; }
+@keyframes loto-wait { 50% { box-shadow: 0 0 0 3px #fab005, 0 0 28px rgba(250, 176, 5, 1); } }
+.loto-row.win { box-shadow: 0 0 0 4px #2f9e44, 0 0 26px rgba(64, 192, 87, 0.95); z-index: 2; }
+.loto-row.win .loto-cell:not(.blank) { background: #ebfbee; }
+.loto-row-tag {
+  position: absolute; right: -6px; top: 50%; transform: translate(100%, -50%);
+  font-style: normal; font-weight: 900; font-size: 11px; padding: 2px 6px; border-radius: 6px;
+  background: #fcc419; color: #5c3b00; white-space: nowrap;
+}
+.loto-row-tag.win { background: #2f9e44; color: #fff; }
+.loto-strip { text-align: center; font: italic 700 11px/1.6 system-ui, 'Segoe UI', sans-serif; color: var(--sheet-deep); padding: 2px 0; }
+
+/* bảng 90 số */
+.loto-board90 {
+  display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; padding: 8px; border-radius: 12px;
+  background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 212, 59, 0.3);
+}
+.loto-board90 span {
+  display: grid; place-items: center; aspect-ratio: 1; border-radius: 50%; font-size: 11px; font-weight: 800;
+  color: rgba(255, 248, 231, 0.45); background: rgba(255, 255, 255, 0.05);
+}
+.loto-board90 span.on { color: #fff; background: var(--ball); box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.3); }
+.loto-board90 span.last { outline: 2px solid #ffd43b; outline-offset: 1px; animation: loto-pulse 0.9s infinite; }
+
+/* người chơi */
+.loto-players { list-style: none; margin: 0; padding: 0; overflow: auto; display: flex; flex-direction: column; gap: 6px; }
+.loto-players li {
+  display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.loto-players li .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.loto-players li.me { border-color: rgba(255, 212, 59, 0.55); }
+.loto-players li.waiting { background: rgba(252, 196, 25, 0.16); }
+.loto-players li.won { background: rgba(47, 158, 68, 0.3); border-color: #40c057; }
+.loto-players .tag { font-size: 12px; padding: 1px 8px; border-radius: 999px; }
+.loto-players .tag.wait { background: #fcc419; color: #5c3b00; animation: loto-wait 1s infinite; }
+.loto-players .tag.win { background: #2f9e44; color: #fff; }
+
+/* kết thúc */
+.loto-overlay { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; padding: 16px; background: rgba(20, 0, 0, 0.6); backdrop-filter: blur(3px); }
+.loto-card {
+  width: min(460px, 100%); padding: 20px; border-radius: 18px; text-align: center;
+  background: linear-gradient(180deg, #7a1010, #3b0707); border: 2px solid #ffd43b;
+  box-shadow: 0 0 40px rgba(255, 212, 59, 0.4);
+}
+.loto-card h2 { margin: 0 0 10px; color: #ffe066; font-size: 26px; }
+.loto-card h2.win { animation: loto-glow 1s infinite; }
+@keyframes loto-glow { 50% { text-shadow: 0 0 18px #ffd43b, 0 0 32px #ffd43b; transform: scale(1.04); } }
+.loto-win-row { margin: 8px 0; }
+.loto-prize { font-size: 18px; font-weight: 900; color: #ffe066; }
+.loto-card .modal-actions { justify-content: center; align-items: center; }
+
+.loto-chat { position: absolute; right: 12px; top: 56px; bottom: 12px; width: min(360px, calc(100% - 24px)); z-index: 6; }
+
+/* phòng chờ: số tờ mỗi người */
+.seat-loto { font-size: 12px; font-weight: 700; color: var(--muted); }
+
+@media (max-width: 860px) {
+  .loto-main { flex-direction: column; overflow: auto; }
+  .loto-sheets { overflow: visible; }
+  .loto-side { width: auto; }
+  .loto-board90 { grid-template-columns: repeat(15, 1fr); }
+  .loto-dock { display: none; }
+}
+@media (max-width: 520px) {
+  .loto-brand b { display: none; }
+  .loto-caller { gap: 12px; padding: 8px 12px; }
+  .loto-ball-wrap { width: 76px; height: 76px; }
+  .loto-ball.big { font-size: 28px; }
+  .loto-call-text { font-size: 17px; }
+  .loto-ball.small { width: 28px; height: 28px; font-size: 11px; }
+  .loto-board90 { grid-template-columns: repeat(10, 1fr); }
+  .loto-row-tag { right: 2px; transform: translateY(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loto-ball.big, .loto-cell.fresh::after, .loto-row.wait, .loto-players .tag.wait, .loto-board90 span.last, .loto-card h2.win, .loto-ball.small.pulse { animation: none; }
+}

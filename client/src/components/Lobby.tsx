@@ -19,6 +19,8 @@ import {
   linkBossMaxHp,
   LINK_STAGE1_S,
   GAME_MODES,
+  LOTO_CALL_MS,
+  LOTO_SHEET_PRICE,
   MIN_PLAYERS,
   roomDeckSummary,
   type AccountInfo,
@@ -54,7 +56,12 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
   const modeInfo = GAME_MODES[gameMode];
   const online = view.players.filter((p) => p.connected).length;
   const bet = view.bet;
-  const poor = bet > 0 ? view.players.filter((p) => p.connected && (p.coins ?? 0) < bet) : [];
+  /** Lô Tô: mỗi người cược theo số tờ tự mua (50 xu/tờ); chế độ khác cùng mức của phòng */
+  const isLoto = gameMode === 'loto';
+  const picks = view.loto?.picks ?? {};
+  const stakeOf = (id: string) => (isLoto ? LOTO_SHEET_PRICE * (picks[id] ?? 1) : bet);
+  const poor = view.players.filter((p) => p.connected && stakeOf(p.id) > 0 && (p.coins ?? 0) < stakeOf(p.id));
+  const lotoPot = view.players.filter((p) => p.connected).reduce((s, p) => s + stakeOf(p.id), 0);
   // chỉ Mèo Nổ có chỉnh số chỗ trong luật phòng; chế độ khác luôn đủ chỗ tối đa (khớp Game.seatLimit ở server)
   const maxPlayers = gameMode === 'exploding_kittens' ? Math.min(view.rules.maxPlayers, modeInfo.maxPlayers) : modeInfo.maxPlayers;
   const empty = Math.max(0, maxPlayers - view.players.length);
@@ -178,10 +185,11 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                   {p.id === meId && ' · bạn'}
                 </span>
                 {p.coins !== undefined && (
-                  <span className={`seat-coins${bet > 0 && p.coins < bet ? ' low' : ''}`}>
+                  <span className={`seat-coins${stakeOf(p.id) > 0 && p.coins < stakeOf(p.id) ? ' low' : ''}`}>
                     <Coins size={12} className="inline-icon" /> {fmtCoins(p.coins)}
                   </span>
                 )}
+                {isLoto && <span className="seat-loto">🎫 {picks[p.id] ?? 1} tờ</span>}
               </div>
             ))}
             {Array.from({ length: empty }, (_, i) => (
@@ -196,6 +204,31 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
 
           <LobbySpectators view={view} meId={meId} emit={emit} />
 
+          {isLoto ? (
+            <div className="bet-box">
+              <div className="bet-head">
+                <b>🎫 Mua tờ lô tô</b>
+                <span className="muted small">{fmtCoins(LOTO_SHEET_PRICE)} xu/tờ · mỗi người tự chọn</span>
+              </div>
+              <div className="bet-chips">
+                {[1, 2].map((n) => (
+                  <button
+                    key={n}
+                    className={`bet-chip${(picks[meId] ?? 1) === n ? ' on' : ''}`}
+                    disabled={!me || spectating}
+                    onClick={() => emit('loto:pick', { sheets: n })}
+                  >
+                    {n} tờ · {fmtCoins(n * LOTO_SHEET_PRICE)} xu{n === 2 ? ' (đủ 90 số)' : ''}
+                  </button>
+                ))}
+              </div>
+              <p className="bet-note">
+                Hũ {fmtCoins(lotoPot)} xu – ai KINH trước (đủ 5 số một hàng ngang) ăn cả hũ <Trophy size={14} className="inline-icon" />
+                {me && account && account.coins < stakeOf(meId) && <span className="bad-text"> · Bạn thiếu xu, vào Hồ sơ nhận 500 xu/ngày nhé.</span>}
+              </p>
+              {poor.length > 0 && <p className="bad-text small">Không đủ xu: {poor.map((p) => p.name).join(', ')}</p>}
+            </div>
+          ) : (
           <div className="bet-box">
             <div className="bet-head">
               <b>
@@ -227,6 +260,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
             </p>
             {poor.length > 0 && <p className="bad-text small">Không đủ xu: {poor.map((p) => p.name).join(', ')}</p>}
           </div>
+          )}
 
           <div className="lobby-rules">
             <div className="lobby-rules-head">
@@ -324,6 +358,12 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                   <li><b>Tổng điểm</b> = điểm Màn 1 + sát thương lên Boss + <b>+{LINK_KO_BONUS}</b> cho mỗi Boss mình kết liễu. Cao hơn thì thắng cả hũ.</li>
                 </ul>
               </>
+            ) : isLoto ? (
+              <ul className="rule-summary-list">
+                <li>Mỗi tờ <b>9 hàng × 9 cột</b> (3 khối), mỗi hàng <b>5 số</b>; cột theo chục: 1–9, 10–19 … 80–90. Mua <b>2 tờ</b> thì 2 tờ ghép lại có đủ <b>90 số</b>, mỗi số đúng 1 lần.</li>
+                <li>Máy gọi ngẫu nhiên 1 số mỗi <b>{LOTO_CALL_MS / 1000} giây</b> (có đọc số), số trúng tự đóng dấu trên tờ của bạn. Hàng còn thiếu 1 số là <b>CHỜ</b>.</li>
+                <li>Ai đủ <b>5 số trên một hàng ngang</b> trước là <b>KINH</b> – ăn cả hũ. Nhiều người KINH cùng một số thì chia đều.</li>
+              </ul>
             ) : gameMode === 'blackjack_21' ? (
               <ul className="rule-summary-list">
                 <li>Bộ bài Tây 52 lá chuẩn (lưu trong <code>database/playing-cards/</code>). Chủ phòng làm <b>Nhà Cái</b>.</li>

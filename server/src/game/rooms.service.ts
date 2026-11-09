@@ -5,6 +5,7 @@ import { BET_OPTIONS, CHAT_MAX_LEN, type GameMode, EMOTES, THROWABLES, normalize
 import { RateLimiter } from '../rate-limit';
 import { AccountsService } from '../store/accounts.service';
 import { Game, GameError, GameHooks } from './game';
+import type { GameStake } from '../store/accounts.service';
 
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 
@@ -14,7 +15,7 @@ export class RoomsService {
   private rooms = new Map<string, Game>();
   private starting = new Set<Game>();
   private deferredConnections = new Map<Game, Map<string, boolean>>();
-  private refunds = new Map<Game, { playerIds: string[]; bet: number; chargeOp: string; refundOp: string }>();
+  private refunds = new Map<Game, { playerIds: string[]; bet: GameStake; chargeOp: string; refundOp: string }>();
   private payouts = new Map<Game, Promise<void>>();
   private failedPayouts = new Set<Game>();
   /** Trả thưởng lỗi: tự thử lại (cùng mã thao tác nên không trả 2 lần) */
@@ -170,7 +171,7 @@ export class RoomsService {
     this.starting.add(game);
     let attempted = false;
     let playerIds: string[] = [];
-    let bet = game.bet;
+    let bet: GameStake = game.bet;
     const round = randomUUID();
     const chargeOp = `charge:${round}`;
     try {
@@ -182,17 +183,21 @@ export class RoomsService {
         refund.playerIds.forEach((id) => this.pushAccount(id));
         this.applyDeferredConnections(game);
       }
-      bet = game.bet;
       const players = game.players.filter((p) => p.connected);
       game.validateStart(playerId);
-      if (bet > 0) {
+      // mức cược từng người (Lô Tô: theo số tờ mua; chế độ khác: cùng mức của phòng)
+      const stakes: Record<string, number> = Object.fromEntries(players.map((p) => [p.id, game.stakeOf(p.id)]));
+      const uniform = players.every((p) => stakes[p.id] === game.bet);
+      bet = uniform ? game.bet : stakes;
+      const paying = players.some((p) => stakes[p.id] > 0);
+      if (paying) {
         const noAcc = players.filter((p) => !this.verified.has(p.id));
         if (noAcc.length) throw new GameError(`Ván có cược: ${noAcc.map((p) => p.name).join(', ')} chưa có tài khoản PIN.`);
-        const poor = players.filter((p) => (this.accounts.get(p.id)?.coins ?? 0) < bet);
-        if (poor.length) throw new GameError(`Không đủ ${bet} xu: ${poor.map((p) => p.name).join(', ')}.`);
+        const poor = players.filter((p) => (this.accounts.get(p.id)?.coins ?? 0) < stakes[p.id]);
+        if (poor.length) throw new GameError(`Không đủ xu: ${poor.map((p) => `${p.name} (cần ${stakes[p.id]})`).join(', ')}.`);
       }
       playerIds = players.map((p) => p.id);
-      if (bet > 0) {
+      if (paying) {
         attempted = true;
         await this.accounts.chargeGame(playerIds, bet, chargeOp);
       } else {
@@ -204,11 +209,12 @@ export class RoomsService {
       if (game.hostId !== playerId || game.phase !== 'lobby' || currentIds.length !== playerIds.length || currentIds.some((id, i) => id !== playerIds[i])) {
         throw new GameError('Phòng đã thay đổi, vui lòng bắt đầu lại.');
       }
-      game.pot = bet * playerIds.length;
+      game.pot = playerIds.reduce((sum, id) => sum + (typeof bet === 'number' ? bet : (bet[id] ?? 0)), 0);
       game.paid = false;
       game.roundId = round;
       game.start(playerId);
-      if (bet > 0) game.note(`💰 Mỗi người cược ${bet} xu – hũ ${game.pot} xu cho người thắng!`);
+      if (game.gameMode === 'loto' && game.pot > 0) game.note(`💰 Mua tờ: 50 xu/tờ – hũ ${game.pot} xu cho người KINH trước!`);
+      else if (typeof bet === 'number' && bet > 0) game.note(`💰 Mỗi người cược ${bet} xu – hũ ${game.pot} xu cho người thắng!`);
       game.players.forEach((p) => this.pushAccount(p.id));
       this.broadcast(game);
     } catch (error) {
@@ -345,6 +351,13 @@ export class RoomsService {
     game.setAntsConfig(playerId, raw);
   }
 
+  setLotoPick(playerId: string, sheets: unknown) {
+    const game = this.roomOf(playerId);
+    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
+    this.assertReady(game);
+    game.setLotoPick(playerId, sheets);
+  }
+
   setLinkConfig(playerId: string, raw: unknown) {
     const game = this.roomOf(playerId);
     if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
@@ -353,7 +366,7 @@ export class RoomsService {
   }
 
   create(playerId: string, name: string, avatar?: string, rules?: unknown, gameMode?: string) {
-    const mode: GameMode = gameMode === 'blackjack_21' || gameMode === 'tien_len' || gameMode === 'ant_empire' || gameMode === 'link_duel' ? gameMode : 'exploding_kittens';
+    const mode: GameMode = gameMode === 'blackjack_21' || gameMode === 'tien_len' || gameMode === 'ant_empire' || gameMode === 'link_duel' || gameMode === 'loto' ? gameMode : 'exploding_kittens';
     let normalized: RoomRules;
     try { normalized = normalizeRoomRules(rules); }
     catch (error) { throw new GameError(error instanceof Error ? error.message : 'Luật phòng không hợp lệ.'); }

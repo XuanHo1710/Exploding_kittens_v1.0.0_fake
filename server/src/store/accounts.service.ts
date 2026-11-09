@@ -3,6 +3,10 @@ import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'crypto';
 import { isValidAvatar, type AccountInfo } from '../../../shared/src';
 import { Account, DbService, type DbShape } from './db.service';
 
+/** Mức cược: chung cả bàn, hoặc riêng từng người theo id */
+export type GameStake = number | Record<string, number>;
+const stakeOf = (bet: GameStake, id: string) => (typeof bet === 'number' ? bet : (bet[id] ?? 0));
+
 export const START_COINS = 1000;
 export const DAILY_COINS = 500;
 
@@ -176,21 +180,24 @@ export class AccountsService {
     });
   }
 
-  /** Trừ cược và tăng số ván cho cả bàn trong một lần ghi JSON. Cùng opId thì chỉ trừ một lần. */
-  async chargeGame(playerIds: string[], bet: number, opId?: string) {
+  /**
+   * Trừ cược và tăng số ván cho cả bàn trong một lần ghi JSON. Cùng opId thì chỉ trừ một lần.
+   * bet: cùng một mức cho cả bàn, hoặc mức riêng từng người (Lô Tô: 1 tờ 50, 2 tờ 100).
+   */
+  async chargeGame(playerIds: string[], bet: GameStake, opId?: string) {
     this.checkGameAmount(playerIds, bet);
     this.checkOpId(opId);
     return this.db.transaction((db) => {
       if (hasOp(db, opId)) return;
       markOp(db, opId);
-      const accounts = playerIds.map((id) => accountIn(db, id));
-      for (const acc of accounts) {
-        if (bet > 0 && !acc) throw new HttpException('Ván có cược cần tài khoản PIN.', HttpStatus.BAD_REQUEST);
-        if (acc && acc.coins < bet) throw new HttpException(`${acc.name} không đủ ${bet} xu.`, HttpStatus.BAD_REQUEST);
+      const accounts = playerIds.map((id) => [accountIn(db, id), stakeOf(bet, id)] as const);
+      for (const [acc, amount] of accounts) {
+        if (amount > 0 && !acc) throw new HttpException('Ván có cược cần tài khoản PIN.', HttpStatus.BAD_REQUEST);
+        if (acc && acc.coins < amount) throw new HttpException(`${acc.name} không đủ ${amount} xu.`, HttpStatus.BAD_REQUEST);
       }
-      for (const acc of accounts) {
+      for (const [acc, amount] of accounts) {
         if (!acc) continue;
-        acc.coins -= bet;
+        acc.coins -= amount;
         acc.games++;
         touch(acc);
       }
@@ -202,7 +209,7 @@ export class AccountsService {
    * Có chargeOpId: chỉ hoàn khi khoản thu đó THẬT SỰ đã nằm trong DB (và chưa hoàn lần nào).
    * Trả về true nếu đã hoàn xu.
    */
-  async refundGame(playerIds: string[], bet: number, opId?: string, chargeOpId?: string) {
+  async refundGame(playerIds: string[], bet: GameStake, opId?: string, chargeOpId?: string) {
     this.checkGameAmount(playerIds, bet);
     this.checkOpId(opId);
     this.checkOpId(chargeOpId);
@@ -213,7 +220,7 @@ export class AccountsService {
       for (const id of playerIds) {
         const acc = accountIn(db, id);
         if (!acc) continue;
-        acc.coins += bet;
+        acc.coins += stakeOf(bet, id);
         acc.games = Math.max(0, acc.games - 1);
         touch(acc);
       }
@@ -289,8 +296,12 @@ export class AccountsService {
     if (opId !== undefined && !OP_ID.test(opId)) throw new HttpException('Mã thao tác không hợp lệ.', HttpStatus.BAD_REQUEST);
   }
 
-  private checkGameAmount(playerIds: string[], bet: number) {
-    if (!Number.isSafeInteger(bet) || bet < 0 || new Set(playerIds).size !== playerIds.length) {
+  private checkGameAmount(playerIds: string[], bet: GameStake) {
+    const bad = playerIds.some((id) => {
+      const amount = stakeOf(bet, id);
+      return !Number.isSafeInteger(amount) || amount < 0;
+    });
+    if (bad || (typeof bet !== 'number' && (typeof bet !== 'object' || bet === null)) || new Set(playerIds).size !== playerIds.length) {
       throw new HttpException('Dữ liệu cược không hợp lệ.', HttpStatus.BAD_REQUEST);
     }
   }

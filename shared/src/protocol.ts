@@ -3,10 +3,11 @@ import type { BlackjackEval, PlayingCard, TienLenCombo } from './playing-cards';
 import type { RoomRules } from './room-rules';
 import type { AntsRoomView } from './ants';
 import type { LinkRoomView } from './link';
+import type { LotoRoomView } from './loto';
 
 export type Phase = 'lobby' | 'playing' | 'ended';
 
-export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire' | 'link_duel';
+export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire' | 'link_duel' | 'loto';
 
 export const GAME_MODES: Record<
   GameMode,
@@ -50,7 +51,15 @@ export const GAME_MODES: Record<
     emoji: '⚡🐾',
     minPlayers: 1,
     maxPlayers: 10,
-    desc: 'Nối hình 2–10 người realtime: Màn 1 đua dọn bàn, rồi cả phòng đánh liên hoàn 3 Boss: Vua Sấm Sét → Nữ Hoàng Nhện → Bạo Chúa!',
+    desc: 'Nối hình 1–10 người realtime: Màn 1 đua dọn bàn, rồi cả phòng đánh liên hoàn 6 Boss tới Trùm Cuối Cự Thần Thiên Hà!',
+  },
+  loto: {
+    name: 'Lô Tô Cân Đồ',
+    shortName: 'Lô Tô',
+    emoji: '🎱🔢',
+    minPlayers: 1,
+    maxPlayers: 10,
+    desc: 'Mua 1 tờ 50 xu hoặc 2 tờ 100 xu (đủ 90 số). Máy gọi số mỗi 5 giây – ai đủ 5 số một hàng ngang trước là KINH, ăn cả hũ!',
   },
 };
 
@@ -239,6 +248,8 @@ export interface RoomView {
   ants?: AntsRoomView;
   /** Nối Thú Đại Chiến (trạng thái realtime gửi riêng qua 'link:state') */
   link?: LinkRoomView;
+  /** Lô Tô Cân Đồ */
+  loto?: LotoRoomView;
   /** Thưởng xu từng người sau ván */
   payouts?: Record<string, number>;
 }
