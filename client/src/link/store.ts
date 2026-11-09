@@ -2,6 +2,7 @@
  * Kho trạng thái Nối Thú phía client: giữ gói `link:state` mới nhất và hàng đợi hiệu ứng (có thời điểm bắt đầu).
  */
 import type { LinkFx, LinkState } from '../../../shared/src';
+import { playLinkSounds } from './sound';
 
 export interface FxItem {
   fx: LinkFx;
@@ -55,6 +56,7 @@ class LinkStore {
       if (fx.k === 'hit' || fx.k === 'super') this.bossHitAt = now;
     }
     if (this.fx.length > 120) this.fx = this.fx.slice(-120);
+    playLinkSounds(st);
     this.listeners.forEach((l) => l());
   }
 

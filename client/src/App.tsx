@@ -24,7 +24,7 @@ import { CardPreviewLayer } from './components/CardPreview';
 import { sfx } from './sfx';
 import { readRoomParam, writeRoomParam } from './roomLink';
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL as string | undefined;
+import { SERVER_URL } from './serverUrl';
 
 type ProfileUpdateAck =
   | { ok: true; result: { name: string; avatar?: string } }

@@ -64,12 +64,12 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
   const deck = roomDeckSummary(view.rules, online);
   const antsCfg = view.ants?.config ?? DEFAULT_ANTS_CONFIG;
   const linkCfgRaw = view.link?.config;
-  /** 1 người thì server luôn thêm ít nhất 1 máy */
-  const linkBots = Math.max(online < 2 ? 1 : 0, Math.min(LINK_MAX_PLAYERS - online, linkCfgRaw?.bots ?? 0));
+  /** 1 người, 0 máy = chơi một mình */
+  const linkBots = Math.max(0, Math.min(LINK_MAX_PLAYERS - online, linkCfgRaw?.bots ?? 0));
   const deckOk =
     gameMode === 'exploding_kittens' ? deck.canStart
       : gameMode === 'ant_empire' ? online + antsCfg.bots >= 2 && online + antsCfg.bots <= ANTS_MAX_EMPIRES
-      : gameMode === 'link_duel' ? online + linkBots >= 2 && online + linkBots <= LINK_MAX_PLAYERS
+      : gameMode === 'link_duel' ? online + linkBots >= 1 && online + linkBots <= LINK_MAX_PLAYERS
         : online <= modeInfo.maxPlayers;
   const canStart = online >= modeInfo.minPlayers && awaitingReady.length === 0 && deckOk && poor.length === 0;
   const setAnts = (patch: Partial<typeof antsCfg>) => emit('ants:config', { config: { ...antsCfg, ...patch } });
@@ -292,7 +292,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                     <span className="muted small">Thêm máy (🤖) · tổng {online + linkBots}/{LINK_MAX_PLAYERS} người</span>
                     <div className="bet-chips">
                       {Array.from({ length: Math.max(0, LINK_MAX_PLAYERS - view.players.length) + 1 }, (_, n) => n).map((n) => (
-                        <button key={n} type="button" className={`bet-chip${n === linkBots ? ' on' : ''}`} disabled={!isHost || (online < 2 && n === 0)} onClick={() => emit('link:config', { config: { ...linkCfg, bots: n } })}>{n}</button>
+                        <button key={n} type="button" className={`bet-chip${n === linkBots ? ' on' : ''}`} disabled={!isHost} onClick={() => emit('link:config', { config: { ...linkCfg, bots: n } })}>{n}</button>
                       ))}
                     </div>
                   </div>
@@ -308,14 +308,14 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                   </div>
                 </div>
                 <ul className="rule-summary-list">
-                  <li>2–{LINK_MAX_PLAYERS} người (2 người là solo 1v1). Nối 2 ô <b>cùng con thú</b> bằng đường gấp khúc <b>tối đa 2 lần</b> (được vòng ra ngoài mép bàn). Bàn 16×9, mọi người cùng một đề.</li>
+                  <li>1–{LINK_MAX_PLAYERS} người (1 người không thêm máy là chơi một mình, 2 người là solo 1v1). Nối 2 ô <b>cùng con thú</b> bằng đường gấp khúc <b>tối đa 2 lần</b> (được vòng ra ngoài mép bàn). Bàn 16×9, mọi người cùng một đề.</li>
                   <li><b>Màn 1 – Đua Nối ({LINK_STAGE1_S} giây):</b> nối liên tiếp được combo, nạp ⚡ Sấm. Đầy Sấm tung <b>❄️ Đóng Băng</b> hoặc <b>🌫️ Mây Mù</b> (che bàn {LINK_FOG_MS / 1000} giây) – mặc định vào <b>người dẫn đầu</b>, bấm vào bàn nhỏ của ai thì nhắm người đó. Dọn sạch bàn trước được thưởng lớn.</li>
                   <li>
-                    <b>Liên hoàn {LINK_BOSSES.length} Màn Boss (Màn 1 → 2 → 3 → Màn 4 Co-op 2 Boss Siêu Khó):</b> cả phòng cùng đánh, mỗi cặp là một cú đấm, Sấm đầy tung <b>⚡ Siêu Đấm</b>. 3 Boss đầu dùng chung <b>{LINK_RAID_S / 60} phút</b> (hạ nhanh thì dư giờ cho Boss sau); riêng <b>Màn Boss 4 (Co-op 2 Boss)</b> được cấp mới <b>6 phút</b> riêng!
+                    <b>Liên hoàn {LINK_BOSSES.length} Màn Boss (Màn 1 → 2 → 3 → Màn 4 Co-op 2 Boss → 👑 Đại Ma Vương → 🌌 Trùm Cuối Cự Thần):</b> cả phòng cùng đánh, mỗi cặp là một cú đấm, Sấm đầy tung <b>⚡ Siêu Đấm</b>. 3 Boss đầu dùng chung <b>{LINK_RAID_S / 60} phút</b> (hạ nhanh thì dư giờ cho Boss sau); riêng <b>Màn Boss 4 (Co-op 2 Boss)</b> được cấp mới <b>6 phút</b>, <b>👑 Đại Ma Vương</b> (3 thanh máu) <b>7 phút</b>, <b>🌌 Cự Thần Thiên Hà</b> (10 thanh máu, mỗi người <b>2 bàn</b>, sát thương x2) <b>10 phút</b>!
                     <ul>
                       {LINK_BOSSES.map((b, i) => (
                         <li key={b.id}>
-                          {b.emoji} <b>{b.name}</b>{b.coop && b.partners ? <> (<b>Co-op 2 Boss · 6 phút riêng:</b> {b.partners[0].emoji} {b.partners[0].name} × {b.partners[1].emoji} {b.partners[1].name})</> : null} – {linkBossMaxHp(i, online + linkBots)} máu – {b.skills.length} chiêu: {b.skills.map((k) => LINK_BOSS_SKILL_NAME[k]).join(' · ')}
+                          {b.emoji} <b>{b.name}</b>{b.coop && b.partners ? <> (<b>Co-op 2 Boss · 6 phút riêng:</b> {b.partners[0].emoji} {b.partners[0].name} × {b.partners[1].emoji} {b.partners[1].name})</> : null}{(b.bars ?? 1) > 1 ? <> (<b>{b.final ? 'TRÙM CUỐI' : 'HỢP THỂ'} · {b.bars} thanh máu{b.dual ? ` · 2 bàn · sát thương x${b.dmgMul ?? 1}` : ''} · {(b.raidS ?? 0) / 60} phút riêng</b>)</> : null} – {linkBossMaxHp(i, online + linkBots)} máu – {new Set(b.skills).size} chiêu: {[...new Set(b.skills)].map((k) => LINK_BOSS_SKILL_NAME[k]).join(' · ')}
                         </li>
                       ))}
                     </ul>

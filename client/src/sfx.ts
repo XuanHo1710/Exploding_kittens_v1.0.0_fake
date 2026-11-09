@@ -8,6 +8,10 @@ export function setMuted(m: boolean) {
   muted = m;
 }
 
+/** Dùng chung AudioContext và trạng thái tắt tiếng cho các bộ âm thanh khác (Nối Thú…) */
+export const isMuted = () => muted;
+export const audioCtx = () => ac();
+
 function ac() {
   if (!ctx) ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
   if (ctx.state === 'suspended') void ctx.resume().catch(() => {});

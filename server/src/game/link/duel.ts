@@ -1,6 +1,7 @@
 /**
  * Một trận Nối Thú Đại Chiến (2–10 người, server quyết định mọi thứ):
- * Màn 1 đua dọn bàn → nghỉ 5 giây → cả phòng đánh liên hoàn 3 Boss (Vua Sấm Sét → Nữ Hoàng Nhện → Bạo Chúa),
+ * Màn 1 đua dọn bàn → nghỉ 5 giây → cả phòng đánh liên hoàn Boss (Vua Sấm Sét → Nữ Hoàng Nhện → Bạo Chúa → Song Sát → Đại Ma Vương → Cự Thần Thiên Hà),
+ * Cự Thần (Trùm Cuối): mỗi người có 2 bàn `board` (trái) + `board2` (phải), nối ở bàn nào cũng đánh Boss.
  * Boss trước gục thì nghỉ 5 giây rồi Boss sau ra. Cả 3 Boss dùng chung một đồng hồ LINK_RAID_S (dừng lúc nghỉ):
  * hạ nhanh thì dư giờ cho Boss sau; hết giờ mà chưa hạ hết thì Boss đang đánh thoát và trận kết thúc.
  * Chạy theo đồng hồ trận `t` (ms) – setInterval gọi tick(250); test gọi tick() trực tiếp.
@@ -14,6 +15,12 @@ import {
   LINK_BOSS_ECLIPSE,
   LINK_BOSS_HELLFIRE,
   LINK_BOSS_JUDGMENT,
+  LINK_BOSS_APOCALYPSE,
+  LINK_BOSS_LASER,
+  LINK_BOSS_METEOR_RAIN,
+  LINK_BOSS_SUPERNOVA,
+  LINK_BOSS_TWIN_LASER,
+  LINK_BOSS_VORTEX,
   LINK_BOSS_NIRVANA,
   LINK_BOSS_ROAR_MS,
   LINK_BOSS_SOUL_CHAIN,
@@ -53,6 +60,7 @@ import {
   type LinkConfig,
   type LinkFoe,
   type LinkFx,
+  type LinkLock,
   type LinkResult,
   type LinkRoomView,
   type LinkStage,
@@ -66,6 +74,10 @@ export interface LinkPlayer {
   name: string;
   bot: boolean;
   board: LinkBoard;
+  /** bàn thứ 2 (bên phải) – chỉ có khi đánh Boss `dual` */
+  board2?: LinkBoard;
+  /** gợi ý đang nằm ở bàn nào */
+  hintSide: 0 | 1;
   score1: number;
   damage: number;
   /** số Boss đã kết liễu */
@@ -139,6 +151,7 @@ export class LinkDuel {
     this.players = inits.slice(0, LINK_MAX_PLAYERS).map((p) => ({
       ...p,
       board: LinkBoard.generate(seed),
+      hintSide: 0,
       score1: 0,
       damage: 0,
       kos: 0,
@@ -182,6 +195,23 @@ export class LinkDuel {
     return this.players.filter((p) => !p.resigned);
   }
 
+  /** các bàn của một người (đánh Cự Thần: bàn trái + bàn phải) */
+  boardsOf(p: LinkPlayer): LinkBoard[] {
+    return p.board2 ? [p.board, p.board2] : [p.board];
+  }
+
+  /** Khoá n ô chia đều lên các bàn; trả chỉ số toàn cục (side * LINK_CELLS + ô) */
+  private lock(p: LinkPlayer, n: number, ms: number, kind: LinkLock = 0): number[] {
+    const boards = this.boardsOf(p);
+    const out: number[] = [];
+    boards.forEach((b, side) => {
+      const k = Math.ceil((n - out.length) / (boards.length - side));
+      for (const i of b.freeze(k, ms, this.t, kind)) out.push(side * LINK_CELLS + i);
+    });
+    if (p.hint && out.some((g) => Math.floor(g / LINK_CELLS) === p.hintSide && p.hint!.includes(g % LINK_CELLS))) p.hint = undefined;
+    return out;
+  }
+
   /** điểm đang đua: Màn 1 là điểm, từ Màn 2 là tổng */
   private standing(p: LinkPlayer) {
     return this.stage === 'stage1' || this.stage === 'intermission' ? p.score1 : this.total(p);
@@ -202,9 +232,11 @@ export class LinkDuel {
     this.t += ms;
     for (const p of this.players) {
       p.tokens = Math.min(LINK_CMD_RATE, p.tokens + (LINK_CMD_RATE * ms) / 1000);
-      const before = p.board.ice.size;
-      p.board.thaw(this.t);
-      if (p.board.ice.size !== before) this.dirty = true;
+      for (const b of this.boardsOf(p)) {
+        const before = b.ice.size;
+        b.thaw(this.t);
+        if (b.ice.size !== before) this.dirty = true;
+      }
       if (p.chain && this.t - p.lastMatchAt > LINK_COMBO_WINDOW_S * 1000) {
         p.chain = 0;
         this.dirty = true;
@@ -238,7 +270,7 @@ export class LinkDuel {
     if (cmd.t === 'resign') {
       p.resigned = true;
       p.chain = 0;
-      p.board.clearLocks();
+      for (const b of this.boardsOf(p)) b.clearLocks();
       this.fx.push({ k: 'clear', who: p.id });
       const left = this.active();
       // còn 1 người, hoặc không còn người thật nào: kết thúc
@@ -255,12 +287,19 @@ export class LinkDuel {
     if (this.stage === 'intermission') return 'Chờ chút, màn mới sắp bắt đầu.';
     switch (cmd.t) {
       case 'match':
-        return this.match(p, cmd.a, cmd.b);
+        return this.match(p, cmd.a, cmd.b, cmd.side === 1 ? 1 : 0);
       case 'hint': {
         if (this.t < p.hintReadyAt) return 'Gợi ý đang hồi.';
-        const h = p.board.hint(this.t);
+        let h: [number, number] | undefined;
+        let side: 0 | 1 = 0;
+        this.boardsOf(p).forEach((b, i) => {
+          if (h) return;
+          h = b.hint(this.t) ?? undefined;
+          side = i as 0 | 1;
+        });
         if (!h) return 'Chưa có cặp nào nối được, chờ băng tan nhé.';
         p.hint = h;
+        p.hintSide = side;
         p.score1 = Math.max(0, p.score1 - LINK_HINT_COST);
         p.hintReadyAt = this.t + LINK_HINT_CD_S * 1000;
         this.emit();
@@ -272,7 +311,7 @@ export class LinkDuel {
         if (p.thunder < 100) return 'Chưa đủ Sấm.';
         const foe = this.targetFor(p, typeof cmd.target === 'string' ? cmd.target : undefined);
         if (!foe) return 'Không còn đối thủ nào.';
-        if (cmd.kind === 'freeze') foe.board.freeze(LINK_FREEZE.cells, LINK_FREEZE.ms, this.t);
+        if (cmd.kind === 'freeze') this.lock(foe, LINK_FREEZE.cells, LINK_FREEZE.ms);
         else foe.darkUntil = Math.max(foe.darkUntil, this.t + LINK_FOG_MS);
         p.thunder = 0;
         this.fx.push({ k: 'skill', from: p.id, to: foe.id, kind: cmd.kind });
@@ -283,7 +322,7 @@ export class LinkDuel {
         if (this.stage !== 'stage2' || !this.boss) return 'Siêu Đấm chỉ dùng khi đánh Boss.';
         if (p.thunder < 100) return 'Chưa đủ Sấm.';
         p.thunder = 0;
-        const dmg = this.dmgOf(p, LINK_SUPER_DMG);
+        const dmg = this.dmgOf(p, LINK_SUPER_DMG) * (this.boss.def.dmgMul ?? 1);
         this.fx.push({ k: 'super', who: p.id, dmg });
         this.hitBoss(p, dmg);
         this.emit();
@@ -292,9 +331,12 @@ export class LinkDuel {
       case 'shuffle': {
         const wait = this.shuffleIn(p);
         if (wait > 0) return 'Đảo Bàn đang hồi chiêu.';
-        if (p.board.isEmpty()) return 'Bàn đã trống.';
-        p.board.shuffle();
-        p.board.ensureMove(this.t);
+        const boards = this.boardsOf(p).filter((b) => !b.isEmpty());
+        if (!boards.length) return 'Bàn đã trống.';
+        for (const b of boards) {
+          b.shuffle();
+          b.ensureMove(this.t);
+        }
         p.hint = undefined;
         p.shuffleReadyAt = this.t + LINK_SHUFFLE_CD_S * 1000;
         this.fx.push({ k: 'shuffle', who: p.id });
@@ -306,21 +348,24 @@ export class LinkDuel {
     }
   }
 
-  private match(p: LinkPlayer, a: unknown, b: unknown): string | undefined {
+  private match(p: LinkPlayer, a: unknown, b: unknown, side: 0 | 1 = 0): string | undefined {
+    const board = side === 1 ? p.board2 : p.board;
+    if (!board) return 'Lệnh không hợp lệ.';
+    const off = side * LINK_CELLS;
     if (!Number.isInteger(a) || !Number.isInteger(b) || (a as number) < 0 || (b as number) < 0 || (a as number) >= LINK_CELLS || (b as number) >= LINK_CELLS) {
       return 'Lệnh không hợp lệ.';
     }
     const ia = a as number, ib = b as number;
     if (p.stunUntil > this.t) return 'Bạn đang bị choáng!';
-    const path = p.board.findPath(ia, ib, this.t);
+    const path = board.findPath(ia, ib, this.t);
     if (!path) {
       p.chain = 0;
-      this.fx.push({ k: 'miss', who: p.id, a: ia, b: ib });
+      this.fx.push({ k: 'miss', who: p.id, a: off + ia, b: off + ib });
       this.emit();
       return 'Hai ô này không nối được.';
     }
-    const kind = p.board.cells[ia];
-    p.board.remove(ia, ib);
+    const kind = board.cells[ia];
+    board.remove(ia, ib);
     p.hint = undefined;
     p.chain = this.t - p.lastMatchAt <= LINK_COMBO_WINDOW_S * 1000 && p.chain > 0 ? p.chain + 1 : 1;
     p.lastMatchAt = this.t;
@@ -329,16 +374,16 @@ export class LinkDuel {
     if (this.stage === 'stage1') {
       const pts = linkPairPoints(combo);
       p.score1 += pts;
-      this.fx.push({ k: 'match', who: p.id, a: ia, b: ib, kind, path, combo: p.chain, pts });
+      this.fx.push({ k: 'match', who: p.id, a: off + ia, b: off + ib, kind, path, combo: p.chain, pts, ...(side ? { side } : {}) });
     } else {
       const long = LinkBoard.pathLength(path) > LINK_LONG_PATH;
-      const dmg = this.dmgOf(p, linkPairDamage(combo, long));
-      this.fx.push({ k: 'match', who: p.id, a: ia, b: ib, kind, path, combo: p.chain, pts: dmg });
-      this.fx.push({ k: 'hit', who: p.id, a: ia, b: ib, dmg, long, combo: p.chain });
+      const dmg = this.dmgOf(p, linkPairDamage(combo, long)) * (this.boss?.def.dmgMul ?? 1);
+      this.fx.push({ k: 'match', who: p.id, a: off + ia, b: off + ib, kind, path, combo: p.chain, pts: dmg, ...(side ? { side } : {}) });
+      this.fx.push({ k: 'hit', who: p.id, a: off + ia, b: off + ib, dmg, long, combo: p.chain });
       this.hitBoss(p, dmg);
     }
     if (this.stage === 'ended') return undefined;
-    if (p.board.isEmpty()) {
+    if (board.isEmpty()) {
       this.fx.push({ k: 'clear', who: p.id });
       if (this.stage === 'stage1') {
         p.cleared1 = true;
@@ -346,10 +391,11 @@ export class LinkDuel {
         this.endStage1();
       } else {
         // dọn sạch khi đánh Boss: phát bàn mới để đánh tiếp
-        p.board = LinkBoard.generate(newSeed());
+        if (side === 1) p.board2 = LinkBoard.generate(newSeed());
+        else p.board = LinkBoard.generate(newSeed());
       }
     } else {
-      p.board.ensureMove(this.t);
+      board.ensureMove(this.t);
     }
     this.emit();
     return undefined;
@@ -382,8 +428,11 @@ export class LinkDuel {
     const hp = linkBossMaxHp(no, this.players.length);
     this.boss = { id: def.id, def, no, hp, maxHp: hp, shield: 0, maxShield: 0, phase: 1, nextSkillAt: this.t + def.skillS[0] * 1000, skillIdx: 0 };
     const seed = newSeed();
+    const seed2 = newSeed();
     for (const p of this.players) {
       p.board = LinkBoard.generate(seed);
+      p.board2 = def.dual ? LinkBoard.generate(seed2) : undefined;
+      p.hintSide = 0;
       p.chain = 0;
       p.hint = undefined;
       p.darkUntil = 0;
@@ -435,10 +484,20 @@ export class LinkDuel {
       this.hooks.changed();
       return;
     }
-    const phase: 1 | 2 | 3 = boss.hp < boss.maxHp * 0.33 ? 3 : boss.hp < boss.maxHp * 0.66 ? 2 : 1;
+    // Boss nhiều thanh máu: mỗi lần vỡ 1 thanh dựng khiên
+    const bars = boss.def.bars ?? 1;
+    const barsLeft = (hp: number) => Math.ceil((hp / boss.maxHp) * bars - 1e-9);
+    const broke = bars > 1 && barsLeft(boss.hp) < barsLeft(boss.hp + real);
+    if (broke && boss.def.barShield) {
+      const sh = Math.round(boss.maxHp * boss.def.barShield);
+      boss.maxShield = Math.max(boss.shield, sh);
+      boss.shield = Math.max(boss.shield, sh);
+    }
+    const phase: 1 | 2 | 3 = boss.hp * 3 <= boss.maxHp ? 3 : boss.hp * 3 <= boss.maxHp * 2 ? 2 : 1;
+    if (broke && phase === boss.phase) this.fx.push({ k: 'boss', boss: boss.def.id, kind: 'bar', phase, left: barsLeft(boss.hp) });
     if (phase > boss.phase) {
       boss.phase = phase;
-      this.fx.push({ k: 'boss', boss: boss.def.id, kind: 'rage', phase });
+      this.fx.push({ k: 'boss', boss: boss.def.id, kind: 'rage', phase, ...(bars > 1 ? { left: barsLeft(boss.hp) } : {}) });
       boss.nextSkillAt = Math.min(boss.nextSkillAt, this.t + boss.def.skillS[phase - 1] * 1000);
     }
   }
@@ -450,22 +509,76 @@ export class LinkDuel {
     const kind = skills[boss.skillIdx++ % skills.length];
     const alive = this.active();
     let to: string | undefined;
+    let hits: Record<string, number[]> | undefined;
     // người đang gây nhiều sát thương nhất (Kén Tơ, Sét Lan, Xiềng Xích Linh Hồn nhắm vào)
     const top = [...alive].sort((a, b) => b.damage - a.damage)[0];
     if (kind === 'cocoon' || kind === 'chain' || kind === 'soul_chain') {
       if (top) {
-        if (kind === 'cocoon') top.board.freeze(LINK_BOSS_COCOON.cells, LINK_BOSS_COCOON.ms, this.t, 1);
+        if (kind === 'cocoon') this.lock(top, LINK_BOSS_COCOON.cells, LINK_BOSS_COCOON.ms, 1);
         else if (kind === 'chain') {
-          top.board.freeze(LINK_BOSS_CHAIN.cells, LINK_BOSS_CHAIN.ms, this.t, 3);
+          this.lock(top, LINK_BOSS_CHAIN.cells, LINK_BOSS_CHAIN.ms, 3);
           top.chain = 0;
         } else {
-          top.board.freeze(LINK_BOSS_SOUL_CHAIN.cells, LINK_BOSS_SOUL_CHAIN.ms, this.t, 4);
+          this.lock(top, LINK_BOSS_SOUL_CHAIN.cells, LINK_BOSS_SOUL_CHAIN.ms, 4);
           top.chain = 0;
           top.stunUntil = this.t + LINK_BOSS_SOUL_CHAIN.stunMs;
         }
         top.hint = undefined;
         to = top.id;
       }
+    } else if (kind === 'vortex') {
+      // Lốc Xoáy Hỗn Nguyên: đảo lộn toàn bộ thú trên bàn mọi người, mất combo và gợi ý
+      for (const p of alive) {
+        for (const b of this.boardsOf(p)) {
+          if (b.isEmpty()) continue;
+          b.shuffle();
+          b.ensureMove(this.t);
+        }
+        p.chain = 0;
+        p.hint = undefined;
+        p.thunder = Math.max(0, p.thunder - LINK_BOSS_VORTEX.thunder);
+      }
+    } else if (kind === 'eye_laser') {
+      // Ma Nhãn Laze: bắn từ mắt làm choáng 3 / 4 / 5 con thú trên bàn mỗi người
+      const n = LINK_BOSS_LASER.cells[boss.phase - 1];
+      hits = {};
+      for (const p of alive) hits[p.id] = this.lock(p, n, LINK_BOSS_LASER.ms, 5);
+    } else if (kind === 'twin_laser') {
+      // Song Nhãn Diệt Thế: mỗi mắt bắn 1 bàn, mỗi bàn choáng 2 / 3 / 4 thú
+      const n = LINK_BOSS_TWIN_LASER.cells[boss.phase - 1];
+      hits = {};
+      for (const p of alive) hits[p.id] = this.lock(p, n * this.boardsOf(p).length, LINK_BOSS_TWIN_LASER.ms, 5);
+    } else if (kind === 'apocalypse') {
+      // Tận Thế Tứ Linh: 4 linh hồn Boss cùng ra đòn – băng, tơ, lửa, điện mỗi loại vài ô, trừ Sấm, mất combo
+      hits = {};
+      for (const p of alive) {
+        const all: number[] = [];
+        for (const lk of [0, 1, 2, 3] as const) all.push(...this.lock(p, LINK_BOSS_APOCALYPSE.perKind, LINK_BOSS_APOCALYPSE.ms, lk));
+        hits[p.id] = all;
+        p.thunder = Math.max(0, p.thunder - LINK_BOSS_APOCALYPSE.thunder);
+        p.chain = 0;
+      }
+    } else if (kind === 'meteor_rain') {
+      // Mưa Sao Băng Thiên Hà: thiêu cháy nhiều ô trên mọi bàn
+      hits = {};
+      for (const p of alive) hits[p.id] = this.lock(p, LINK_BOSS_METEOR_RAIN.cells, LINK_BOSS_METEOR_RAIN.ms, 2);
+    } else if (kind === 'gravity') {
+      // Trọng Lực Đảo Chiều: bàn trái và bàn phải đổi chỗ cho nhau (có 1 bàn thì lật ngược thứ tự thú)
+      for (const p of alive) {
+        if (p.board2) [p.board, p.board2] = [p.board2, p.board];
+        else {
+          p.board.shuffle();
+          p.board.ensureMove(this.t);
+        }
+        p.hint = undefined;
+        p.chain = 0;
+      }
+    } else if (kind === 'supernova') {
+      // Siêu Tân Tinh: chói loá che bàn + dựng khiên
+      for (const p of alive) p.darkUntil = Math.max(p.darkUntil, this.t + LINK_BOSS_SUPERNOVA.darkMs);
+      const sh = Math.round(boss.maxHp * LINK_BOSS_SUPERNOVA.shield);
+      boss.maxShield = Math.max(boss.maxShield, boss.shield + sh);
+      boss.shield += sh;
     } else if (kind === 'drain') {
       boss.hp = Math.min(boss.maxHp, boss.hp + Math.round(boss.maxHp * LINK_BOSS_DRAIN));
     } else if (kind === 'shield') {
@@ -482,10 +595,10 @@ export class LinkDuel {
         boss.shield = Math.max(boss.shield, sh);
       }
       for (const p of alive) {
-        if (kind === 'ice') p.board.freeze(LINK_BOSS_ICE.cells, LINK_BOSS_ICE.ms, this.t, 0);
-        else if (kind === 'web') p.board.freeze(LINK_BOSS_WEB.cells, LINK_BOSS_WEB.ms, this.t, 1);
-        else if (kind === 'meteor') p.board.freeze(LINK_BOSS_METEOR.cells, LINK_BOSS_METEOR.ms, this.t, 2);
-        else if (kind === 'bolt') p.board.freeze(LINK_BOSS_BOLT.cells, LINK_BOSS_BOLT.ms, this.t, 3);
+        if (kind === 'ice') this.lock(p, LINK_BOSS_ICE.cells, LINK_BOSS_ICE.ms, 0);
+        else if (kind === 'web') this.lock(p, LINK_BOSS_WEB.cells, LINK_BOSS_WEB.ms, 1);
+        else if (kind === 'meteor') this.lock(p, LINK_BOSS_METEOR.cells, LINK_BOSS_METEOR.ms, 2);
+        else if (kind === 'bolt') this.lock(p, LINK_BOSS_BOLT.cells, LINK_BOSS_BOLT.ms, 3);
         else if (kind === 'roar') {
           p.stunUntil = this.t + LINK_BOSS_ROAR_MS;
           p.chain = 0;
@@ -498,18 +611,18 @@ export class LinkDuel {
           p.chain = 0;
           p.thunder = Math.max(0, p.thunder - LINK_BOSS_QUAKE_THUNDER);
         } else if (kind === 'blackhole') {
-          p.board.freeze(LINK_BOSS_BLACKHOLE.cells, LINK_BOSS_BLACKHOLE.ms, this.t, 4);
+          this.lock(p, LINK_BOSS_BLACKHOLE.cells, LINK_BOSS_BLACKHOLE.ms, 4);
           p.thunder = Math.max(0, p.thunder - LINK_BOSS_BLACKHOLE.thunder);
         } else if (kind === 'hellfire') {
-          p.board.freeze(LINK_BOSS_HELLFIRE.cells, LINK_BOSS_HELLFIRE.ms, this.t, 2);
+          this.lock(p, LINK_BOSS_HELLFIRE.cells, LINK_BOSS_HELLFIRE.ms, 2);
           p.chain = 0;
         } else if (kind === 'eclipse') {
           p.darkUntil = this.t + LINK_BOSS_ECLIPSE.darkMs;
           p.venomUntil = this.t + LINK_BOSS_ECLIPSE.venomMs;
           p.chain = 0;
         } else if (kind === 'judgment') {
-          p.board.freeze(LINK_BOSS_JUDGMENT.voidCells, LINK_BOSS_JUDGMENT.ms, this.t, 4);
-          p.board.freeze(LINK_BOSS_JUDGMENT.fireCells, LINK_BOSS_JUDGMENT.ms, this.t, 2);
+          this.lock(p, LINK_BOSS_JUDGMENT.voidCells, LINK_BOSS_JUDGMENT.ms, 4);
+          this.lock(p, LINK_BOSS_JUDGMENT.fireCells, LINK_BOSS_JUDGMENT.ms, 2);
           p.stunUntil = this.t + LINK_BOSS_JUDGMENT.stunMs;
           p.chain = 0;
           p.thunder = Math.max(0, p.thunder - LINK_BOSS_JUDGMENT.thunder);
@@ -520,7 +633,7 @@ export class LinkDuel {
       }
     }
     boss.nextSkillAt = this.t + boss.def.skillS[boss.phase - 1] * 1000;
-    this.fx.push({ k: 'boss', boss: boss.def.id, kind, phase: boss.phase, to });
+    this.fx.push({ k: 'boss', boss: boss.def.id, kind, phase: boss.phase, to, ...(hits ? { hits } : {}) });
     this.dirty = true;
   }
 
@@ -609,13 +722,14 @@ export class LinkDuel {
       st.me = {
         cells: Array.from(p.board.cells),
         ice: p.board.iceList(this.t),
+        ...(p.board2 ? { cells2: Array.from(p.board2.cells), ice2: p.board2.iceList(this.t) } : {}),
         dark: Math.max(0, p.darkUntil - this.t),
         score1: p.score1,
         damage: p.damage,
         combo: p.chain,
         thunder: p.thunder,
         hintIn: Math.max(0, p.hintReadyAt - this.t),
-        hint: p.hint,
+        hint: p.hint ? [p.hint[0] + p.hintSide * LINK_CELLS, p.hint[1] + p.hintSide * LINK_CELLS] : undefined,
         shuffleIn: this.shuffleIn(p),
         venom: Math.max(0, p.venomUntil - this.t),
         stun: Math.max(0, p.stunUntil - this.t),

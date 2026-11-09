@@ -3,7 +3,9 @@
  * số sát thương, Siêu Đấm lóe trắng, chiêu bay sang bàn đối thủ, Boss nổi giận, K.O. và pháo hoa.
  * Cùng file: hình 3 Boss Vua Sấm Sét, Nữ Hoàng Nhện, Bạo Chúa và kiểu ô bị khoá (thiết kế riêng của game).
  */
-import { LINK_BOSSES, LINK_CRITTERS, type LinkBossId, type LinkFx, type LinkLock } from '../../../shared/src';
+import { LINK_BOSSES, LINK_BOSS_BLACKHOLE, LINK_CELLS, LINK_CRITTERS, type LinkBossId, type LinkFx, type LinkLock } from '../../../shared/src';
+import { drawOverlord } from './overlord';
+import { drawTitan, TITAN_EYES } from './titan';
 import type { FxItem } from './store';
 
 export interface Pt { x: number; y: number }
@@ -13,7 +15,8 @@ export interface FxLayout {
   /** tâm ô trên bàn chính */
   cell(i: number): Pt;
   /** điểm lưới (kể cả viền -1 / W / H) → màn hình */
-  point(x: number, y: number): Pt;
+  /** side: bàn trái (0) / phải (1) khi đánh Cự Thần */
+  point(x: number, y: number, side?: number): Pt;
   tile: number;
   board: Rect;
   /** khung bàn nhỏ của từng đối thủ */
@@ -31,7 +34,9 @@ const LIFE: Record<LinkFx['k'], number> = {
 };
 
 /** màu chữ / hạt của từng Boss */
-const BOSS_TINT: Record<LinkBossId, string> = { thunder: '#ffd43b', spider: '#da77f2', tyrant: '#ff6b2c', twins: '#e599f7' };
+const BOSS_TINT: Record<LinkBossId, string> = { thunder: '#ffd43b', spider: '#da77f2', tyrant: '#ff6b2c', twins: '#e599f7', overlord: '#f783ac', titan: '#74c0fc' };
+/** 4 màu linh hồn Boss trong Trùm Cuối */
+const SOULS = ['#ffd43b', '#da77f2', '#ff6b2c', '#74c0fc'];
 const bossName = (id?: LinkBossId) => (LINK_BOSSES.find((b) => b.id === id) ?? LINK_BOSSES[0]).name.toUpperCase();
 
 const center = (r: Rect): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
@@ -96,9 +101,12 @@ function burst(ctx: CanvasRenderingContext2D, p: Pt, t: number, seed: number, co
 function bigText(ctx: CanvasRenderingContext2D, text: string, p: Pt, size: number, color: string, alpha: number, scale = 1) {
   ctx.save();
   ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-  ctx.translate(p.x, p.y);
-  ctx.scale(scale, scale);
   ctx.font = `900 ${size}px system-ui, "Segoe UI", sans-serif`;
+  // màn hình hẹp: thu nhỏ để chữ không tràn ra ngoài
+  const maxW = (ctx.canvas.clientWidth || ctx.canvas.width) * 0.94;
+  const fitK = Math.min(1, maxW / Math.max(1, ctx.measureText(text).width * scale));
+  ctx.translate(p.x, p.y);
+  ctx.scale(scale * fitK, scale * fitK);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.lineJoin = 'round';
@@ -158,7 +166,7 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
               ctx.lineWidth = w;
               ctx.beginPath();
               f.path.forEach(([x, y], i) => {
-                const p = L.point(x, y);
+                const p = L.point(x, y, f.side ?? 0);
                 if (i) ctx.lineTo(p.x, p.y);
                 else ctx.moveTo(p.x, p.y);
               });
@@ -242,9 +250,90 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
       case 'boss': {
         const below = L.boss ? { x: screenMid.x, y: L.boss.y + L.boss.h + 26 } : { x: screenMid.x, y: H * 0.25 };
         const tint = BOSS_TINT[f.boss] ?? '#ff6b6b';
-        if (f.kind === 'rage') {
+        if (f.boss === 'twins' && f.kind !== 'rage' && age < 650) {
+          // Song Sát ra chiêu: 2 Boss cùng giáng sét tím + vàng xuống bàn, màn hình rung mạnh
+          if (age < 140) flash = Math.max(flash, 0.45 * (1 - age / 140));
+          shake = Math.max(shake, 12 * (1 - age / 650));
+          const mid = center(L.board);
+          const flick = Math.floor(age / 50);
+          bolt(ctx, { x: bossP.x - 60, y: bossP.y }, { x: mid.x - L.board.w * 0.2, y: mid.y }, seed + flick, 4, '#b197fc', 42);
+          bolt(ctx, { x: bossP.x + 60, y: bossP.y }, { x: mid.x + L.board.w * 0.2, y: mid.y }, seed + 7 + flick, 4, '#ffd43b', 42);
           ctx.save();
-          if (f.boss === 'twins') {
+          ctx.globalAlpha = 0.5 * (1 - age / 650);
+          ctx.strokeStyle = '#e599f7';
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.arc(mid.x, mid.y, Math.max(L.board.w, L.board.h) * 0.7 * ease(age / 650), 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+        if (f.kind === 'rage' && f.boss === 'titan') {
+          // Cự Thần giáng lâm / thịnh nộ: bầu trời tối, mưa sao, vòng thiên hà loé sáng
+          ctx.save();
+          ctx.fillStyle = `rgba(3,4,20,${0.65 * (1 - t)})`;
+          ctx.fillRect(0, 0, W, H);
+          const r = rand(seed);
+          for (let i = 0; i < 70; i++) {
+            const x = r() * W, y = r() * H;
+            ctx.globalAlpha = (1 - t) * (0.4 + 0.6 * Math.abs(Math.sin(now / 120 + i)));
+            ctx.fillStyle = i % 5 ? '#ffffff' : '#ffe066';
+            ctx.beginPath();
+            ctx.arc(x, y, 1 + r() * 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          for (let i = 0; i < 6; i++) {
+            const sx = r() * W, k = Math.min(1, t * 2 + r() * 0.3);
+            ctx.globalAlpha = 1 - t;
+            ctx.strokeStyle = '#a5d8ff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(sx, -20 + k * H * 0.6);
+            ctx.lineTo(sx - 60, -20 + k * H * 0.6 - 60);
+            ctx.stroke();
+          }
+          ctx.restore();
+          if (age < 260) flash = Math.max(flash, 0.9 * (1 - age / 260));
+          if (age < 1300) shake = Math.max(shake, 18 * (1 - age / 1300));
+          ctx.save();
+          for (let k = 0; k < 4; k++) {
+            const tt = Math.min(1, Math.max(0, t * 1.5 - k * 0.15));
+            if (tt <= 0 || tt >= 1) continue;
+            ctx.globalAlpha = 1 - tt;
+            ctx.strokeStyle = ['#74c0fc', '#ffd43b', '#da77f2', '#ffffff'][k];
+            ctx.lineWidth = 8 * (1 - tt) + 1;
+            ctx.beginPath();
+            ctx.ellipse(bossP.x, bossP.y, Math.max(W, H) * ease(tt), Math.max(W, H) * ease(tt) * 0.55, 0, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+          ctx.restore();
+          const title = f.phase === 1 ? '🌌 CỰ THẦN THIÊN HÀ GIÁNG LÂM!' : `🌌 CỰ THẦN THỊNH NỘ! CÒN ${f.left ?? '?'}/10 THANH MÁU`;
+          const sub = f.phase === 1 ? 'TRÙM CUỐI · 10 THANH MÁU · 2 BÀN TRÁI + PHẢI · SÁT THƯƠNG x2' : f.phase === 2 ? 'SONG NHÃN BẮN MẠNH HƠN · MƯA SAO BĂNG DÀY HƠN' : 'CƠN THỊNH NỘ CỦA VŨ TRỤ · DỐC HẾT SỨC!';
+          bigText(ctx, title, below, Math.min(38, (W * 1.5) / title.length), f.phase === 1 ? '#a5d8ff' : '#ff6b6b', 1 - t * t, 0.75 + ease(Math.min(1, t * 3)) * 0.4);
+          bigText(ctx, sub, { x: below.x, y: below.y + 36 }, Math.min(20, (W * 1.5) / sub.length), '#ffe066', 1 - t);
+        } else if (f.kind === 'bar') {
+          // vỡ 1 thanh máu: mảnh vỡ văng ra từ Boss
+          if (age < 160) flash = Math.max(flash, 0.4 * (1 - age / 160));
+          if (age < 600) shake = Math.max(shake, 9 * (1 - age / 600));
+          burst(ctx, bossP, Math.min(1, t * 1.3), seed, tint, 40, 220, 6);
+          burst(ctx, bossP, Math.min(1, t * 1.1), seed + 5, '#ffffff', 20, 160, 4);
+          const bars = LINK_BOSSES.find((b) => b.id === f.boss)?.bars ?? 1;
+          bigText(ctx, `💥 VỠ THANH MÁU! CÒN ${f.left ?? 0}/${bars}`, below, Math.min(40, (W * 1.5) / 24), '#ffe066', 1 - t * t, 0.7 + ease(Math.min(1, t * 3)) * 0.45);
+        } else if (f.kind === 'rage') {
+          ctx.save();
+          if (f.boss === 'overlord') {
+            // màn hình tối sầm, 4 quầng màu linh hồn Boss xoay quanh
+            ctx.fillStyle = `rgba(5,2,15,${0.55 * (1 - t)})`;
+            ctx.fillRect(0, 0, W, H);
+            SOULS.forEach((col, i) => {
+              const a = (i / 4) * Math.PI * 2 + now / 600;
+              const gx = W / 2 + Math.cos(a) * W * 0.4, gy = H / 2 + Math.sin(a) * H * 0.4;
+              const g = ctx.createRadialGradient(gx, gy, 10, gx, gy, Math.max(W, H) * 0.45);
+              g.addColorStop(0, `${col}${Math.round(110 * (1 - t)).toString(16).padStart(2, '0')}`);
+              g.addColorStop(1, `${col}00`);
+              ctx.fillStyle = g;
+              ctx.fillRect(0, 0, W, H);
+            });
+          } else if (f.boss === 'twins') {
             const gL = ctx.createRadialGradient(W * 0.25, H * 0.35, 30, W * 0.25, H * 0.35, Math.max(W, H) * 0.75);
             gL.addColorStop(0, `rgba(151,117,250,${0.48 * (1 - t)})`);
             gL.addColorStop(1, 'rgba(0,0,0,0)');
@@ -292,7 +381,34 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
             burst(ctx, { x: bossP.x - 60, y: bossP.y }, t, seed + 11, '#9775fa', 22, 130, 6);
             burst(ctx, { x: bossP.x + 60, y: bossP.y }, t, seed + 23, '#ff6b6b', 22, 130, 6);
           }
-          if (f.boss === 'twins') {
+          if (f.boss === 'overlord' && age < 1400) {
+            // Trùm Cuối giáng thế / vỡ thanh máu: sét 4 màu giáng khắp màn + vòng sóng xung kích
+            if (age < 200) flash = Math.max(flash, 0.8 * (1 - age / 200));
+            if (age < 1100) shake = Math.max(shake, 15 * (1 - age / 1100));
+            const r = rand(seed + Math.floor(age / 70));
+            for (let i = 0; i < 8; i++) {
+              const x = r() * W;
+              bolt(ctx, { x: x + (r() - 0.5) * 120, y: 0 }, { x, y: H * (0.3 + r() * 0.6) }, seed + i * 23 + Math.floor(age / 60), 3.5, SOULS[i % 4], 46);
+            }
+            ctx.save();
+            for (let k = 0; k < 3; k++) {
+              const tt = Math.min(1, Math.max(0, t * 1.6 - k * 0.18));
+              if (tt <= 0 || tt >= 1) continue;
+              ctx.globalAlpha = 1 - tt;
+              ctx.strokeStyle = SOULS[k];
+              ctx.lineWidth = 6 * (1 - tt) + 1;
+              ctx.beginPath();
+              ctx.arc(bossP.x, bossP.y, Math.max(W, H) * ease(tt), 0, Math.PI * 2);
+              ctx.stroke();
+            }
+            ctx.restore();
+          }
+          if (f.boss === 'overlord') {
+            const title = f.phase === 1 ? '👑 ĐẠI MA VƯƠNG HỖN NGUYÊN GIÁNG THẾ!' : `💥 VỠ THANH MÁU! CÒN ${f.left ?? 4 - f.phase}/3`;
+            const sub = f.phase === 1 ? 'TỨ ĐẠI BOSS HỢP THỂ · 3 THANH MÁU · TẬN THẾ TỨ LINH' : f.phase === 2 ? 'GIÁP HỖN NGUYÊN DỰNG LÊN · MA NHÃN BẮN 4 PHÁT' : 'CƠN THỊNH NỘ CUỐI CÙNG · MA NHÃN BẮN 5 PHÁT';
+            bigText(ctx, title, below, Math.min(38, (W * 1.5) / title.length), f.phase === 1 ? '#ffe066' : '#ff6b6b', 1 - t * t, 0.75 + ease(Math.min(1, t * 3)) * 0.4);
+            bigText(ctx, sub, { x: below.x, y: below.y + 36 }, Math.min(20, W / 26), '#f783ac', 1 - t);
+          } else if (f.boss === 'twins') {
             const title = f.phase === 1 ? '🐉 HẮC LONG × 🔥 PHƯỢNG HOÀNG XUẤT HIỆN!' : `🐉🔥 SONG SÁT CO-OP NỔI GIẬN! (P${f.phase})`;
             bigText(ctx, title, below, Math.min(36, (W * 1.55) / title.length), f.phase === 1 ? '#ffe066' : '#ff6b6b', 1 - t * t, 0.75 + ease(Math.min(1, t * 3)) * 0.35);
             bigText(ctx, '⚔️ 2 BOSS CO-OP SIÊU KHÓ · BỘ KỸ NĂNG HỦY DIỆT ⚔️', { x: below.x, y: below.y + 34 }, Math.min(20, W / 24), '#e599f7', 1 - t);
@@ -524,7 +640,7 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
             ctx.fill();
           }
           ctx.restore();
-          bigText(ctx, '🌀 HỐ ĐEN HƯ KHÔNG! −20 SẤM', below, Math.min(36, W / 14), '#d0bfff', 1 - t);
+          bigText(ctx, `🌀 HỐ ĐEN HƯ KHÔNG! −${LINK_BOSS_BLACKHOLE.thunder} SẤM`, below, Math.min(36, W / 14), '#d0bfff', 1 - t);
         } else if (f.kind === 'hellfire') {
           // Bão Lửa Địa Ngục: Phượng Hoàng Hỗn Mang quạt bão lửa đỏ-vàng-tím thiêu đốt 9 ô
           if (age < 750) shake = Math.max(shake, 10 * (1 - age / 750));
@@ -646,6 +762,267 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
           ctx.stroke();
           ctx.restore();
           bigText(ctx, '🌑 NHẬT THỰC VĨNH CỬU! MÙ + ĐỘC', below, Math.min(34, W / 15), '#e599f7', 1 - t);
+        } else if (f.kind === 'vortex') {
+          // Lốc Xoáy Hỗn Nguyên: cơn lốc khổng lồ cuốn qua bàn, thú bay tán loạn rồi rơi lại chỗ mới
+          if (age < 1100) shake = Math.max(shake, 9 * (1 - age / 1100));
+          const mid = center(L.board);
+          const maxR = Math.max(L.board.w, L.board.h) * 0.6;
+          const grow = ease(Math.min(1, t * 2.2));
+          ctx.save();
+          ctx.translate(mid.x, mid.y);
+          ctx.rotate(now / 140);
+          for (let k = 0; k < 6; k++) {
+            ctx.save();
+            ctx.rotate((k / 6) * Math.PI * 2);
+            ctx.strokeStyle = SOULS[k % 4];
+            ctx.globalAlpha = (1 - t) * 0.85;
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            for (let i = 0; i <= 30; i++) {
+              const u = i / 30;
+              const a = u * Math.PI * 2.2;
+              const rr = maxR * grow * (0.06 + u * 0.9);
+              if (i) ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr * 0.62);
+              else ctx.moveTo(Math.cos(a) * rr, Math.sin(a) * rr * 0.62);
+            }
+            ctx.stroke();
+            ctx.restore();
+          }
+          const eye = ctx.createRadialGradient(0, 0, 2, 0, 0, maxR * 0.2 * grow + 1);
+          eye.addColorStop(0, `rgba(255,255,255,${0.9 * (1 - t)})`);
+          eye.addColorStop(0.5, `rgba(247,131,172,${0.6 * (1 - t)})`);
+          eye.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = eye;
+          ctx.beginPath();
+          ctx.arc(0, 0, maxR * 0.2 * grow + 1, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          // mảnh vụn 4 màu bị cuốn bay quanh tâm lốc
+          const r = rand(seed);
+          ctx.save();
+          for (let i = 0; i < 28; i++) {
+            const a = r() * Math.PI * 2 + t * (6 + r() * 4);
+            const d = maxR * (0.15 + r() * 0.6) * Math.sin(Math.PI * Math.min(1, t * 1.2));
+            ctx.globalAlpha = 1 - t;
+            ctx.fillStyle = SOULS[i % 4];
+            ctx.beginPath();
+            ctx.roundRect(mid.x + Math.cos(a) * d - L.tile * 0.18, mid.y + Math.sin(a) * d * 0.62 - L.tile * 0.18, L.tile * 0.36, L.tile * 0.36, L.tile * 0.08);
+            ctx.fill();
+          }
+          ctx.restore();
+          bigText(ctx, '🌪️ LỐC XOÁY HỖN NGUYÊN! BÀN ĐẢO LỘN', below, Math.min(36, (W * 1.5) / 34), '#f783ac', 1 - t * t, 0.8 + ease(Math.min(1, t * 3)) * 0.3);
+        } else if (f.kind === 'eye_laser' || f.kind === 'twin_laser') {
+          // Ma Nhãn Laze (Đại Ma Vương, 1 mắt) / Song Nhãn Diệt Thế (Cự Thần, 2 mắt – mỗi mắt bắn 1 bàn)
+          const twin = f.kind === 'twin_laser';
+          const eyeAt = (g: number): Pt => {
+            if (!L.boss) return bossP;
+            if (!twin) return { x: L.boss.x + L.boss.w / 2, y: L.boss.y + L.boss.h * 0.5 };
+            // khớp drawBoss: Cự Thần vẽ tại cy = 0.55h + 0.2h, cỡ 0.82h
+            const e = TITAN_EYES[g >= LINK_CELLS ? 1 : 0];
+            const sz = L.boss.h * 1.05 * 0.78;
+            return { x: L.boss.x + L.boss.w / 2 + e[0] * sz, y: L.boss.y + L.boss.h * 0.55 + L.boss.h * 1.05 * 0.19 + e[1] * sz };
+          };
+          const eyeP = eyeAt(0);
+          const myHits = (L.mainId && f.hits?.[L.mainId]) || [];
+          const charge = 260;
+          if (age < charge) {
+            const k = age / charge;
+            ctx.save();
+            for (const e of twin ? [eyeAt(0), eyeAt(LINK_CELLS)] : [eyeP]) {
+              const g = ctx.createRadialGradient(e.x, e.y, 1, e.x, e.y, 10 + k * 46);
+              g.addColorStop(0, '#ffffff');
+              g.addColorStop(0.4, twin ? 'rgba(102,217,232,0.9)' : 'rgba(255,45,85,0.9)');
+              g.addColorStop(1, 'rgba(255,45,85,0)');
+              ctx.fillStyle = g;
+              ctx.beginPath();
+              ctx.arc(e.x, e.y, 10 + k * 46, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            ctx.restore();
+          } else {
+            const ft = (age - charge) / (life - charge);
+            if (age < charge + 120) flash = Math.max(flash, 0.35);
+            if (age < charge + 500) shake = Math.max(shake, 6);
+            const beamA = Math.max(0, 1 - ft * 1.3);
+            const targets: Pt[] = myHits.map((i) => L.cell(i));
+            // bàn nhỏ của đối thủ: mỗi người 1 tia mảnh
+            const from: Pt[] = myHits.map((g) => eyeAt(g));
+            for (const [id, cells] of Object.entries(f.hits ?? {})) {
+              if (id === L.mainId || !cells.length) continue;
+              const fr = L.foeRect(id);
+              if (fr) {
+                targets.push(center(fr));
+                from.push(eyeAt(targets.length % 2 ? 0 : LINK_CELLS));
+              }
+            }
+            ctx.save();
+            ctx.lineCap = 'round';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            targets.forEach((to, n) => {
+              const main = n < myHits.length;
+              const wob = Math.sin(now / 30 + n) * 1.5;
+              const src = from[n] ?? eyeP;
+              const core = twin ? (src.x < (L.boss ? L.boss.x + L.boss.w / 2 : 0) ? '#66d9e8' : '#ff2d55') : '#ff2d55';
+              for (const [w, col] of [[main ? 16 : 6, `${core}73`], [main ? 8 : 3, core], [main ? 3 : 1.2, '#ffffff']] as const) {
+                ctx.globalAlpha = beamA;
+                ctx.strokeStyle = col;
+                ctx.lineWidth = Math.max(0.5, w + wob);
+                ctx.shadowColor = core;
+                ctx.shadowBlur = 18;
+                ctx.beginPath();
+                ctx.moveTo(src.x, src.y);
+                ctx.lineTo(to.x, to.y);
+                ctx.stroke();
+              }
+              if (main) {
+                burst(ctx, to, Math.min(1, ft * 1.4), seed + n * 17, '#ff6b6b', 14, L.tile * 1.1, L.tile * 0.1);
+                // sao choáng xoay quanh ô
+                ctx.globalAlpha = Math.max(0, 1 - ft);
+                ctx.fillStyle = '#ffe066';
+                ctx.shadowBlur = 0;
+                ctx.font = `${Math.round(L.tile * 0.3)}px system-ui`;
+                for (let k = 0; k < 3; k++) {
+                  const a = now / 160 + (k / 3) * Math.PI * 2;
+                  ctx.fillText('★', to.x + Math.cos(a) * L.tile * 0.42, to.y - L.tile * 0.35 + Math.sin(a) * L.tile * 0.12);
+                }
+              }
+            });
+            ctx.restore();
+          }
+          const n = myHits.length || (twin ? [4, 6, 8] : [3, 4, 5])[Math.max(0, Math.min(2, f.phase - 1))];
+          bigText(ctx, twin ? `👀 SONG NHÃN DIỆT THẾ! CHOÁNG ${n} THÚ` : `👁️ MA NHÃN LAZE! CHOÁNG ${n} THÚ`, below, Math.min(36, (W * 1.5) / 30), twin ? '#66d9e8' : '#ff6b6b', 1 - t * t, 0.8 + ease(Math.min(1, t * 3)) * 0.3);
+        } else if (f.kind === 'apocalypse') {
+          // Tận Thế Tứ Linh: 4 linh hồn Boss bay từ 4 góc màn hình, giáng 4 loại đòn xuống bàn
+          if (age < 200) flash = Math.max(flash, 0.6 * (1 - age / 200));
+          if (age < 1200) shake = Math.max(shake, 14 * (1 - age / 1200));
+          const mid = center(L.board);
+          const corners: Pt[] = [{ x: 0, y: 0 }, { x: W, y: 0 }, { x: W, y: H }, { x: 0, y: H }];
+          const k = ease(Math.min(1, t * 2));
+          const flick = Math.floor(age / 55);
+          corners.forEach((c0, i) => {
+            const pos = { x: c0.x + (mid.x - c0.x) * k, y: c0.y + (mid.y - c0.y) * k };
+            if (t < 0.55) bolt(ctx, c0, pos, seed + i * 31 + flick, 4, SOULS[i], 50);
+            ctx.save();
+            ctx.globalAlpha = 1 - t;
+            const g = ctx.createRadialGradient(pos.x, pos.y, 2, pos.x, pos.y, 34);
+            g.addColorStop(0, '#ffffff');
+            g.addColorStop(0.4, SOULS[i]);
+            g.addColorStop(1, `${SOULS[i]}00`);
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 34, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          });
+          // vòng ấn 4 màu xoay quanh tâm bàn
+          ctx.save();
+          ctx.translate(mid.x, mid.y);
+          ctx.rotate(now / 300);
+          const rad = Math.min(L.board.w, L.board.h) * 0.45 * k;
+          for (let i = 0; i < 4; i++) {
+            ctx.strokeStyle = SOULS[i];
+            ctx.globalAlpha = 1 - t;
+            ctx.lineWidth = 5;
+            ctx.shadowColor = SOULS[i];
+            ctx.shadowBlur = 16;
+            ctx.beginPath();
+            ctx.arc(0, 0, rad, (i / 4) * Math.PI * 2, (i / 4) * Math.PI * 2 + Math.PI * 0.4);
+            ctx.stroke();
+          }
+          ctx.restore();
+          const myHits = (L.mainId && f.hits?.[L.mainId]) || [];
+          const per = Math.max(1, Math.ceil(myHits.length / 4));
+          myHits.forEach((g, n) => burst(ctx, L.cell(g), Math.min(1, t * 1.6), seed + n * 13, SOULS[Math.floor(n / per) % 4], 10, L.tile, L.tile * 0.1));
+          bigText(ctx, '☠️ TẬN THẾ TỨ LINH! BĂNG · TƠ · LỬA · SÉT', below, Math.min(36, (W * 1.5) / 36), '#ffe066', 1 - t * t, 0.8 + ease(Math.min(1, t * 3)) * 0.35);
+        } else if (f.kind === 'meteor_rain') {
+          // Mưa Sao Băng Thiên Hà: sao băng lao chéo xuống đúng các ô bị thiêu
+          if (age < 1100) shake = Math.max(shake, 8 * (1 - age / 1100));
+          const myHits = (L.mainId && f.hits?.[L.mainId]) || [];
+          const r = rand(seed);
+          const targets: Pt[] = myHits.map((g) => L.cell(g));
+          for (let i = 0; i < 10; i++) targets.push({ x: L.board.x + r() * L.board.w, y: L.board.y + r() * L.board.h });
+          ctx.save();
+          ctx.lineCap = 'round';
+          targets.forEach((to, n) => {
+            const delay = (n % 8) * 0.06;
+            const k = Math.min(1, Math.max(0, (t - delay) / 0.45));
+            if (k <= 0) return;
+            if (k < 1) {
+              const sx = to.x + 260 * (1 - k), sy = to.y - 320 * (1 - k);
+              const g = ctx.createLinearGradient(sx + 70, sy - 85, sx, sy);
+              g.addColorStop(0, 'rgba(255,255,255,0)');
+              g.addColorStop(1, n < myHits.length ? '#ffd43b' : '#a5d8ff');
+              ctx.strokeStyle = g;
+              ctx.lineWidth = n < myHits.length ? 6 : 3;
+              ctx.beginPath();
+              ctx.moveTo(sx + 70, sy - 85);
+              ctx.lineTo(sx, sy);
+              ctx.stroke();
+              ctx.fillStyle = '#fff';
+              ctx.beginPath();
+              ctx.arc(sx, sy, n < myHits.length ? 5 : 3, 0, Math.PI * 2);
+              ctx.fill();
+            } else if (n < myHits.length) {
+              burst(ctx, to, Math.min(1, (t - delay - 0.45) * 2.5), seed + n * 7, '#ff922b', 12, L.tile * 1.2, L.tile * 0.12);
+            }
+          });
+          ctx.restore();
+          bigText(ctx, '☄️ MƯA SAO BĂNG THIÊN HÀ!', below, Math.min(38, (W * 1.5) / 24), '#ffd43b', 1 - t * t, 0.8 + ease(Math.min(1, t * 3)) * 0.35);
+        } else if (f.kind === 'gravity') {
+          // Trọng Lực Đảo Chiều: 2 nửa bàn bị bẻ cong rồi đổi chỗ
+          if (age < 900) shake = Math.max(shake, 10 * (1 - age / 900));
+          const B = L.board;
+          ctx.save();
+          ctx.globalAlpha = 0.55 * (1 - t);
+          const g = ctx.createLinearGradient(B.x, 0, B.x + B.w, 0);
+          g.addColorStop(0, '#7048e8');
+          g.addColorStop(0.5, 'rgba(0,0,0,0)');
+          g.addColorStop(1, '#1971c2');
+          ctx.fillStyle = g;
+          ctx.fillRect(B.x, B.y, B.w, B.h);
+          ctx.globalAlpha = 1 - t;
+          ctx.strokeStyle = '#e5dbff';
+          ctx.lineWidth = 6;
+          ctx.shadowColor = '#b197fc';
+          ctx.shadowBlur = 20;
+          const k = ease(Math.min(1, t * 1.8));
+          for (const dir of [1, -1]) {
+            const y = B.y + B.h * (dir > 0 ? 0.3 : 0.7);
+            const x0 = B.x + B.w * (dir > 0 ? 0.2 : 0.8);
+            const x1 = x0 + dir * B.w * 0.6 * k;
+            ctx.beginPath();
+            ctx.moveTo(x0, y);
+            ctx.quadraticCurveTo((x0 + x1) / 2, y - dir * B.h * 0.25, x1, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x1, y);
+            ctx.lineTo(x1 - dir * 18, y - 12);
+            ctx.moveTo(x1, y);
+            ctx.lineTo(x1 - dir * 18, y + 12);
+            ctx.stroke();
+          }
+          ctx.restore();
+          bigText(ctx, '🔄 TRỌNG LỰC ĐẢO CHIỀU! 2 BÀN ĐỔI CHỖ', below, Math.min(36, (W * 1.5) / 34), '#d0bfff', 1 - t * t, 0.8 + ease(Math.min(1, t * 3)) * 0.35);
+        } else if (f.kind === 'supernova') {
+          // Siêu Tân Tinh: Boss nổ sáng loá, sóng ánh sáng quét qua màn hình
+          if (age < 450) flash = Math.max(flash, 0.95 * (1 - age / 450));
+          if (age < 800) shake = Math.max(shake, 10 * (1 - age / 800));
+          ctx.save();
+          for (let k = 0; k < 3; k++) {
+            const tt = Math.min(1, Math.max(0, t * 1.4 - k * 0.12));
+            if (tt <= 0 || tt >= 1) continue;
+            const R = Math.max(W, H) * 1.1 * ease(tt);
+            const g = ctx.createRadialGradient(bossP.x, bossP.y, R * 0.7, bossP.x, bossP.y, R);
+            g.addColorStop(0, 'rgba(255,255,255,0)');
+            g.addColorStop(0.8, `rgba(255,243,191,${0.6 * (1 - tt)})`);
+            g.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, W, H);
+          }
+          ctx.restore();
+          bigText(ctx, '💫 SIÊU TÂN TINH! CHÓI LOÁ + KHIÊN SAO', below, Math.min(36, (W * 1.5) / 34), '#fff3bf', 1 - t * t, 0.8 + ease(Math.min(1, t * 3)) * 0.35);
         } else if (f.kind === 'judgment') {
           // Song Tuyệt Hủy Diệt: 2 Boss Co-op cùng phóng đại tuyệt kỹ giao thoa nổ tung bàn chơi
           if (age < 220) flash = Math.max(flash, 0.75 * (1 - age / 220));
@@ -827,6 +1204,34 @@ export function drawLock(ctx: CanvasRenderingContext2D, px: number, py: number, 
     ctx.closePath();
     ctx.fill();
     ctx.restore();
+  } else if (kind === 5) {
+    // choáng laze (Trùm Cuối): vết cháy đỏ hình mắt + 3 ngôi sao choáng xoay
+    const g = ctx.createRadialGradient(px + tile * 0.45, py + tile * 0.45, tile * 0.04, px + tile * 0.45, py + tile * 0.45, tile * 0.6);
+    g.addColorStop(0, 'rgba(255,255,255,0.75)');
+    g.addColorStop(0.3, 'rgba(255,45,85,0.62)');
+    g.addColorStop(1, 'rgba(92,0,17,0.55)');
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.clip();
+    ctx.strokeStyle = 'rgba(255,240,240,0.9)';
+    ctx.lineWidth = Math.max(1.2, tile * 0.04);
+    ctx.beginPath();
+    ctx.ellipse(px + tile * 0.45, py + tile * 0.45, tile * 0.3, tile * 0.14, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#1a0008';
+    ctx.beginPath();
+    ctx.ellipse(px + tile * 0.45, py + tile * 0.45, tile * 0.04, tile * 0.12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffe066';
+    ctx.shadowColor = '#ffd43b';
+    ctx.shadowBlur = tile * 0.2;
+    ctx.font = `${Math.round(tile * 0.24)}px system-ui`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let k = 0; k < 3; k++) {
+      const a = now / 220 + (k / 3) * Math.PI * 2;
+      ctx.fillText('★', px + tile * 0.45 + Math.cos(a) * tile * 0.3, py + tile * 0.2 + Math.sin(a) * tile * 0.09);
+    }
   } else if (kind === 2) {
     const flick = 0.75 + Math.sin(now / 90) * 0.12;
     const g = ctx.createLinearGradient(px, py + tile, px, py);
@@ -880,6 +1285,14 @@ export function drawBoss(
   dead: boolean,
   shielded = false,
 ) {
+  if (id === 'titan') {
+    drawTitan(ctx, cx, cy + size * 0.19, size * 0.78, now, phase, hitAge, dead, shielded);
+    return;
+  }
+  if (id === 'overlord') {
+    drawOverlord(ctx, cx, cy + size * 0.12, size * 0.76, now, phase, hitAge, dead, shielded);
+    return;
+  }
   if (id === 'twins') {
     drawTwins(ctx, cx, cy + size * 0.04, size * 0.88, now, phase, hitAge, dead, shielded);
     return;

@@ -3,7 +3,7 @@
  * - Bấm 2 ô cùng con thú, nối được bằng đường gấp khúc ≤ 2 lần (được vòng ra ngoài mép).
  * - Màn 1: đua dọn bàn, combo nạp ⚡ Sấm để tung Đóng Băng / Mây Mù – mặc định vào người dẫn đầu,
  *   bấm vào bàn nhỏ của một đối thủ để nhắm người đó.
- * - Sau đó cả phòng đánh liên hoàn 3 Boss: Vua Sấm Sét → Nữ Hoàng Nhện → Bạo Chúa; kết liễu mỗi Boss +500.
+ * - Sau đó cả phòng đánh liên hoàn 6 Boss (Trùm Cuối Cự Thần: mỗi người 2 bàn trái + phải); kết liễu mỗi Boss +500.
  * - Đảo Bàn: chiêu tự đảo bàn mình, hồi chiêu 1 phút (phím R).
  * Bàn của mình vẽ trên canvas; điện thoại dọc thì bàn xoay thành 9 cột × 16 hàng (chỉ đổi cách vẽ).
  */
@@ -45,6 +45,10 @@ interface Props {
 /** Bố cục cốt lõi để inline: phủ kín màn hình kể cả khi CSS tải chậm */
 const FULL_SCREEN = { position: 'fixed', inset: 0, zIndex: 20, overflow: 'hidden', background: '#0b1630' } as const;
 
+/** màu từng thanh máu (Boss nhiều thanh): thanh trên cùng đổi màu sau mỗi lần vỡ */
+const BAR_COLORS = ['#ff6b6b', '#ff922b', '#ffd43b', '#69db7c', '#38d9a9', '#4dabf7', '#748ffc', '#b197fc', '#da77f2', '#f783ac'];
+const barColor = (i: number) => BAR_COLORS[((i % BAR_COLORS.length) + BAR_COLORS.length) % BAR_COLORS.length];
+
 const fmtTime = (ms: number) => {
   const s = Math.max(0, Math.ceil(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -53,6 +57,10 @@ const fmtTime = (ms: number) => {
 interface Geo {
   tile: number;
   portrait: boolean;
+  /** bề ngang 1 bàn + khe (px) – đánh Cự Thần có 2 bàn cạnh nhau */
+  sideW: number;
+  /** số bàn (1, hoặc 2 khi đánh Cự Thần) */
+  nb: number;
   /** vị trí canvas bàn trong khung game (px CSS) */
   left: number;
   top: number;
@@ -81,7 +89,7 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
   /** mục tiêu chiêu cho phím tắt (đọc trong listener) */
   const targetRef = useRef<string | undefined>(undefined);
   const selected = useRef<number | null>(null);
-  const geo = useRef<Geo>({ tile: 40, portrait: false, left: 0, top: 0 });
+  const geo = useRef<Geo>({ tile: 40, portrait: false, sideW: 0, nb: 1, left: 0, top: 0 });
 
   useEffect(() => {
     linkStore.reset(`${view.code}:${link.startedAt ?? 0}`);
@@ -134,16 +142,25 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
       const dark = (s?.me?.dark ?? 0) - (now - linkStore.at) > 0;
       const venom = (s?.me?.venom ?? 0) - (now - linkStore.at) > 0;
 
-      // --- bàn chính ---
+      // --- bàn chính (đánh Cự Thần: 2 bàn trái + phải đặt cạnh nhau) ---
+      const cells2: number[] | undefined = s?.me?.cells2;
+      const nb = cells2 ? 2 : 1;
       // clientWidth tính cả padding (chỗ chừa cho cột đối thủ) nên phải trừ ra, không thì bàn chui dưới cột đối thủ
       const ms = getComputedStyle(main);
       const mw = main.clientWidth - parseFloat(ms.paddingLeft) - parseFloat(ms.paddingRight);
       const mh = main.clientHeight - parseFloat(ms.paddingTop) - parseFloat(ms.paddingBottom);
-      const portrait = mh > mw * 1.05;
+      /** khe giữa 2 bàn (tính theo số ô) */
+      const gap = nb === 2 ? 0.6 : 0;
+      const fit = (c: number, r: number) => Math.min(mw / (nb * (c + 0.44) + gap), mh / (r + 0.44));
+      // 1 bàn: dọc khi khung cao hơn rộng; 2 bàn: chọn hướng nào cho ô to hơn
+      const portrait = nb === 2 ? fit(LINK_H, LINK_W) > fit(LINK_W, LINK_H) : mh > mw * 1.05;
       const cols = portrait ? LINK_H : LINK_W, rows = portrait ? LINK_W : LINK_H;
-      const tile = Math.max(16, Math.floor(Math.min(mw / (cols + 0.44), mh / (rows + 0.44))));
+      const tile = Math.max(nb === 2 ? 12 : 16, Math.floor(fit(cols, rows)));
       const pad = tile * 0.22;
-      const bw = Math.round(cols * tile + pad * 2), bh = Math.round(rows * tile + pad * 2);
+      const bw1 = Math.round(cols * tile + pad * 2), bh = Math.round(rows * tile + pad * 2);
+      const gapPx = Math.round(gap * tile);
+      const sideW = bw1 + gapPx;
+      const bw = nb * bw1 + (nb - 1) * gapPx;
       if (board.width !== Math.round(bw * dpr) || board.height !== Math.round(bh * dpr)) {
         board.width = Math.round(bw * dpr);
         board.height = Math.round(bh * dpr);
@@ -152,92 +169,112 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
       }
       const rootRect = root.getBoundingClientRect();
       const bRect = board.getBoundingClientRect();
-      geo.current = { tile, portrait, left: bRect.left - rootRect.left, top: bRect.top - rootRect.top };
+      geo.current = { tile, portrait, sideW, nb, left: bRect.left - rootRect.left, top: bRect.top - rootRect.top };
       const ctx = board.getContext('2d')!;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, bw, bh);
-      // khay bàn tối màu sang trọng làm nổi bật các ô Pikachu nền kem sáng
-      ctx.fillStyle = 'rgba(8, 20, 48, 0.65)';
-      ctx.strokeStyle = 'rgba(116, 192, 252, 0.32)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(1, 1, bw - 2, bh - 2, tile * 0.24);
-      ctx.fill();
-      ctx.stroke();
       const disp = (i: number) => {
         const x = i % LINK_W, y = Math.floor(i / LINK_W);
         return portrait ? { dx: y, dy: x } : { dx: x, dy: y };
       };
-      if (cells) {
-        const hint = s?.me?.hint;
-        const pulse = 0.5 + Math.sin(now / 160) * 0.5;
-        for (let i = 0; i < LINK_CELLS; i++) {
-          const k = cells[i];
-          if (k < 0 || linkStore.pending.has(i)) continue;
-          const { dx, dy } = disp(i);
-          let px = pad + dx * tile, py = pad + dy * tile;
-          const missUntil = linkStore.miss.get(i);
-          if (missUntil && missUntil > now) px += Math.sin(now / 22) * tile * 0.08;
-          const sel = selected.current === i;
-          if (sel) py -= tile * 0.08;
-          ctx.drawImage(tileCanvas(k, tile, dpr, dark), px, py, tile, tile);
-          if (sel) {
+      const hint = s?.me?.hint;
+      const pulse = 0.5 + Math.sin(now / 160) * 0.5;
+      const sides: { cells?: number[]; ice: [number, number, LinkLock][] }[] = [{ cells, ice: iceList }];
+      if (cells2) sides.push({ cells: cells2, ice: s?.me?.ice2 ?? [] });
+      sides.forEach((sd, side) => {
+        const base = side * LINK_CELLS;
+        ctx.save();
+        ctx.translate(side * sideW, 0);
+        // khay bàn tối màu sang trọng làm nổi bật các ô Pikachu nền kem sáng (bàn phải viền hồng)
+        ctx.fillStyle = 'rgba(8, 20, 48, 0.65)';
+        ctx.strokeStyle = side ? 'rgba(247, 131, 172, 0.5)' : nb === 2 ? 'rgba(116, 192, 252, 0.5)' : 'rgba(116, 192, 252, 0.32)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(1, 1, bw1 - 2, bh - 2, tile * 0.24);
+        ctx.fill();
+        ctx.stroke();
+        const sc = sd.cells;
+        if (sc) {
+          for (let i = 0; i < LINK_CELLS; i++) {
+            const k = sc[i];
+            const g = base + i;
+            if (k < 0 || linkStore.pending.has(g)) continue;
+            const { dx, dy } = disp(i);
+            let px = pad + dx * tile, py = pad + dy * tile;
+            const missUntil = linkStore.miss.get(g);
+            if (missUntil && missUntil > now) px += Math.sin(now / 22) * tile * 0.08;
+            const sel = selected.current === g;
+            if (sel) py -= tile * 0.08;
+            ctx.drawImage(tileCanvas(k, tile, dpr, dark), px, py, tile, tile);
+            if (sel) {
+              ctx.save();
+              ctx.strokeStyle = '#ffd43b';
+              ctx.shadowColor = '#ffd43b';
+              ctx.shadowBlur = 12;
+              ctx.lineWidth = 3.5;
+              ctx.beginPath();
+              ctx.roundRect(px + tile * 0.02, py + tile * 0.02, tile * 0.96, tile * 0.93, tile * 0.13);
+              ctx.stroke();
+              ctx.restore();
+            }
+            if (hint && (hint[0] === g || hint[1] === g)) {
+              ctx.save();
+              ctx.strokeStyle = `rgba(105, 219, 124, ${0.45 + pulse * 0.55})`;
+              ctx.lineWidth = 3.5;
+              ctx.beginPath();
+              ctx.roundRect(px + tile * 0.02, py + tile * 0.02, tile * 0.96, tile * 0.93, tile * 0.13);
+              ctx.stroke();
+              ctx.restore();
+            }
+            if (missUntil && missUntil > now) {
+              ctx.fillStyle = 'rgba(255, 107, 107, 0.35)';
+              ctx.beginPath();
+              ctx.roundRect(px + tile * 0.02, py + tile * 0.02, tile * 0.96, tile * 0.94, tile * 0.13);
+              ctx.fill();
+            }
+          }
+          // ô bị khoá: băng / tơ nhện / lửa / điện / ấn hư không / choáng laze
+          for (const [i, msLeft, kind] of sd.ice) {
+            if (sc[i] < 0) continue;
+            const { dx, dy } = disp(i);
+            const px = pad + dx * tile, py = pad + dy * tile;
             ctx.save();
-            ctx.strokeStyle = '#ffd43b';
-            ctx.shadowColor = '#ffd43b';
-            ctx.shadowBlur = 12;
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            ctx.roundRect(px + tile * 0.02, py + tile * 0.02, tile * 0.96, tile * 0.93, tile * 0.13);
-            ctx.stroke();
+            drawLock(ctx, px, py, tile, kind ?? 0, now + i * 97);
+            if (s?.me) {
+              const left = Math.max(0, msLeft - (now - linkStore.at));
+              ctx.fillStyle = kind === 5 ? '#fff5f5' : kind === 4 ? '#f3d9fa' : kind === 3 ? '#fff3bf' : kind === 2 ? '#fff4e6' : kind === 1 ? '#1e293b' : '#0b2545';
+              ctx.shadowColor = kind === 1 || kind === 0 ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.85)';
+              ctx.shadowBlur = 3;
+              ctx.font = `800 ${Math.round(tile * 0.28)}px system-ui, sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.fillText(`${Math.ceil(left / 1000)}`, px + tile * 0.5, py + tile * 0.86);
+            }
             ctx.restore();
           }
-          if (hint && (hint[0] === i || hint[1] === i)) {
+          if (dark) {
+            ctx.fillStyle = 'rgba(5, 8, 18, 0.32)';
+            ctx.fillRect(0, 0, bw1, bh);
+          }
+          if (venom) {
+            // Nọc Độc: viền xanh độc nhịp đập
             ctx.save();
-            ctx.strokeStyle = `rgba(105, 219, 124, ${0.45 + pulse * 0.55})`;
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            ctx.roundRect(px + tile * 0.02, py + tile * 0.02, tile * 0.96, tile * 0.93, tile * 0.13);
-            ctx.stroke();
+            ctx.strokeStyle = `rgba(148, 216, 45, ${0.35 + Math.sin(now / 140) * 0.25})`;
+            ctx.lineWidth = tile * 0.12;
+            ctx.strokeRect(tile * 0.06, tile * 0.06, bw1 - tile * 0.12, bh - tile * 0.12);
             ctx.restore();
           }
-          if (missUntil && missUntil > now) {
-            ctx.fillStyle = 'rgba(255, 107, 107, 0.35)';
-            ctx.beginPath();
-            ctx.roundRect(px + tile * 0.02, py + tile * 0.02, tile * 0.96, tile * 0.94, tile * 0.13);
-            ctx.fill();
-          }
         }
-        // ô bị khoá: băng / tơ nhện / lửa / điện / ấn hư không
-        for (const [i, msLeft, kind] of iceList) {
-          if (cells[i] < 0) continue;
-          const { dx, dy } = disp(i);
-          const px = pad + dx * tile, py = pad + dy * tile;
-          ctx.save();
-          drawLock(ctx, px, py, tile, kind ?? 0, now + i * 97);
-          if (s?.me) {
-            const left = Math.max(0, msLeft - (now - linkStore.at));
-            ctx.fillStyle = kind === 4 ? '#f3d9fa' : kind === 3 ? '#fff3bf' : kind === 2 ? '#fff4e6' : kind === 1 ? '#1e293b' : '#0b2545';
-            ctx.shadowColor = kind === 1 || kind === 0 ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.85)';
-            ctx.shadowBlur = 3;
-            ctx.font = `800 ${Math.round(tile * 0.28)}px system-ui, sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.fillText(`${Math.ceil(left / 1000)}`, px + tile * 0.5, py + tile * 0.86);
-          }
-          ctx.restore();
-        }
-        if (dark) {
-          ctx.fillStyle = 'rgba(5, 8, 18, 0.32)';
-          ctx.fillRect(0, 0, bw, bh);
-        }
-        if (venom) {
-          // Nọc Độc: viền xanh độc nhịp đập
-          ctx.save();
-          ctx.strokeStyle = `rgba(148, 216, 45, ${0.35 + Math.sin(now / 140) * 0.25})`;
-          ctx.lineWidth = tile * 0.12;
-          ctx.strokeRect(tile * 0.06, tile * 0.06, bw - tile * 0.12, bh - tile * 0.12);
-          ctx.restore();
-        }
+        ctx.restore();
+      });
+      if (nb === 2) {
+        // khe giữa 2 bàn: dải năng lượng thiên hà
+        const x = bw1 + gapPx / 2;
+        const g = ctx.createLinearGradient(0, 0, 0, bh);
+        g.addColorStop(0, 'rgba(116,192,252,0)');
+        g.addColorStop(0.5, `rgba(255,224,102,${0.55 + 0.35 * Math.sin(now / 220)})`);
+        g.addColorStop(1, 'rgba(247,131,172,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(x - 1.5, 0, 3, bh);
       }
 
       // --- bàn mini của các đối thủ ---
@@ -293,12 +330,13 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
         return { x: r.left - rootRect.left, y: r.top - rootRect.top, w: r.width, h: r.height };
       };
       const G = geo.current;
-      const point = (x: number, y: number) => {
+      const point = (x: number, y: number, side = 0) => {
         const dx = portrait ? y : x, dy = portrait ? x : y;
-        return { x: G.left + pad + (dx + 0.5) * tile, y: G.top + pad + (dy + 0.5) * tile };
+        return { x: G.left + side * G.sideW + pad + (dx + 0.5) * tile, y: G.top + pad + (dy + 0.5) * tile };
       };
       const L: FxLayout = {
-        cell: (i) => point(i % LINK_W, Math.floor(i / LINK_W)),
+        // i là chỉ số toàn cục: side * LINK_CELLS + ô
+        cell: (i) => point((i % LINK_CELLS) % LINK_W, Math.floor((i % LINK_CELLS) / LINK_W), Math.floor(i / LINK_CELLS)),
         point,
         tile,
         board: { x: G.left, y: G.top, w: bw, h: bh },
@@ -327,8 +365,11 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
     const s = linkStore.state;
     if (!s?.me || (s.stage !== 'stage1' && s.stage !== 'stage2')) return;
     const r = e.currentTarget.getBoundingClientRect();
-    const { tile, portrait } = geo.current;
-    const dx = Math.floor((e.clientX - r.left - tile * 0.22) / tile);
+    const { tile, portrait, sideW, nb } = geo.current;
+    const rx = e.clientX - r.left;
+    // đánh Cự Thần: bấm vào bàn trái (0) hay bàn phải (1)
+    const side = nb === 2 ? Math.min(1, Math.max(0, Math.floor(rx / Math.max(1, sideW)))) : 0;
+    const dx = Math.floor((rx - side * sideW - tile * 0.22) / tile);
     const dy = Math.floor((e.clientY - r.top - tile * 0.22) / tile);
     const x = portrait ? dy : dx, y = portrait ? dx : dy;
     if (x < 0 || y < 0 || x >= LINK_W || y >= LINK_H) {
@@ -336,25 +377,31 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
       return;
     }
     const i = y * LINK_W + x;
-    const cells = s.me.cells;
-    if (cells[i] < 0 || linkStore.pending.has(i)) return;
+    const boardOf = (sd: number) => (sd === 1 ? s.me!.cells2 : s.me!.cells);
+    const cells = boardOf(side);
+    if (!cells) return;
+    /** chỉ số toàn cục của ô vừa bấm */
+    const g = side * LINK_CELLS + i;
+    if (cells[i] < 0 || linkStore.pending.has(g)) return;
     const sel = selected.current;
+    const selSide = sel === null ? -1 : Math.floor(sel / LINK_CELLS);
+    const selKind = sel === null ? undefined : boardOf(selSide)?.[sel % LINK_CELLS];
     if (sel === null) {
-      selected.current = i;
-    } else if (sel === i) {
+      selected.current = g;
+    } else if (sel === g) {
       selected.current = null;
-    } else if (cells[sel] !== cells[i]) {
-      // khác loại: chọn ô mới luôn cho nhanh
-      selected.current = i;
+    } else if (selSide !== side || selKind !== cells[i]) {
+      // khác loại hoặc khác bàn: chọn ô mới luôn cho nhanh
+      selected.current = g;
     } else {
       selected.current = null;
       linkStore.pending.add(sel);
-      linkStore.pending.add(i);
-      send({ t: 'match', a: sel, b: i });
+      linkStore.pending.add(g);
+      send({ t: 'match', a: sel % LINK_CELLS, b: i, ...(side ? { side } : {}) });
       // nếu server từ chối (đường bị chặn) gói kế tiếp sẽ hiện lại 2 ô và rung đỏ
       window.setTimeout(() => {
-        if (linkStore.pending.has(i)) {
-          linkStore.pending.delete(i);
+        if (linkStore.pending.has(g)) {
+          linkStore.pending.delete(g);
           linkStore.pending.delete(sel);
         }
       }, 1500);
@@ -370,7 +417,7 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
       if (k === 'h') send({ t: 'hint' });
       else if (k === 'escape') selected.current = null;
       else if (k === 'r' && s.me.shuffleIn - (performance.now() - linkStore.at) <= 0) send({ t: 'shuffle' });
-      else if (s.me.thunder >= 100 && s.stage === 'stage1' && (k === '1' || k === '2')) send({ t: 'skill', kind: k === '1' ? 'freeze' : 'fog', target: targetRef.current });
+      else if (s.me.thunder >= 100 && s.stage === 'stage1' && (s.foes ?? s.players?.slice(1) ?? []).length > 0 && (k === '1' || k === '2')) send({ t: 'skill', kind: k === '1' ? 'freeze' : 'fog', target: targetRef.current });
       else if (s.me.thunder >= 100 && s.stage === 'stage2' && k === ' ') {
         e.preventDefault();
         send({ t: 'super' });
@@ -398,6 +445,11 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
   /** đang nghỉ giữa 2 Boss (Boss trước vừa gục) */
   const betweenBosses = stage === 'intermission' && !!boss && boss.hp <= 0;
   const nextBoss = betweenBosses ? LINK_BOSSES[bossNo + 1] : LINK_BOSSES[0];
+  /** Trùm Cuối có nhiều thanh máu: thanh đang đánh và số thanh còn lại */
+  const bars = bossDef?.bars ?? 1;
+  const perBar = boss ? boss.maxHp / bars : 1;
+  const barsLeft = boss ? Math.max(boss.hp > 0 ? 1 : 0, Math.ceil(boss.hp / perBar - 1e-9)) : 0;
+  const barPct = boss ? (bars > 1 ? (boss.hp > 0 ? ((boss.hp - (barsLeft - 1) * perBar) / perBar) * 100 : 0) : (boss.hp / boss.maxHp) * 100) : 0;
   const shuffleIn = me ? Math.max(0, (me.shuffleIn ?? LINK_SHUFFLE_CD_S * 1000) - (performance.now() - linkStore.at)) : 0;
   const venomLeft = me ? Math.max(0, (me.venom ?? 0) - (performance.now() - linkStore.at)) : 0;
   const stunLeft = me ? Math.max(0, (me.stun ?? 0) - (performance.now() - linkStore.at)) : 0;
@@ -416,7 +468,7 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
   const ready = (me?.thunder ?? 0) >= 100;
   const hintIn = me ? Math.max(0, me.hintIn - (performance.now() - linkStore.at)) : 0;
   const othersDmg = foes.reduce((n, f) => n + f.damage, 0);
-  const dmgShare = meP && meP.damage + othersDmg > 0 ? meP.damage / (meP.damage + othersDmg) : foes.length ? 1 / (foes.length + 1) : 0.5;
+  const dmgShare = meP && meP.damage + othersDmg > 0 ? meP.damage / (meP.damage + othersDmg) : foes.length ? 1 / (foes.length + 1) : 1;
   const nameOf = (id?: string) => everyone.find((p) => p.id === id)?.name ?? '';
   targetRef.current = targetId && target?.id === targetId ? targetId : undefined;
   const skill = (kind: 'freeze' | 'fog') => send({ t: 'skill', kind, target: targetRef.current });
@@ -467,7 +519,13 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
                     <i key={b.id} className={i < bossNo || (i === bossNo && boss.hp <= 0) ? 'down' : i === bossNo ? 'now' : ''}>{b.emoji}</i>
                   ))}
                 </span>
-                {bossDef?.coop && bossDef.partners ? (
+                {bossDef && (bossDef.final || bars > 1) ? (
+                  <>
+                    <span className="link-final-badge">{bossDef.final ? '🌌 TRÙM CUỐI' : '👑 BOSS HỢP THỂ'}</span>
+                    <span className="link-final-name">{bossDef.name.toUpperCase()}</span>
+                    {bossDef.dual && <span className="link-dual-badge" title="Mỗi người 2 bàn, nối bên nào cũng đánh Boss">⚔️ 2 BÀN · x{bossDef.dmgMul ?? 1} SÁT THƯƠNG</span>}
+                  </>
+                ) : bossDef?.coop && bossDef.partners ? (
                   <>
                     <span className="link-coop-badge">⚔️ CO-OP 2 BOSS</span>
                     <span className="link-coop-duo">
@@ -482,21 +540,33 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
                 <span className={`phase p${boss.phase}`}>Giai đoạn {boss.phase}</span>
                 {stage === 'stage2' && <span className="muted small"> · đòn kế: {LINK_BOSS_SKILL_NAME[boss.nextSkill] ?? boss.nextSkill} sau {Math.ceil(Math.max(0, boss.nextSkillIn - (performance.now() - linkStore.at)) / 1000)}s</span>}
               </div>
-              <div className="link-hp">
-                <i className="trail" style={{ width: `${(boss.hp / boss.maxHp) * 100}%` }} />
-                <i className={`fill p${boss.phase}`} style={{ width: `${(boss.hp / boss.maxHp) * 100}%` }} />
+              <div
+                className={`link-hp${bars > 1 ? ` multi${barsLeft === 1 ? ' last' : ''}` : ''}`}
+                style={bars > 1 && barsLeft > 1 ? { background: `linear-gradient(90deg, ${barColor(barsLeft - 2)}aa, ${barColor(barsLeft - 2)}66)` } : undefined}
+              >
+                <i className="trail" style={{ width: `${barPct}%` }} />
+                <i
+                  className={`fill p${boss.phase}`}
+                  style={{ width: `${barPct}%`, ...(bars > 1 ? { background: `linear-gradient(90deg, ${barColor(barsLeft - 1)}, ${barColor(barsLeft - 1)}cc)` } : {}) }}
+                />
                 <span>{boss.hp} / {boss.maxHp}</span>
+                {bars > 1 && <b className="link-bars-x" title={`Còn ${barsLeft}/${bars} thanh máu`}>×{barsLeft}</b>}
               </div>
+              {bars > 1 && (
+                <div className="link-bar-pips" title={`Còn ${barsLeft}/${bars} thanh máu`}>
+                  {Array.from({ length: bars }, (_, i) => <i key={i} className={i < barsLeft ? 'on' : ''} style={i < barsLeft ? { background: barColor(i), boxShadow: `0 0 6px ${barColor(i)}` } : undefined} />)}
+                </div>
+              )}
               {boss.shield > 0 && (
                 <div className="link-shield" title="Khiên: hút sát thương trước khi trừ máu">
                   <i style={{ width: `${(boss.shield / Math.max(1, boss.maxShield)) * 100}%` }} />
-                  <span>🛡️ {boss.id === 'twins' ? 'Khiên Hỗn Mang' : 'Khiên Đá'} {boss.shield}</span>
+                  <span>🛡️ {boss.id === 'titan' ? 'Khiên Tinh Tú' : boss.id === 'overlord' ? 'Giáp Hỗn Nguyên' : boss.id === 'twins' ? 'Khiên Hỗn Mang' : 'Khiên Đá'} {boss.shield}</span>
                 </div>
               )}
               <div className="link-share" title="Tỉ lệ sát thương">
                 <i style={{ width: `${dmgShare * 100}%` }} />
                 <span className="l">{meP?.name}: {meP?.damage ?? 0}</span>
-                <span className="r">{foes.length === 1 ? foes[0].name : `${foes.length} người khác`}: {othersDmg}</span>
+                {foes.length > 0 && <span className="r">{foes.length === 1 ? foes[0].name : `${foes.length} người khác`}: {othersDmg}</span>}
               </div>
             </div>
           </div>
@@ -554,7 +624,7 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
             <button className="link-btn hint" disabled={hintIn > 0 || stage === 'intermission' || ended} onClick={() => send({ t: 'hint' })} title="Gợi ý 1 cặp (-5 điểm) · phím H">
               <Lightbulb size={16} /> {hintIn > 0 ? `${Math.ceil(hintIn / 1000)}s` : 'Gợi ý'}
             </button>
-            {stage === 'stage1' && (
+            {stage === 'stage1' && foes.length > 0 && (
               <>
                 {foes.length > 1 && target && (
                   <span className="link-target" title="Bấm vào bàn nhỏ của đối thủ để đổi mục tiêu">
@@ -625,10 +695,14 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
             </p>
             <p className="muted small">
               {betweenBosses
-                ? nextBoss?.raidS
+                ? nextBoss?.dual && nextBoss.raidS
+                  ? `🌌 TRÙM CUỐI ${nextBoss.bars ?? 1} THANH MÁU! Mỗi người có 2 BÀN trái + phải – nối bên nào cũng đánh Boss, sát thương x${nextBoss.dmgMul ?? 1}. Được cấp mới ${nextBoss.raidS / 60} phút. Giữ nguyên Sấm.`
+                  : (nextBoss?.bars ?? 1) > 1 && nextBoss?.raidS
+                  ? `👑 ${nextBoss.name}: 4 Boss hợp thể, ${nextBoss.bars} thanh máu, Lốc Xoáy, Ma Nhãn Laze & Tận Thế Tứ Linh! Được cấp mới ${nextBoss.raidS / 60} phút. Giữ nguyên Sấm, bàn mới cho mọi người.`
+                  : nextBoss?.raidS
                   ? `Boss ${bossNo + 2}/${LINK_BOSSES.length} (Co-op 2 Boss Siêu Khó) được cấp mới ${nextBoss.raidS / 60} phút (${fmtTime(boss?.raidLeft ?? nextBoss.raidS * 1000)})! Giữ nguyên Sấm, bàn mới cho mọi người.`
                   : `Boss ${bossNo + 2}/${LINK_BOSSES.length} · còn ${fmtTime(boss?.raidLeft ?? 0)} cho các Boss còn lại. Giữ nguyên Sấm, bàn mới cho mọi người.`
-                : `3 Boss đầu dùng chung ${LINK_RAID_S / 60} phút, riêng Màn 4 (2 Boss Co-op) có thêm 6 phút. Người dẫn trước được 50% Sấm!`}
+                : `3 Boss đầu dùng chung ${LINK_RAID_S / 60} phút, riêng Màn 4 (2 Boss Co-op) và Trùm Cuối có thời gian riêng. Người dẫn trước được 50% Sấm!`}
             </p>
           </div>
         </div>

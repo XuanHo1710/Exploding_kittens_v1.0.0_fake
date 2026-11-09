@@ -9,7 +9,7 @@ import { fmtCoins } from './Dock';
 import PlayerAvatar from '../art/PlayerAvatar';
 import Modal from './Modal';
 
-const SERVER_URL = (import.meta.env.VITE_SERVER_URL as string | undefined) ?? '';
+import { serverUrl } from '../serverUrl';
 
 const randomSeeds = () => Array.from({ length: 11 }, () => Math.random().toString(36).slice(2, 9));
 
@@ -86,7 +86,7 @@ export default function ProfileModal({ identity, account, onDaily, onLogout, onS
     setUploading(true);
     try {
       const dataUrl = await toSquareDataUrl(file);
-      const res = await fetch(`${SERVER_URL}/api/avatar`, {
+      const res = await fetch(serverUrl('/api/avatar'), {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ playerId: identity.playerId, token: identity.token, dataUrl }),

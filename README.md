@@ -39,6 +39,16 @@ npm start            # http://localhost:3001 (đổi cổng bằng biến PORT)
 
 Server phục vụ luôn giao diện đã build, chỉ cần mở 1 cổng.
 
+### Client nối tới backend ở chỗ khác
+
+Copy `client/.env.example` thành `client/.env` (hoặc đặt biến môi trường trên hosting):
+
+| Biến | Dùng khi | Ý nghĩa |
+|---|---|---|
+| `BACKEND_URL` | `npm run dev` / `npm run preview` | Proxy `/api`, `/avatars`, `/socket.io` tới đây (mặc định `http://localhost:3001`) |
+| `VITE_SERVER_URL` | `npm run build` rồi deploy `client/dist` lên host tĩnh | Trình duyệt gọi thẳng backend này; nhúng vào bundle lúc build nên đổi xong phải build lại |
+| `ALLOWED_HOSTS` | dev / preview | Thêm domain public, ngăn cách bằng dấu phẩy |
+
 ## Chỉnh nhanh
 
 | Muốn đổi | Sửa ở |
@@ -73,10 +83,10 @@ Chủ phòng chỉnh số máy, độ khó và thời gian trận trong phòng c
 | Cách máy chơi | `server/src/game/ants/bot.ts` |
 | Hình vẽ kiến / trụ / đạn / bản đồ | `client/src/ants/render.ts` |
 
-## ⚡ Nối Thú Đại Chiến (nối hình 2–10 người realtime, liên hoàn 3 Boss)
+## ⚡ Nối Thú Đại Chiến (nối hình 1–10 người realtime, liên hoàn 6 Boss, Trùm Cuối Cự Thần đánh trên 2 bàn)
 
-Chọn **Nối Thú Đại Chiến** khi tạo phòng. **2–10 người** (2 người là solo 1v1); chủ phòng thêm **máy** cho đủ chỗ và chọn độ khó Dễ / Thường / Khó
-(phòng chỉ có 1 người thì luôn có ít nhất 1 máy).
+Chọn **Nối Thú Đại Chiến** khi tạo phòng. **1–10 người** (2 người là solo 1v1); chủ phòng thêm **máy** cho đủ chỗ và chọn độ khó Dễ / Thường / Khó
+(phòng 1 người để **0 máy** là chơi một mình: tự nối, tự đánh Boss, không có chiêu Đóng Băng/Mây Mù vì không có đối thủ).
 Ô dùng 36 emoji con vật khác hẳn nhau (chó, mèo, gấu trúc, voi, cua…) cho dễ nhìn; máy không có font emoji thì dùng bộ thú vẽ tay.
 
 - **Luật nối:** bấm 2 ô cùng con thú; nối được nếu có đường đi qua ô trống, **gấp khúc tối đa 2 lần**, được vòng ra ngoài mép bàn.
@@ -97,6 +107,9 @@ Chọn **Nối Thú Đại Chiến** khi tạo phòng. **2–10 người** (2 ng
   | ⚡ Vua Sấm Sét | ×0.7 | Sét Đánh (giật điện 4 ô), Mưa Băng (băng 4 ô), Sét Lan (giật 9 ô + mất combo người gây sát thương nhiều nhất), Bóng Tối | 12 / 9 / 6 s |
   | 🕷️ Nữ Hoàng Nhện | ×1.0 | Lưới Tơ (trói 5 ô), Nọc Độc (6 giây: mất combo, sát thương còn một nửa), Kén Tơ (trói 12 ô người gây sát thương nhiều nhất), Hút Sinh Lực (hồi 5% máu) | 11 / 8 / 6 s |
   | 👹 Bạo Chúa | ×1.4 | 8 chiêu: Thiên Thạch (thiêu 6 ô), Động Đất (mất combo, −25 Sấm), Sét Đánh, Khiên Đá (khiên 6% máu), Mưa Băng, Gầm Thét (choáng 2,5 giây), Bóng Tối, Nọc Độc | 10 / 7 / 5 s |
+  | 🐉🔥 Song Sát (Co-op 2 Boss, 6 phút riêng) | ×1.6 | Hố Đen Hư Không (khoá 6 ô 5 giây, −15 Sấm), Bão Lửa Địa Ngục (thiêu 6 ô), Xiềng Xích Linh Hồn (khoá 8 ô + choáng 1 giây người dẫn đầu), Niết Bàn Tái Sinh (hồi 4% máu + khiên 5%), Nhật Thực Vĩnh Cửu (tối 3 giây + độc 5 giây), Song Tuyệt Hủy Diệt (khoá 4+4 ô, choáng 1,2 giây, −20 Sấm, khiên 3%) | 13 / 10 / 8 s |
+  | 👑 **Đại Ma Vương Hỗn Nguyên** (4 Boss hợp thể, **3 thanh máu**, 7 phút riêng) | ×2.7 | **Ma Nhãn Laze** (choáng 3 / 4 / 5 thú), **Lốc Xoáy Hỗn Nguyên** (đảo lộn bàn, mất combo, −10 Sấm), **Tận Thế Tứ Linh** (4 linh hồn Boss cùng đánh: khoá 2 ô băng + 2 tơ + 2 lửa + 2 điện, −15 Sấm), cùng Sét Đánh, Lưới Tơ, Thiên Thạch, Nọc Độc, Hố Đen, Bão Lửa, Gầm Thét. Vỡ mỗi thanh máu dựng Giáp Hỗn Nguyên (3%) | 12 / 10 / 8 s |
+  | 🌌 **Trùm Cuối – Cự Thần Thiên Hà** (**10 thanh máu**, 10 phút riêng) – mỗi người có **2 bàn trái + phải**, nối bên nào cũng đánh Boss, **sát thương x2** | ×10 | **Song Nhãn Diệt Thế** (2 mắt bắn laze, mỗi bàn choáng 2 / 3 / 4 thú), **Mưa Sao Băng Thiên Hà** (thiêu 8 ô), **Trọng Lực Đảo Chiều** (2 bàn đổi chỗ), **Siêu Tân Tinh** (chói loá 2,5 giây + khiên 2%), Lốc Xoáy, Tận Thế Tứ Linh, Sét Đánh, Hố Đen, Gầm Thét. Vỡ mỗi thanh máu dựng Khiên Tinh Tú (1%) | 12 / 10 / 8 s |
 
   Chơi thử bằng máy: 2 máy Thường hạ đủ 3 Boss; 2 máy Dễ hạ 2 Boss và đánh tới Bạo Chúa.
 - **Thắng:** tổng = điểm Màn 1 + sát thương lên Boss + **+500 cho mỗi Boss mình kết liễu**. Cao nhất thắng cả hũ; ngang điểm đầu bảng hoặc máy thắng thì hoàn cược.

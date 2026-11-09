@@ -277,10 +277,6 @@ export class Game {
       const summary = roomDeckSummary(this.roomRules, players.length);
       if (!summary.canStart) throw new GameError(summary.errors.join(' '));
     }
-    if (this.gameMode === 'link_duel') {
-      const cfg = normalizeLinkConfig(this.linkConfig, players.length);
-      if (players.length + cfg.bots < 2) throw new GameError('Cần ít nhất 2 người chơi: thêm máy hoặc chờ thêm người.');
-    }
     if (this.gameMode === 'ant_empire') {
       const cfg = normalizeAntsConfig(this.antsConfig, players.length);
       if (players.length + cfg.bots < 2) throw new GameError('Cần ít nhất 2 đế chế: thêm máy hoặc chờ thêm người.');

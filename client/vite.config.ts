@@ -1,12 +1,11 @@
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { cpSync, createReadStream, existsSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// Cổng giao diện (mặc định 8801) và domain public trỏ qua cloudflared tunnel
-const PORT = Number(process.env.PORT) || 8801;
-const PUBLIC_HOSTS = [
+// Domain public trỏ qua cloudflared tunnel; thêm domain khác qua ALLOWED_HOSTS=a.com,b.com
+const DEFAULT_PUBLIC_HOSTS = [
   'dev.meo.no',
   'meo.no',
   'dev-ho.anai.io.vn',
@@ -14,6 +13,7 @@ const PUBLIC_HOSTS = [
   'social-chat-xuanho.io.vn',
   '.trycloudflare.com',
 ];
+const list = (v?: string) => (v ?? '').split(',').map((s) => s.trim()).filter(Boolean);
 
 const PIKACHU_DIR = fileURLToPath(new URL('../database-pikachu', import.meta.url));
 const DIST_PIKACHU_DIR = fileURLToPath(new URL('./dist/database-pikachu', import.meta.url));
@@ -46,31 +46,40 @@ function databasePikachuPlugin(): Plugin {
   };
 }
 
-export default defineConfig({
-  plugins: [react(), databasePikachuPlugin()],
-  // Ảnh lá bài lấy thẳng từ thư mục database/ ở gốc project
-  publicDir: fileURLToPath(new URL('../database', import.meta.url)),
-  server: {
-    host: true,
-    port: PORT,
-    strictPort: true,
-    allowedHosts: PUBLIC_HOSTS,
-    fs: { allow: ['..'] },
-    proxy: {
-      '/socket.io': { target: 'http://localhost:3001', ws: true },
-      '/api': 'http://localhost:3001',
-      '/avatars': 'http://localhost:3001',
+export default defineConfig(({ mode }) => {
+  // Đọc client/.env, client/.env.<mode> và biến môi trường hệ thống (không cần tiền tố VITE_)
+  const env = { ...loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), ''), ...process.env };
+
+  // Cổng giao diện (mặc định 8801)
+  const PORT = Number(env.PORT) || 8801;
+  // Backend mà proxy dev/preview chuyển tiếp /api, /avatars, /socket.io tới
+  const BACKEND_URL = (env.BACKEND_URL || 'http://localhost:3001').replace(/\/+$/, '');
+  const PUBLIC_HOSTS = [...DEFAULT_PUBLIC_HOSTS, ...list(env.ALLOWED_HOSTS)];
+
+  const proxy = {
+    '/socket.io': { target: BACKEND_URL, ws: true, changeOrigin: true },
+    '/api': { target: BACKEND_URL, changeOrigin: true },
+    '/avatars': { target: BACKEND_URL, changeOrigin: true },
+  };
+
+  return {
+    plugins: [react(), databasePikachuPlugin()],
+    // Ảnh lá bài lấy thẳng từ thư mục database/ ở gốc project
+    publicDir: fileURLToPath(new URL('../database', import.meta.url)),
+    server: {
+      host: true,
+      port: PORT,
+      strictPort: true,
+      allowedHosts: PUBLIC_HOSTS,
+      fs: { allow: ['..'] },
+      proxy,
     },
-  },
-  preview: {
-    host: true,
-    port: PORT,
-    strictPort: true,
-    allowedHosts: PUBLIC_HOSTS,
-    proxy: {
-      '/socket.io': { target: 'http://localhost:3001', ws: true },
-      '/api': 'http://localhost:3001',
-      '/avatars': 'http://localhost:3001',
+    preview: {
+      host: true,
+      port: PORT,
+      strictPort: true,
+      allowedHosts: PUBLIC_HOSTS,
+      proxy,
     },
-  },
+  };
 });

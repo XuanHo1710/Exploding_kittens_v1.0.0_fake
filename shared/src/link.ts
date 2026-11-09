@@ -1,6 +1,6 @@
 /**
  * Nối Thú Đại Chiến – nối hình (thể loại hay gọi là "Pikachu"), 2–10 người đấu realtime (solo 1v1 khi chỉ 2 người).
- * Màn 1 đua dọn bàn, rồi cả phòng đánh liên hoàn 3 Boss: Vua Sấm Sét → Nữ Hoàng Nhện → Bạo Chúa.
+ * Màn 1 đua dọn bàn, rồi cả phòng đánh liên hoàn Boss: Vua Sấm Sét → Nữ Hoàng Nhện → Bạo Chúa → Song Sát (Co-op) → Đại Ma Vương → Trùm Cuối Cự Thần Thiên Hà (2 bàn).
  * Ô dùng emoji con vật (font hệ thống) – không dùng nhân vật có bản quyền.
  * File này dùng chung cho server (luật) và client (vẽ, HUD).
  */
@@ -20,6 +20,10 @@ export const LINK_STAGE1_S = 150;
 export const LINK_RAID_S = 360;
 /** Thời gian riêng cho Màn Boss 4 (2 Boss Co-op Siêu Khó): 6 phút (360 giây) */
 export const LINK_COOP_RAID_S = 360;
+/** Thời gian riêng cho Đại Ma Vương (Màn Boss 5): 7 phút */
+export const LINK_FINAL_RAID_S = 420;
+/** Thời gian riêng cho Trùm Cuối Cự Thần Thiên Hà (Màn Boss 6): 10 phút */
+export const LINK_TITAN_RAID_S = 600;
 export const LINK_INTERMISSION_S = 5;
 /** Nối cặp kế tiếp trong vòng 3 giây thì tính combo */
 export const LINK_COMBO_WINDOW_S = 3;
@@ -63,23 +67,39 @@ export const LINK_BOSS_ROAR_MS = 2500;
 /** Khiên Đá: % máu tối đa */
 export const LINK_BOSS_SHIELD = 0.06;
 /** Bộ chiêu mới của 2 Boss Co-op Siêu Khó (Hắc Long Hư Không & Phượng Hoàng Hỗn Mang) */
-export const LINK_BOSS_BLACKHOLE = { cells: 8, ms: 8000, thunder: 20 } as const;
-export const LINK_BOSS_HELLFIRE = { cells: 9, ms: 7000 } as const;
-export const LINK_BOSS_SOUL_CHAIN = { cells: 14, ms: 9000, stunMs: 1500 } as const;
-export const LINK_BOSS_NIRVANA = { heal: 0.08, shield: 0.1 } as const;
-export const LINK_BOSS_ECLIPSE = { darkMs: 5000, venomMs: 7000 } as const;
-export const LINK_BOSS_JUDGMENT = { voidCells: 5, fireCells: 5, ms: 8000, stunMs: 2000, thunder: 30, shield: 0.06 } as const;
+export const LINK_BOSS_BLACKHOLE = { cells: 6, ms: 5000, thunder: 15 } as const;
+export const LINK_BOSS_HELLFIRE = { cells: 6, ms: 5000 } as const;
+export const LINK_BOSS_SOUL_CHAIN = { cells: 8, ms: 5500, stunMs: 1000 } as const;
+export const LINK_BOSS_NIRVANA = { heal: 0.04, shield: 0.05 } as const;
+export const LINK_BOSS_ECLIPSE = { darkMs: 3000, venomMs: 5000 } as const;
+export const LINK_BOSS_JUDGMENT = { voidCells: 4, fireCells: 4, ms: 5500, stunMs: 1200, thunder: 20, shield: 0.03 } as const;
+/** Trùm Cuối – Lốc Xoáy Hỗn Nguyên: đảo lộn toàn bộ bàn của mọi người, mất combo */
+export const LINK_BOSS_VORTEX = { thunder: 10 } as const;
+/** Trùm Cuối – Ma Nhãn Laze: bắn laze từ mắt làm choáng 3 / 4 / 5 con thú (theo thanh máu) trên bàn mỗi người */
+export const LINK_BOSS_LASER = { cells: [3, 4, 5] as const, ms: 4500 } as const;
+/** Đại Ma Vương – Giáp Hỗn Nguyên: dựng khiên mỗi khi vỡ 1 thanh máu (% máu tối đa) */
+export const LINK_FINAL_BAR_SHIELD = 0.03;
+/** Tận Thế Tứ Linh: 4 linh hồn Boss cùng ra đòn – mỗi loại khoá (băng, tơ, lửa, điện) vài ô, trừ Sấm */
+export const LINK_BOSS_APOCALYPSE = { perKind: 2, ms: 4000, thunder: 15 } as const;
+/** Cự Thần – Song Nhãn Diệt Thế: 2 mắt bắn laze, mỗi bàn bị choáng 2 / 3 / 4 thú theo giai đoạn */
+export const LINK_BOSS_TWIN_LASER = { cells: [2, 3, 4] as const, ms: 4000 } as const;
+/** Cự Thần – Mưa Sao Băng Thiên Hà: thiêu cháy nhiều ô trên cả 2 bàn */
+export const LINK_BOSS_METEOR_RAIN = { cells: 8, ms: 4500 } as const;
+/** Cự Thần – Siêu Tân Tinh: chói loá che bàn + dựng khiên */
+export const LINK_BOSS_SUPERNOVA = { darkMs: 2500, shield: 0.02 } as const;
 /** Đảo Bàn (chiêu người chơi): tự đảo bàn mình, hồi chiêu 1 phút (đầu trận cũng phải chờ 1 phút) */
 export const LINK_SHUFFLE_CD_S = 60;
 
-export type LinkBossId = 'thunder' | 'spider' | 'tyrant' | 'twins';
+export type LinkBossId = 'thunder' | 'spider' | 'tyrant' | 'twins' | 'overlord' | 'titan';
 export type LinkBossSkill =
   | 'ice' | 'dark' | 'bolt' | 'chain'
   | 'web' | 'venom' | 'cocoon' | 'drain'
   | 'meteor' | 'quake' | 'shield' | 'roar'
-  | 'blackhole' | 'hellfire' | 'soul_chain' | 'nirvana' | 'eclipse' | 'judgment';
-/** Loại ô bị khoá: 0 băng, 1 tơ nhện, 2 lửa, 3 điện giật, 4 ấn hư không */
-export type LinkLock = 0 | 1 | 2 | 3 | 4;
+  | 'blackhole' | 'hellfire' | 'soul_chain' | 'nirvana' | 'eclipse' | 'judgment'
+  | 'vortex' | 'eye_laser' | 'apocalypse'
+  | 'twin_laser' | 'meteor_rain' | 'gravity' | 'supernova';
+/** Loại ô bị khoá: 0 băng, 1 tơ nhện, 2 lửa, 3 điện giật, 4 ấn hư không, 5 choáng laze (Trùm Cuối) */
+export type LinkLock = 0 | 1 | 2 | 3 | 4 | 5;
 
 export interface LinkCoopPartner {
   id: 'abyss_dragon' | 'chaos_phoenix';
@@ -110,6 +130,18 @@ export interface LinkBossDef {
   partners?: readonly [LinkCoopPartner, LinkCoopPartner];
   /** thời gian riêng (giây) được cấp mới khi bước vào màn Boss này */
   raidS?: number;
+  /** số thanh máu (Đại Ma Vương 3 thanh, Cự Thần 10 thanh) */
+  bars?: number;
+  /** mỗi lần vỡ 1 thanh máu dựng khiên (% máu tối đa) */
+  barShield?: number;
+  /** Trùm Cuối */
+  final?: boolean;
+  /** mỗi người có 2 bàn (trái + phải), nối ở bàn nào cũng đánh Boss */
+  dual?: boolean;
+  /** nhân sát thương mỗi cú nối / Siêu Đấm */
+  dmgMul?: number;
+  /** danh hiệu hiện dưới tên */
+  title?: string;
 }
 
 /** Các màn Boss đánh lần lượt (màn cuối là 2 Boss Co-op Siêu Khó: Hắc Long Hư Không & Phượng Hoàng Hỗn Mang) */
@@ -127,9 +159,38 @@ export const LINK_BOSSES: readonly LinkBossDef[] = [
     coop: true,
     partners: LINK_COOP_PARTNERS,
     raidS: LINK_COOP_RAID_S,
-    hpMul: 2.0,
+    hpMul: 1.6,
     skills: ['blackhole', 'hellfire', 'soul_chain', 'nirvana', 'eclipse', 'judgment'],
-    skillS: [8, 6, 4],
+    skillS: [13, 10, 8],
+  },
+  {
+    // Đại Ma Vương: 4 Boss trước hợp thể – sừng sét của Vua Sấm Sét, chân Nữ Hoàng Nhện, vương miện Bạo Chúa, cánh Hắc Long & Phượng Hoàng
+    id: 'overlord',
+    name: 'Đại Ma Vương Hỗn Nguyên',
+    title: 'Hợp Thể Tứ Đại Boss',
+    emoji: '👑',
+    bars: 3,
+    barShield: LINK_FINAL_BAR_SHIELD,
+    raidS: LINK_FINAL_RAID_S,
+    hpMul: 2.7,
+    skills: ['eye_laser', 'bolt', 'vortex', 'apocalypse', 'web', 'eye_laser', 'meteor', 'venom', 'vortex', 'apocalypse', 'eye_laser', 'blackhole', 'hellfire', 'roar'],
+    skillS: [12, 10, 8],
+  },
+  {
+    // Trùm Cuối: Cự Thần khổng lồ nuốt cả thiên hà – 10 thanh máu, mỗi người đánh trên 2 bàn (trái + phải), sát thương x2
+    id: 'titan',
+    name: 'Cự Thần Thiên Hà',
+    title: 'Trùm Cuối · Kẻ Nuốt Các Vì Sao',
+    emoji: '🌌',
+    final: true,
+    dual: true,
+    dmgMul: 2,
+    bars: 10,
+    barShield: 0.01,
+    raidS: LINK_TITAN_RAID_S,
+    hpMul: 10,
+    skills: ['twin_laser', 'meteor_rain', 'vortex', 'gravity', 'bolt', 'twin_laser', 'supernova', 'blackhole', 'apocalypse', 'roar', 'gravity', 'meteor_rain'],
+    skillS: [12, 10, 8],
   },
 ];
 export const LINK_BOSS_SKILL_NAME: Record<LinkBossSkill, string> = {
@@ -139,6 +200,8 @@ export const LINK_BOSS_SKILL_NAME: Record<LinkBossSkill, string> = {
   blackhole: 'Hố Đen Hư Không', hellfire: 'Bão Lửa Địa Ngục',
   soul_chain: 'Xiềng Xích Linh Hồn', nirvana: 'Niết Bàn Tái Sinh',
   eclipse: 'Nhật Thực Vĩnh Cửu', judgment: 'Song Tuyệt Hủy Diệt',
+  vortex: 'Lốc Xoáy Hỗn Nguyên', eye_laser: 'Ma Nhãn Laze', apocalypse: 'Tận Thế Tứ Linh',
+  twin_laser: 'Song Nhãn Diệt Thế', meteor_rain: 'Mưa Sao Băng Thiên Hà', gravity: 'Trọng Lực Đảo Chiều', supernova: 'Siêu Tân Tinh',
 };
 /** Máu của Boss thứ `no` (0, 1, 2) theo số người */
 export const linkBossMaxHp = (no: number, players: number) => Math.round(linkBossHp(players) * (LINK_BOSSES[no]?.hpMul ?? 1));
@@ -219,26 +282,27 @@ export type LinkBotLevel = 'easy' | 'normal' | 'hard';
 
 export interface LinkConfig {
   botLevel: LinkBotLevel;
-  /** số máy thêm vào cho đủ người (tổng người + máy: 2–10) */
+  /** số máy thêm vào (tổng người + máy: 1–10; 1 người không thêm máy là chơi một mình) */
   bots: number;
 }
 export const DEFAULT_LINK_CONFIG: LinkConfig = { botLevel: 'normal', bots: 0 };
 export const LINK_BOT_LABEL: Record<LinkBotLevel, string> = { easy: 'Dễ', normal: 'Thường', hard: 'Khó' };
 
-/** humans: số người trong phòng – số máy bị giới hạn để tổng không quá LINK_MAX_PLAYERS (10), và có ít nhất 1 máy khi chỉ có 1 người */
+/** humans: số người trong phòng – số máy bị giới hạn để tổng không quá LINK_MAX_PLAYERS (10). 0 máy với 1 người = chơi một mình */
 export function normalizeLinkConfig(raw: unknown, humans = 1): LinkConfig {
   const r = (raw && typeof raw === 'object' ? raw : {}) as Partial<LinkConfig>;
   const botLevel = r.botLevel === 'easy' || r.botLevel === 'hard' || r.botLevel === 'normal' ? r.botLevel : 'normal';
   const h = Math.max(1, Math.min(LINK_MAX_PLAYERS, Math.floor(humans) || 1));
   const n = Math.floor(Number(r.bots));
-  const bots = Math.max(h < 2 ? 1 : 0, Math.min(LINK_MAX_PLAYERS - h, Number.isFinite(n) ? n : 0));
+  const bots = Math.max(0, Math.min(LINK_MAX_PLAYERS - h, Number.isFinite(n) ? n : 0));
   return { botLevel, bots };
 }
 
 export type LinkSkill = 'freeze' | 'fog';
 
 export type LinkCommand =
-  | { t: 'match'; a: number; b: number }
+  /** side: bàn nào (0 trái / 1 phải – chỉ có khi đánh Cự Thần) */
+  | { t: 'match'; a: number; b: number; side?: 0 | 1 }
   | { t: 'hint' }
   /** target: id người bị đánh (bỏ trống = người đang dẫn đầu) */
   | { t: 'skill'; kind: LinkSkill; target?: string }
@@ -250,12 +314,15 @@ export type LinkCommand =
 /** Hiệu ứng mới để client vẽ (server chỉ báo, không tính gì thêm) */
 export type LinkFx =
   /** path: các điểm gấp khúc, mỗi điểm là [x, y] trong lưới có viền (-1..W, -1..H) */
-  | { k: 'match'; who: string; a: number; b: number; kind: number; path: [number, number][]; combo: number; pts: number }
+  /** a, b: chỉ số toàn cục = side * LINK_CELLS + ô; path là toạ độ trên bàn `side` */
+  | { k: 'match'; who: string; a: number; b: number; kind: number; path: [number, number][]; combo: number; pts: number; side?: number }
   | { k: 'hit'; who: string; a: number; b: number; dmg: number; long: boolean; combo: number }
   | { k: 'super'; who: string; dmg: number }
   | { k: 'skill'; from: string; to: string; kind: LinkSkill }
   /** to: người bị nhắm riêng (Kén Tơ) */
-  | { k: 'boss'; boss: LinkBossId; kind: LinkBossSkill | 'rage'; phase: number; to?: string }
+  /** hits: ô bị trúng trên bàn từng người (Ma Nhãn Laze) */
+  /** bar: vỡ 1 thanh máu (left = số thanh còn lại) */
+  | { k: 'boss'; boss: LinkBossId; kind: LinkBossSkill | 'rage' | 'bar'; phase: number; to?: string; hits?: Record<string, number[]>; left?: number }
   | { k: 'shuffle'; who: string }
   | { k: 'clear'; who: string }
   | { k: 'ko'; who: string }
@@ -265,6 +332,9 @@ export interface LinkMe {
   cells: number[];
   /** [ô, ms còn khoá, loại khoá] */
   ice: [number, number, LinkLock][];
+  /** bàn thứ 2 (bên phải) khi đánh Cự Thần */
+  cells2?: number[];
+  ice2?: [number, number, LinkLock][];
   /** ms còn bị Bóng Tối che bàn */
   dark: number;
   score1: number;
@@ -272,6 +342,7 @@ export interface LinkMe {
   combo: number;
   thunder: number;
   hintIn: number;
+  /** chỉ số toàn cục (side * LINK_CELLS + ô) */
   hint?: [number, number];
   /** ms nữa thì Đảo Bàn hồi xong (0 = dùng được) */
   shuffleIn: number;

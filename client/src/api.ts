@@ -1,9 +1,9 @@
 import type { AccountInfo } from '../../shared/src';
 
-const SERVER_URL = (import.meta.env.VITE_SERVER_URL as string | undefined) ?? '';
+import { serverUrl } from './serverUrl';
 
 async function post<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${SERVER_URL}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const res = await fetch(serverUrl(path), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json?.message ?? 'Có lỗi, thử lại nhé');
   return json as T;
