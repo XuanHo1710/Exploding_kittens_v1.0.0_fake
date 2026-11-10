@@ -15,6 +15,9 @@ import {
   LINK_KO_BONUS,
   LINK_MAX_PLAYERS,
   LINK_RAID_S,
+  LINK_COOP_RAID_S,
+  LINK_FINAL_RAID_S,
+  LINK_TITAN_RAID_S,
   LINK_SHUFFLE_CD_S,
   linkBossMaxHp,
   LINK_STAGE1_S,
@@ -380,13 +383,13 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                 </div>
                 <ul className="rule-summary-list">
                   <li>1–{LINK_MAX_PLAYERS} người (1 người không thêm máy là chơi một mình, 2 người là solo 1v1). Nối 2 ô <b>cùng con thú</b> bằng đường gấp khúc <b>tối đa 2 lần</b> (được vòng ra ngoài mép bàn). Bàn 16×9, mọi người cùng một đề.</li>
-                  <li><b>Màn 1 – Đua Nối ({LINK_STAGE1_S} giây):</b> nối liên tiếp được combo, nạp ⚡ Sấm. Đầy Sấm tung <b>❄️ Đóng Băng</b> hoặc <b>🌫️ Mây Mù</b> (che bàn {LINK_FOG_MS / 1000} giây) – mặc định vào <b>người dẫn đầu</b>, bấm vào bàn nhỏ của ai thì nhắm người đó. Dọn sạch bàn trước được thưởng lớn.</li>
+                  <li><b>Màn 1 – Đua Nối ({LINK_STAGE1_S} giây):</b> mỗi cặp nạp ⚡ Sấm (không tính combo). Đầy Sấm tung <b>❄️ Đóng Băng</b> hoặc <b>🌫️ Mây Mù</b> (che bàn {LINK_FOG_MS / 1000} giây) – mặc định vào <b>người dẫn đầu</b>, bấm vào bàn nhỏ của ai thì nhắm người đó. Dọn sạch bàn trước được thưởng lớn.</li>
                   <li>
-                    <b>Liên hoàn {LINK_BOSSES.length} Màn Boss (Màn 1 → 2 → 3 → Màn 4 Co-op 2 Boss → 👑 Đại Ma Vương → 🌌 Trùm Cuối Cự Thần):</b> cả phòng cùng đánh, mỗi cặp là một cú đấm, Sấm đầy tung <b>⚡ Siêu Đấm</b>. 3 Boss đầu dùng chung <b>{LINK_RAID_S / 60} phút</b> (hạ nhanh thì dư giờ cho Boss sau); riêng <b>Màn Boss 4 (Co-op 2 Boss)</b> được cấp mới <b>6 phút</b>, <b>👑 Đại Ma Vương</b> (3 thanh máu) <b>7 phút</b>, <b>🌌 Cự Thần Thiên Hà</b> (10 thanh máu, mỗi người <b>2 bàn</b>, sát thương x2) <b>10 phút</b>!
+                    <b>Liên hoàn {LINK_BOSSES.length} Màn Boss (Màn 1 → 2 → 3 → Màn 4 Co-op 2 Boss → 👑 Đại Ma Vương → 🌌 Trùm Cuối Cự Thần):</b> cả phòng cùng đánh, mỗi cặp là một cú đấm, Sấm đầy tung <b>⚡ Siêu Đấm</b>. 3 Boss đầu dùng chung <b>{LINK_RAID_S / 60} phút</b> (hạ nhanh thì dư giờ cho Boss sau); riêng <b>Màn Boss 4 (Co-op 2 Boss)</b> được cấp mới <b>{LINK_COOP_RAID_S / 60} phút</b>, <b>👑 Đại Ma Vương</b> (3 thanh máu) <b>{LINK_FINAL_RAID_S / 60} phút</b>, <b>🌌 Cự Thần Thiên Hà</b> (10 thanh máu, mỗi người <b>2 bàn</b>, sát thương x2) <b>{LINK_TITAN_RAID_S / 60} phút</b>!
                     <ul>
                       {LINK_BOSSES.map((b, i) => (
                         <li key={b.id}>
-                          {b.emoji} <b>{b.name}</b>{b.coop && b.partners ? <> (<b>Co-op 2 Boss · 6 phút riêng:</b> {b.partners[0].emoji} {b.partners[0].name} × {b.partners[1].emoji} {b.partners[1].name})</> : null}{(b.bars ?? 1) > 1 ? <> (<b>{b.final ? 'TRÙM CUỐI' : 'HỢP THỂ'} · {b.bars} thanh máu{b.dual ? ` · 2 bàn · sát thương x${b.dmgMul ?? 1}` : ''} · {(b.raidS ?? 0) / 60} phút riêng</b>)</> : null} – {linkBossMaxHp(i, online + linkBots)} máu – {new Set(b.skills).size} chiêu: {[...new Set(b.skills)].map((k) => LINK_BOSS_SKILL_NAME[k]).join(' · ')}
+                          {b.emoji} <b>{b.name}</b>{b.coop && b.partners ? <> (<b>Co-op 2 Boss · {(b.raidS ?? 0) / 60} phút riêng:</b> {b.partners[0].emoji} {b.partners[0].name} × {b.partners[1].emoji} {b.partners[1].name})</> : null}{(b.bars ?? 1) > 1 ? <> (<b>{b.final ? 'TRÙM CUỐI' : 'HỢP THỂ'} · {b.bars} thanh máu{b.dual ? ` · 2 bàn · sát thương x${b.dmgMul ?? 1}` : ''} · {(b.raidS ?? 0) / 60} phút riêng</b>)</> : null} – {linkBossMaxHp(i, online + linkBots)} máu – {new Set(b.skills).size} chiêu: {[...new Set(b.skills)].map((k) => LINK_BOSS_SKILL_NAME[k]).join(' · ')}{b.spinS ? <> · <b>🌀 {LINK_BOSS_SKILL_NAME.board_spin} (hồi {b.spinS} giây)</b></> : null}
                         </li>
                       ))}
                     </ul>

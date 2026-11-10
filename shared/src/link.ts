@@ -15,15 +15,16 @@ export const LINK_MAX_TURNS = 2;
 export const LINK_STAGE1_S = 150;
 /**
  * Đồng hồ chung cho 3 Boss đầu (không tính lúc nghỉ giữa 2 Boss): Boss trước gục thì Boss sau ra ngay,
- * hạ nhanh thì dư giờ cho Boss sau. Riêng Màn Boss 4 (Co-op 2 Boss Siêu Khó) được cấp mới trọn 6 phút (LINK_COOP_RAID_S).
+ * hạ nhanh thì dư giờ cho Boss sau: 15 phút (mỗi Boss thêm 3 phút so với bản cũ 6 phút).
+ * Riêng Màn Boss 4 (Co-op 2 Boss Siêu Khó) được cấp mới trọn 9 phút (LINK_COOP_RAID_S).
  */
-export const LINK_RAID_S = 360;
-/** Thời gian riêng cho Màn Boss 4 (2 Boss Co-op Siêu Khó): 6 phút (360 giây) */
-export const LINK_COOP_RAID_S = 360;
-/** Thời gian riêng cho Đại Ma Vương (Màn Boss 5): 7 phút */
-export const LINK_FINAL_RAID_S = 420;
-/** Thời gian riêng cho Trùm Cuối Cự Thần Thiên Hà (Màn Boss 6): 10 phút */
-export const LINK_TITAN_RAID_S = 600;
+export const LINK_RAID_S = 900;
+/** Thời gian riêng cho Màn Boss 4 (2 Boss Co-op Siêu Khó): 9 phút (540 giây) */
+export const LINK_COOP_RAID_S = 540;
+/** Thời gian riêng cho Đại Ma Vương (Màn Boss 5): 10 phút */
+export const LINK_FINAL_RAID_S = 600;
+/** Thời gian riêng cho Trùm Cuối Cự Thần Thiên Hà (Màn Boss 6): 13 phút */
+export const LINK_TITAN_RAID_S = 780;
 export const LINK_INTERMISSION_S = 5;
 /** Nối cặp kế tiếp trong vòng 3 giây thì tính combo */
 export const LINK_COMBO_WINDOW_S = 3;
@@ -45,6 +46,8 @@ export const LINK_THUNDER_PER_PAIR = 8;
 export const LINK_LONG_PATH = 10;
 /** Giây giữa 2 đòn của Boss đầu tiên theo giai đoạn 1 / 2 / 3 */
 export const LINK_BOSS_SKILL_S = [12, 9, 6] as const;
+/** Boss 4 & 5: Xoay Chuyển Càn Khôn riêng, hồi chiêu 60 giây (chạy song song với vòng chiêu thường) */
+export const LINK_BOSS_SPIN_S = 60;
 
 export const LINK_FREEZE = { cells: 6, ms: 8000 } as const;
 /** Mây Mù (chiêu Màn 1): che bàn 1 đối thủ */
@@ -147,6 +150,8 @@ export interface LinkBossDef {
   dmgMul?: number;
   /** danh hiệu hiện dưới tên */
   title?: string;
+  /** tung Xoay Chuyển Càn Khôn (lật bàn) riêng mỗi chừng này giây */
+  spinS?: number;
 }
 
 /** Các màn Boss đánh lần lượt (màn cuối là 2 Boss Co-op Siêu Khó: Hắc Long Hư Không & Phượng Hoàng Hỗn Mang) */
@@ -167,6 +172,7 @@ export const LINK_BOSSES: readonly LinkBossDef[] = [
     hpMul: 1.6,
     skills: ['blackhole', 'hellfire', 'soul_chain', 'nirvana', 'eclipse', 'judgment'],
     skillS: [13, 10, 8],
+    spinS: LINK_BOSS_SPIN_S,
   },
   {
     // Đại Ma Vương: 4 Boss trước hợp thể – sừng sét của Vua Sấm Sét, chân Nữ Hoàng Nhện, vương miện Bạo Chúa, cánh Hắc Long & Phượng Hoàng
@@ -180,6 +186,7 @@ export const LINK_BOSSES: readonly LinkBossDef[] = [
     hpMul: 2.7,
     skills: ['eye_laser', 'bolt', 'vortex', 'apocalypse', 'web', 'eye_laser', 'meteor', 'venom', 'vortex', 'apocalypse', 'eye_laser', 'blackhole', 'hellfire', 'roar'],
     skillS: [12, 10, 8],
+    spinS: LINK_BOSS_SPIN_S,
   },
   {
     // Trùm Cuối: Cự Thần khổng lồ nuốt cả thiên hà – 10 thanh máu, mỗi người đánh trên 2 bàn (trái + phải), sát thương x2
@@ -212,12 +219,12 @@ export const LINK_BOSS_SKILL_NAME: Record<LinkBossSkill, string> = {
 /** Máu của Boss thứ `no` (0, 1, 2) theo số người */
 export const linkBossMaxHp = (no: number, players: number) => Math.round(linkBossHp(players) * (LINK_BOSSES[no]?.hpMul ?? 1));
 
-/** Điểm Màn 1 của 1 cặp (combo = số cặp liên tiếp trước đó: 0, 1, 2…) */
-export const linkPairPoints = (combo: number) => 10 + 5 * Math.min(combo, 6);
-/** Sát thương Màn 2 của 1 cặp */
-export const linkPairDamage = (combo: number, long: boolean) => Math.round(25 * (1 + 0.15 * Math.min(combo, 6))) + (long ? 20 : 0);
+/** Điểm Màn 1 của 1 cặp – không tính combo */
+export const linkPairPoints = (_combo: number) => 10;
+/** Sát thương Màn 2 của 1 cặp – không tính combo */
+export const linkPairDamage = (_combo: number, long: boolean) => 25 + (long ? 20 : 0);
 /** Sấm nạp được sau 1 cặp */
-export const linkThunderGain = (combo: number) => LINK_THUNDER_PER_PAIR + 2 * Math.min(combo, 6);
+export const linkThunderGain = (_combo: number) => LINK_THUNDER_PER_PAIR;
 export const linkIdx = (x: number, y: number) => y * LINK_W + x;
 
 export interface LinkCritter {

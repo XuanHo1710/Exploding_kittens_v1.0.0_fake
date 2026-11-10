@@ -118,6 +118,8 @@ interface Boss {
   phase: 1 | 2 | 3;
   nextSkillAt: number;
   skillIdx: number;
+  /** lúc tung Xoay Chuyển Càn Khôn riêng kế tiếp (Boss có spinS) */
+  nextSpinAt?: number;
 }
 
 export interface LinkDuelHooks {
@@ -430,7 +432,7 @@ export class LinkDuel {
     this.stage = 'stage2';
     this.stageEndsAt = this.t + this.raidLeft;
     const hp = linkBossMaxHp(no, this.players.length);
-    this.boss = { id: def.id, def, no, hp, maxHp: hp, shield: 0, maxShield: 0, phase: 1, nextSkillAt: this.t + def.skillS[0] * 1000, skillIdx: 0 };
+    this.boss = { id: def.id, def, no, hp, maxHp: hp, shield: 0, maxShield: 0, phase: 1, nextSkillAt: this.t + def.skillS[0] * 1000, skillIdx: 0, ...(def.spinS ? { nextSpinAt: this.t + def.spinS * 1000 } : {}) };
     const seed = newSeed();
     const seed2 = newSeed();
     for (const p of this.players) {
@@ -506,9 +508,33 @@ export class LinkDuel {
     }
   }
 
+  /** lật từng bàn của mọi người: lật ngang / lật dọc / xoay 180° (ngẫu nhiên), mất combo + gợi ý */
+  private spinBoards(alive: LinkPlayer[]) {
+    const spin: Record<string, number[]> = {};
+    for (const p of alive) {
+      spin[p.id] = this.boardsOf(p).map((b) => {
+        const m = (1 + Math.floor(Math.random() * 3)) as 1 | 2 | 3;
+        b.flip(m);
+        return m;
+      });
+      p.hint = undefined;
+      p.chain = 0;
+    }
+    return spin;
+  }
+
   private bossStep() {
     const boss = this.boss;
-    if (!boss || this.t < boss.nextSkillAt) return;
+    if (!boss) return;
+    // Boss 4 & 5: Xoay Chuyển Càn Khôn riêng, hồi chiêu spinS giây
+    if (boss.def.spinS && boss.nextSpinAt !== undefined && this.t >= boss.nextSpinAt) {
+      boss.nextSpinAt = this.t + boss.def.spinS * 1000;
+      const spin = this.spinBoards(this.active());
+      this.fx.push({ k: 'boss', boss: boss.def.id, kind: 'board_spin', phase: boss.phase, spin });
+      this.dirty = true;
+      return;
+    }
+    if (this.t < boss.nextSkillAt) return;
     const skills = boss.def.skills;
     const kind = skills[boss.skillIdx++ % skills.length];
     const alive = this.active();
@@ -580,16 +606,7 @@ export class LinkDuel {
       }
     } else if (kind === 'board_spin') {
       // Xoay Chuyển Càn Khôn: mỗi bàn bị lật ngang / lật dọc / xoay 180° (ngẫu nhiên từng bàn), mất combo + gợi ý
-      spin = {};
-      for (const p of alive) {
-        spin[p.id] = this.boardsOf(p).map((b) => {
-          const m = (1 + Math.floor(Math.random() * 3)) as 1 | 2 | 3;
-          b.flip(m);
-          return m;
-        });
-        p.hint = undefined;
-        p.chain = 0;
-      }
+      spin = this.spinBoards(alive);
     } else if (kind === 'eye_storm') {
       // Bão Sét Thiên Nhãn: sét từ 2 mắt giáng xuống mọi bàn – khoá điện + choáng ngắn, mất combo
       const n = LINK_BOSS_EYE_STORM.cells[boss.phase - 1];

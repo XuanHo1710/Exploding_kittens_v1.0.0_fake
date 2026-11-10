@@ -470,7 +470,7 @@ function play(fx: LinkFx, mine: (id: string) => boolean) {
       // nhiều cặp trong một gói: chỉ kêu 1 lần cho đỡ ồn
       if (performance.now() - lastCry < 70) return;
       lastCry = performance.now();
-      critterCry(fx.combo, fx.kind);
+      critterCry(1, fx.kind);
       return;
     case 'hit':
       if (mine(fx.who)) hitThud(fx.dmg, fx.long);

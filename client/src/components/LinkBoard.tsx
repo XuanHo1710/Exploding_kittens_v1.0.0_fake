@@ -1,7 +1,7 @@
 /**
  * Màn chơi Nối Thú Đại Chiến (2–10 người realtime; 2 người là solo 1v1).
  * - Bấm 2 ô cùng con thú, nối được bằng đường gấp khúc ≤ 2 lần (được vòng ra ngoài mép).
- * - Màn 1: đua dọn bàn, combo nạp ⚡ Sấm để tung Đóng Băng / Mây Mù – mặc định vào người dẫn đầu,
+ * - Màn 1: đua dọn bàn, mỗi cặp nạp ⚡ Sấm để tung Đóng Băng / Mây Mù – mặc định vào người dẫn đầu,
  *   bấm vào bàn nhỏ của một đối thủ để nhắm người đó.
  * - Sau đó cả phòng đánh liên hoàn 6 Boss (Trùm Cuối Cự Thần: mỗi người 2 bàn trái + phải); kết liễu mỗi Boss +500.
  * - Đảo Bàn: chiêu tự đảo bàn mình, hồi chiêu 1 phút (phím R).
@@ -522,7 +522,6 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
             <span className="link-pill score" title="Điểm Màn 1"><b>{meP?.score1 ?? 0}</b> điểm</span>
             {boss && <span className="link-pill dmg" title="Sát thương lên Boss">⚔️ <b>{meP?.damage ?? 0}</b></span>}
             {everyone.length > 2 && myRank > 0 && <span className="link-pill rank" title="Hạng hiện tại">#{myRank}/{everyone.length}</span>}
-            {(meP?.combo ?? 0) > 1 && <span className="link-combo">COMBO x{meP?.combo}</span>}
           </div>
           <div className="link-center">
             <span className="link-stage">
@@ -632,7 +631,6 @@ export default function LinkBoard({ view, meId, emit, chat, dock }: Props) {
                     <span className="link-name">{foe.bot && !foe.name.startsWith('🤖') ? '🤖 ' : ''}{foe.name}</span>
                     {isTarget && <span title="Mục tiêu chiêu">🎯</span>}
                     <b>{boss ? totalOf(foe) : foe.score1}</b>
-                    {foe.combo > 1 && <span className="link-combo small">x{foe.combo}</span>}
                   </div>
                   <canvas
                     ref={(el) => {

@@ -26,12 +26,10 @@ export function runLinkBot(duel: LinkDuel, p: LinkPlayer) {
       duel.command(p.id, { t: 'super' });
       return;
     }
-    // đánh người đang dẫn đầu (máy Khó: ai đang combo cao nhất thì thả Mây Mù che bàn người đó)
-    const others = duel.active().filter((x) => x !== p);
-    const comboKing = [...others].sort((a, b) => b.chain - a.chain)[0];
-    const hard = duel.cfg.botLevel === 'hard' && comboKing && comboKing.chain >= 2;
+    // đánh người đang dẫn đầu (máy Khó thả Mây Mù che bàn, máy Thường Đóng Băng)
+    const hard = duel.cfg.botLevel === 'hard';
     const kind = duel.cfg.botLevel === 'easy' ? (Math.random() < 0.5 ? 'freeze' : 'fog') : hard ? 'fog' : 'freeze';
-    duel.command(p.id, { t: 'skill', kind, target: hard ? comboKing.id : undefined });
+    duel.command(p.id, { t: 'skill', kind });
     return;
   }
   const h = p.board.hint(duel.t);

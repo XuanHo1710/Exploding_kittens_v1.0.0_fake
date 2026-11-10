@@ -175,19 +175,47 @@ test('nối sai (khác loại / ô băng): báo lỗi, mất combo, bàn không 
   assert.equal(d.command('khach', { t: 'hint' }), 'Bạn đang xem trận này.');
 });
 
-test('combo: 3 cặp liên tiếp được 10 + 15 + 20 điểm, quá 3 giây thì mất combo', () => {
+test('không tính combo: mỗi cặp 10 điểm, Sấm nạp đều', () => {
   const { d, p0 } = duel();
+  const th = [];
   for (let i = 0; i < 3; i++) {
+    const before = p0.thunder;
     assert.equal(play(d, p0), undefined);
+    th.push(p0.thunder - before);
     steps(d, 500);
   }
-  assert.equal(p0.score1, 10 + 15 + 20);
+  assert.equal(p0.score1, 30, 'combo không cộng điểm');
   assert.equal(p0.chain, 3);
-  assert.ok(p0.thunder > 0);
+  assert.deepEqual(th, [S.LINK_THUNDER_PER_PAIR, S.LINK_THUNDER_PER_PAIR, S.LINK_THUNDER_PER_PAIR], 'nối liên tiếp không nạp thêm Sấm');
+  assert.equal(S.linkPairDamage(5, false), S.linkPairDamage(0, false), 'combo không tăng sát thương');
   steps(d, 3250);
   assert.equal(p0.chain, 0);
   play(d, p0);
-  assert.equal(p0.score1, 45 + 10, 'combo tính lại từ đầu');
+  assert.equal(p0.score1, 40);
+});
+
+test('Boss 4 & 5: Xoay Chuyển Càn Khôn riêng, hồi chiêu 60 giây, lật bàn + mất combo', () => {
+  for (const no of [3, 4]) {
+    const { d, p0 } = duel();
+    toBoss(d, no);
+    assert.equal(d.boss.def.spinS, 60);
+    d.boss.hp = d.boss.maxHp * 100; // không chết
+    const t0 = d.t;
+    const spins = [];
+    for (let i = 0; i < 125 * 4; i++) {
+      d.tick(250);
+      if (d.stage !== 'stage2') break;
+      if (i % 4 === 0) p0.chain = 2;
+      for (const f of d.drainFx().fx) if (f.k === 'boss' && f.kind === 'board_spin') spins.push([d.t - t0, f]);
+    }
+    assert.equal(spins.length, 2, `Boss ${no + 1} xoay bàn 2 lần trong 125 giây`);
+    assert.ok(Math.abs(spins[0][0] - 60_000) <= 250);
+    assert.ok(Math.abs(spins[1][0] - 120_000) <= 250);
+    assert.ok([1, 2, 3].includes(spins[0][1].spin.p0[0]));
+  }
+  // các Boss khác không có chiêu riêng này
+  assert.equal(S.LINK_BOSSES[2].spinS, undefined);
+  assert.equal(S.LINK_BOSSES[5].spinS, undefined);
 });
 
 test('chiêu Đóng Băng / Bão Xáo: cần đầy Sấm, băng 6 ô đối thủ trong 8 giây', () => {
@@ -554,15 +582,15 @@ test('Màn Boss 4 – 2 Boss Co-op Siêu Khó (Hắc Long Hư Không & Phượng
     ['blackhole', 'hellfire', 'soul_chain', 'nirvana', 'eclipse', 'judgment'],
   );
 
-  // Hạ tuần tự Màn 1 Boss → Màn 2 Boss → Màn 3 Boss để sang Màn 4 Co-op 2 Boss (được cấp mới trọn 6 phút = 360s)
+  // Hạ tuần tự Màn 1 Boss → Màn 2 Boss → Màn 3 Boss để sang Màn 4 Co-op 2 Boss (được cấp mới trọn 9 phút = 540s)
   steps(d, 50_000);
   toBoss(d, 3);
   assert.equal(d.stage, 'stage2');
   assert.equal(d.boss.id, 'twins');
   assert.equal(d.boss.no, 3);
   assert.equal(d.boss.maxHp, S.linkBossMaxHp(3, 2));
-  assert.equal(d.stageEndsAt - d.t, S.LINK_COOP_RAID_S * 1000, 'Màn Boss 4 được cấp mới trọn 6 phút (360 giây)');
-  assert.equal(S.LINK_COOP_RAID_S, 360);
+  assert.equal(d.stageEndsAt - d.t, S.LINK_COOP_RAID_S * 1000, 'Màn Boss 4 được cấp mới trọn 9 phút (540 giây)');
+  assert.equal(S.LINK_COOP_RAID_S, 540);
   p0.thunder = 50;
 
   // 1. blackhole: khoá 8 ô Ấn Hư Không (loại 4) + trừ 20 Sấm
@@ -830,7 +858,7 @@ test('máy (Khó) tự chơi trọn trận và không bao giờ nối sai', () =
     if (id === 'p1' && e) botErrors.push(e);
     return e;
   };
-  const all = S.LINK_STAGE1_S + S.LINK_RAID_S + S.LINK_COOP_RAID_S + 4 * S.LINK_INTERMISSION_S + 10;
+  const all = S.LINK_STAGE1_S + S.LINK_RAID_S + S.LINK_BOSSES.reduce((s, b) => s + (b.raidS ?? 0), 0) + S.LINK_BOSSES.length * S.LINK_INTERMISSION_S + 10;
   for (let x = 0; x < all * 1000 && d.stage !== 'ended'; x += 250) d.tick(250);
   assert.ok(p1.score1 > 0, 'máy có điểm Màn 1');
   assert.ok(p1.damage > 0, 'máy có đánh boss');

@@ -186,8 +186,8 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
           burst(ctx, pa, t, seed, color, 14, L.tile * 1.1, L.tile * 0.12);
           burst(ctx, pb, t, seed + 7, color, 14, L.tile * 1.1, L.tile * 0.12);
           const mid = { x: (pa.x + pb.x) / 2, y: (pa.y + pb.y) / 2 - t * L.tile * 1.4 };
-          const label = f.combo > 1 ? `+${f.pts}  x${f.combo}` : `+${f.pts}`;
-          bigText(ctx, label, mid, L.tile * (0.42 + Math.min(f.combo, 6) * 0.05), f.combo > 2 ? '#ff922b' : '#ffe066', 1 - t * t);
+          const label = `+${f.pts}`;
+          bigText(ctx, label, mid, L.tile * 0.42, '#ffe066', 1 - t * t);
         } else {
           // đối thủ nối: lóe sáng nhỏ trên bàn mini của họ
           const r = L.foeRect(f.who);
@@ -212,7 +212,7 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
           const tt = (age - 200) / (life - 200);
           const r = rand(seed);
           const off = { x: (r() - 0.5) * (L.boss?.w ?? 200) * 0.35, y: (r() - 0.5) * 20 };
-          const size = (mine ? 30 : 22) + Math.min(f.combo, 6) * 4 + (f.long ? 6 : 0);
+          const size = (mine ? 30 : 22) + (f.long ? 6 : 0);
           bigText(ctx, `-${f.dmg}`, { x: bossP.x + off.x, y: bossP.y + off.y - tt * 50 }, size, mine ? '#ffe066' : '#e599f7', 1 - tt * tt, 1 + (1 - tt) * 0.4);
           if (f.long && mine) bigText(ctx, 'ĐẤM XA!', { x: bossP.x + off.x, y: bossP.y + off.y - 34 - tt * 50 }, 18, '#74c0fc', 1 - tt);
           burst(ctx, bossP, tt, seed + 3, mine ? '#74c0fc' : '#da77f2', 10, 60, 4);
@@ -593,7 +593,7 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
             ctx.stroke();
           }
           ctx.restore();
-          bigText(ctx, 'ĐỘNG ĐẤT! MẤT COMBO', below, Math.min(36, W / 14), '#ffa94d', 1 - t);
+          bigText(ctx, 'ĐỘNG ĐẤT! MẤT SẤM', below, Math.min(36, W / 14), '#ffa94d', 1 - t);
         } else if (f.kind === 'shield') {
           ctx.save();
           ctx.globalAlpha = 1 - t;
@@ -1036,11 +1036,14 @@ export function drawFx(ctx: CanvasRenderingContext2D, items: FxItem[], now: numb
           if (age < 800) shake = Math.max(shake, 8 * (1 - age / 800));
           const B = L.board;
           const mid = center(B);
-          const crown = titanAt(L, [0, -0.58]) ?? bossP;
+          const titan = f.boss === 'titan';
+          const crown = (titan && titanAt(L, [0, -0.58])) || bossP;
           if (age < 600) {
             const flick = Math.floor(age / 60);
-            bolt(ctx, crown, { x: B.x + B.w * 0.25, y: mid.y }, seed + flick, 3.5, '#ffd43b', 50);
-            bolt(ctx, crown, { x: B.x + B.w * 0.75, y: mid.y }, seed + 9 + flick, 3.5, '#ffd43b', 50);
+            if (titan) {
+              bolt(ctx, crown, { x: B.x + B.w * 0.25, y: mid.y }, seed + flick, 3.5, '#ffd43b', 50);
+              bolt(ctx, crown, { x: B.x + B.w * 0.75, y: mid.y }, seed + 9 + flick, 3.5, '#ffd43b', 50);
+            } else bolt(ctx, crown, mid, seed + flick, 3.5, '#ffd43b', 50);
           }
           ctx.save();
           ctx.translate(mid.x, mid.y);
