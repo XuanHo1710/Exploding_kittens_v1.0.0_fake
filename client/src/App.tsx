@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
-import { DEFAULT_ROOM_RULES, type AccountInfo, type AntsFrame, type ChatMessage, type Emote, type GameFx, type Identity, type LinkState, type PrivateNotice, type RoomView } from '../../shared/src';
+import { DEFAULT_ROOM_RULES, type AccountInfo, type AntsFrame, type ChatMessage, type Emote, type GameFx, type Identity, type LinkState, type PrivateNotice, type RoomView, type ThapFrame } from '../../shared/src';
 import { RoomPlayerCountContext, RoomRulesContext } from './roomRulesContext';
 import { clearIdentity, loadIdentity, updateIdentity } from './identity';
 import { logoutAccount } from './api';
@@ -16,6 +16,8 @@ import BlackjackBoard from './components/BlackjackBoard';
 import TienLenBoard from './components/TienLenBoard';
 import AntsBoard from './components/AntsBoard';
 import { antsStore } from './ants/store';
+import ThapBoard from './components/ThapBoard';
+import { thapStore } from './thap/store';
 import { linkStore } from './link/store';
 import LinkBoard from './components/LinkBoard';
 import LotoBoard from './components/LotoBoard';
@@ -115,6 +117,7 @@ export default function App() {
     });
     s.on('toast', showToast);
     s.on('ants:frame', (f: AntsFrame) => antsStore.push(f));
+    s.on('thap:frame', (f: ThapFrame) => thapStore.push(f));
     s.on('link:state', (st: LinkState) => linkStore.push(st));
     s.on('notice', (n: PrivateNotice) => (n.kind === 'future' ? setNotice(n) : setReveal({ ...n, key: Date.now() })));
     s.on('fx', (f: GameFx) => setFx({ id: ++fxSeq.current, fx: f }));
@@ -216,6 +219,8 @@ export default function App() {
             <AntsBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'link_duel' && view.link ? (
             <LinkBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
+          ) : view.gameMode === 'thap_hung' && view.thap ? (
+            <ThapBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'loto' && view.loto ? (
             <LotoBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'blackjack_21' ? (

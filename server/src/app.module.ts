@@ -16,8 +16,10 @@ import { AccountController } from './store/account.controller';
       { rootPath: AVATAR_DIR, serveRoot: '/avatars', serveStaticOptions: { maxAge: '7d', fallthrough: false } },
       // Ảnh Pikachu 1-1 từ thư mục database-pikachu/ ở gốc project
       { rootPath: join(__dirname, '..', '..', '..', '..', 'database-pikachu'), serveRoot: '/database-pikachu', serveStaticOptions: { maxAge: '7d', fallthrough: false } },
+      // Tài nguyên nhân vật, hoạt ảnh, âm thanh Miragine War 100% từ thư mục database-miraginewar/ ở gốc project
+      { rootPath: join(__dirname, '..', '..', '..', '..', 'database-miraginewar'), serveRoot: '/database-miraginewar', serveStaticOptions: { maxAge: '7d', fallthrough: false } },
       // Bản build của client (client/dist) được server phục vụ luôn, chỉ cần chạy 1 tiến trình
-      { rootPath: join(__dirname, '..', '..', '..', '..', 'client', 'dist'), exclude: ['/api/{*path}', '/avatars/{*path}', '/database-pikachu/{*path}'] },
+      { rootPath: join(__dirname, '..', '..', '..', '..', 'client', 'dist'), exclude: ['/api/{*path}', '/avatars/{*path}', '/database-pikachu/{*path}', '/database-miraginewar/{*path}'] },
     ),
   ],
   controllers: [AvatarController, AccountController],

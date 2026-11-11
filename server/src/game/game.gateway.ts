@@ -10,7 +10,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
-import { isValidAvatar, type AntsCommand, type LinkCommand, type PlayRequest } from '../../../shared/src';
+import { isValidAvatar, type AntsCommand, type LinkCommand, type PlayRequest, type ThapCommand } from '../../../shared/src';
 import { GameError } from './game';
 import { RoomsService } from './rooms.service';
 import { AccountsService } from '../store/accounts.service';
@@ -300,6 +300,25 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('link:config')
   linkConfig(@ConnectedSocket() c: Socket, @MessageBody() body: { config: unknown }) {
     return this.handle(c, (me) => this.rooms.setLinkConfig(me.playerId, body?.config));
+  }
+
+  // --- Thập Hùng Tranh Bá ---
+  @SubscribeMessage('thap:cmd')
+  thapCmd(@ConnectedSocket() c: Socket, @MessageBody() body: ThapCommand) {
+    return this.handle(c, (me) => {
+      if (!body || typeof body !== 'object' || typeof body.t !== 'string') throw new GameError('Lệnh không hợp lệ.');
+      this.game(me).thapCommand(me.playerId, body);
+    });
+  }
+
+  @SubscribeMessage('thap:config')
+  thapConfig(@ConnectedSocket() c: Socket, @MessageBody() body: { config: unknown }) {
+    return this.handle(c, (me) => this.rooms.setThapConfig(me.playerId, body?.config));
+  }
+
+  @SubscribeMessage('thap:team')
+  thapTeam(@ConnectedSocket() c: Socket, @MessageBody() body: { team?: unknown }) {
+    return this.handle(c, (me) => this.rooms.setThapTeam(me.playerId, body?.team));
   }
 
   // --- Lô Tô Cân Đồ ---

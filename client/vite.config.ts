@@ -17,6 +17,8 @@ const list = (v?: string) => (v ?? '').split(',').map((s) => s.trim()).filter(Bo
 
 const PIKACHU_DIR = fileURLToPath(new URL('../database-pikachu', import.meta.url));
 const DIST_PIKACHU_DIR = fileURLToPath(new URL('./dist/database-pikachu', import.meta.url));
+const MIRAGINE_DIR = fileURLToPath(new URL('../database-miraginewar', import.meta.url));
+const DIST_MIRAGINE_DIR = fileURLToPath(new URL('./dist/database-miraginewar', import.meta.url));
 
 function databasePikachuPlugin(): Plugin {
   const servePikachu = (middlewares: { use: (route: string, fn: (req: any, res: any, next: () => void) => void) => void }) => {
@@ -46,6 +48,36 @@ function databasePikachuPlugin(): Plugin {
   };
 }
 
+function databaseMiragineWarPlugin(): Plugin {
+  const serveMiragine = (middlewares: { use: (route: string, fn: (req: any, res: any, next: () => void) => void) => void }) => {
+    middlewares.use('/database-miraginewar', (req, res, next) => {
+      const rel = decodeURIComponent((req.url || '').split('?')[0]).replace(/^\/+/, '');
+      const file = resolve(MIRAGINE_DIR, rel);
+      if (!file.startsWith(MIRAGINE_DIR) || !existsSync(file) || !statSync(file).isFile()) return next();
+      if (file.endsWith('.png')) res.setHeader('Content-Type', 'image/png');
+      else if (file.endsWith('.jpg') || file.endsWith('.jpeg')) res.setHeader('Content-Type', 'image/jpeg');
+      else if (file.endsWith('.mp3')) res.setHeader('Content-Type', 'audio/mpeg');
+      else if (file.endsWith('.json')) res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, max-age=604800');
+      createReadStream(file).pipe(res);
+    });
+  };
+  return {
+    name: 'database-miraginewar-static',
+    configureServer(server) {
+      serveMiragine(server.middlewares);
+    },
+    configurePreviewServer(server) {
+      serveMiragine(server.middlewares);
+    },
+    closeBundle() {
+      if (existsSync(MIRAGINE_DIR)) {
+        cpSync(MIRAGINE_DIR, join(DIST_MIRAGINE_DIR), { recursive: true });
+      }
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   // Đọc client/.env, client/.env.<mode> và biến môi trường hệ thống (không cần tiền tố VITE_)
   const env = { ...loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), ''), ...process.env };
@@ -63,7 +95,7 @@ export default defineConfig(({ mode }) => {
   };
 
   return {
-    plugins: [react(), databasePikachuPlugin()],
+    plugins: [react(), databasePikachuPlugin(), databaseMiragineWarPlugin()],
     // Ảnh lá bài lấy thẳng từ thư mục database/ ở gốc project
     publicDir: fileURLToPath(new URL('../database', import.meta.url)),
     server: {

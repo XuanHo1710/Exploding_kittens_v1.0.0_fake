@@ -4,10 +4,11 @@ import type { RoomRules } from './room-rules';
 import type { AntsRoomView } from './ants';
 import type { LinkRoomView } from './link';
 import type { LotoRoomView } from './loto';
+import type { ThapRoomView } from './thap';
 
 export type Phase = 'lobby' | 'playing' | 'ended';
 
-export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire' | 'link_duel' | 'loto';
+export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire' | 'link_duel' | 'loto' | 'thap_hung';
 
 export const GAME_MODES: Record<
   GameMode,
@@ -60,6 +61,14 @@ export const GAME_MODES: Record<
     minPlayers: 1,
     maxPlayers: 10,
     desc: 'Mua 1 tờ 50 xu hoặc 2 tờ 100 xu (đủ 90 số). Máy gọi số mỗi 5 giây – ai đủ 5 số một hàng ngang trước là KINH, ăn cả hũ!',
+  },
+  thap_hung: {
+    name: 'Miragine War (Solo 10 Người)',
+    shortName: 'Miragine War',
+    emoji: '⚔️🔮',
+    minPlayers: 1,
+    maxPlayers: 10,
+    desc: 'Miragine War 10 người realtime trên map rộng: 16 binh chủng nguyên bản (Giáp Nhẹ / Giáp Nặng), nhận lương mỗi 30 giây, Hành Quân Tấn Công Chỉ Định & Phòng Thủ, Solo 10 người hỗn chiến hoặc Co-op!',
   },
 };
 
@@ -250,6 +259,8 @@ export interface RoomView {
   link?: LinkRoomView;
   /** Lô Tô Cân Đồ */
   loto?: LotoRoomView;
+  /** Thập Hùng Tranh Bá (từng nhịp gửi riêng qua 'thap:frame') */
+  thap?: ThapRoomView;
   /** Thưởng xu từng người sau ván */
   payouts?: Record<string, number>;
 }

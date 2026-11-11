@@ -68,8 +68,21 @@ import {
   type LinkCommand,
   type LinkConfig,
   type LinkState,
+  DEFAULT_THAP_CONFIG,
+  THAP_BOT_LABEL,
+  THAP_BOT_NAMES,
+  THAP_COLORS,
+  THAP_MODE_LABEL,
+  assignThapTeams,
+  normalizeThapConfig,
+  normalizeThapTeam,
+  type ThapCommand,
+  type ThapConfig,
+  type ThapFrame,
+  type ThapRoomView,
 } from '../../../shared/src';
 import { AntWorld } from './ants/world';
+import { ThapWorld } from './thap/world';
 import { LinkDuel } from './link/duel';
 
 export class GameError extends Error {}
@@ -131,6 +144,8 @@ export interface GameHooks {
   antsFrame(game: Game, playerId: string, frame: AntsFrame): void;
   /** Nối Thú Đại Chiến: gửi trạng thái realtime riêng cho từng người */
   linkState(game: Game, playerId: string, state: LinkState): void;
+  /** Thập Hùng Tranh Bá: gửi khung hình riêng cho từng người */
+  thapFrame(game: Game, playerId: string, frame: ThapFrame): void;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -199,6 +214,12 @@ export class Game {
   antsConfig: AntsConfig = { ...DEFAULT_ANTS_CONFIG };
   private ants?: AntWorld;
 
+  // --- Trạng thái Thập Hùng Tranh Bá ---
+  thapConfig: ThapConfig = { ...DEFAULT_THAP_CONFIG };
+  private thap?: ThapWorld;
+  /** đội từng người chọn ở phòng chờ (chế độ Lập đội) */
+  private thapTeams = new Map<string, number>();
+
   // --- Trạng thái Nối Thú Đại Chiến ---
   linkConfig: LinkConfig = { ...DEFAULT_LINK_CONFIG };
   private link?: LinkDuel;
@@ -252,7 +273,7 @@ export class Game {
     if (this.gameMode === mode) return;
     this.run(() => {
       this.gameMode = mode;
-      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, mode === 'tien_len' ? 4 : mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'link_duel' || mode === 'loto' ? 10 : this.roomRules.maxPlayers), GAME_MODES[mode].maxPlayers);
+      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, mode === 'tien_len' ? 4 : mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'link_duel' || mode === 'loto' || mode === 'thap_hung' ? 10 : this.roomRules.maxPlayers), GAME_MODES[mode].maxPlayers);
       this.invalidateReady();
       this.addLog(`🎮 Chủ phòng đổi sang chế độ: ${GAME_MODES[mode].emoji} ${GAME_MODES[mode].name}.`);
     });
@@ -307,6 +328,16 @@ export class Game {
     if (this.gameMode === 'ant_empire') {
       const cfg = normalizeAntsConfig(this.antsConfig, players.length);
       if (players.length + cfg.bots < 2) throw new GameError('Cần ít nhất 2 đế chế: thêm máy hoặc chờ thêm người.');
+    }
+    if (this.gameMode === 'thap_hung') {
+      const cfg = normalizeThapConfig(this.thapConfig, players.length);
+      if (players.length + cfg.bots < 2) throw new GameError('Cần ít nhất 2 phe: thêm máy hoặc chờ thêm người.');
+      if (cfg.mode === 'coop' && cfg.bots < 1) throw new GameError('Chế độ Cùng đánh máy cần ít nhất 1 máy.');
+      if (cfg.mode === 'teams' && new Set(assignThapTeams(players.map((p) => this.thapTeamOf(p.id)), cfg.bots, 'teams')).size < 2) {
+        throw new GameError('Cần ít nhất 2 đội.');
+      }
+      // Chốt đội mặc định (xen kẽ theo ghế) đúng như phòng chờ đang hiển thị, trước khi bỏ người rớt mạng / xáo ghế
+      if (cfg.mode === 'teams') for (const p of this.players) if (!this.thapTeams.has(p.id)) this.thapTeams.set(p.id, this.thapTeamOf(p.id));
     }
     const unready = players.filter((p) => p.id !== this.hostId && p.readyVersion !== this.rulesVersion);
     if (unready.length) throw new GameError(`Chờ xác nhận luật và mức cược: ${unready.map((p) => p.name).join(', ')}.`);
@@ -533,6 +564,10 @@ export class Game {
         this.startLink();
         return;
       }
+      if (this.gameMode === 'thap_hung') {
+        this.startThap();
+        return;
+      }
       if (this.gameMode === 'loto') {
         this.startLoto();
         return;
@@ -588,6 +623,8 @@ export class Game {
       this.tlFinishOrder = [];
       this.ants?.stop();
       this.ants = undefined;
+      this.thap?.stop();
+      this.thap = undefined;
       this.link?.stop();
       this.link = undefined;
       this.stopLoto();
@@ -1359,7 +1396,7 @@ export class Game {
       })),
       spectators: this.spectators.map((x) => ({ id: x.id, name: x.name, avatar: x.avatar, connected: x.connected })),
       hand: this.player(id)?.hand ?? [],
-      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' && this.gameMode !== 'link_duel' && this.gameMode !== 'loto' ? this.current()?.id : undefined,
+      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' && this.gameMode !== 'link_duel' && this.gameMode !== 'loto' && this.gameMode !== 'thap_hung' ? this.current()?.id : undefined,
       turnsRemaining: this.turnsRemaining,
       direction: this.direction,
       turnDeadline: this.phase === 'playing' ? this.turnDeadline : undefined,
@@ -1404,6 +1441,7 @@ export class Game {
       ants: this.gameMode === 'ant_empire' ? this.antsView(id) : undefined,
       link: this.gameMode === 'link_duel' ? (this.link?.roomView(this.linkConfig) ?? { config: this.linkConfig }) : undefined,
       loto: this.gameMode === 'loto' ? this.lotoView(id) : undefined,
+      thap: this.gameMode === 'thap_hung' ? this.thapView(id) : undefined,
       payouts: Object.keys(this.payouts).length ? this.payouts : undefined,
     };
   }
@@ -1500,6 +1538,141 @@ export class Game {
       rocks: w.rockList(),
       empires: w.publicInfo(),
       myIdx: w.empireById(id)?.idx,
+      startedAt: w.startedAt,
+      endsAt: w.endsAt,
+      result: w.result,
+    };
+  }
+
+  // ---------- THẬP HÙNG TRANH BÁ ----------
+
+  setThapConfig(byId: string, raw: unknown) {
+    this.requireLobbyHost(byId);
+    if (this.gameMode !== 'thap_hung') throw new GameError('Không phải chế độ Thập Hùng Tranh Bá.');
+    const next = normalizeThapConfig(raw, this.players.length);
+    if (JSON.stringify(next) === JSON.stringify(this.thapConfig)) return;
+    this.run(() => {
+      this.thapConfig = next;
+      this.invalidateReady();
+      this.addLog(`🏰 Chủ phòng chỉnh: ${THAP_MODE_LABEL[next.mode]}, ${next.bots} máy (${THAP_BOT_LABEL[next.botLevel]}), ${next.minutes ? `${next.minutes} phút` : 'không giới hạn thời gian'}.`);
+    });
+  }
+
+  /** Đội của 1 người ở phòng chờ: chưa chọn thì xen kẽ theo ghế (Rồng, Hổ, Rồng, Hổ…) */
+  private thapTeamOf(playerId: string) {
+    const t = this.thapTeams.get(playerId);
+    if (t !== undefined) return t;
+    return Math.max(0, this.players.findIndex((p) => p.id === playerId)) % 2;
+  }
+
+  /** Người chơi tự chọn đội (chế độ Lập đội) – chỉ ở phòng chờ */
+  setThapTeam(playerId: string, raw: unknown) {
+    if (this.gameMode !== 'thap_hung') throw new GameError('Không phải chế độ Thập Hùng Tranh Bá.');
+    if (this.phase !== 'lobby') throw new GameError('Chỉ chọn đội trong phòng chờ.');
+    if (this.thapConfig.mode !== 'teams') throw new GameError('Chỉ chọn đội ở chế độ Lập đội.');
+    if (!this.player(playerId)) throw new GameError('Bạn đang xem, vào bàn chơi để chọn đội nhé.');
+    const team = normalizeThapTeam(raw);
+    if (this.thapTeams.get(playerId) === team) return;
+    this.run(() => {
+      this.thapTeams.set(playerId, team);
+    });
+  }
+
+  thapCommand(playerId: string, cmd: ThapCommand) {
+    if (this.gameMode !== 'thap_hung' || this.phase !== 'playing' || !this.thap) throw new GameError('Trận Thập Hùng Tranh Bá chưa bắt đầu.');
+    const s = this.thap.sideById(playerId);
+    if (!s) throw new GameError('Bạn đang xem trận này.');
+    const err = this.thap.command(s.idx, cmd);
+    if (err) throw new GameError(err);
+  }
+
+  private startThap() {
+    const cfg = normalizeThapConfig(this.thapConfig, this.players.length);
+    this.thapConfig = cfg;
+    // lấy đội trước khi xáo ghế (đội mặc định tính theo ghế)
+    const picked = new Map(this.players.map((p) => [p.id, this.thapTeamOf(p.id)]));
+    shuffle(this.players);
+    const teams = assignThapTeams(this.players.map((p) => picked.get(p.id) ?? 0), cfg.bots, cfg.mode);
+    const botNames = shuffle([...THAP_BOT_NAMES]);
+    const inits = [
+      ...this.players.map((p) => ({ id: p.id, name: p.name, bot: false })),
+      ...Array.from({ length: cfg.bots }, (_, i) => ({ id: `bot:thap${i}`, name: `🤖 ${botNames[i % botNames.length]}`, bot: true })),
+    ].map((x, i) => ({ ...x, color: THAP_COLORS[i % THAP_COLORS.length], team: teams[i] ?? i }));
+    for (const p of this.players) {
+      p.alive = true;
+      p.hand = [];
+    }
+    this.thap = new ThapWorld(inits, cfg, {
+      tick: () => this.sendThapFrames(),
+      changed: () => this.safe(() => this.run(() => this.syncThap())),
+    });
+    this.phase = 'playing';
+    this.addLog(
+      `🏰 Thập Hùng Tranh Bá bắt đầu! ${inits.length} Thành – ${THAP_MODE_LABEL[cfg.mode]}${cfg.bots ? ` (${cfg.bots} máy – ${THAP_BOT_LABEL[cfg.botLevel]})` : ''}${cfg.minutes ? `, ${cfg.minutes} phút` : ''}. Phá Thành địch để xưng bá!`,
+    );
+    this.thap.start();
+  }
+
+  /** Đồng bộ kết quả mô phỏng (phe bị loại, hết trận) vào trạng thái phòng */
+  private syncThap() {
+    const w = this.thap;
+    if (!w) return;
+    for (const msg of w.drainLogs()) this.addLog(msg);
+    for (const s of w.sides) {
+      const p = s.bot ? undefined : this.player(s.id);
+      if (p) p.alive = s.alive;
+    }
+    if (w.result && this.phase === 'playing') {
+      this.phase = 'ended';
+      const ids: string[] = [];
+      for (const i of w.result.winnerIdxs) {
+        const s = w.sides[i];
+        const p = s && !s.bot ? this.player(s.id) : undefined;
+        if (p && !p.left) ids.push(p.id);
+      }
+      this.winnerId = ids[0];
+      this.winnerIds = ids;
+      if (ids.length > 1 && this.pot > 0) {
+        // cả đội thắng: chia đều hũ (phần lẻ cho người đầu)
+        const share = Math.floor(this.pot / ids.length);
+        ids.forEach((id, i) => (this.payouts[id] = share + (i === 0 ? this.pot - share * ids.length : 0)));
+        this.addLog(`🤝 ${ids.length} người cùng đội thắng – chia đều hũ ${this.pot} xu.`);
+      } else if (!ids.length && this.pot > 0) {
+        // máy thắng / không ai thắng: hoàn cược cho người còn ở lại
+        for (const p of this.players) if (!p.left) this.payouts[p.id] = this.bet;
+        this.addLog('💰 Không có người chơi nào thắng nên hoàn lại tiền cược.');
+      }
+      this.sendThapFrames();
+    }
+  }
+
+  private sendThapFrames() {
+    const w = this.thap;
+    if (!w) return;
+    for (const p of this.players) {
+      if (p.left || !p.connected) continue;
+      const s = w.sideById(p.id);
+      this.hooks.thapFrame(this, p.id, w.frameFor(s?.alive ? s.idx : undefined));
+    }
+    for (const x of this.spectators) if (x.connected) this.hooks.thapFrame(this, x.id, w.frameFor(undefined));
+  }
+
+  private thapView(id: string): ThapRoomView {
+    const w = this.thap;
+    if (!w) {
+      if (this.thapConfig.mode !== 'teams') return { config: this.thapConfig };
+      const teams: Record<string, number> = {};
+      for (const p of this.players) teams[p.id] = this.thapTeamOf(p.id);
+      return { config: this.thapConfig, teams };
+    }
+    return {
+      config: this.thapConfig,
+      mapW: w.W,
+      mapH: w.H,
+      bases: w.baseList(),
+      mines: w.mineList(),
+      players: w.publicInfo(),
+      myIdx: w.sideById(id)?.idx,
       startedAt: w.startedAt,
       endsAt: w.endsAt,
       result: w.result,
@@ -1734,6 +1907,7 @@ export class Game {
   dispose() {
     clearTimeout(this.timer);
     this.ants?.stop();
+    this.thap?.stop();
     this.link?.stop();
     this.stopLoto();
   }
@@ -2302,6 +2476,12 @@ export class Game {
     if (this.gameMode === 'link_duel') {
       // Rời trận = bỏ cuộc, đối thủ thắng (kết quả xử lý trong syncLink)
       if (this.link?.player(p.id)) this.link.command(p.id, { t: 'resign' });
+      return;
+    }
+    if (this.gameMode === 'thap_hung') {
+      // Rời trận = bỏ cuộc: Thành đổ ở nhịp mô phỏng kế tiếp, kết quả xử lý trong syncThap
+      const s = this.thap?.sideById(p.id);
+      if (s) this.thap!.resign(s.idx);
       return;
     }
     if (this.gameMode === 'ant_empire') {

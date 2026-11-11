@@ -83,6 +83,32 @@ Chủ phòng chỉnh số máy, độ khó và thời gian trận trong phòng c
 | Cách máy chơi | `server/src/game/ants/bot.ts` |
 | Hình vẽ kiến / trụ / đạn / bản đồ | `client/src/ants/render.ts` |
 
+## ⚔️🔮 Miragine War (Solo 10 Người / Co-op / Lập Đội trên bản đồ rộng)
+
+Chọn **Miragine War (Solo 10 Người)** khi tạo phòng. Tối đa 10 phe (người + máy) cùng chiến đấu thời gian thực trên bản đồ rộng, sáng toàn bộ, sử dụng **100% tài nguyên đồ họa, sprite sheet, công trình, đạn phép, âm thanh và thông số lính trích xuất từ Miragine War gốc** trong thư mục `database-miraginewar/*`:
+
+- **Chế độ chơi:**
+  - **Solo 10 người (Hỗn chiến):** Mỗi người một phe (tối đa 10 người/máy trong phòng), tất cả cùng đánh nhau tự do.
+  - **Co-op 10 người (Cùng đánh máy):** Tất cả người chơi hợp lực chung 1 liên quân chống lại toàn bộ máy.
+  - **Lập đội (Chia phe):** Tự chọn 1 trong 5 đội ở phòng chờ; máy tự vào đội ít người nhất.
+- **Vàng & Lương Hiệp 30 giây:** Khởi đầu 300 vàng, thu đều mỗi giây (`6 + 2 × cấp Kho Lương` + mỗi **Mỏ Vàng** đang giữ `+4/s`, Mỏ Lớn giữa bản đồ `+9/s`) **cộng thêm Lương Hiệp mỗi 30 giây** chuẩn Miragine War (khởi đầu `+100 vàng/30s`, mỗi lần mua lính được cộng thêm `+incomeBonus` từ `+4` đến `+160` vàng/30s).
+- **16 Binh Chủng Nguyên Bản Miragine War (Lưới 2×8):**
+  `Newbie (Tân Binh)`, `Veteran (Cựu Binh)`, `Zombie (Xác Sống)`, `Samurai (Võ Sĩ)`, `Sword Man (Kiếm Sĩ)`, `Ninja`, `Novice (Pháp Đồ)`, `Heavy Sword Man (Trọng Kiếm)`, `Monk (Võ Tăng)`, `Vampire (Ma Cà Rồng)`, `Cavalry (Kỵ Binh)`, `Immortal (Bất Tử Quân)`, `Mage (Đại Pháp Sư)`, `Iron Knight (Thiết Kỵ Sĩ)`, `Dread Lord (Chúa Tể Hắc Ám)`, `High Lord (Thánh Chiến Vương)`.
+- **Hệ thống Giáp Nhẹ (`Light`) / Giáp Nặng (`Armored`) & Giáp Trừ Thẳng:** Công thức sát thương chuẩn 100% Miragine War: `damage[victim.armorTypeID] - victim.armor`. Giới hạn dân số 60. Bật **↻ tự mua** một loại lính để tự xuất quân liên tục.
+- **Lệnh Điều Khiển Đạo Quân:**
+  - **🎯 Hành Quân Tấn Công Chỉ Định (`T`):** Chọn 1 Thành địch trong danh sách (hoặc bấm nút `🎯 Đánh` trên bảng xếp hạng, hoặc chạm thẳng vào Thành địch trên bản đồ) để toàn quân hành quân tấn công tổng lực vào đúng mục tiêu đó.
+  - **🛡️ Phòng Thủ (`P`):** Rút toàn bộ đạo quân về giữ quanh Pha Lê Thành.
+  - **⚔️ Tự Hành Quân (`H`):** Tự đi chiếm Mỏ Vàng gần nhất rồi đánh Thành địch gần nhất.
+  - **🚩 Tập Kết (`R`):** Chạm bản đồ để cắm cờ tập kết quân.
+- **Pha Lê Chính (`A_crystal.png` / `B_crystal.png` + `door.png`):** 3500 máu, 100 sát thương bảo vệ tầm gần. Pha Lê vỡ = bị loại.
+
+| Muốn đổi | Sửa ở |
+|---|---|
+| Kho đồ họa, sprite sheet, chân dung, âm thanh gốc Miragine War | `database-miraginewar/*`, `database-miraginewar/mapping.json` |
+| 16 binh chủng, Giáp Nhẹ/Nặng, lương 30s, bản đồ 10 người | `shared/src/thap.ts` |
+| Luật mô phỏng, lệnh Hành Quân Tấn Công Chỉ Định / Phòng Thủ | `server/src/game/thap/world.ts`, `server/src/game/thap/bot.ts` |
+| Nạp sprite sheet & vẽ Pha Lê / 16 lính / đạn phép / âm thanh | `client/src/thap/sprites.ts`, `client/src/thap/render.ts`, `client/src/thap/sound.ts`, `client/src/components/ThapBoard.tsx` |
+
 ## 🎱 Lô Tô Cân Đồ (1–10 người)
 
 Chọn **Lô Tô Cân Đồ** khi tạo phòng. Ở phòng chờ mỗi người tự chọn mua **1 tờ (50 xu)** hoặc **2 tờ (100 xu)**; hũ = tổng tiền mua tờ của cả bàn.

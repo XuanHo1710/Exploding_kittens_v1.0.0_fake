@@ -36,6 +36,10 @@ export class RoomsService {
       if (this.playerRoom.get(playerId) !== game.code) return;
       this.server.to(`p:${playerId}`).volatile.emit('ants:frame', frame);
     },
+    thapFrame: (game, playerId, frame) => {
+      if (this.playerRoom.get(playerId) !== game.code) return;
+      this.server.to(`p:${playerId}`).volatile.emit('thap:frame', frame);
+    },
     linkState: (game, playerId, state) => {
       if (this.playerRoom.get(playerId) !== game.code) return;
       this.server.to(`p:${playerId}`).emit('link:state', state);
@@ -358,6 +362,20 @@ export class RoomsService {
     game.setLotoPick(playerId, sheets, colors);
   }
 
+  setThapConfig(playerId: string, raw: unknown) {
+    const game = this.roomOf(playerId);
+    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
+    this.assertReady(game);
+    game.setThapConfig(playerId, raw);
+  }
+
+  setThapTeam(playerId: string, raw: unknown) {
+    const game = this.roomOf(playerId);
+    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
+    this.assertReady(game);
+    game.setThapTeam(playerId, raw);
+  }
+
   setLinkConfig(playerId: string, raw: unknown) {
     const game = this.roomOf(playerId);
     if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
@@ -366,7 +384,7 @@ export class RoomsService {
   }
 
   create(playerId: string, name: string, avatar?: string, rules?: unknown, gameMode?: string) {
-    const mode: GameMode = gameMode === 'blackjack_21' || gameMode === 'tien_len' || gameMode === 'ant_empire' || gameMode === 'link_duel' || gameMode === 'loto' ? gameMode : 'exploding_kittens';
+    const mode: GameMode = gameMode === 'blackjack_21' || gameMode === 'tien_len' || gameMode === 'ant_empire' || gameMode === 'link_duel' || gameMode === 'loto' || gameMode === 'thap_hung' ? gameMode : 'exploding_kittens';
     let normalized: RoomRules;
     try { normalized = normalizeRoomRules(rules); }
     catch (error) { throw new GameError(error instanceof Error ? error.message : 'Luật phòng không hợp lệ.'); }

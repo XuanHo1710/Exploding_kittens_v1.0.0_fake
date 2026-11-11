@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Check, Coins, Copy, Crown, Gamepad2, Link2, LogOut, Play, Settings2, Trophy, UserPlus, UserX } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { BookOpen, Check, Coins, Copy, Crown, Gamepad2, Link2, LogOut, Play, Settings2, Trophy, UserPlus, UserX } from 'lucide-react';
 import {
   ANTS_MAX_EMPIRES,
   ANTS_MINUTE_OPTIONS,
@@ -29,6 +29,22 @@ import {
   lotoDefaultColors,
   MIN_PLAYERS,
   roomDeckSummary,
+  assignThapTeams,
+  DEFAULT_THAP_CONFIG,
+  normalizeThapTeam,
+  THAP_BASE,
+  THAP_BOT_LABEL,
+  THAP_FIRST_ROUND_S,
+  THAP_MAX_PLAYERS,
+  THAP_MAX_POP,
+  THAP_MINUTE_OPTIONS,
+  THAP_MODE_LABEL,
+  THAP_ROUND_S,
+  THAP_START_GOLD,
+  THAP_START_ROUND_INCOME,
+  THAP_TEAM_COLORS,
+  THAP_TEAM_NAMES,
+  type ThapMode,
   type AccountInfo,
   type GameMode,
   type RoomRules,
@@ -37,9 +53,12 @@ import {
 import { copyTextSafe, fmtCoins } from './Dock';
 import PlayerAvatar from '../art/PlayerAvatar';
 import ChatPanel, { useChatState, type RoomChat } from './ChatPanel';
+import Modal from './Modal';
 import RoomSettings, { RoomRuleSummary } from './RoomSettings';
 import { LobbySpectators, isSpectating, roomPeople } from './Spectators';
 import { roomInviteUrl } from '../roomLink';
+import { startMiragineBgm, stopMiragineBgm } from '../thap/sound';
+import '../thap/thap.css';
 
 interface Props {
   view: RoomView;
@@ -54,11 +73,20 @@ const NO_CHAT: RoomChat = { messages: [], typing: {}, send: () => {}, onTyping: 
 
 export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSaveRules }: Props) {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [miragineGuideOpen, setMiragineGuideOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const { typingNames, unread } = useChatState(chat, roomPeople(view), meId, true);
   const isHost = view.hostId === meId;
   const gameMode: GameMode = view.gameMode ?? 'exploding_kittens';
+  useEffect(() => {
+    if (gameMode === 'thap_hung') {
+      startMiragineBgm('menu');
+      return () => stopMiragineBgm();
+    }
+    stopMiragineBgm();
+    return undefined;
+  }, [gameMode]);
   const modeInfo = GAME_MODES[gameMode];
   const online = view.players.filter((p) => p.connected).length;
   const bet = view.bet;
@@ -81,8 +109,26 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
   const linkCfgRaw = view.link?.config;
   /** 1 người, 0 máy = chơi một mình */
   const linkBots = Math.max(0, Math.min(LINK_MAX_PLAYERS - online, linkCfgRaw?.bots ?? 0));
+  // Thập Hùng: số máy thực tế (server cắt theo ghế trống), đội từng người và đội máy dự kiến
+  const isThap = gameMode === 'thap_hung';
+  const thapCfg = view.thap?.config ?? DEFAULT_THAP_CONFIG;
+  const thapBots = Math.max(0, Math.min(THAP_MAX_PLAYERS - online, thapCfg.bots));
+  /** server gửi sẵn đội hiệu lực của mọi người ngồi bàn; thiếu thì xen kẽ 0/1 theo ghế như server */
+  const thapTeamOf = (id: string) => normalizeThapTeam(view.thap?.teams?.[id] ?? Math.max(0, view.players.findIndex((p) => p.id === id)) % 2);
+  const thapHumans = view.players.filter((p) => p.connected);
+  const thapAssign = assignThapTeams(thapHumans.map((p) => thapTeamOf(p.id)), thapBots, thapCfg.mode);
+  const thapBotTeams = thapAssign.slice(thapHumans.length);
+  const thapTotal = online + thapBots;
+  const thapProblem =
+    thapTotal < 2 ? 'Cần ít nhất 2 phe – thêm máy nhé'
+      : thapTotal > THAP_MAX_PLAYERS ? `Tối đa ${THAP_MAX_PLAYERS} phe`
+      : thapCfg.mode === 'coop' && thapBots < 1 ? 'Cùng đánh máy cần ít nhất 1 máy'
+      : thapCfg.mode === 'teams' && new Set(thapAssign).size < 2 ? 'Cần ít nhất 2 đội – đổi đội hoặc thêm máy'
+      : '';
+  const setThap = (patch: Partial<typeof thapCfg>) => emit('thap:config', { config: { ...thapCfg, ...patch } });
   const deckOk =
     gameMode === 'exploding_kittens' ? deck.canStart
+      : isThap ? !thapProblem
       : gameMode === 'ant_empire' ? online + antsCfg.bots >= 2 && online + antsCfg.bots <= ANTS_MAX_EMPIRES
       : gameMode === 'link_duel' ? online + linkBots >= 1 && online + linkBots <= LINK_MAX_PLAYERS
         : online <= modeInfo.maxPlayers;
@@ -195,6 +241,11 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                 {p.coins !== undefined && (
                   <span className={`seat-coins${stakeOf(p.id) > 0 && p.coins < stakeOf(p.id) ? ' low' : ''}`}>
                     <Coins size={12} className="inline-icon" /> {fmtCoins(p.coins)}
+                  </span>
+                )}
+                {isThap && thapCfg.mode === 'teams' && (
+                  <span className="thap-seat-team" style={{ borderColor: THAP_TEAM_COLORS[thapTeamOf(p.id)] }}>
+                    <i style={{ background: THAP_TEAM_COLORS[thapTeamOf(p.id)] }} /> {THAP_TEAM_NAMES[thapTeamOf(p.id)]}
                   </span>
                 )}
                 {isLoto && (
@@ -359,6 +410,102 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                   <li><b>Phá Trụ Chính</b> của mọi đế chế khác để thắng.{antsCfg.minutes ? ` Hết ${antsCfg.minutes} phút: điểm sức mạnh cao nhất thắng.` : ''} Máy thắng thì hoàn cược.</li>
                 </ul>
               </>
+            ) : isThap ? (
+              <>
+                <div className="miragine-lobby-hero">
+                  <img src="/database-miraginewar/ui/title_bg.jpg" alt="Miragine War" className="miragine-lobby-banner" />
+                  <div className="miragine-lobby-overlay">
+                    <div>
+                      <b>⚔️ Miragine War – Chế Độ 10 Người Realtime</b>
+                      <p className="muted small">Clone 100% nguyên bản đồ họa, âm thanh (mainLoop / gameLoop) & cơ chế triệu hồi theo đợt 30 giây</p>
+                    </div>
+                    <button type="button" className="secondary small" onClick={() => setMiragineGuideOpen(true)}>
+                      <BookOpen size={15} /> Bảng 16 Lính & Khắc Chế Gốc
+                    </button>
+                  </div>
+                </div>
+                <div className="ants-lobby-cfg">
+                  <div>
+                    <span className="muted small">Kiểu trận</span>
+                    <div className="bet-chips">
+                      {(Object.keys(THAP_MODE_LABEL) as ThapMode[]).map((m) => (
+                        <button key={m} type="button" className={`bet-chip${m === thapCfg.mode ? ' on' : ''}`} disabled={!isHost} onClick={() => setThap({ mode: m })}>
+                          {m === 'ffa' ? '⚔️' : m === 'teams' ? '🤝' : '🛡️'} {THAP_MODE_LABEL[m]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="muted small">Thành máy (🤖) · tổng {thapTotal}/{THAP_MAX_PLAYERS} phe</span>
+                    <div className="bet-chips">
+                      {Array.from({ length: Math.max(0, THAP_MAX_PLAYERS - view.players.length) + 1 }, (_, n) => n).map((n) => (
+                        <button key={n} type="button" className={`bet-chip${n === thapBots ? ' on' : ''}`} disabled={!isHost} onClick={() => setThap({ bots: n })}>{n}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="muted small">Độ khó của máy</span>
+                    <div className="bet-chips">
+                      {(['easy', 'normal', 'hard'] as const).map((lv) => (
+                        <button key={lv} type="button" className={`bet-chip${lv === thapCfg.botLevel ? ' on' : ''}`} disabled={!isHost || thapBots === 0} onClick={() => setThap({ botLevel: lv })}>
+                          {THAP_BOT_LABEL[lv]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="muted small">Thời gian trận</span>
+                    <div className="bet-chips">
+                      {THAP_MINUTE_OPTIONS.map((m) => (
+                        <button key={m} type="button" className={`bet-chip${m === thapCfg.minutes ? ' on' : ''}`} disabled={!isHost} onClick={() => setThap({ minutes: m })}>
+                          {m ? `${m} phút` : 'Không giới hạn'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {thapCfg.mode === 'teams' && (
+                    <div>
+                      <span className="muted small">Đội của bạn {spectating || !me ? '(chỉ người ngồi bàn được chọn)' : '· ai cùng đội là đồng minh, không đánh nhau'}</span>
+                      <div className="bet-chips thap-team-chips">
+                        {THAP_TEAM_NAMES.map((name, t) => (
+                          <button
+                            key={t}
+                            type="button"
+                            className={`bet-chip thap-team-pick${me && thapTeamOf(meId) === t ? ' on' : ''}`}
+                            style={{ borderColor: THAP_TEAM_COLORS[t] }}
+                            disabled={!me || spectating}
+                            onClick={() => emit('thap:team', { team: t })}
+                          >
+                            <i style={{ background: THAP_TEAM_COLORS[t] }} /> {name}
+                          </button>
+                        ))}
+                      </div>
+                      {thapBots > 0 && (
+                        <p className="muted small">
+                          Máy dự kiến vào:{' '}
+                          {thapBotTeams.map((t, i) => (
+                            <span key={i} className="thap-seat-team" style={{ borderColor: THAP_TEAM_COLORS[t] }}>
+                              <i style={{ background: THAP_TEAM_COLORS[t] }} /> 🤖 {THAP_TEAM_NAMES[t]}
+                            </span>
+                          ))}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <ul className="rule-summary-list">
+                  <li>
+                    Tối đa <b>{THAP_MAX_PLAYERS} Thành</b> (người + máy) chiến đấu realtime trên bản đồ thảo nguyên <code>database-miraginewar/terrains</code> lặp vô hạn, <b>sáng toàn bộ</b>.{' '}
+                    {thapCfg.mode === 'ffa' ? <><b>Solo 10 người (Hỗn chiến)</b>: mỗi người một phe, tất cả cùng đánh nhau tự do!</>
+                      : thapCfg.mode === 'teams' ? <><b>Lập đội</b>: tự chọn 1 trong {THAP_TEAM_NAMES.length} đội, cùng đội là đồng minh; máy tự vào đội ít người.</>
+                      : <><b>Co-op 10 người (Cùng đánh máy)</b>: mọi người chung 1 liên quân chống lại toàn bộ máy.</>}
+                  </li>
+                  <li><b>Cơ chế vàng & triệu hồi chuẩn 100% Miragine War gốc:</b> Khởi đầu {THAP_START_GOLD} vàng, Lương Hiệp (Income) <b>{THAP_START_ROUND_INCOME} vàng</b>. Đợt đầu tiên sau <b>{THAP_FIRST_ROUND_S} giây</b>, các đợt tiếp theo mỗi <b>{THAP_ROUND_S} giây</b> sẽ phát toàn bộ Lương Hiệp vào Vàng.</li>
+                  <li>Chọn <b>1 trong 16 binh chủng nguyên bản Miragine War</b> ở bảng 2×8: Cổng Triệu Hồi (<code>door.png</code>) sẽ tự động xuất lính đó liên tục khi đủ vàng (tối đa {THAP_MAX_POP} quân số), đồng thời <b>tăng Lương Hiệp</b> tương ứng từng con lính xuất ra. Chọn lính đắt hơn vàng hiện có thì tự tích vàng qua các đợt!</li>
+                  <li><b>Chỉ có 3 nút điều binh trực quan:</b> <b>🎯 Tấn Công - Chỉ Định</b> (chọn hoặc bấm thẳng vào Thành địch để dồn quân công phá) · <b>🛡️ Phòng Thủ</b> (rút quân giữ Pha Lê Thành) · <b>🚩 Tập Kết</b> (chấm cờ tụ quân trên bản đồ).</li>
+                  <li>Pha Lê Thành {THAP_BASE.hp} máu, tự phóng sét bảo vệ quanh mình (100 công, tầm 600). <b>Pha Lê vỡ là bị loại.</b> Phe/đội cuối cùng còn trụ lại chiến thắng{thapCfg.minutes ? `; hết ${thapCfg.minutes} phút thì phe/đội nhiều điểm nhất thắng` : ''}.</li>
+                </ul>
+              </>
             ) : gameMode === 'link_duel' ? (
               <>
                 <div className="ants-lobby-cfg">
@@ -433,7 +580,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                 {online < modeInfo.minPlayers ? (
                   `Cần ít nhất ${modeInfo.minPlayers} người`
                 ) : !deckOk ? (
-                  gameMode === 'ant_empire' ? 'Cần ít nhất 2 đế chế – thêm máy nhé' : gameMode === 'link_duel' ? `Cần 2–${LINK_MAX_PLAYERS} người – thêm máy nhé` : 'Số người hoặc bộ bài chưa hợp lệ'
+                  isThap ? thapProblem : gameMode === 'ant_empire' ? 'Cần ít nhất 2 đế chế – thêm máy nhé' : gameMode === 'link_duel' ? `Cần 2–${LINK_MAX_PLAYERS} người – thêm máy nhé` : 'Số người hoặc bộ bài chưa hợp lệ'
                 ) : poor.length > 0 ? (
                   'Có người chưa đủ xu'
                 ) : awaitingReady.length > 0 ? (
@@ -485,6 +632,16 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
             setSettingsOpen(false);
           }}
         />
+      )}
+      {miragineGuideOpen && (
+        <Modal title="Miragine War – Menu & Bảng 16 Binh Chủng Nguyên Bản" onClose={() => setMiragineGuideOpen(false)} width={760}>
+          <div className="miragine-menu-modal">
+            <div className="miragine-menu-hero">
+              <img src="/database-miraginewar/ui/title_bg.jpg" alt="Miragine War" className="miragine-title-img" />
+            </div>
+            <img src="/database-miraginewar/ui/tutorial_bg.jpg" alt="Miragine War Unit Guide" className="miragine-tutorial-img" />
+          </div>
+        </Modal>
       )}
     </div>
   );

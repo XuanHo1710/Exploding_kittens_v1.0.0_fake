@@ -5,3 +5,4 @@ export * from './room-rules';
 export * from './ants';
 export * from './link';
 export * from './loto';
+export * from './thap';

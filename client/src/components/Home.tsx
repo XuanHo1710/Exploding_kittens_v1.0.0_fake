@@ -29,7 +29,7 @@ export default function Home({
       await onCreate(
         {
           ...base,
-          maxPlayers: mode === 'tien_len' ? 4 : mode === 'blackjack_21' || mode === 'ant_empire' ? 10 : 6,
+          maxPlayers: mode === 'tien_len' ? 4 : mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'thap_hung' ? 10 : 6,
         },
         mode,
       );
