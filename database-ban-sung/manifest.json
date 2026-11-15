@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-15T08:44:42.600Z",
+  "generatedAt": "2026-11-15T13:29:13.212Z",
   "defaults": {
     "baseTilePx": 32,
     "nativeFacing": "right",
@@ -2095,6 +2095,91 @@
       },
       "sourceId": "generated_synth"
     },
+    "danmaku_crescent": {
+      "path": "normalized/projectiles/danmaku_crescent.png",
+      "category": "projectile",
+      "frames": 4,
+      "cellW": 28,
+      "cellH": 32,
+      "offX": -14,
+      "offY": -16,
+      "fps": 20,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "kenney_vfx_ui"
+    },
+    "danmaku_lance": {
+      "path": "normalized/projectiles/danmaku_lance.png",
+      "category": "projectile",
+      "frames": 4,
+      "cellW": 32,
+      "cellH": 16,
+      "offX": -16,
+      "offY": -8,
+      "fps": 20,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "crawl_tiles_cc0"
+    },
+    "danmaku_orb": {
+      "path": "normalized/projectiles/danmaku_orb.png",
+      "category": "projectile",
+      "frames": 4,
+      "cellW": 24,
+      "cellH": 24,
+      "offX": -12,
+      "offY": -12,
+      "fps": 16,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "crawl_tiles_cc0"
+    },
+    "danmaku_ring": {
+      "path": "normalized/projectiles/danmaku_ring.png",
+      "category": "projectile",
+      "frames": 4,
+      "cellW": 24,
+      "cellH": 24,
+      "offX": -12,
+      "offY": -12,
+      "fps": 16,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "kenney_vfx_ui"
+    },
+    "danmaku_star": {
+      "path": "normalized/projectiles/danmaku_star.png",
+      "category": "projectile",
+      "frames": 6,
+      "cellW": 24,
+      "cellH": 24,
+      "offX": -12,
+      "offY": -12,
+      "fps": 18,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "kenney_vfx_ui"
+    },
     "decor_bone": {
       "path": "normalized/props/decor_bone.png",
       "category": "prop",
@@ -2475,6 +2560,40 @@
       },
       "sourceId": "generated_synth"
     },
+    "fx_boss_magic_sigil": {
+      "path": "normalized/vfx/fx_boss_magic_sigil.png",
+      "category": "vfx",
+      "frames": 8,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -48,
+      "fps": 12,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "kenney_vfx_ui"
+    },
+    "fx_boss_void_vortex": {
+      "path": "normalized/vfx/fx_boss_void_vortex.png",
+      "category": "vfx",
+      "frames": 8,
+      "cellW": 80,
+      "cellH": 80,
+      "offX": -40,
+      "offY": -40,
+      "fps": 16,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "kenney_vfx_ui"
+    },
     "fx_crater_decals": {
       "path": "normalized/vfx/fx_crater_decals.png",
       "category": "vfx",
@@ -2610,6 +2729,23 @@
         "accent": "#fee761"
       },
       "sourceId": "internal_miragine"
+    },
+    "fx_laser_muzzle": {
+      "path": "normalized/vfx/fx_laser_muzzle.png",
+      "category": "vfx",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -24,
+      "fps": 24,
+      "loop": true,
+      "fallback": {
+        "shape": "rect",
+        "color": "#2ce8f5",
+        "accent": "#124e89"
+      },
+      "sourceId": "kenney_vfx_ui"
     },
     "fx_light_slash": {
       "path": "normalized/vfx/fx_light_slash.png",
@@ -7847,6 +7983,91 @@
         "accent": "#ff7a3d"
       },
       "sourceId": "generated_synth"
+    },
+    "proj_danmaku_crescent": {
+      "path": "normalized/projectiles/danmaku_crescent.png",
+      "category": "projectile",
+      "frames": 4,
+      "cellW": 28,
+      "cellH": 32,
+      "offX": -14,
+      "offY": -16,
+      "fps": 20,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "kenney_vfx_ui"
+    },
+    "proj_danmaku_lance": {
+      "path": "normalized/projectiles/danmaku_lance.png",
+      "category": "projectile",
+      "frames": 4,
+      "cellW": 32,
+      "cellH": 16,
+      "offX": -16,
+      "offY": -8,
+      "fps": 20,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "crawl_tiles_cc0"
+    },
+    "proj_danmaku_orb": {
+      "path": "normalized/projectiles/danmaku_orb.png",
+      "category": "projectile",
+      "frames": 4,
+      "cellW": 24,
+      "cellH": 24,
+      "offX": -12,
+      "offY": -12,
+      "fps": 16,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "crawl_tiles_cc0"
+    },
+    "proj_danmaku_ring": {
+      "path": "normalized/projectiles/danmaku_ring.png",
+      "category": "projectile",
+      "frames": 4,
+      "cellW": 24,
+      "cellH": 24,
+      "offX": -12,
+      "offY": -12,
+      "fps": 16,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "kenney_vfx_ui"
+    },
+    "proj_danmaku_star": {
+      "path": "normalized/projectiles/danmaku_star.png",
+      "category": "projectile",
+      "frames": 6,
+      "cellW": 24,
+      "cellH": 24,
+      "offX": -12,
+      "offY": -12,
+      "fps": 18,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "kenney_vfx_ui"
     },
     "proj_fireball": {
       "path": "normalized/projectiles/proj_fireball.png",

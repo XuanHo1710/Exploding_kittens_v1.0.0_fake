@@ -252,11 +252,17 @@ export type BansungProjectileKind =
   | 'phantom_arrow'
   | 'magma_glob'
   | 'chronos_slug'
-  | 'orbital_shell';
+  | 'orbital_shell'
+  | 'danmaku_orb'
+  | 'danmaku_lance'
+  | 'danmaku_star'
+  | 'danmaku_crescent'
+  | 'danmaku_ring';
 
 /**
  * Ordered projectile kinds matching net `shotKind` / `kindId` values.
- * Reserves 10..13 for d28, 18..20 for sniper/laser/electric, 21..24 for flame/cryo/saw/gravity.
+ * Reserves 10..13 for d28, 18..20 for sniper/laser/electric, 21..24 for flame/cryo/saw/gravity,
+ * and 37..41 for Touhou/Gungeon Boss Danmaku silhouettes.
  */
 export const BANSUNG_PROJECTILE_KINDS: readonly BansungProjectileKind[] = [
   'kinetic_sm',        // 0
@@ -296,6 +302,11 @@ export const BANSUNG_PROJECTILE_KINDS: readonly BansungProjectileKind[] = [
   'magma_glob',        // 34
   'chronos_slug',      // 35
   'orbital_shell',     // 36
+  'danmaku_orb',       // 37
+  'danmaku_lance',     // 38
+  'danmaku_star',      // 39
+  'danmaku_crescent',  // 40
+  'danmaku_ring',      // 41
 ] as const;
 
 export interface BansungFalloffConfig {
@@ -1375,6 +1386,138 @@ export const BANSUNG_PROJECTILE_CONFIGS: Readonly<
     tracer: { color: '#fbbf24', core: '#fffbeb', lenPx: 48, widthPx: 6.5, fadeMs: 140 },
     spriteKey: 'p_rocket',
     anim: { frames: 2, cellW: 24, cellH: 16, offX: -12, offY: -8, fps: 24 },
+  },
+  danmaku_orb: {
+    kind: 'danmaku_orb',
+    kindId: 37,
+    trajectory: 'linear',
+    speed: 320,
+    accel: 0,
+    maxSpeed: 540,
+    radius: 7,
+    range: 1100,
+    ttlMs: 3600,
+    substeps: 2,
+    pierceCount: 1,
+    destructibleByMelee: true,
+    gravityZ: 0,
+    initVZ: 0,
+    bouncesMax: 0,
+    restitution: 0,
+    contactDetonate: true,
+    blastRadius: 0,
+    coreRadius: 0,
+    outerFalloffMin: 1,
+    knockback: 45,
+    stunMs: 0,
+    spriteKey: 'danmaku_orb',
+    anim: { frames: 4, cellW: 24, cellH: 24, offX: -12, offY: -12, fps: 16 },
+  },
+  danmaku_lance: {
+    kind: 'danmaku_lance',
+    kindId: 38,
+    trajectory: 'linear',
+    speed: 480,
+    accel: 0,
+    maxSpeed: 760,
+    radius: 6,
+    range: 1200,
+    ttlMs: 3200,
+    substeps: 3,
+    pierceCount: 1,
+    destructibleByMelee: true,
+    gravityZ: 0,
+    initVZ: 0,
+    bouncesMax: 0,
+    restitution: 0,
+    contactDetonate: true,
+    blastRadius: 0,
+    coreRadius: 0,
+    outerFalloffMin: 1,
+    knockback: 60,
+    stunMs: 0,
+    tracer: { color: '#2ce8f5', core: '#ffffff', lenPx: 28, widthPx: 3.5, fadeMs: 85 },
+    spriteKey: 'danmaku_lance',
+    anim: { frames: 4, cellW: 32, cellH: 16, offX: -16, offY: -8, fps: 20 },
+  },
+  danmaku_star: {
+    kind: 'danmaku_star',
+    kindId: 39,
+    trajectory: 'linear',
+    speed: 340,
+    accel: 0,
+    maxSpeed: 560,
+    radius: 7,
+    range: 1100,
+    ttlMs: 3600,
+    substeps: 2,
+    pierceCount: 1,
+    destructibleByMelee: true,
+    gravityZ: 0,
+    initVZ: 0,
+    bouncesMax: 0,
+    restitution: 0,
+    contactDetonate: true,
+    blastRadius: 0,
+    coreRadius: 0,
+    outerFalloffMin: 1,
+    knockback: 45,
+    stunMs: 0,
+    spriteKey: 'danmaku_star',
+    anim: { frames: 6, cellW: 24, cellH: 24, offX: -12, offY: -12, fps: 18 },
+  },
+  danmaku_crescent: {
+    kind: 'danmaku_crescent',
+    kindId: 40,
+    trajectory: 'linear',
+    speed: 390,
+    accel: 0,
+    maxSpeed: 640,
+    radius: 9,
+    range: 1150,
+    ttlMs: 3400,
+    substeps: 2,
+    pierceCount: 1,
+    destructibleByMelee: true,
+    gravityZ: 0,
+    initVZ: 0,
+    bouncesMax: 0,
+    restitution: 0,
+    contactDetonate: true,
+    blastRadius: 0,
+    coreRadius: 0,
+    outerFalloffMin: 1,
+    knockback: 75,
+    stunMs: 0,
+    tracer: { color: '#cf61b8', core: '#ffffff', lenPx: 24, widthPx: 4.5, fadeMs: 90 },
+    spriteKey: 'danmaku_crescent',
+    anim: { frames: 4, cellW: 28, cellH: 32, offX: -14, offY: -16, fps: 20 },
+  },
+  danmaku_ring: {
+    kind: 'danmaku_ring',
+    kindId: 41,
+    trajectory: 'linear',
+    speed: 260,
+    accel: 0,
+    maxSpeed: 480,
+    radius: 8,
+    range: 1100,
+    ttlMs: 4000,
+    substeps: 2,
+    pierceCount: 1,
+    destructibleByMelee: true,
+    gravityZ: 0,
+    initVZ: 0,
+    bouncesMax: 0,
+    restitution: 0,
+    contactDetonate: true,
+    blastRadius: 0,
+    coreRadius: 0,
+    outerFalloffMin: 1,
+    knockback: 40,
+    stunMs: 0,
+    spriteKey: 'danmaku_ring',
+    anim: { frames: 4, cellW: 24, cellH: 24, offX: -12, offY: -12, fps: 16 },
   },
 } as const;
 

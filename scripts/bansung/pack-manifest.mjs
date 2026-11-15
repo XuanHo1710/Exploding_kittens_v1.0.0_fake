@@ -615,6 +615,11 @@ async function buildPack() {
     gun_magma_spitter: ['magma_spitter'],
     gun_chronos_rifle: ['chronos_rifle'],
     gun_orbital_cannon: ['orbital_cannon'],
+    danmaku_orb: ['proj_danmaku_orb'],
+    danmaku_lance: ['proj_danmaku_lance'],
+    danmaku_star: ['proj_danmaku_star'],
+    danmaku_crescent: ['proj_danmaku_crescent'],
+    danmaku_ring: ['proj_danmaku_ring'],
   };
   for (const [id, m] of Object.entries(metaSpriteFx.sprites || {})) {
     const key = normalizeId(id);

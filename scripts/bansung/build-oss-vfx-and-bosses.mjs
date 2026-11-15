@@ -60,10 +60,14 @@ const CACHE_DIR = path.join(os.tmpdir(), 'bansung-crawl-cc0-cache');
 const W12_CACHE_DIR = path.join(os.tmpdir(), 'bansung-w12-cache');
 
 const CRAWL_RAW_BASE = 'https://raw.githubusercontent.com/crawl/tiles/master/';
+const KENNEY_PARTICLE_BASES = [
+  'https://raw.githubusercontent.com/Calinou/kenney-particle-pack/master/addons/kenney_particle_pack/',
+  'https://raw.githubusercontent.com/shorepine/kenney/main/2d/Particle%20Pack/PNG%20(Transparent)/',
+];
 
 const CRAWL_TILES = {
   swordPower: 'releases/Nov-2015/item/weapon/artefact/spwpn_sword_of_power.png',
-  blessedBlade: 'releases/Ancient/Oct-5-2010/item/weapon/blessed_blade.png',
+  doubleSword: 'releases/Nov-2015/item/weapon/double_sword.png',
   holyWrath: 'releases/Nov-2015/item/weapon/brands/i-holy_wrath.png',
   orbFire: 'releases/Nov-2015/mon/nonliving/orb_of_fire.png',
   flame0: 'releases/Nov-2015/effect/flame0.png',
@@ -229,18 +233,26 @@ async function loadVerifiedCrawlTiles() {
     unknownTxt = await res.text();
     await fs.writeFile(unknownCache, unknownTxt, 'utf8');
   }
-  const unknownSet = new Set(
-    unknownTxt
-      .split(/\r?\n/)
-      .map((l) => l.trim().replace(/^\.\//, ''))
-      .filter((l) => l.endsWith('.png')),
-  );
+  const unknownSet = new Set();
+  const unknownBasenames = new Set();
+  for (const rawLine of unknownTxt.split(/\r?\n/)) {
+    const cleaned = rawLine
+      .trim()
+      .replace(/^[-*]\s*/, '')
+      .replace(/^\.\//, '')
+      .replace(/^(?:crawl-ref\/source\/)?rltiles\//, '');
+    if (!cleaned.endsWith('.png')) continue;
+    unknownSet.add(cleaned);
+    unknownBasenames.add(path.posix.basename(cleaned));
+  }
 
   const loaded = {};
   await Promise.all(
     Object.entries(CRAWL_TILES).map(async ([key, rel]) => {
-      if (unknownSet.has(rel)) {
-        throw new Error(`License violation blocked: ${rel} is listed in TILES_UNDER_UNKNOWN_LICENSE.md`);
+      const relAfterSnapshot = rel.replace(/^releases\/(?:Ancient\/)?[^/]+\//, '');
+      const baseName = path.posix.basename(rel);
+      if (unknownSet.has(rel) || unknownSet.has(relAfterSnapshot) || unknownBasenames.has(baseName)) {
+        throw new Error(`License violation blocked: ${rel} matches TILES_UNDER_UNKNOWN_LICENSE.md`);
       }
       const cacheFile = path.join(CACHE_DIR, rel.replace(/\//g, '__'));
       let buf;
@@ -256,6 +268,79 @@ async function loadVerifiedCrawlTiles() {
     }),
   );
   return loaded;
+}
+
+const KENNEY_PARTICLES = {
+  magic01: 'magic_01.png',
+  magic02: 'magic_02.png',
+  circle02: 'circle_02.png',
+  twirl01: 'twirl_01.png',
+  twirl02: 'twirl_02.png',
+  muzzle01: 'muzzle_01.png',
+  star04: 'star_04.png',
+  slash01: 'slash_01.png',
+};
+
+async function loadVerifiedKenneyParticles() {
+  await fs.mkdir(CACHE_DIR, { recursive: true });
+  const loaded = {};
+  await Promise.all(
+    Object.entries(KENNEY_PARTICLES).map(async ([key, fileName]) => {
+      const cacheFile = path.join(CACHE_DIR, `kenney_particle__${fileName}`);
+      let buf = null;
+      if (existsSync(cacheFile)) {
+        buf = await fs.readFile(cacheFile);
+      } else {
+        for (const base of KENNEY_PARTICLE_BASES) {
+          try {
+            const res = await fetch(base + fileName);
+            if (res.ok) {
+              buf = Buffer.from(await res.arrayBuffer());
+              await fs.writeFile(cacheFile, buf);
+              break;
+            }
+          } catch {
+            // Try fallback mirror
+          }
+        }
+      }
+      if (buf) {
+        loaded[key] = decodePng(buf);
+      }
+    }),
+  );
+  return loaded;
+}
+
+function downsampleKenneyParticle(src, targetW, targetH, intensityCutoff = 52) {
+  if (!src) return null;
+  const out = createImage(targetW, targetH);
+  const scaleX = src.width / targetW;
+  const scaleY = src.height / targetH;
+  for (let dy = 0; dy < targetH; dy++) {
+    const sy0 = Math.floor(dy * scaleY);
+    const sy1 = Math.max(sy0 + 1, Math.min(src.height, Math.ceil((dy + 1) * scaleY)));
+    for (let dx = 0; dx < targetW; dx++) {
+      const sx0 = Math.floor(dx * scaleX);
+      const sx1 = Math.max(sx0 + 1, Math.min(src.width, Math.ceil((dx + 1) * scaleX)));
+      let maxVal = 0;
+      for (let sy = sy0; sy < sy1; sy++) {
+        for (let sx = sx0; sx < sx1; sx++) {
+          const si = (sy * src.width + sx) * 4;
+          const lum = Math.max(src.data[si], src.data[si + 1], src.data[si + 2]) * (src.data[si + 3] / 255);
+          if (lum > maxVal) maxVal = lum;
+        }
+      }
+      if (maxVal < intensityCutoff) continue;
+      const v = Math.min(255, Math.round(((maxVal - intensityCutoff) / (255 - intensityCutoff)) * 255));
+      const di = (dy * targetW + dx) * 4;
+      out.data[di] = v;
+      out.data[di + 1] = v;
+      out.data[di + 2] = v;
+      out.data[di + 3] = 255;
+    }
+  }
+  return out;
 }
 
 async function tryLoadOptionalCachedPng(relInW12Cache) {
@@ -288,7 +373,7 @@ function extractBrightPixels(src, minLuma = 95) {
 
 function buildLightSwordFrames(tiles) {
   // Extract pure sword silhouette (filtering dark background shadow swooshes) & rotate +45 deg to point +X!
-  const cleanBlessed = extractBrightPixels(tiles.blessedBlade, 105);
+  const cleanBlessed = extractBrightPixels(tiles.doubleSword || tiles.swordPower, 95);
   const cleanPower = extractBrightPixels(tiles.swordPower, 85);
   const baseSword = rotateImageNearest(resizeImage(cleanBlessed, 40, 40), Math.PI / 4, 48, 48);
   const altSword = rotateImageNearest(resizeImage(cleanPower, 40, 40), Math.PI / 4, 48, 48);
@@ -513,6 +598,246 @@ function buildVerticalLightningBoltFrames(tiles, colorVariant) {
     }
 
     frames.push(finalizeGlowVfx(cell, true));
+  }
+  return frames;
+}
+
+async function buildBossLaserMuzzleFrames(tiles, kenney) {
+  const spMuzzle = await tryLoadOptionalCachedPng('spritepilot_combat/spritepilot-combat-pack/32px/muzzle-flash-32px_strip5.png');
+  const spCells = spMuzzle ? sliceSpriteSheet(spMuzzle, 32, 32, { cols: 5, rows: 1, count: 5 }) : null;
+  const kMuzzle = downsampleKenneyParticle(kenney.muzzle01, 40, 40, 56);
+  const kStar = downsampleKenneyParticle(kenney.star04, 38, 38, 60);
+  const holyBrand = extractBrightPixels(tiles.holyWrath, 95);
+
+  const frames = [];
+  for (let f = 0; f < 6; f++) {
+    const cell = createImage(48, 48);
+    if (kMuzzle) {
+      const rotMuz = rotateImageNearest(kMuzzle, Math.PI * 0.5 + (f % 2 === 0 ? 0.08 : -0.08), 44, 44);
+      const remapped = remapByLuminance(rotMuz, ['#8a1c31', '#e43b44', '#ff7a3d', '#fee761', '#ffffff'], 42);
+      blitImage(cell, remapped, 4, 2);
+    }
+    if (spCells && spCells[f % spCells.length]) {
+      const scaled = remapByLuminance(
+        resizeImage(spCells[f % spCells.length], 38, 38),
+        ['#c72936', '#ff7a3d', '#fee761', '#ffffff'],
+        40,
+      );
+      blitImage(cell, scaled, 6, 5);
+    }
+    if (kStar) {
+      const rotStar = rotateImageNearest(kStar, (f * Math.PI) / 6, 40, 40);
+      const starCol = remapByLuminance(rotStar, ['#e43b44', '#ff7a3d', '#fee761', '#ffffff'], 70);
+      blitImage(cell, starCol, 4, 4);
+    } else if (holyBrand) {
+      const rotHoly = rotateImageNearest(resizeImage(holyBrand, 34, 34), (f * Math.PI) / 6, 38, 38);
+      const holyCol = remapByLuminance(rotHoly, ['#ff7a3d', '#fee761', '#ffffff'], 60);
+      blitImage(cell, holyCol, 5, 5);
+    }
+    const rCore = f % 2 === 0 ? 6.5 : 5.2;
+    drawDisc(cell, 24, 24, rCore + 2.2, '#ff7a3d');
+    drawDisc(cell, 24, 24, rCore, '#fee761');
+    drawDisc(cell, 24, 24, rCore * 0.58, '#ffffff');
+    drawLine(cell, 6, 24, 45, 24, '#ffffff', 2);
+    drawLine(cell, 24, 8, 24, 40, f % 2 === 0 ? '#ffffff' : '#fee761', 1);
+    frames.push(finalizeGlowVfx(cell, false));
+  }
+  return frames;
+}
+
+function buildBossMagicSigilFrames(tiles, kenney) {
+  const kMagicOuter = downsampleKenneyParticle(kenney.magic01, 88, 88, 68);
+  const kMagicInner = downsampleKenneyParticle(kenney.magic02 || kenney.circle02, 64, 64, 72);
+  const kCircle = downsampleKenneyParticle(kenney.circle02, 90, 90, 64);
+
+  const frames = [];
+  for (let f = 0; f < 8; f++) {
+    const cell = createImage(96, 96);
+    const outerAng = (f / 8) * (Math.PI * 0.5);
+    const innerAng = -(f / 8) * Math.PI;
+    const ramp = f % 2 === 0
+      ? ['#381d4a', '#622c73', '#0095e9', '#2ce8f5', '#9cf9ff', '#ffffff']
+      : ['#143464', '#124e89', '#0095e9', '#2ce8f5', '#fee761', '#ffffff'];
+
+    if (kCircle) {
+      const cCol = remapByLuminance(kCircle, ramp.slice(0, 5), 48);
+      blitImage(cell, cCol, 3, 3);
+    }
+    if (kMagicOuter) {
+      const rotOuter = rotateImageNearest(kMagicOuter, outerAng, 92, 92);
+      const oCol = remapByLuminance(rotOuter, ramp, 54);
+      blitImage(cell, oCol, 2, 2);
+    } else {
+      for (let k = 0; k < 6; k++) {
+        const a0 = outerAng + (k * Math.PI) / 3;
+        const a1 = outerAng + (((k + 2) % 6) * Math.PI) / 3;
+        drawLine(
+          cell,
+          48 + Math.cos(a0) * 38,
+          48 + Math.sin(a0) * 38,
+          48 + Math.cos(a1) * 38,
+          48 + Math.sin(a1) * 38,
+          '#2ce8f5',
+          2,
+        );
+      }
+    }
+    if (kMagicInner) {
+      const rotInner = rotateImageNearest(kMagicInner, innerAng, 68, 68);
+      const iCol = remapByLuminance(rotInner, ['#0095e9', '#2ce8f5', '#9cf9ff', '#ffffff'], 64);
+      blitImage(cell, iCol, 14, 14);
+    }
+    frames.push(finalizeGlowVfx(cell, false));
+  }
+  return frames;
+}
+
+function buildBossVoidVortexFrames(tiles, kenney) {
+  const kTwirl1 = downsampleKenneyParticle(kenney.twirl01, 72, 72, 56);
+  const kTwirl2 = downsampleKenneyParticle(kenney.twirl02 || kenney.twirl01, 52, 52, 62);
+  const stormCore = resizeImage(tiles.cloudStorm1, 36, 36);
+
+  const frames = [];
+  for (let f = 0; f < 8; f++) {
+    const cell = createImage(80, 80);
+    const a1 = (f / 8) * Math.PI * 2;
+    const a2 = (f / 8) * Math.PI * 4;
+    const stormRot = rotateImageNearest(stormCore, -a1, 40, 40);
+    blitImage(cell, remapByLuminance(stormRot, ['#381d4a', '#622c73', '#96419c', '#cf61b8'], 48), 20, 20);
+    if (kTwirl1) {
+      const r1 = rotateImageNearest(kTwirl1, a1, 76, 76);
+      blitImage(cell, remapByLuminance(r1, ['#381d4a', '#622c73', '#96419c', '#2ce8f5', '#ff9ee2', '#ffffff'], 45), 2, 2);
+    }
+    if (kTwirl2) {
+      const r2 = rotateImageNearest(kTwirl2, a2, 56, 56);
+      blitImage(cell, remapByLuminance(r2, ['#622c73', '#cf61b8', '#9cf9ff', '#ffffff'], 55), 12, 12);
+    }
+    drawDisc(cell, 40, 40, 6.2, '#181425');
+    drawDisc(cell, 40, 40, 2.2, '#ff9ee2');
+    frames.push(finalizeGlowVfx(cell, false));
+  }
+  return frames;
+}
+
+function buildDanmakuOrbFrames(tiles) {
+  const frames = [];
+  for (let f = 0; f < 4; f++) {
+    const cell = createImage(24, 24);
+    const src = f % 2 === 0 ? tiles.orbElec : tiles.eyeDevastation;
+    const rot = rotateImageNearest(trimAndScale(src, 18, 18, 42), (f / 4) * Math.PI * 2, 22, 22);
+    const col = remapByLuminance(rot, ['#8a1c31', '#e43b44', '#ff7a3d', '#fee761', '#ffffff'], 45);
+    blitImage(cell, col, 1, 1);
+    drawDisc(cell, 12, 12, 7.2, '#e43b44');
+    drawDisc(cell, 12, 12, 5.2, '#ff7a3d');
+    drawDisc(cell, 12, 12, 3.3, '#ffffff');
+    putPx(cell, 10, 10, '#ffffff');
+    frames.push(finalizeOutlined(cell));
+  }
+  return frames;
+}
+
+function buildDanmakuLanceFrames(tiles) {
+  const cleanPower = extractBrightPixels(tiles.swordPower, 85);
+  const horiz = rotateImageNearest(resizeImage(cleanPower, 26, 26), Math.PI * 0.25, 32, 16);
+  const frames = [];
+  for (let f = 0; f < 4; f++) {
+    const cell = createImage(32, 16);
+    const remapped = remapByLuminance(horiz, ['#124e89', '#0095e9', '#2ce8f5', '#9cf9ff', '#ffffff'], 40);
+    blitImage(cell, remapped, 0, 0);
+    for (let x = 5; x <= 28; x++) {
+      const t = (x - 5) / 23;
+      const halfH = t < 0.65 ? Math.round(1 + t * 3.8) : Math.max(0, Math.round((1 - (t - 0.65) / 0.35) * 3.6));
+      drawRect(cell, x, 8 - halfH, 1, halfH * 2 + 1, '#2ce8f5');
+      if (halfH >= 1) {
+        drawRect(cell, x, 8 - Math.max(0, halfH - 1), 1, Math.max(1, (halfH - 1) * 2 + 1), '#9cf9ff');
+      }
+    }
+    drawRect(cell, 9, 7, 17, 3, '#ffffff');
+    putPx(cell, 28, 8, '#ffffff');
+    putPx(cell, 29, 8, '#ffffff');
+    if (f % 2 === 1) {
+      drawLine(cell, 20, 4, 20, 12, '#ffffff', 1);
+    }
+    frames.push(finalizeOutlined(cell));
+  }
+  return frames;
+}
+
+function buildDanmakuStarFrames(tiles, kenney) {
+  const kStar = downsampleKenneyParticle(kenney.star04, 20, 20, 58);
+  const holy = extractBrightPixels(tiles.holyWrath, 95);
+  const frames = [];
+  for (let f = 0; f < 6; f++) {
+    const cell = createImage(24, 24);
+    const ang = (f / 6) * (Math.PI * 0.5);
+    if (kStar) {
+      const rot = rotateImageNearest(kStar, ang, 22, 22);
+      blitImage(cell, remapByLuminance(rot, ['#96419c', '#cf61b8', '#fee761', '#ffffff'], 45), 1, 1);
+    } else if (holy) {
+      const rot = rotateImageNearest(resizeImage(holy, 20, 20), ang, 22, 22);
+      blitImage(cell, remapByLuminance(rot, ['#cf61b8', '#fee761', '#ffffff'], 45), 1, 1);
+    }
+    for (let k = 0; k < 5; k++) {
+      const a = ang + (k * Math.PI * 2) / 5;
+      drawLine(cell, 12, 12, 12 + Math.cos(a) * 8.2, 12 + Math.sin(a) * 8.2, '#fee761', 2);
+      drawLine(cell, 12, 12, 12 + Math.cos(a) * 5.2, 12 + Math.sin(a) * 5.2, '#ffffff', 1);
+    }
+    drawDisc(cell, 12, 12, 3.2, '#ffffff');
+    frames.push(finalizeOutlined(cell));
+  }
+  return frames;
+}
+
+async function buildDanmakuCrescentFrames(tiles, kenney) {
+  const spSlash = await tryLoadOptionalCachedPng('spritepilot_combat/spritepilot-combat-pack/32px/sword-slash-32px_strip7.png');
+  const slashCells = spSlash ? sliceSpriteSheet(spSlash, 32, 32, { cols: 7, rows: 1, count: 7 }) : null;
+  const kSlash = downsampleKenneyParticle(kenney.slash01, 26, 30, 62);
+
+  const frames = [];
+  for (let f = 0; f < 4; f++) {
+    const cell = createImage(28, 32);
+    if (slashCells && slashCells[2 + (f % 3)]) {
+      const sc = resizeImage(slashCells[2 + (f % 3)], 24, 28);
+      blitImage(cell, remapByLuminance(sc, ['#622c73', '#96419c', '#2ce8f5', '#9cf9ff', '#ffffff'], 35), 2, 2);
+    } else if (kSlash) {
+      blitImage(cell, remapByLuminance(kSlash, ['#622c73', '#2ce8f5', '#9cf9ff', '#ffffff'], 50), 1, 1);
+    }
+    for (let a = -1.18; a <= 1.18; a += 0.08) {
+      const w = 1 - Math.abs(a) / 1.25;
+      const cx = 8 + Math.cos(a) * 13;
+      const cy = 16 + Math.sin(a) * 12;
+      drawDisc(cell, cx, cy, 1.2 + w * 2.1, '#2ce8f5');
+      drawDisc(cell, cx + 1, cy, 0.7 + w * 1.2, '#ffffff');
+    }
+    frames.push(finalizeOutlined(cell));
+  }
+  return frames;
+}
+
+function buildDanmakuRingFrames(kenney) {
+  const kCircle = downsampleKenneyParticle(kenney.circle02, 22, 22, 62);
+  const frames = [];
+  for (let f = 0; f < 4; f++) {
+    const cell = createImage(24, 24);
+    if (kCircle) {
+      blitImage(cell, remapByLuminance(kCircle, ['#c72936', '#ff7a3d', '#fee761', '#ffffff'], 48), 1, 1);
+    }
+    const rad = 7.4 + (f % 2) * 0.4;
+    for (let a = 0; a < Math.PI * 2; a += 0.1) {
+      const rx = 12 + Math.cos(a) * rad;
+      const ry = 12 + Math.sin(a) * rad;
+      drawDisc(cell, rx, ry, 1.9, '#ff7a3d');
+      putPx(cell, rx, ry, '#ffffff');
+    }
+    for (let yy = 7; yy <= 17; yy++) {
+      for (let xx = 7; xx <= 17; xx++) {
+        if ((xx - 12) * (xx - 12) + (yy - 12) * (yy - 12) <= 18) {
+          const idx = (yy * 24 + xx) * 4;
+          cell.data[idx + 3] = 0;
+        }
+      }
+    }
+    frames.push(finalizeOutlined(cell));
   }
   return frames;
 }
@@ -943,9 +1268,14 @@ async function writeStripAndMeta(absPath, frames, cellW, cellH) {
 }
 
 async function main() {
-  console.log('[oss-vfx-bosses] Fetching & verifying CC0 tiles from crawl/tiles...');
-  const tiles = await loadVerifiedCrawlTiles();
-  console.log(`[oss-vfx-bosses] Verified ${Object.keys(tiles).length} CC0 source PNGs (0 unknown-license tiles).`);
+  console.log('[oss-vfx-bosses] Fetching & verifying CC0 tiles from crawl/tiles & Kenney CC0...');
+  const [tiles, kenney] = await Promise.all([
+    loadVerifiedCrawlTiles(),
+    loadVerifiedKenneyParticles(),
+  ]);
+  console.log(
+    `[oss-vfx-bosses] Verified ${Object.keys(tiles).length} Crawl CC0 PNGs + ${Object.keys(kenney).length} Kenney CC0 PNGs (0 unknown-license tiles).`,
+  );
 
   // 1. Build Open-Source VFX Strips
   const metaFx = JSON.parse(await fs.readFile(META_FX_PATH, 'utf8'));
@@ -961,6 +1291,7 @@ async function main() {
       fps: 16,
       loop: true,
       outlineMode: '4conn',
+      sourceId: 'crawl_tiles_cc0',
     },
     {
       id: 'fx_light_slash',
@@ -973,6 +1304,7 @@ async function main() {
       fps: 24,
       loop: false,
       outlineMode: '4conn',
+      sourceId: 'crawl_tiles_cc0',
     },
     {
       id: 'fx_fire_orb',
@@ -985,6 +1317,7 @@ async function main() {
       fps: 16,
       loop: true,
       outlineMode: '4conn',
+      sourceId: 'crawl_tiles_cc0',
     },
     {
       id: 'fx_lightning_orb',
@@ -997,6 +1330,7 @@ async function main() {
       fps: 18,
       loop: true,
       outlineMode: '4conn',
+      sourceId: 'crawl_tiles_cc0',
     },
     {
       id: 'fx_lightning_bolt_blue',
@@ -1009,6 +1343,7 @@ async function main() {
       fps: 22,
       loop: false,
       outlineMode: '4conn',
+      sourceId: 'crawl_tiles_cc0',
     },
     {
       id: 'fx_lightning_bolt_yellow',
@@ -1021,6 +1356,111 @@ async function main() {
       fps: 22,
       loop: false,
       outlineMode: '4conn',
+      sourceId: 'crawl_tiles_cc0',
+    },
+    {
+      id: 'fx_laser_muzzle',
+      fxGroup: 'muzzle',
+      frames: await buildBossLaserMuzzleFrames(tiles, kenney),
+      cellW: 48,
+      cellH: 48,
+      offX: -24,
+      offY: -24,
+      fps: 24,
+      loop: true,
+      outlineMode: 'none',
+      sourceId: 'kenney_vfx_ui',
+    },
+    {
+      id: 'fx_boss_magic_sigil',
+      fxGroup: 'aura',
+      frames: buildBossMagicSigilFrames(tiles, kenney),
+      cellW: 96,
+      cellH: 96,
+      offX: -48,
+      offY: -48,
+      fps: 12,
+      loop: true,
+      outlineMode: 'none',
+      sourceId: 'kenney_vfx_ui',
+    },
+    {
+      id: 'fx_boss_void_vortex',
+      fxGroup: 'aura',
+      frames: buildBossVoidVortexFrames(tiles, kenney),
+      cellW: 80,
+      cellH: 80,
+      offX: -40,
+      offY: -40,
+      fps: 16,
+      loop: true,
+      outlineMode: 'none',
+      sourceId: 'kenney_vfx_ui',
+    },
+    {
+      id: 'danmaku_orb',
+      fxGroup: 'projectile',
+      frames: buildDanmakuOrbFrames(tiles),
+      cellW: 24,
+      cellH: 24,
+      offX: -12,
+      offY: -12,
+      fps: 16,
+      loop: true,
+      outlineMode: '4conn',
+      sourceId: 'crawl_tiles_cc0',
+    },
+    {
+      id: 'danmaku_lance',
+      fxGroup: 'projectile',
+      frames: buildDanmakuLanceFrames(tiles),
+      cellW: 32,
+      cellH: 16,
+      offX: -16,
+      offY: -8,
+      fps: 20,
+      loop: true,
+      outlineMode: '4conn',
+      sourceId: 'crawl_tiles_cc0',
+    },
+    {
+      id: 'danmaku_star',
+      fxGroup: 'projectile',
+      frames: buildDanmakuStarFrames(tiles, kenney),
+      cellW: 24,
+      cellH: 24,
+      offX: -12,
+      offY: -12,
+      fps: 18,
+      loop: true,
+      outlineMode: '4conn',
+      sourceId: 'kenney_vfx_ui',
+    },
+    {
+      id: 'danmaku_crescent',
+      fxGroup: 'projectile',
+      frames: await buildDanmakuCrescentFrames(tiles, kenney),
+      cellW: 28,
+      cellH: 32,
+      offX: -14,
+      offY: -16,
+      fps: 20,
+      loop: true,
+      outlineMode: '4conn',
+      sourceId: 'kenney_vfx_ui',
+    },
+    {
+      id: 'danmaku_ring',
+      fxGroup: 'projectile',
+      frames: buildDanmakuRingFrames(kenney),
+      cellW: 24,
+      cellH: 24,
+      offX: -12,
+      offY: -12,
+      fps: 16,
+      loop: true,
+      outlineMode: '4conn',
+      sourceId: 'kenney_vfx_ui',
     },
   ];
 
@@ -1045,7 +1485,7 @@ async function main() {
       loop: spec.loop,
       nativeFacing: 'right',
       outlineMode: spec.outlineMode,
-      sourceId: 'crawl_tiles_cc0',
+      sourceId: spec.sourceId || 'crawl_tiles_cc0',
       license: 'CC0-1.0',
       ossFetched: true,
       fallback: false,

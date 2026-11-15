@@ -441,6 +441,49 @@ export const BANSUNG_BFLAG_EXPLOSIVE = 4;
 export const BANSUNG_BFLAG_CRIT = 8;
 export const BANSUNG_BFLAG_ENERGY = 16;
 export const BANSUNG_BFLAG_HOMING = 32;
+/** Bit 6: bullet is hovering in Sakuya/Cirno pause-and-aim phase (`speed = 0`, `aimQ` carries live slewing visual angle). */
+export const BANSUNG_BFLAG_PAUSED = 64;
+export const BANSUNG_BFLAG_SCALE_SHIFT = 7;
+export const BANSUNG_BFLAG_SCALE_MASK = 0x3;
+export const BANSUNG_BFLAG_PALETTE_SHIFT = 9;
+export const BANSUNG_BFLAG_PALETTE_MASK = 0x7;
+
+export const BANSUNG_DANMAKU_PALETTE = {
+  CRIMSON: 0,
+  CYAN: 1,
+  VIOLET: 2,
+  GOLD: 3,
+  EMERALD: 4,
+  FLAME: 5,
+  ROSE: 6,
+  SILVER: 7,
+} as const;
+export type BansungDanmakuPaletteId =
+  (typeof BANSUNG_DANMAKU_PALETTE)[keyof typeof BANSUNG_DANMAKU_PALETTE];
+
+const DANMAKU_SCALE_MULTS: readonly [number, number, number, number] = [1.0, 1.32, 1.68, 0.78];
+
+export function packDanmakuBulletFlags(
+  baseFlags: number,
+  paused = false,
+  scaleTier = 0,
+  palette: number = BANSUNG_DANMAKU_PALETTE.CRIMSON,
+): number {
+  return (
+    (baseFlags & 0x3f) |
+    (paused ? BANSUNG_BFLAG_PAUSED : 0) |
+    ((scaleTier & BANSUNG_BFLAG_SCALE_MASK) << BANSUNG_BFLAG_SCALE_SHIFT) |
+    ((palette & BANSUNG_BFLAG_PALETTE_MASK) << BANSUNG_BFLAG_PALETTE_SHIFT)
+  );
+}
+
+export function decodeDanmakuScaleMult(flags: number): number {
+  return DANMAKU_SCALE_MULTS[(flags >>> BANSUNG_BFLAG_SCALE_SHIFT) & BANSUNG_BFLAG_SCALE_MASK] ?? 1.0;
+}
+
+export function decodeDanmakuPalette(flags: number): BansungDanmakuPaletteId {
+  return ((flags >>> BANSUNG_BFLAG_PALETTE_SHIFT) & BANSUNG_BFLAG_PALETTE_MASK) as BansungDanmakuPaletteId;
+}
 
 // Uniform 6-int delta FX types
 /** [0, ownerId, weaponIdx, x, y, aimQ] */
