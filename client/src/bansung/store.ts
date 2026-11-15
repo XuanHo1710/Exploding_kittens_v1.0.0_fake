@@ -7,6 +7,7 @@
  */
 import { useCallback, useSyncExternalStore } from 'react';
 import {
+  BANSUNG_BFLAG_PAUSED,
   BANSUNG_BULLET_FIELDS,
   BANSUNG_DASH,
   BANSUNG_EFLAG_HIT_FLASH,
@@ -766,8 +767,10 @@ function decodeBullets(arr: readonly number[] | undefined): Map<number, SnapBull
     const id = arr[i];
     const kind = arr[i + 1];
     const aim = dequantizeAim(arr[i + 4]);
+    const flags = arr[i + 5];
+    const isPaused = (flags & BANSUNG_BFLAG_PAUSED) !== 0;
     const cfg = getProjectileConfigByKindId(kind);
-    const speed = cfg ? cfg.speed : 600;
+    const speed = isPaused ? 0 : cfg ? cfg.speed : 600;
     map.set(id, {
       id,
       kind,
@@ -776,7 +779,7 @@ function decodeBullets(arr: readonly number[] | undefined): Map<number, SnapBull
       aim,
       vx: Math.cos(aim) * speed,
       vy: Math.sin(aim) * speed,
-      flags: arr[i + 5],
+      flags,
     });
   }
   return map;

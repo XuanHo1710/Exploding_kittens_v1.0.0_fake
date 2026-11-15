@@ -539,7 +539,7 @@ interface RenderedTelegraphKey {
   x1: number;
   y1: number;
 }
-const renderedBossTelegraphsScratch: RenderedTelegraphKey[] = Array.from({ length: 32 }, () => ({
+const renderedBossTelegraphsScratch: RenderedTelegraphKey[] = Array.from({ length: 64 }, () => ({
   id: 0,
   kind: 0,
   x0: 0,
@@ -548,6 +548,36 @@ const renderedBossTelegraphsScratch: RenderedTelegraphKey[] = Array.from({ lengt
   y1: 0,
 }));
 let renderedBossTelegraphCount = 0;
+
+type BossLaserThemeKey = 'crimson' | 'gold' | 'cyan' | 'violet' | 'orange' | 'emerald';
+
+interface ActiveBossBeamSlot {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+  halfW: number;
+  prog01: number;
+  theme: BossLaserThemeKey;
+  seed: number;
+}
+
+const activeBossBeamsScratch: ActiveBossBeamSlot[] = Array.from({ length: 36 }, () => ({
+  x0: 0,
+  y0: 0,
+  x1: 0,
+  y1: 0,
+  halfW: 16,
+  prog01: 0.5,
+  theme: 'crimson',
+  seed: 0,
+}));
+let activeBossBeamCount = 0;
+
+const LASER_MAX_NODES = 48;
+const laserUpperY = new Float32Array(LASER_MAX_NODES);
+const laserLowerY = new Float32Array(LASER_MAX_NODES);
+const laserLateralStripCache = new Map<BossLaserThemeKey, HTMLCanvasElement>();
 
 const weakPointScratch: ExtendedWeakPoint[] = Array.from({ length: 8 }, () => ({
   idx: 0,
@@ -2982,6 +3012,237 @@ function drawEmpPylonEntity(
 // 7. Telegraphs, Beams, Melee Slashes, Pings & Crosshair
 // ============================================================================
 
+interface BossLaserPalette {
+  readonly rgb: string;
+  readonly primary: string;
+  readonly secondary: string;
+  readonly scorch: string;
+  readonly glow: GlowColor;
+}
+
+const BOSS_LASER_PALETTES: Record<BossLaserThemeKey, BossLaserPalette> = {
+  crimson: {
+    rgb: '255, 42, 109',
+    primary: '#ff2a6d',
+    secondary: '#fda4af',
+    scorch: 'rgba(136, 19, 55, 0.34)',
+    glow: 'crimson',
+  },
+  gold: {
+    rgb: '250, 204, 21',
+    primary: '#facc15',
+    secondary: '#fef08a',
+    scorch: 'rgba(113, 63, 18, 0.34)',
+    glow: 'fire',
+  },
+  cyan: {
+    rgb: '34, 211, 238',
+    primary: '#22d3ee',
+    secondary: '#bae6fd',
+    scorch: 'rgba(12, 74, 110, 0.34)',
+    glow: 'cyan',
+  },
+  violet: {
+    rgb: '192, 132, 252',
+    primary: '#c084fc',
+    secondary: '#f5d0fe',
+    scorch: 'rgba(88, 28, 135, 0.36)',
+    glow: 'violet',
+  },
+  orange: {
+    rgb: '251, 146, 60',
+    primary: '#fb923c',
+    secondary: '#fed7aa',
+    scorch: 'rgba(124, 45, 18, 0.34)',
+    glow: 'fire',
+  },
+  emerald: {
+    rgb: '52, 211, 153',
+    primary: '#34d399',
+    secondary: '#bbf7d0',
+    scorch: 'rgba(6, 78, 59, 0.34)',
+    glow: 'emerald',
+  },
+};
+
+function resolveBossLaserTheme(color: number | undefined, isDanger: boolean): BossLaserThemeKey {
+  if (color === 5) return 'gold';
+  if (color === 2) return 'cyan';
+  if (color === 3 || color === 4) return 'violet';
+  if (color === 1 && !isDanger) return 'orange';
+  return 'crimson';
+}
+
+function getLaserLateralStrip(theme: BossLaserThemeKey): HTMLCanvasElement | null {
+  const existing = laserLateralStripCache.get(theme);
+  if (existing) return existing;
+  const c = makeOffscreenCanvas(16, 64);
+  if (!c) return null;
+  const g = c.getContext('2d');
+  if (!g) return null;
+  const pal = BOSS_LASER_PALETTES[theme];
+  const grad = g.createLinearGradient(0, 0, 0, 64);
+  grad.addColorStop(0, `rgba(${pal.rgb}, 0)`);
+  grad.addColorStop(0.24, `rgba(${pal.rgb}, 0.22)`);
+  grad.addColorStop(0.42, `rgba(${pal.rgb}, 0.72)`);
+  grad.addColorStop(0.5, `rgba(${pal.rgb}, 0.98)`);
+  grad.addColorStop(0.58, `rgba(${pal.rgb}, 0.72)`);
+  grad.addColorStop(0.76, `rgba(${pal.rgb}, 0.22)`);
+  grad.addColorStop(1, `rgba(${pal.rgb}, 0)`);
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 16, 64);
+  laserLateralStripCache.set(theme, c);
+  return c;
+}
+
+function queueActiveBossMasterSparkBeam(
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  halfW: number,
+  prog01: number,
+  theme: BossLaserThemeKey,
+  seed: number,
+): void {
+  if (activeBossBeamCount >= activeBossBeamsScratch.length) return;
+  const slot = activeBossBeamsScratch[activeBossBeamCount++];
+  slot.x0 = x0;
+  slot.y0 = y0;
+  slot.x1 = x1;
+  slot.y1 = y1;
+  slot.halfW = Math.max(6, halfW);
+  slot.prog01 = clamp(prog01, 0, 1);
+  slot.theme = theme;
+  slot.seed = seed | 0;
+}
+
+function drawBossLaserWindupCorridor(
+  ctx: CanvasRenderingContext2D,
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  halfW: number,
+  prog01: number,
+  isLockWindow: boolean,
+  theme: BossLaserThemeKey,
+  nowSec: number,
+  seed: number,
+): void {
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  const len = Math.hypot(dx, dy);
+  if (len < 4) return;
+  const angle = Math.atan2(dy, dx);
+  const pal = BOSS_LASER_PALETTES[theme];
+  const lockFlash = isLockWindow || prog01 > 0.84;
+  const railHalf = halfW * (lockFlash ? 1.0 : 1.22 - 0.22 * prog01);
+  const strip = getLaserLateralStrip(theme);
+
+  ctx.save();
+  ctx.translate(x0, y0);
+  ctx.rotate(angle);
+
+  // 1. Soft lateral warning falloff (never a boxy solid fillRect/strokeRect!)
+  if (strip) {
+    ctx.globalAlpha = lockFlash ? 0.44 : 0.16 + 0.22 * prog01;
+    ctx.drawImage(strip, 0, -railHalf * 1.35, len, railHalf * 2.7);
+    ctx.globalAlpha = 1;
+  } else {
+    ctx.fillStyle = `rgba(${pal.rgb}, ${(0.12 + 0.16 * prog01).toFixed(3)})`;
+    ctx.fillRect(0, -railHalf, len, railHalf * 2);
+  }
+
+  // 2. Two sleek inward-compressing parallel containment rails (open ends, no rectangle cap)
+  ctx.strokeStyle = OUTLINE_INK;
+  ctx.lineWidth = 3;
+  ctx.globalAlpha = 0.52;
+  ctx.beginPath();
+  ctx.moveTo(0, -railHalf);
+  ctx.lineTo(len, -railHalf);
+  ctx.moveTo(0, railHalf);
+  ctx.lineTo(len, railHalf);
+  ctx.stroke();
+
+  ctx.globalAlpha = lockFlash ? 0.96 : 0.55 + 0.35 * prog01;
+  ctx.strokeStyle = lockFlash ? '#ffffff' : pal.primary;
+  ctx.lineWidth = lockFlash ? 2.2 : 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, -railHalf);
+  ctx.lineTo(len, -railHalf);
+  ctx.moveTo(0, railHalf);
+  ctx.lineTo(len, railHalf);
+  ctx.stroke();
+
+  // 3. Scrolling directional plasma chevrons along corridor axis
+  const spacing = 62;
+  const scroll = (nowSec * 190 + (seed & 15) * 4) % spacing;
+  const chevH = Math.min(railHalf * 0.62, 11);
+  ctx.strokeStyle = lockFlash ? '#ffffff' : pal.secondary;
+  ctx.lineWidth = 1.5;
+  ctx.globalAlpha = lockFlash ? 0.85 : 0.42 + 0.35 * prog01;
+  ctx.beginPath();
+  for (let x = scroll; x < len - 12; x += spacing) {
+    ctx.moveTo(x - 7, -chevH);
+    ctx.lineTo(x + 2, 0);
+    ctx.lineTo(x - 7, chevH);
+  }
+  ctx.stroke();
+
+  // 4. Razor-sharp 1.5px-2.5px central optical sightline
+  ctx.globalAlpha = 0.95;
+  ctx.strokeStyle = lockFlash ? '#ffffff' : pal.secondary;
+  ctx.lineWidth = lockFlash ? 2.6 : 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(len, 0);
+  ctx.stroke();
+
+  // 5. Spinning muzzle charge aperture at origin
+  const muzzleR = Math.min(24, Math.max(9, halfW * (0.55 + 0.45 * prog01)));
+  const spin = nowSec * (4.5 + 5.5 * prog01) + seed;
+  ctx.strokeStyle = lockFlash ? '#ffffff' : pal.primary;
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.arc(0, 0, muzzleR, spin, spin + 2.1);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(0, 0, muzzleR, spin + Math.PI, spin + Math.PI + 2.1);
+  ctx.stroke();
+
+  ctx.restore();
+
+  drawSpriteOrFallback(ctx, 'fx_laser_muzzle', Math.round(x0), Math.round(y0), nowSec, {
+    category: 'vfx',
+    rotationRad: angle,
+    scale: clamp((halfW / 20) * (0.55 + 0.45 * prog01), 0.45, 1.35),
+    alpha: 0.45 + 0.45 * prog01,
+  });
+  queueGlow(pal.glow, x0, y0, Math.min(46, halfW * 1.6), 0.25 + 0.32 * prog01);
+}
+
+function drawBossLaserScorchFloor(
+  ctx: CanvasRenderingContext2D,
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  halfW: number,
+  theme: BossLaserThemeKey,
+): void {
+  const pal = BOSS_LASER_PALETTES[theme];
+  ctx.save();
+  ctx.strokeStyle = pal.scorch;
+  ctx.lineWidth = Math.max(10, halfW * 1.75);
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.stroke();
+  ctx.restore();
+}
+
 function drawBossLaserLanesGround(
   ctx: CanvasRenderingContext2D,
   lanes: readonly BansungLaserLane[],
@@ -2989,35 +3250,36 @@ function drawBossLaserLanesGround(
 ): void {
   for (let i = 0; i < lanes.length; i++) {
     const lane = lanes[i];
-    if (lane.phase === 'active') continue; // active beam drawn in Pass 5 additive
-    const dx = lane.x2 - lane.x1;
-    const dy = lane.y2 - lane.y1;
-    const len = Math.hypot(dx, dy);
-    if (len < 2) continue;
-    const angle = Math.atan2(dy, dx);
-    const halfW = Math.max(4, lane.halfW);
-
-    ctx.save();
-    ctx.translate(lane.x1, lane.y1);
-    ctx.rotate(angle);
-
-    if (lane.phase === 'lock') {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.34)';
-      ctx.fillRect(0, -halfW, len, halfW * 2);
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(0, -halfW, len, halfW * 2);
-    } else {
-      const pulse = 0.16 + 0.24 * (0.5 + 0.5 * Math.sin(nowSec * 14 + i));
-      ctx.fillStyle = `rgba(255, 51, 102, ${pulse.toFixed(3)})`;
-      ctx.fillRect(0, -halfW, len, halfW * 2);
-      ctx.strokeStyle = '#ff3366';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([8, 6]);
-      ctx.lineDashOffset = -(nowSec * 38);
-      ctx.strokeRect(0, -halfW, len, halfW * 2);
+    const halfW = Math.max(6, lane.halfW);
+    if (lane.phase === 'active') {
+      drawBossLaserScorchFloor(ctx, lane.x1, lane.y1, lane.x2, lane.y2, halfW, 'crimson');
+      queueActiveBossMasterSparkBeam(
+        lane.x1,
+        lane.y1,
+        lane.x2,
+        lane.y2,
+        halfW,
+        0.5,
+        'crimson',
+        700 + i,
+      );
+      continue;
     }
-    ctx.restore();
+    const isLock = lane.phase === 'lock';
+    drawBossLaserWindupCorridor(
+      ctx,
+      lane.x1,
+      lane.y1,
+      lane.x2,
+      lane.y2,
+      halfW,
+      isLock ? 0.96 : 0.58,
+      isLock,
+      'crimson',
+      nowSec,
+      700 + i,
+    );
+    drawCallsLastFrame += 2;
   }
 }
 
@@ -3453,13 +3715,16 @@ function recordRenderedBossTelegraph(tg: BansungTelegraphWire): void {
 function isDuplicateBossTelegraph(tg: BansungTelegraphWire): boolean {
   for (let i = 0; i < renderedBossTelegraphCount; i++) {
     const r = renderedBossTelegraphsScratch[i];
+    if (tg.id !== 0 && r.id === tg.id && r.kind === tg.kind) {
+      return true;
+    }
     if (
       r.id === tg.id &&
       r.kind === tg.kind &&
-      Math.abs(r.x0 - tg.x0) < 2 &&
-      Math.abs(r.y0 - tg.y0) < 2 &&
-      Math.abs(r.x1 - tg.x1) < 2 &&
-      Math.abs(r.y1 - tg.y1) < 2
+      Math.abs(r.x0 - tg.x0) < 4 &&
+      Math.abs(r.y0 - tg.y0) < 4 &&
+      Math.abs(r.x1 - tg.x1) < 4 &&
+      Math.abs(r.y1 - tg.y1) < 4
     ) {
       return true;
     }
@@ -3467,37 +3732,447 @@ function isDuplicateBossTelegraph(tg: BansungTelegraphWire): boolean {
   return false;
 }
 
-function drawTelegraphDangerBadge(
+type CircleSigilStyle = 'cyber' | 'hexagram' | 'octagram' | 'abyss';
+
+function drawInscribedStarPolygon(
   ctx: CanvasRenderingContext2D,
   cx: number,
   cy: number,
-  rawLabel: string | undefined,
+  radius: number,
+  points: number,
+  step: number,
+  rotRad: number,
+): void {
+  ctx.beginPath();
+  if (points === 6 && step === 2) {
+    // Two interlocking equilateral triangles ({6/2} Hexagram)
+    for (let tri = 0; tri < 2; tri++) {
+      for (let k = 0; k <= 3; k++) {
+        const a = rotRad + tri * (Math.PI / 3) + (k % 3) * ((TWO_PI) / 3);
+        const px = cx + Math.cos(a) * radius;
+        const py = cy + Math.sin(a) * radius;
+        if (k === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+    }
+  } else if (points === 8 && step === 2) {
+    // Two interlocking rotated squares ({8/2} Octagram)
+    for (let sq = 0; sq < 2; sq++) {
+      for (let k = 0; k <= 4; k++) {
+        const a = rotRad + sq * (Math.PI * 0.25) + (k % 4) * (Math.PI * 0.5);
+        const px = cx + Math.cos(a) * radius;
+        const py = cy + Math.sin(a) * radius;
+        if (k === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+    }
+  } else {
+    // Single continuous stellated star ({8/3})
+    for (let k = 0; k <= points; k++) {
+      const idx = (k * step) % points;
+      const a = rotRad + (idx / points) * TWO_PI;
+      const px = cx + Math.cos(a) * radius;
+      const py = cy + Math.sin(a) * radius;
+      if (k === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+  }
+  ctx.stroke();
+}
+
+/**
+ * 5-Layer Sacred-Geometry & Cyber-Tech Circular Reticle (`boss_attack_vfx_design.md` §3).
+ * Replaces noisy dashed circles & black text-box badges with crisp hitbox containment rims,
+ * radial wavefront timing fill, counter-rotating astrolabe/radar ticks, sacred sigils & CC0 sprites.
+ */
+function drawSacredCircleTelegraph(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  r: number,
+  prog01: number,
+  isLocked: boolean,
+  color: number | undefined,
   isDanger: boolean,
+  seed: number,
   nowSec: number,
 ): void {
-  const text = rawLabel && rawLabel.trim().length > 0 ? rawLabel.trim() : 'DANGER';
-  const display = isDanger && text === 'DANGER' ? '⚠ DANGER ⚠' : isDanger ? `⚠ ${text}` : text;
-  const flash = 0.75 + 0.25 * Math.sin(nowSec * 16);
+  let rgb = '255, 42, 109';
+  let primary = '#ff2a6d';
+  let secondary = '#ffe4e6';
+  let glow: GlowColor = 'crimson';
+  let style: CircleSigilStyle = 'octagram';
+
+  if (color === 5) {
+    rgb = '250, 204, 21';
+    primary = '#facc15';
+    secondary = '#fef9c3';
+    glow = 'fire';
+    style = 'hexagram';
+  } else if (color === 2) {
+    rgb = '56, 189, 248';
+    primary = '#38bdf8';
+    secondary = '#e0f2fe';
+    glow = 'cyan';
+    style = 'hexagram';
+  } else if (color === 3 || color === 4) {
+    rgb = '192, 132, 252';
+    primary = '#c084fc';
+    secondary = '#f5d0fe';
+    glow = 'violet';
+    style = 'abyss';
+  } else if (color === 1) {
+    rgb = '251, 146, 60';
+    primary = isDanger ? '#ff5964' : '#fb923c';
+    secondary = '#fef08a';
+    glow = 'fire';
+    style = 'cyber';
+  }
+
+  const lockFlash = isLocked || prog01 > 0.85;
+  const spinA = nowSec * (1.15 + 1.35 * prog01) + (seed & 31) * 0.41;
+  const spinB = -nowSec * (0.85 + 1.05 * prog01) - (seed & 15) * 0.53;
+
   ctx.save();
-  ctx.font = 'bold 10px monospace';
-  const metrics = ctx.measureText(display);
-  const padX = 6;
-  const w = Math.max(46, Math.ceil(metrics.width) + padX * 2);
-  const h = 16;
-  const x = Math.round(cx - w * 0.5);
-  const y = Math.round(cy - h * 0.5);
 
-  ctx.fillStyle = isDanger ? `rgba(127, 29, 29, ${(0.88 * flash).toFixed(3)})` : 'rgba(15, 23, 42, 0.88)';
-  ctx.fillRect(x, y, w, h);
-  ctx.strokeStyle = isDanger ? '#facc15' : '#fb923c';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  // Layer 2: Subtle interior tint + outer annular warning band (zero createRadialGradient!)
+  ctx.fillStyle = `rgba(${rgb}, ${(0.05 + 0.07 * prog01).toFixed(3)})`;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, TWO_PI);
+  ctx.fill();
 
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = isDanger ? '#fef08a' : '#ffedd5';
-  ctx.fillText(display, Math.round(cx), Math.round(cy + 0.5));
+  const innerBandR = Math.max(4, r * 0.82);
+  ctx.fillStyle = `rgba(${rgb}, ${(0.11 + 0.11 * prog01).toFixed(3)})`;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, TWO_PI, false);
+  ctx.arc(cx, cy, innerBandR, 0, TWO_PI, true);
+  ctx.fill('evenodd');
+
+  // Layer 3: Expanding radial wavefront progress fill (0 -> r * prog01) + crisp leading ring
+  if (prog01 > 0.02) {
+    const waveR = Math.max(2, r * prog01);
+    ctx.fillStyle = `rgba(${rgb}, ${(0.14 + 0.16 * prog01).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(cx, cy, waveR, 0, TWO_PI);
+    ctx.fill();
+
+    ctx.strokeStyle = lockFlash ? '#ffffff' : secondary;
+    ctx.lineWidth = lockFlash ? 2.0 : 1.4;
+    ctx.globalAlpha = 0.82;
+    ctx.beginPath();
+    ctx.arc(cx, cy, waveR, 0, TWO_PI);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Layer 4: Open-Source CC0 Magic Sigil / Void Vortex stamp + Geometric Reticle
+  if (r >= 28 && style !== 'cyber') {
+    const clipKey = style === 'abyss' ? 'fx_boss_void_vortex' : 'fx_boss_magic_sigil';
+    drawSpriteOrFallback(ctx, clipKey, cx, cy, nowSec + (seed & 7) * 0.11, {
+      category: 'vfx',
+      rotationRad: spinA * 0.65,
+      scale: clamp((r * 1.62) / 96, 0.35, 3.2),
+      alpha: 0.32 + 0.34 * prog01,
+    });
+  }
+
+  // Counter-rotating outer degree / astrolabe ticks
+  const tickCount = r >= 90 ? 16 : 12;
+  ctx.strokeStyle = lockFlash ? '#ffffff' : primary;
+  ctx.lineWidth = 1.4;
+  ctx.globalAlpha = 0.72;
+  ctx.beginPath();
+  for (let k = 0; k < tickCount; k++) {
+    const a = spinB + (k / tickCount) * TWO_PI;
+    const tInner = r - ((k & 1) === 0 ? 7 : 4.5);
+    ctx.moveTo(cx + Math.cos(a) * tInner, cy + Math.sin(a) * tInner);
+    ctx.lineTo(cx + Math.cos(a) * (r - 1.5), cy + Math.sin(a) * (r - 1.5));
+  }
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  if (style === 'cyber') {
+    // Cyber-Tech Tactical Reticle: 4 inward-locking corner brackets + radial fuse ring + crosshair
+    const bracketR = r * (0.68 - 0.24 * prog01);
+    const arm = Math.max(5, Math.min(13, r * 0.16));
+    ctx.strokeStyle = lockFlash ? '#ffffff' : secondary;
+    ctx.lineWidth = 1.8;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(spinA * 0.35);
+    ctx.beginPath();
+    for (let q = 0; q < 4; q++) {
+      const sx = (q & 1) === 0 ? -1 : 1;
+      const sy = (q & 2) === 0 ? -1 : 1;
+      const bx = sx * bracketR;
+      const by = sy * bracketR;
+      ctx.moveTo(bx - sx * arm, by);
+      ctx.lineTo(bx, by);
+      ctx.lineTo(bx, by - sy * arm);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // Central radial countdown arc + crisp target pip
+    const fuseR = Math.max(9, Math.min(20, r * 0.26));
+    ctx.strokeStyle = OUTLINE_INK;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(cx, cy, fuseR, 0, TWO_PI);
+    ctx.stroke();
+
+    ctx.strokeStyle = lockFlash ? '#ffffff' : secondary;
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, fuseR, -Math.PI * 0.5, -Math.PI * 0.5 + TWO_PI * prog01);
+    ctx.stroke();
+
+    ctx.fillStyle = lockFlash ? '#ffffff' : primary;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 3.5, 0, TWO_PI);
+    ctx.fill();
+  } else {
+    // Sacred Geometry Inscribed Star ({6/2} Hexagram, {8/2} Octagram, or {8/3} Abyssal Star)
+    const starR = r * 0.74;
+    ctx.strokeStyle = lockFlash ? '#ffffff' : primary;
+    ctx.lineWidth = lockFlash ? 2.0 : 1.5;
+    ctx.globalAlpha = 0.65 + 0.3 * prog01;
+    if (style === 'hexagram') {
+      drawInscribedStarPolygon(ctx, cx, cy, starR, 6, 2, spinA);
+    } else if (style === 'abyss') {
+      drawInscribedStarPolygon(ctx, cx, cy, starR, 8, 3, -spinA * 1.2);
+      // Swirling inward gravity arms
+      ctx.strokeStyle = secondary;
+      ctx.lineWidth = 1.4;
+      for (let arm = 0; arm < 4; arm++) {
+        const baseA = -spinA * 1.8 + arm * (Math.PI * 0.5);
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * 0.44, baseA, baseA + 1.05);
+        ctx.stroke();
+      }
+    } else {
+      drawInscribedStarPolygon(ctx, cx, cy, starR, 8, 2, spinA);
+    }
+
+    // Crisp diamond vertices on outer star points
+    const vCount = style === 'hexagram' ? 6 : 8;
+    ctx.fillStyle = lockFlash ? '#ffffff' : secondary;
+    for (let k = 0; k < vCount; k++) {
+      const a = spinA + (k / vCount) * TWO_PI;
+      const vx = Math.round(cx + Math.cos(a) * starR);
+      const vy = Math.round(cy + Math.sin(a) * starR);
+      ctx.fillRect(vx - 1.5, vy - 1.5, 3, 3);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Layer 1 (Top Border Seal): Exact 1.0 * r hitbox containment rim (never vague dashed blobs!)
+  ctx.strokeStyle = OUTLINE_INK;
+  ctx.lineWidth = 3.4;
+  ctx.globalAlpha = 0.78;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, TWO_PI);
+  ctx.stroke();
+
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = lockFlash ? '#ffffff' : primary;
+  ctx.lineWidth = lockFlash ? 2.5 : 1.9;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, TWO_PI);
+  ctx.stroke();
+
+  if (r >= 26) {
+    ctx.strokeStyle = secondary;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.42 + 0.35 * prog01;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 4, 0, TWO_PI);
+    ctx.stroke();
+  }
+
   ctx.restore();
+
+  if (prog01 > 0.35 || lockFlash) {
+    queueGlow(
+      glow,
+      cx,
+      cy,
+      Math.min(108, Math.max(24, r * 1.05)),
+      (lockFlash ? 0.42 : 0.16 + 0.2 * prog01),
+    );
+  }
+}
+
+/**
+ * Pass-5 (`globalCompositeOperation = 'lighter'`) 7-Layer Master-Spark Boss Laser Renderer.
+ * Renders undulating plasma sheaths, dual 180° helical corkscrew ribbons, blinding white cores,
+ * 42ms LCG crackling edge arcs, 8-spike muzzle star-flares, and endpoint plasma boil!
+ */
+function drawActiveBossMasterSparkBeams(
+  ctx: CanvasRenderingContext2D,
+  nowSec: number,
+): void {
+  if (activeBossBeamCount <= 0) return;
+
+  for (let bi = 0; bi < activeBossBeamCount; bi++) {
+    const beam = activeBossBeamsScratch[bi];
+    const dx = beam.x1 - beam.x0;
+    const dy = beam.y1 - beam.y0;
+    const len = Math.hypot(dx, dy);
+    if (len < 4) continue;
+
+    const angle = Math.atan2(dy, dx);
+    const pal = BOSS_LASER_PALETTES[beam.theme];
+    const strip = getLaserLateralStrip(beam.theme);
+
+    // Ignition pop (1.42x burst on first frames) + smooth collapse at end of beam window
+    const ignitionPop =
+      beam.prog01 < 0.14
+        ? 1 + 0.42 * (1 - beam.prog01 / 0.14)
+        : beam.prog01 > 0.9
+          ? Math.max(0.32, (1 - beam.prog01) / 0.1)
+          : 1.0;
+    const flutter = 0.95 + 0.08 * Math.sin(nowSec * 42 + beam.seed * 1.7);
+    const hw = Math.max(6, beam.halfW * ignitionPop * flutter);
+
+    ctx.save();
+    ctx.translate(beam.x0, beam.y0);
+    ctx.rotate(angle);
+
+    // Layer 1: Wide pre-baked lateral plasma aura (1 drawImage, zero createLinearGradient!)
+    if (strip) {
+      ctx.globalAlpha = 0.68;
+      ctx.drawImage(strip, -hw * 0.4, -hw * 2.75, len + hw * 0.8, hw * 5.5);
+    }
+
+    // Layer 2: Undulating sinusoidal plasma sheath polygon (zero-GC Float32Array scratch)
+    const nodes = clamp(Math.ceil(len / 34) + 1, 8, LASER_MAX_NODES);
+    const stepX = len / (nodes - 1);
+    const phase = nowSec * 28 + beam.seed * 0.9;
+    for (let k = 0; k < nodes; k++) {
+      const taper = k === 0 ? 0.55 : k === nodes - 1 ? 0.75 : 1.0;
+      const wave = 1.06 + 0.16 * Math.sin(k * 0.72 - phase);
+      const waveOpp = 1.06 + 0.16 * Math.sin(k * 0.72 - phase + 1.9);
+      laserUpperY[k] = -hw * wave * taper;
+      laserLowerY[k] = hw * waveOpp * taper;
+    }
+    ctx.globalAlpha = 0.74;
+    ctx.fillStyle = pal.primary;
+    ctx.beginPath();
+    ctx.moveTo(0, laserUpperY[0]);
+    for (let k = 1; k < nodes; k++) {
+      ctx.lineTo(k * stepX, laserUpperY[k]);
+    }
+    for (let k = nodes - 1; k >= 0; k--) {
+      ctx.lineTo(k * stepX, laserLowerY[k]);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    // Layer 3: Dual 180° out-of-phase helical corkscrew plasma ribbons
+    ctx.globalAlpha = 0.82;
+    ctx.strokeStyle = pal.secondary;
+    ctx.lineWidth = Math.max(2.0, hw * 0.16);
+    ctx.lineCap = 'round';
+    for (let strand = 0; strand < 2; strand++) {
+      const strandPhase = strand * Math.PI - nowSec * 22 + beam.seed;
+      ctx.beginPath();
+      for (let k = 0; k < nodes; k++) {
+        const x = k * stepX;
+        const y = Math.sin(x * 0.038 + strandPhase) * hw * 0.86;
+        if (k === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // Layer 4: High-energy inner plasma body
+    ctx.globalAlpha = 0.88;
+    ctx.strokeStyle = pal.secondary;
+    ctx.lineWidth = Math.max(6, hw * 1.12);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(len, 0);
+    ctx.stroke();
+
+    // Layer 5: Blinding #ffffff incandescent core
+    ctx.globalAlpha = 0.98;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = Math.max(3.8, hw * 0.52);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(len, 0);
+    ctx.stroke();
+
+    // Layer 6: 42ms stepped LCG crackling edge arcs along beam perimeter
+    const arcBucket = Math.floor(nowSec * 24);
+    const arcSegs = clamp(Math.floor(len / 52), 5, 22);
+    const arcStep = len / arcSegs;
+    ctx.globalAlpha = 0.86;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let side = -1; side <= 1; side += 2) {
+      ctx.moveTo(0, side * hw * 0.5);
+      for (let s = 1; s < arcSegs; s++) {
+        const hVal = hash2i(beam.seed + side * 31 + s, arcBucket, 0x6a09);
+        const jitter = (((hVal & 0xff) / 255) - 0.35) * hw * 0.95;
+        ctx.lineTo(s * arcStep, side * (hw * 0.82 + jitter));
+      }
+      ctx.lineTo(len, side * hw * 0.45);
+    }
+    ctx.stroke();
+
+    // Layer 7A: 8-spike rotating muzzle star-flare at (0, 0)
+    const flareSpin = nowSec * 6.5 + beam.seed;
+    const spikeOuter = Math.max(18, hw * 2.25);
+    ctx.globalAlpha = 0.94;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    for (let sp = 0; sp < 8; sp++) {
+      const a = flareSpin + (sp * Math.PI) * 0.25;
+      const rLen = (sp & 1) === 0 ? spikeOuter : spikeOuter * 0.58;
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(a) * rLen, Math.sin(a) * rLen);
+    }
+    ctx.stroke();
+
+    // Layer 7B: Endpoint plasma boil & radial splash spikes at (len, 0)
+    const boilR = Math.max(12, hw * (1.32 + 0.18 * Math.sin(nowSec * 34 + beam.seed)));
+    ctx.fillStyle = pal.primary;
+    ctx.globalAlpha = 0.72;
+    ctx.beginPath();
+    ctx.arc(len, 0, boilR, 0, TWO_PI);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.globalAlpha = 0.95;
+    ctx.beginPath();
+    ctx.arc(len, 0, boilR * 0.52, 0, TWO_PI);
+    ctx.fill();
+
+    ctx.strokeStyle = pal.secondary;
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    for (let sp = 0; sp < 6; sp++) {
+      const a = -flareSpin * 1.2 + (sp / 6) * TWO_PI;
+      ctx.moveTo(len, 0);
+      ctx.lineTo(len + Math.cos(a) * boilR * 1.45, Math.sin(a) * boilR * 1.45);
+    }
+    ctx.stroke();
+
+    ctx.restore();
+
+    // Stamp CC0 open-source laser muzzle flare at origin & impact boil
+    drawSpriteOrFallback(ctx, 'fx_laser_muzzle', Math.round(beam.x0), Math.round(beam.y0), nowSec, {
+      category: 'vfx',
+      rotationRad: angle,
+      scale: clamp((hw / 16) * 1.15, 0.7, 2.2),
+      alpha: 0.92,
+    });
+    drawCallsLastFrame += 8;
+  }
 }
 
 function drawStandardTelegraphs(
@@ -3515,89 +4190,60 @@ function drawStandardTelegraphs(
     const prog01 = clamp(tg.prog / 255, 0, 1);
     const isLocked = tg.phase > 0 || Boolean(tg.active);
     const isDanger = tg.danger === 1;
-    const isGrenade = typeof tg.label === 'string' && tg.label.startsWith('LỰU ĐẠN');
-    const isBlueStorm = tg.color === 2 && typeof tg.label === 'string' && tg.label.includes('BÃO SÉT');
     const isYellowStorm = tg.color === 5;
     const rgb =
       isYellowStorm
         ? '250, 204, 21'
-        : isBlueStorm
+        : tg.color === 2
           ? '56, 189, 248'
-          : isDanger && !isGrenade
-            ? '255, 36, 76'
-            : tg.color === 4
-              ? '192, 132, 252'
-              : tg.color === 3
-                ? '74, 222, 128'
-                : tg.color === 2
-                  ? '56, 189, 248'
-                  : tg.color === 1
-                    ? '255, 146, 43'
-                    : '255, 51, 102';
+          : tg.color === 4 || tg.color === 3
+            ? '192, 132, 252'
+            : isDanger
+              ? '255, 42, 109'
+              : tg.color === 1
+                ? '251, 146, 60'
+                : '255, 51, 102';
     const shape = tg.shape ?? (tg.kind === 0 ? 'line' : 'circle');
 
     if (shape === 'line') {
-      // Lane / laser / charge corridor
       const dx = tg.x1 - tg.x0;
       const dy = tg.y1 - tg.y0;
       const len = Math.hypot(dx, dy);
       if (len < 2) continue;
-      const angle = Math.atan2(dy, dx);
-      const halfW = Math.max(4, tg.halfW ?? (tg.r > 0 ? tg.r : 14));
-      ctx.save();
-      ctx.translate(tg.x0, tg.y0);
-      ctx.rotate(angle);
-      ctx.fillStyle = isLocked
-        ? `rgba(${rgb}, 0.34)`
-        : `rgba(${rgb}, ${(0.12 + 0.18 * prog01).toFixed(3)})`;
-      ctx.fillRect(0, -halfW, len, halfW * 2);
-      // Inner advancing sweep fill
-      ctx.fillStyle = `rgba(${rgb}, 0.24)`;
-      ctx.fillRect(0, -halfW, len * prog01, halfW * 2);
+      const halfW = Math.max(5, tg.halfW ?? (tg.r > 0 ? tg.r : 14));
+      const theme = resolveBossLaserTheme(tg.color, isDanger);
+      const seed = (tg.id * 17 + tg.kind * 31 + i) | 0;
 
-      // Sharp central laser sight line for laser danger lanes
-      if (isDanger) {
-        ctx.strokeStyle = isLocked ? '#ffffff' : 'rgba(255, 42, 109, 0.92)';
-        ctx.lineWidth = isLocked ? 3 : 1.75;
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(len, 0);
-        ctx.stroke();
-      }
-
-      ctx.strokeStyle = isLocked ? '#ffffff' : `rgb(${rgb})`;
-      ctx.lineWidth = isLocked ? 2.5 : 1.5;
-      if (!isLocked) {
-        ctx.setLineDash([8, 6]);
-        ctx.lineDashOffset = -(nowSec * 36);
-      }
-      ctx.strokeRect(0, -halfW, len, halfW * 2);
-      ctx.setLineDash([]);
-
-      // Directional tip ticks along corridor
-      ctx.strokeStyle = isLocked ? '#ffffff' : `rgba(${rgb}, 0.9)`;
-      ctx.lineWidth = 1.5;
-      const tipX = Math.max(10, len - 6);
-      ctx.beginPath();
-      ctx.moveTo(tipX - 8, -Math.min(halfW - 2, 7));
-      ctx.lineTo(tipX, 0);
-      ctx.lineTo(tipX - 8, Math.min(halfW - 2, 7));
-      ctx.stroke();
-      ctx.restore();
-      if (isDanger || tg.label) {
-        const badgeDist = Math.min(len * 0.45, 220);
-        drawTelegraphDangerBadge(
+      if (tg.active) {
+        drawBossLaserScorchFloor(ctx, tg.x0, tg.y0, tg.x1, tg.y1, halfW, theme);
+        queueActiveBossMasterSparkBeam(
+          tg.x0,
+          tg.y0,
+          tg.x1,
+          tg.y1,
+          halfW,
+          prog01,
+          theme,
+          seed,
+        );
+      } else {
+        drawBossLaserWindupCorridor(
           ctx,
-          tg.x0 + Math.cos(angle) * badgeDist,
-          tg.y0 + Math.sin(angle) * badgeDist - Math.min(20, halfW + 10),
-          tg.label,
-          isDanger,
+          tg.x0,
+          tg.y0,
+          tg.x1,
+          tg.y1,
+          halfW,
+          prog01,
+          tg.phase > 0,
+          theme,
           nowSec,
+          seed,
         );
       }
       drawCallsLastFrame += 2;
     } else if (shape === 'cone') {
-      // Sweeping directional cone
+      // Sweeping directional cone (sleek radial arc + leading wavefront, zero text box)
       const dx = tg.x1 - tg.x0;
       const dy = tg.y1 - tg.y0;
       const dist = Math.hypot(dx, dy);
@@ -3613,8 +4259,8 @@ function drawStandardTelegraphs(
       const cy = Math.round(tg.y0);
       ctx.save();
       ctx.fillStyle = isLocked
-        ? `rgba(${rgb}, 0.30)`
-        : `rgba(${rgb}, ${(0.10 + 0.16 * prog01).toFixed(3)})`;
+        ? `rgba(${rgb}, 0.24)`
+        : `rgba(${rgb}, ${(0.08 + 0.14 * prog01).toFixed(3)})`;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, range, angle - halfAngle, angle + halfAngle);
@@ -3622,20 +4268,30 @@ function drawStandardTelegraphs(
       ctx.fill();
 
       if (prog01 > 0.02) {
-        ctx.fillStyle = `rgba(${rgb}, 0.24)`;
+        ctx.fillStyle = `rgba(${rgb}, 0.22)`;
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.arc(cx, cy, range * prog01, angle - halfAngle, angle + halfAngle);
         ctx.closePath();
         ctx.fill();
+
+        ctx.strokeStyle = isLocked ? '#ffffff' : `rgba(${rgb}, 0.88)`;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.arc(cx, cy, range * prog01, angle - halfAngle, angle + halfAngle);
+        ctx.stroke();
       }
 
+      ctx.strokeStyle = OUTLINE_INK;
+      ctx.lineWidth = 3.2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, range, angle - halfAngle, angle + halfAngle);
+      ctx.closePath();
+      ctx.stroke();
+
       ctx.strokeStyle = isLocked ? '#ffffff' : `rgb(${rgb})`;
-      ctx.lineWidth = isLocked ? 2.5 : 1.75;
-      if (!isLocked) {
-        ctx.setLineDash([7, 5]);
-        ctx.lineDashOffset = -(nowSec * 30);
-      }
+      ctx.lineWidth = isLocked ? 2.4 : 1.8;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, range, angle - halfAngle, angle + halfAngle);
@@ -3644,7 +4300,7 @@ function drawStandardTelegraphs(
       ctx.restore();
       drawCallsLastFrame += 2;
     } else if (shape === 'ring') {
-      // Donut / annular hazard ring
+      // Donut / annular hazard ring (crisp solid double containment rim + wavefront)
       const useStart = tg.x1 === 0 && tg.y1 === 0 && (tg.x0 !== 0 || tg.y0 !== 0);
       const cx = Math.round(useStart ? tg.x0 : tg.x1);
       const cy = Math.round(useStart ? tg.y0 : tg.y1);
@@ -3655,8 +4311,8 @@ function drawStandardTelegraphs(
 
       ctx.save();
       ctx.fillStyle = isLocked
-        ? `rgba(${rgb}, 0.30)`
-        : `rgba(${rgb}, ${(0.10 + 0.18 * prog01 * pulse).toFixed(3)})`;
+        ? `rgba(${rgb}, 0.26)`
+        : `rgba(${rgb}, ${(0.09 + 0.16 * prog01 * pulse).toFixed(3)})`;
       ctx.beginPath();
       ctx.arc(cx, cy, outerR, 0, TWO_PI, false);
       ctx.arc(cx, cy, innerR, 0, TWO_PI, true);
@@ -3671,8 +4327,17 @@ function drawStandardTelegraphs(
         ctx.fill('evenodd');
       }
 
-      ctx.strokeStyle = isLocked ? '#ffffff' : `rgba(${rgb}, 0.9)`;
-      ctx.lineWidth = isLocked ? 2.5 : 2;
+      ctx.strokeStyle = OUTLINE_INK;
+      ctx.lineWidth = 3.2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, outerR, 0, TWO_PI);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cy, innerR, 0, TWO_PI);
+      ctx.stroke();
+
+      ctx.strokeStyle = isLocked ? '#ffffff' : `rgba(${rgb}, 0.94)`;
+      ctx.lineWidth = isLocked ? 2.4 : 1.9;
       ctx.beginPath();
       ctx.arc(cx, cy, outerR, 0, TWO_PI);
       ctx.stroke();
@@ -3682,70 +4347,24 @@ function drawStandardTelegraphs(
       ctx.restore();
       drawCallsLastFrame += 2;
     } else {
-      // Radial AoE telegraph circle
+      // 5-Layer Sacred-Geometry & Cyber-Tech Radial AoE Reticle (zero text-box spam!)
       const useStart = tg.x1 === 0 && tg.y1 === 0 && (tg.x0 !== 0 || tg.y0 !== 0);
       const cx = Math.round(useStart ? tg.x0 : tg.x1);
       const cy = Math.round(useStart ? tg.y0 : tg.y1);
       const r = Math.max(8, tg.r);
-      const pulse = 0.5 + 0.5 * Math.sin(nowSec * (6 + 10 * prog01));
-      ctx.save();
-      ctx.fillStyle = `rgba(${rgb}, ${(0.10 + 0.16 * prog01 * pulse).toFixed(3)})`;
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, TWO_PI);
-      ctx.fill();
-
-      // Inner expanding progress fill
-      if (prog01 > 0.02) {
-        ctx.fillStyle = `rgba(${rgb}, 0.22)`;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r * prog01, 0, TWO_PI);
-        ctx.fill();
-      }
-
-      ctx.strokeStyle = isLocked ? '#ffffff' : `rgba(${rgb}, 0.9)`;
-      ctx.lineWidth = isLocked ? 2.5 : 2;
-      if (!isLocked) {
-        ctx.setLineDash([7, 5]);
-        ctx.lineDashOffset = -(nowSec * 28);
-      }
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, TWO_PI);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      if (isLocked || prog01 > 0.65) {
-        ctx.fillStyle = isLocked ? '#ffffff' : `rgb(${rgb})`;
-        ctx.fillRect(cx - 4, cy - 1, 8, 2);
-        ctx.fillRect(cx - 1, cy - 4, 2, 8);
-      }
-      if (isGrenade) {
-        // Bomb core + radial fuse arc for 2s grenade countdown
-        ctx.fillStyle = OUTLINE_INK;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 8, 0, TWO_PI);
-        ctx.fill();
-        ctx.fillStyle = prog01 > 0.72 ? '#ff2a6d' : '#f59f00';
-        ctx.beginPath();
-        ctx.arc(cx, cy, 5, 0, TWO_PI);
-        ctx.fill();
-        ctx.strokeStyle = '#fef08a';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 12, -Math.PI * 0.5, -Math.PI * 0.5 + TWO_PI * prog01);
-        ctx.stroke();
-      }
-      ctx.restore();
-      if (isDanger || tg.label) {
-        drawTelegraphDangerBadge(
-          ctx,
-          cx,
-          cy - Math.min(26, Math.max(14, r * 0.42)),
-          tg.label,
-          isDanger,
-          nowSec,
-        );
-      }
-      drawCallsLastFrame += 2;
+      drawSacredCircleTelegraph(
+        ctx,
+        cx,
+        cy,
+        r,
+        prog01,
+        isLocked,
+        tg.color,
+        isDanger,
+        (tg.id * 13 + tg.kind * 7 + i) | 0,
+        nowSec,
+      );
+      drawCallsLastFrame += 3;
     }
   }
 }
@@ -4926,6 +5545,7 @@ export function renderBansungScene(
 
   // ── PASS 1: Decals, Dust Rings, Ground Hazards & Telegraphs ───────────────────
   renderedBossTelegraphCount = 0;
+  activeBossBeamCount = 0;
   bansungFx.drawDecals(ctx, vx0, vy0, vx1, vy1);
   bansungMotion.drawDustRings(ctx);
   bansungVfx.drawGroundPass(ctx, visualNowMs);
@@ -5698,32 +6318,8 @@ export function renderBansungScene(
   bansungFx.drawLayer(ctx, FxLayer.Additive, vx0, vy0, vx1, vy1, visualNowMs);
   drawMeleeSlashes(ctx, true);
 
-  // Active Overlord laser lanes (thick outer glow + hot core)
-  if (hasBoss) {
-    for (let bi = 0; bi < activeBossCount; bi++) {
-      const bv = bossRenderViews[bi];
-      if (bv.id === 0 || !bv.laserLanes || bv.state === BANSUNG_STATE_DEAD) continue;
-      for (let i = 0; i < bv.laserLanes.length; i++) {
-        const lane = bv.laserLanes[i];
-        if (lane.phase !== 'active') continue;
-        ctx.strokeStyle = 'rgba(255, 46, 99, 0.72)';
-        ctx.lineWidth = Math.max(24, lane.halfW * 2.2);
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(lane.x1, lane.y1);
-        ctx.lineTo(lane.x2, lane.y2);
-        ctx.stroke();
-
-        ctx.strokeStyle = '#fff5f5';
-        ctx.lineWidth = Math.max(8, lane.halfW * 0.8);
-        ctx.beginPath();
-        ctx.moveTo(lane.x1, lane.y1);
-        ctx.lineTo(lane.x2, lane.y2);
-        ctx.stroke();
-        drawCallsLastFrame += 2;
-      }
-    }
-  }
+  // Active Boss Master-Spark Lasers (all 9 bosses' active beams + Overlord active laserLanes)
+  drawActiveBossMasterSparkBeams(ctx, nowSec);
 
   if (stamps && glowQueueCount > 0) {
     for (let i = 0; i < glowQueueCount; i++) {

@@ -25,6 +25,7 @@ import {
   BANSUNG_BFLAG_EXPLOSIVE,
   BANSUNG_BFLAG_FROM_ENEMY,
   BANSUNG_BFLAG_HOMING,
+  BANSUNG_BFLAG_PAUSED,
   BANSUNG_BFLAG_PIERCE,
   BANSUNG_FX_BEAM_BOSS_EYE,
   BANSUNG_FX_BEAM_BOSS_LASER,
@@ -64,6 +65,8 @@ import {
   FX_BLAST,
   FX_IMPACT,
   FX_MUZZLE,
+  decodeDanmakuPalette,
+  decodeDanmakuScaleMult,
   dequantizeAim,
   getProjectileConfigByKindId,
   getWeaponByIdx,
@@ -488,6 +491,11 @@ export const BANSUNG_PROJ_ANIMS: Record<BansungProjectileKind, ProjAnimEntry> = 
   magma_glob: { clipKey: 'plasma_bolt', category: 'projectile', scale: 1.25, additiveGlow: 'fire', snap45: false },
   chronos_slug: { clipKey: 'plasma_bolt', category: 'projectile', scale: 1.18, additiveGlow: 'cyan', snap45: false },
   orbital_shell: { clipKey: 'p_rocket', category: 'projectile', scale: 1.45, additiveGlow: 'fire', snap45: false },
+  danmaku_orb: { clipKey: 'danmaku_orb', category: 'projectile', scale: 1.0, additiveGlow: 'crimson', snap45: false },
+  danmaku_lance: { clipKey: 'danmaku_lance', category: 'projectile', scale: 1.08, additiveGlow: 'cyan', snap45: false },
+  danmaku_star: { clipKey: 'danmaku_star', category: 'projectile', scale: 1.08, additiveGlow: 'fire', snap45: false },
+  danmaku_crescent: { clipKey: 'danmaku_crescent', category: 'projectile', scale: 1.08, additiveGlow: 'violet', snap45: false },
+  danmaku_ring: { clipKey: 'danmaku_ring', category: 'projectile', scale: 1.08, additiveGlow: 'crimson', snap45: false },
 };
 
 export type MuzzleFlashStyle = 'kinetic' | 'plasma' | 'shotgun' | 'laser' | 'flame' | 'emp';
@@ -596,6 +604,293 @@ function getFallbackBulletStrip(kindId: number, flags: number): HTMLCanvasElemen
   }
   fallbackBulletCache.set(cacheKey, c);
   return c;
+}
+
+// ── 3-Layer Touhou Danmaku Stamp Cache (Dark Ink -> Element Mid -> White Core) ──
+
+interface DanmakuPaletteVisual {
+  readonly mid: string;
+  readonly rim: string;
+  readonly glow: AtlasGlowKind;
+}
+
+const DANMAKU_PALETTE_SPECS: readonly DanmakuPaletteVisual[] = [
+  { mid: '#ff2a6d', rim: '#be123c', glow: 'crimson' }, // 0: CRIMSON
+  { mid: '#22d3ee', rim: '#0284c7', glow: 'cyan' },    // 1: CYAN
+  { mid: '#c084fc', rim: '#7e22ce', glow: 'violet' },  // 2: VIOLET
+  { mid: '#facc15', rim: '#ca8a04', glow: 'fire' },    // 3: GOLD
+  { mid: '#34d399', rim: '#059669', glow: 'emerald' }, // 4: EMERALD
+  { mid: '#fb923c', rim: '#ea580c', glow: 'fire' },    // 5: FLAME
+  { mid: '#f472b6', rim: '#db2777', glow: 'crimson' }, // 6: ROSE
+  { mid: '#e2e8f0', rim: '#64748b', glow: 'cyan' },    // 7: SILVER
+];
+
+const DANMAKU_INK = '#140c1c';
+const danmakuStampCache = new Map<number, HTMLCanvasElement>();
+
+/**
+ * Lazily bakes a crisp 64x32 (2 frames of 32x32) 3-layer Touhou Danmaku stamp
+ * for `shapeIdx` (`0..4` -> orb, lance, star, crescent, ring) × `paletteIdx` (`0..7`).
+ * Zero runtime gradient or canvas allocations after first bake.
+ */
+function getDanmakuStampStrip(shapeIdx: number, paletteIdx: number): HTMLCanvasElement | null {
+  const s = clamp(shapeIdx | 0, 0, 4);
+  const p = clamp(paletteIdx | 0, 0, 7);
+  const key = (s << 4) | p;
+  const cached = danmakuStampCache.get(key);
+  if (cached) return cached;
+
+  const c = createCanvas(64, 32);
+  if (!c) return null;
+  const g = c.getContext('2d');
+  if (!g) return null;
+  const pal = DANMAKU_PALETTE_SPECS[p] ?? DANMAKU_PALETTE_SPECS[0];
+
+  for (let f = 0; f < 2; f++) {
+    const cx = f * 32 + 16;
+    const cy = 16;
+    const pulse = f === 0 ? 1 : 1.07;
+
+    g.save();
+    if (s === 0) {
+      // 0: Danmaku Orb (3-layer glowing Touhou pearl)
+      g.fillStyle = DANMAKU_INK;
+      g.beginPath();
+      g.arc(cx, cy, 8.8 * pulse, 0, TWO_PI);
+      g.fill();
+
+      g.fillStyle = pal.rim;
+      g.beginPath();
+      g.arc(cx, cy, 7.2 * pulse, 0, TWO_PI);
+      g.fill();
+
+      g.fillStyle = pal.mid;
+      g.beginPath();
+      g.arc(cx, cy, 5.9 * pulse, 0, TWO_PI);
+      g.fill();
+
+      g.fillStyle = '#ffffff';
+      g.beginPath();
+      g.arc(cx, cy, 3.3, 0, TWO_PI);
+      g.fill();
+    } else if (s === 1) {
+      // 1: Sakuya Kunai / Crystal Lance (facing +X)
+      g.translate(cx, cy);
+      g.fillStyle = DANMAKU_INK;
+      g.beginPath();
+      g.moveTo(13.5, 0);
+      g.lineTo(-4.5, -6.2 * pulse);
+      g.lineTo(-11.5, 0);
+      g.lineTo(-4.5, 6.2 * pulse);
+      g.closePath();
+      g.fill();
+
+      g.fillStyle = pal.rim;
+      g.beginPath();
+      g.moveTo(11.8, 0);
+      g.lineTo(-3.8, -4.8 * pulse);
+      g.lineTo(-9.5, 0);
+      g.lineTo(-3.8, 4.8 * pulse);
+      g.closePath();
+      g.fill();
+
+      g.fillStyle = pal.mid;
+      g.beginPath();
+      g.moveTo(10.6, 0);
+      g.lineTo(-3.2, -3.7 * pulse);
+      g.lineTo(-8.0, 0);
+      g.lineTo(-3.2, 3.7 * pulse);
+      g.closePath();
+      g.fill();
+
+      g.fillStyle = '#ffffff';
+      g.beginPath();
+      g.moveTo(9.2, 0);
+      g.lineTo(-2.5, -1.8);
+      g.lineTo(-5.8, 0);
+      g.lineTo(-2.5, 1.8);
+      g.closePath();
+      g.fill();
+    } else if (s === 2) {
+      // 2: Touhou 5-Pointed Star
+      g.translate(cx, cy);
+      const drawStar = (outerR: number, innerR: number, fill: string): void => {
+        g.fillStyle = fill;
+        g.beginPath();
+        for (let k = 0; k < 10; k++) {
+          const r = (k & 1) === 0 ? outerR : innerR;
+          const a = (k * Math.PI) / 5 - Math.PI * 0.5;
+          const px = Math.cos(a) * r;
+          const py = Math.sin(a) * r;
+          if (k === 0) g.moveTo(px, py);
+          else g.lineTo(px, py);
+        }
+        g.closePath();
+        g.fill();
+      };
+      drawStar(10.8 * pulse, 5.2 * pulse, DANMAKU_INK);
+      drawStar(9.2 * pulse, 4.2 * pulse, pal.rim);
+      drawStar(8.0 * pulse, 3.6 * pulse, pal.mid);
+      drawStar(4.6, 2.1, '#ffffff');
+    } else if (s === 3) {
+      // 3: Curved Crescent Wave Blade (facing +X)
+      g.translate(cx, cy);
+      const drawCrescent = (outerR: number, innerR: number, shiftX: number, fill: string): void => {
+        g.fillStyle = fill;
+        g.beginPath();
+        g.arc(-2, 0, outerR, -1.18, 1.18, false);
+        g.arc(-2 - shiftX, 0, innerR, 1.05, -1.05, true);
+        g.closePath();
+        g.fill();
+      };
+      drawCrescent(11.4 * pulse, 9.2 * pulse, 4.4, DANMAKU_INK);
+      drawCrescent(10.0 * pulse, 8.6 * pulse, 3.8, pal.mid);
+      drawCrescent(8.8, 7.9, 2.8, '#ffffff');
+    } else {
+      // 4: NieR / Touhou Hollow Annular Ring Orb
+      g.fillStyle = DANMAKU_INK;
+      g.beginPath();
+      g.arc(cx, cy, 10.2 * pulse, 0, TWO_PI, false);
+      g.arc(cx, cy, 4.0, 0, TWO_PI, true);
+      g.fill('evenodd');
+
+      g.fillStyle = pal.mid;
+      g.beginPath();
+      g.arc(cx, cy, 8.7 * pulse, 0, TWO_PI, false);
+      g.arc(cx, cy, 5.1, 0, TWO_PI, true);
+      g.fill('evenodd');
+
+      g.strokeStyle = '#ffffff';
+      g.lineWidth = 1.9;
+      g.beginPath();
+      g.arc(cx, cy, 6.9, 0, TWO_PI);
+      g.stroke();
+    }
+    g.restore();
+  }
+
+  danmakuStampCache.set(key, c);
+  return c;
+}
+
+function drawDanmakuProjectile(
+  ctx: CanvasRenderingContext2D,
+  b: SnapBullet | InterpBullet,
+  shapeIdx: number,
+  vx: number,
+  vy: number,
+  speed: number,
+  rawTraveled: number,
+  animTimeSec: number,
+): void {
+  const flags = b.flags ?? 0;
+  const paletteIdx = decodeDanmakuPalette(flags);
+  const scaleMult = decodeDanmakuScaleMult(flags);
+  const isPaused = (flags & BANSUNG_BFLAG_PAUSED) !== 0;
+  const pal = DANMAKU_PALETTE_SPECS[paletteIdx] ?? DANMAKU_PALETTE_SPECS[0];
+
+  // Zero-GC tapered ribbon wake while moving (no createLinearGradient per bullet!)
+  if (!isPaused && speed > 14 && rawTraveled > 2) {
+    const ux = vx / speed;
+    const uy = vy / speed;
+    const maxTail = (shapeIdx === 1 ? 30 : shapeIdx === 3 ? 22 : 18) * scaleMult;
+    const tailLen = Math.min(rawTraveled, clamp(speed * 0.046, 7, maxTail));
+    if (tailLen > 2) {
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.globalAlpha = 0.66;
+      ctx.strokeStyle = DANMAKU_INK;
+      ctx.lineWidth = 4.2 * scaleMult;
+      ctx.beginPath();
+      ctx.moveTo(b.x - ux * tailLen * 0.72, b.y - uy * tailLen * 0.72);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = 0.74;
+      ctx.strokeStyle = pal.mid;
+      ctx.lineWidth = 2.8 * scaleMult;
+      ctx.beginPath();
+      ctx.moveTo(b.x - ux * tailLen, b.y - uy * tailLen);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+
+      ctx.globalAlpha = 0.92;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.35 * scaleMult;
+      ctx.beginPath();
+      ctx.moveTo(b.x - ux * tailLen * 0.58, b.y - uy * tailLen * 0.58);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  const cx = Math.round(b.x);
+  const cy = Math.round(b.y);
+  drawAtlasGlow(
+    ctx,
+    pal.glow,
+    cx,
+    cy,
+    (isPaused ? 32 : 26) * scaleMult,
+    isPaused ? 0.82 : 0.62,
+  );
+
+  const stamp = getDanmakuStampStrip(shapeIdx, paletteIdx);
+  const rot =
+    shapeIdx === 2
+      ? animTimeSec * 5.2 + (b.id & 7) * 0.78
+      : b.aim;
+  const fIdx = ((animTimeSec * 12 + (b.id & 3) * 0.5) | 0) & 1;
+  const dstSize = Math.max(16, Math.round(28 * scaleMult));
+  const halfDst = dstSize * 0.5;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  if (rot !== 0) ctx.rotate(rot);
+  if ('spawnAlpha' in b && b.spawnAlpha < 1) {
+    ctx.globalAlpha = b.spawnAlpha;
+  }
+  if (stamp) {
+    ctx.drawImage(stamp, fIdx * 32, 0, 32, 32, -halfDst, -halfDst, dstSize, dstSize);
+  } else {
+    const clipKeys = ['danmaku_orb', 'danmaku_lance', 'danmaku_star', 'danmaku_crescent', 'danmaku_ring'];
+    drawBansungSprite(ctx, {
+      clipKey: clipKeys[clamp(shapeIdx, 0, 4)],
+      x: 0,
+      y: 0,
+      animTimeSec,
+      scale: scaleMult,
+      category: 'projectile',
+    });
+  }
+  ctx.restore();
+
+  // Sakuya / Cirno Time-Stop Lock Glint Cross while bullet is suspended in mid-air!
+  if (isPaused) {
+    const glint = (8.5 + 2.5 * Math.sin(animTimeSec * 22 + b.id)) * scaleMult;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.strokeStyle = pal.mid;
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(cx - glint, cy);
+    ctx.lineTo(cx + glint, cy);
+    ctx.moveTo(cx, cy - glint);
+    ctx.lineTo(cx, cy + glint);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(cx - glint * 0.72, cy);
+    ctx.lineTo(cx + glint * 0.72, cy);
+    ctx.moveTo(cx, cy - glint * 0.72);
+    ctx.lineTo(cx, cy + glint * 0.72);
+    ctx.stroke();
+    ctx.restore();
+  }
 }
 
 const evolvedTracerCache = new Map<string, TracerStyle>();
@@ -913,18 +1208,6 @@ export function drawBeamTrail(
 
   ctx.save();
   ctx.lineCap = 'round';
-
-  if (isBossBeam) {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.globalAlpha = clamp(0.82 * decay, 0, 1);
-    ctx.strokeStyle = OUTLINE_INK;
-    ctx.lineWidth = Math.max(3, beam.width * (2.1 * decay) + 3);
-    ctx.beginPath();
-    ctx.moveTo(beam.x1, beam.y1);
-    ctx.lineTo(beam.x2, beam.y2);
-    ctx.stroke();
-  }
-
   ctx.globalCompositeOperation = 'lighter';
 
   // Outer glow pass
@@ -3176,8 +3459,9 @@ export class BansungVfxController {
 
         const tp = this.trackedProjectiles[slotIdx];
         const cfg = getProjectileConfigByKindId(b.kind);
+        const isPaused = ((b.flags ?? 0) & BANSUNG_BFLAG_PAUSED) !== 0;
         const hasVel = b.vx !== 0 || b.vy !== 0;
-        const fallbackSpd = cfg?.speed ?? 600;
+        const fallbackSpd = isPaused ? 0 : cfg?.speed ?? 600;
         tp.active = true;
         tp.id = b.id;
         tp.kind = b.kind;
@@ -3185,8 +3469,8 @@ export class BansungVfxController {
         tp.spawnY = b.y;
         tp.prevX = b.x;
         tp.prevY = b.y;
-        tp.vx = hasVel ? b.vx : Math.cos(b.aim) * fallbackSpd;
-        tp.vy = hasVel ? b.vy : Math.sin(b.aim) * fallbackSpd;
+        tp.vx = isPaused ? 0 : hasVel ? b.vx : Math.cos(b.aim) * fallbackSpd;
+        tp.vy = isPaused ? 0 : hasVel ? b.vy : Math.sin(b.aim) * fallbackSpd;
         tp.ageSec = 0;
         tp.smokeAccSec = 0;
         tp.stamp = this.bulletStamp;
@@ -3194,9 +3478,15 @@ export class BansungVfxController {
         this.syncBombProjectile(b, cfg, true);
       } else {
         const tp = this.trackedProjectiles[slotIdx];
+        const isPaused = ((b.flags ?? 0) & BANSUNG_BFLAG_PAUSED) !== 0;
         const dx = b.x - tp.prevX;
         const dy = b.y - tp.prevY;
-        if (b.vx !== 0 || b.vy !== 0) {
+        if (isPaused) {
+          tp.vx = 0;
+          tp.vy = 0;
+          tp.spawnX = b.x;
+          tp.spawnY = b.y;
+        } else if (b.vx !== 0 || b.vy !== 0) {
           tp.vx = b.vx;
           tp.vy = b.vy;
         } else if (dt > 0.0005 && (dx !== 0 || dy !== 0)) {
@@ -3858,10 +4148,29 @@ export class BansungVfxController {
       const tp = slotIdx !== undefined ? this.trackedProjectiles[slotIdx] : undefined;
 
       const rawTraveled = tp ? Math.hypot(b.x - tp.spawnX, b.y - tp.spawnY) : 0;
-      const fallbackSpd = getProjectileConfigByKindId(b.kind)?.speed ?? 600;
-      const vx = tp ? tp.vx : b.vx !== 0 || b.vy !== 0 ? b.vx : Math.cos(b.aim) * fallbackSpd;
-      const vy = tp ? tp.vy : b.vx !== 0 || b.vy !== 0 ? b.vy : Math.sin(b.aim) * fallbackSpd;
+      const isPaused = (flags & BANSUNG_BFLAG_PAUSED) !== 0;
+      const fallbackSpd = isPaused ? 0 : getProjectileConfigByKindId(b.kind)?.speed ?? 600;
+      const vx = isPaused
+        ? 0
+        : tp
+          ? tp.vx
+          : b.vx !== 0 || b.vy !== 0
+            ? b.vx
+            : Math.cos(b.aim) * fallbackSpd;
+      const vy = isPaused
+        ? 0
+        : tp
+          ? tp.vy
+          : b.vx !== 0 || b.vy !== 0
+            ? b.vy
+            : Math.sin(b.aim) * fallbackSpd;
       const speed = Math.hypot(vx, vy);
+
+      // Dedicated 3-layer Touhou Danmaku renderer for boss bullet-hell patterns (kindId 37..41)
+      if (b.kind >= 37 && b.kind <= 41) {
+        drawDanmakuProjectile(ctx, b, b.kind - 37, vx, vy, speed, rawTraveled, animTimeSec);
+        continue;
+      }
 
       const cfg = getProjectileConfigByKindId(b.kind);
       const kindKey: BansungProjectileKind = cfg?.kind ?? 'kinetic_sm';
