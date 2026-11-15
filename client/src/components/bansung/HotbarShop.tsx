@@ -13,11 +13,14 @@ import {
   Gift,
   Heart,
   Layers,
+  Magnet,
+  Orbit,
   Package,
   RefreshCw,
   Shield,
   ShoppingBag,
   Sparkles,
+  Swords,
   TrendingUp,
   Wind,
   X,
@@ -292,27 +295,35 @@ const GACHA_RARITY_THEME: Readonly<
 };
 
 const GACHA_SHORT_SKILL_NAME: Readonly<Record<GachaSkillCategory, string>> = {
-  skill_damage: 'Tấn Công',
-  skill_hp: 'Máu Max',
-  skill_stamina: 'Thể Lực Dash',
-  skill_shield: 'Khiên (5s)',
-  skill_firerate: 'Tốc Bắn',
-  skill_multishot: 'Tia +1',
+  skill_damage: 'Sát Thương',
+  skill_hp: 'Hồi Máu',
+  skill_stamina: 'Hồi Thể Lực',
+  skill_shield: 'Khiên Nhỏ',
+  skill_firerate: 'Tốc Đánh',
+  skill_multishot: 'Đạn Lan Tỏa',
   skill_crit: 'Chí Mạng',
   skill_mobility: 'Tốc Chạy',
+  skill_lightning_orb: 'Cầu Sét (+1)',
+  skill_fire_orb: 'Cầu Lửa (+1)',
+  skill_spirit_sword: 'Triệu Kiếm (+1)',
+  skill_magnet: 'Nam Châm Hút',
 };
 
 const GACHA_SKILL_CATEGORY_META: Readonly<
   Record<GachaSkillCategory, { label: string; accent: string; Icon: React.ComponentType<{ size?: number; color?: string }> }>
 > = {
   skill_damage: { label: 'Tăng Sát Thương', accent: '#f97316', Icon: Flame },
-  skill_hp: { label: 'Tăng Máu (HP)', accent: '#34d399', Icon: Heart },
-  skill_stamina: { label: 'Thể Lực (Dash)', accent: '#fbbf24', Icon: Wind },
-  skill_shield: { label: 'Khiên Lưu Trữ (5s)', accent: '#38bdf8', Icon: Shield },
+  skill_hp: { label: 'Hồi Máu Nhẹ', accent: '#34d399', Icon: Heart },
+  skill_stamina: { label: 'Hồi Thể Lực', accent: '#fbbf24', Icon: Wind },
+  skill_shield: { label: 'Hồi Khiên Nhẹ', accent: '#38bdf8', Icon: Shield },
   skill_firerate: { label: 'Tốc Độ Đánh/Bắn', accent: '#38bdf8', Icon: Zap },
-  skill_multishot: { label: 'Thêm +1 Tia', accent: '#c084fc', Icon: Layers },
+  skill_multishot: { label: 'Đạn Lan Tỏa', accent: '#c084fc', Icon: Layers },
   skill_crit: { label: 'Chí Mạng', accent: '#fbbf24', Icon: Crosshair },
-  skill_mobility: { label: 'Cơ Động', accent: '#22d3ee', Icon: Wind },
+  skill_mobility: { label: 'Tốc Độ Chạy', accent: '#22d3ee', Icon: Wind },
+  skill_lightning_orb: { label: 'Quả Cầu Sét Xoay', accent: '#facc15', Icon: Orbit },
+  skill_fire_orb: { label: 'Quả Cầu Lửa Xoay', accent: '#fb923c', Icon: Flame },
+  skill_spirit_sword: { label: 'Triệu Hồi Kiếm Kéo', accent: '#38bdf8', Icon: Swords },
+  skill_magnet: { label: 'Nam Châm Hút Đồ', accent: '#2dd4bf', Icon: Magnet },
 };
 
 const HOTBAR_DEFAULT_CSS = `
@@ -2538,15 +2549,12 @@ function GachaDraftCard({
             ? 'bs-gacha-mult--purple'
             : 'bs-gacha-mult--green';
 
-  const multBadgeText =
-    card.category === 'skill_multishot'
-      ? '+1'
-      : isWeaponUnlock
-        ? card.multLabel
-          ? `${card.multLabel} MỚI`
-          : 'MỞ KHÓA'
-        : card.multLabel ??
-          (isPrismatic ? '777' : isMythic ? 'x4' : isCelestial || isLegendary ? 'x3' : isEpic ? 'x2' : 'Lv1');
+  const multBadgeText = isWeaponUnlock
+    ? card.multLabel
+      ? `${card.multLabel} MỚI`
+      : 'MỞ KHÓA'
+    : card.multLabel ??
+      (isPrismatic ? '^^' : isMythic ? '^^' : isCelestial || isLegendary ? '^^' : '^');
 
   const shortTitle = weaponSpec
     ? weaponSpec.vnName

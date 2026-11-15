@@ -32,6 +32,7 @@ import {
   BANSUNG_FX_BEAM_LASER_MAP,
   BANSUNG_FX_BEAM_RAIL,
   BANSUNG_FX_BEAM_SHOCK,
+  BANSUNG_FX_BEAM_YELLOW_LIGHTNING,
   BANSUNG_FX_BLAST_ABYSS_NOVA,
   BANSUNG_FX_BLAST_BOSS_MORTAR,
   BANSUNG_FX_BLAST_BOSS_SHOCKWAVE,
@@ -43,6 +44,7 @@ import {
   BANSUNG_FX_BLAST_MINE,
   BANSUNG_FX_BLAST_ORBITAL,
   BANSUNG_FX_BLAST_STEAM,
+  BANSUNG_FX_BLAST_STORM_YELLOW,
   BANSUNG_FX_BLAST_STUN,
   BANSUNG_FX_BLAST_THUNDER_STORM,
   BANSUNG_FX_BLAST_TURRET_EXPIRE,
@@ -489,7 +491,7 @@ export const BANSUNG_PROJ_ANIMS: Record<BansungProjectileKind, ProjAnimEntry> = 
 };
 
 export type MuzzleFlashStyle = 'kinetic' | 'plasma' | 'shotgun' | 'laser' | 'flame' | 'emp';
-export type BeamKindId = 0 | 1 | 2 | 3 | 4 | 5;
+export type BeamKindId = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface MuzzleFlash {
   active: boolean;
@@ -878,7 +880,11 @@ export function drawBeamTrail(
   const isBossLaser = beam.kind === BANSUNG_FX_BEAM_BOSS_LASER;
   const isMapLaser = beam.kind === BANSUNG_FX_BEAM_LASER_MAP;
   const isBossBeam = isBossEye || isBossLaser || isMapLaser;
-  const isJagged = beam.kind === BANSUNG_FX_BEAM_CHAIN || beam.kind === BANSUNG_FX_BEAM_SHOCK;
+  const isYellowLightning = beam.kind === BANSUNG_FX_BEAM_YELLOW_LIGHTNING;
+  const isJagged =
+    beam.kind === BANSUNG_FX_BEAM_CHAIN ||
+    beam.kind === BANSUNG_FX_BEAM_SHOCK ||
+    isYellowLightning;
 
   const outerColor = isMapLaser
     ? '#f43f5e'
@@ -886,20 +892,24 @@ export function drawBeamTrail(
       ? '#ff2a6d'
       : isBossEye
         ? '#ff5964'
-        : beam.kind === BANSUNG_FX_BEAM_SHOCK
-          ? '#38bdf8'
-          : beam.kind === BANSUNG_FX_BEAM_CHAIN
-            ? '#74c0fc'
-            : '#2ce8f5';
+        : isYellowLightning
+          ? '#facc15'
+          : beam.kind === BANSUNG_FX_BEAM_SHOCK
+            ? '#38bdf8'
+            : beam.kind === BANSUNG_FX_BEAM_CHAIN
+              ? '#74c0fc'
+              : '#2ce8f5';
   const coreColor = isMapLaser
     ? '#ffffff'
     : isBossLaser
       ? '#fff5f7'
       : isBossEye
         ? '#fff0f3'
-        : beam.kind === BANSUNG_FX_BEAM_SHOCK
-          ? '#fff9db'
-          : '#e7f5ff';
+        : isYellowLightning
+          ? '#fef9c3'
+          : beam.kind === BANSUNG_FX_BEAM_SHOCK
+            ? '#fff9db'
+            : '#e7f5ff';
 
   ctx.save();
   ctx.lineCap = 'round';
@@ -3445,20 +3455,29 @@ export class BansungVfxController {
       if (
         blastKind === BANSUNG_FX_BLAST_STUN ||
         blastKind === BANSUNG_FX_BLAST_TURRET_THUNDER ||
-        blastKind === BANSUNG_FX_BLAST_THUNDER_STORM
+        blastKind === BANSUNG_FX_BLAST_THUNDER_STORM ||
+        blastKind === BANSUNG_FX_BLAST_STORM_YELLOW
       ) {
         const isStunGrenade = blastKind === BANSUNG_FX_BLAST_STUN;
-        this.triggerBombExplosion(x, y, radius, isStunGrenade ? 'stun' : 'emp', viewerPos, nowMs);
+        const isYellowStorm = blastKind === BANSUNG_FX_BLAST_STORM_YELLOW;
+        this.triggerBombExplosion(
+          x,
+          y,
+          radius,
+          isStunGrenade ? 'stun' : isYellowStorm ? 'fireball' : 'emp',
+          viewerPos,
+          nowMs,
+        );
         this.pushStunFx(
           x,
           y,
           radius,
           0,
-          blastKind === BANSUNG_FX_BLAST_THUNDER_STORM ? 340 : 280,
-          isStunGrenade || blastKind === BANSUNG_FX_BLAST_THUNDER_STORM,
+          blastKind === BANSUNG_FX_BLAST_THUNDER_STORM || isYellowStorm ? 340 : 280,
+          isStunGrenade || blastKind === BANSUNG_FX_BLAST_THUNDER_STORM || isYellowStorm,
         );
         const arcCount =
-          blastKind === BANSUNG_FX_BLAST_THUNDER_STORM
+          blastKind === BANSUNG_FX_BLAST_THUNDER_STORM || isYellowStorm
             ? 6
             : blastKind === BANSUNG_FX_BLAST_TURRET_THUNDER
               ? 3
@@ -3530,28 +3549,32 @@ export class BansungVfxController {
       const kind = clamp(
         evt.e | 0,
         BANSUNG_FX_BEAM_RAIL,
-        BANSUNG_FX_BEAM_LASER_MAP,
+        BANSUNG_FX_BEAM_YELLOW_LIGHTNING,
       ) as BeamKindId;
       const width =
         kind === BANSUNG_FX_BEAM_LASER_MAP
           ? 14
           : kind === BANSUNG_FX_BEAM_BOSS_LASER
             ? 10
-            : kind === BANSUNG_FX_BEAM_BOSS_EYE
-              ? 7.5
-              : kind === BANSUNG_FX_BEAM_SHOCK
-                ? 7
-                : 5;
+            : kind === BANSUNG_FX_BEAM_YELLOW_LIGHTNING
+              ? 9
+              : kind === BANSUNG_FX_BEAM_BOSS_EYE
+                ? 7.5
+                : kind === BANSUNG_FX_BEAM_SHOCK
+                  ? 7
+                  : 5;
       const ttl =
         kind === BANSUNG_FX_BEAM_LASER_MAP
           ? 260
           : kind === BANSUNG_FX_BEAM_BOSS_LASER
             ? 220
-            : kind === BANSUNG_FX_BEAM_BOSS_EYE
-              ? 190
-              : kind === BANSUNG_FX_BEAM_SHOCK
-                ? 175
-                : 155;
+            : kind === BANSUNG_FX_BEAM_YELLOW_LIGHTNING
+              ? 210
+              : kind === BANSUNG_FX_BEAM_BOSS_EYE
+                ? 190
+                : kind === BANSUNG_FX_BEAM_SHOCK
+                  ? 175
+                  : 155;
       const nearPlayerMuzzle =
         viewerPos != null && Math.hypot(evt.a - viewerPos.x, evt.b - viewerPos.y) <= 84;
       const beamLiftY =

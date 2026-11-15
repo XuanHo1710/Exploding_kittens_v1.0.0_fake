@@ -28,6 +28,7 @@ import {
   BANSUNG_FX_BEAM_LASER_MAP,
   BANSUNG_FX_BEAM_RAIL,
   BANSUNG_FX_BEAM_SHOCK,
+  BANSUNG_FX_BEAM_YELLOW_LIGHTNING,
   BANSUNG_FX_BLAST_ABYSS_NOVA,
   BANSUNG_FX_BLAST_BOSS_MORTAR,
   BANSUNG_FX_BLAST_BOSS_SHOCKWAVE,
@@ -41,6 +42,7 @@ import {
   BANSUNG_FX_BLAST_MINE,
   BANSUNG_FX_BLAST_ORBITAL,
   BANSUNG_FX_BLAST_STEAM,
+  BANSUNG_FX_BLAST_STORM_YELLOW,
   BANSUNG_FX_BLAST_STUN,
   BANSUNG_FX_BLAST_THUNDER_STORM,
   BANSUNG_FX_BLAST_TURRET_EXPIRE,
@@ -1950,6 +1952,7 @@ export function consumeFrameAudioEvents(
             playBansungSfx('mortar_explode', { x: evt.b, y: evt.c });
             break;
           case BANSUNG_FX_BLAST_THUNDER_STORM:
+          case BANSUNG_FX_BLAST_STORM_YELLOW:
             playBansungSfx('wpn_lightning_cast', { x: evt.b, y: evt.c });
             break;
           case BANSUNG_FX_BLAST_DESTROYER_METEOR:
@@ -2109,6 +2112,7 @@ export function consumeFrameAudioEvents(
         const pt = closestPointOnSegment(evt.a, evt.b, evt.c, evt.d, listenerX, listenerY);
         switch (evt.e) {
           case BANSUNG_FX_BEAM_CHAIN:
+          case BANSUNG_FX_BEAM_YELLOW_LIGHTNING:
             playBansungSfx('wpn_lightning_cast', { x: pt.x, y: pt.y });
             break;
           case BANSUNG_FX_BEAM_SHOCK:

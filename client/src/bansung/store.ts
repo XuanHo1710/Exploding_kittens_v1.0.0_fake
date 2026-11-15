@@ -210,6 +210,52 @@ export interface SnapFxEvent {
   tick: number;
 }
 
+export interface SnapPlayerOrbs {
+  playerIdx: number;
+  lightningOrbs: number;
+  fireOrbs: number;
+  spiritSwords: number;
+  magnetStacks: number;
+}
+
+export interface SnapSpiritSword {
+  id: number;
+  x: number;
+  y: number;
+  aim: number;
+  stateFlag: number;
+}
+
+function decodePlayerOrbs(arr: number[] | undefined): SnapPlayerOrbs[] {
+  if (!arr || arr.length < 5) return [];
+  const out: SnapPlayerOrbs[] = [];
+  for (let i = 0; i + 4 < arr.length; i += 5) {
+    out.push({
+      playerIdx: arr[i],
+      lightningOrbs: arr[i + 1],
+      fireOrbs: arr[i + 2],
+      spiritSwords: arr[i + 3],
+      magnetStacks: arr[i + 4],
+    });
+  }
+  return out;
+}
+
+function decodeSpiritSwords(arr: number[] | undefined): SnapSpiritSword[] {
+  if (!arr || arr.length < 5) return [];
+  const out: SnapSpiritSword[] = [];
+  for (let i = 0; i + 4 < arr.length; i += 5) {
+    out.push({
+      id: arr[i],
+      x: arr[i + 1],
+      y: arr[i + 2],
+      aim: dequantizeAim(arr[i + 3]),
+      stateFlag: arr[i + 4],
+    });
+  }
+  return out;
+}
+
 export interface ParsedSnapshot {
   tick: number;
   ms: number;
@@ -227,6 +273,8 @@ export interface ParsedSnapshot {
   pets: BansungPetFrame[];
   hazards: BansungHazardWire[];
   telegraphs: BansungTelegraphWire[];
+  skillOrbs: SnapPlayerOrbs[];
+  spiritSwords: SnapSpiritSword[];
   me?: BansungPrivate;
   srv: BansungSurvivalClock | null;
   fxRaw: number[];
@@ -840,6 +888,8 @@ export class BansungStore {
   pets: BansungPetFrame[] = [];
   hazards: BansungHazardWire[] = [];
   telegraphs: BansungTelegraphWire[] = [];
+  skillOrbs: SnapPlayerOrbs[] = [];
+  spiritSwords: SnapSpiritSword[] = [];
   pings: BansungPingItem[] = [];
 
   /** Zero-latency local player draw position and aim state. */
@@ -1071,6 +1121,8 @@ export class BansungStore {
     this.pets = [];
     this.hazards = [];
     this.telegraphs = [];
+    this.skillOrbs = [];
+    this.spiritSwords = [];
     this.pings = [];
     this.spawnTimes.clear();
     this.pendingFx = [];
@@ -1327,6 +1379,8 @@ export class BansungStore {
     const pets: BansungPetFrame[] = Array.isArray(frame.pets) ? frame.pets.slice() : [];
     const hazards: BansungHazardWire[] = Array.isArray(frame.hz) ? frame.hz.slice() : [];
     const telegraphs: BansungTelegraphWire[] = Array.isArray(frame.tg) ? frame.tg.slice() : [];
+    const skillOrbs: SnapPlayerOrbs[] = decodePlayerOrbs(frame.orbs);
+    const spiritSwords: SnapSpiritSword[] = decodeSpiritSwords(frame.sw);
 
     const normalizedMe = frame.me ? normalizePrivateSlice(frame.me) : undefined;
     const normalizedFrame: BansungFrame = normalizedMe
@@ -1352,6 +1406,8 @@ export class BansungStore {
       pets,
       hazards,
       telegraphs,
+      skillOrbs,
+      spiritSwords,
       me: normalizedMe,
       srv: survival,
       fxRaw: frame.fx ? frame.fx.slice() : [],
@@ -2009,6 +2065,8 @@ export class BansungStore {
     this.pets = b.pets;
     this.hazards = b.hazards;
     this.telegraphs = b.telegraphs;
+    this.skillOrbs = b.skillOrbs;
+    this.spiritSwords = b.spiritSwords;
   }
 
   private extrapolateFrom(
@@ -2125,6 +2183,8 @@ export class BansungStore {
     this.pets = curr.pets;
     this.hazards = curr.hazards;
     this.telegraphs = curr.telegraphs;
+    this.skillOrbs = curr.skillOrbs;
+    this.spiritSwords = curr.spiritSwords;
   }
 
   private getSpawnAlpha(key: string, now: number): number {

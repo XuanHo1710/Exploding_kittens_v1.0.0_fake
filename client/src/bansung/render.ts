@@ -149,7 +149,9 @@ import {
   type InterpPlayer,
   type SnapFxEvent,
   type SnapPickup,
+  type SnapPlayerOrbs,
   type SnapProp,
+  type SnapSpiritSword,
   type StaticObstacleBox,
 } from './store';
 import {
@@ -2401,6 +2403,18 @@ function resolveBossClips(boss: ExtendedBossView): string[] {
     return [`boss_frost_empress_${act}`, 'boss_frost_empress_idle', 'boss_frost_empress'];
   }
 
+  if (boss.kind === 'boss_storm_herald') {
+    const act =
+      boss.state === BANSUNG_STATE_DEAD
+        ? 'dead'
+        : boss.state === BANSUNG_STATE_STUN
+          ? 'stun'
+          : boss.state === BANSUNG_STATE_ATK
+            ? 'attack'
+            : 'idle';
+    return [`boss_storm_herald_${act}`, 'boss_storm_herald_idle', 'boss_storm_herald'];
+  }
+
   if (boss.kind === 'boss_abyssal_leviathan') {
     const act =
       boss.state === BANSUNG_STATE_DEAD
@@ -2579,6 +2593,34 @@ function drawProceduralBossFallback(
     return;
   }
 
+  if (boss.kind === 'boss_storm_herald') {
+    // Lôi Thần Bão Sét: twin-coil storm sovereign wielding Yellow & Blue lightning storms
+    const bob = Math.round(Math.sin(nowSec * 5.2) * 3);
+    drawPixelEllipse(ctx, rx, ry - 48 + bob, 38, 42, OUTLINE_INK, 1);
+    drawPixelEllipse(ctx, rx, ry - 48 + bob, 35, 39, hit ? '#ffffff' : '#0f172a', 1);
+    if (!hit) {
+      // Left Yellow Tesla Pylon + Right Blue Tempest Pylon
+      drawPixelEllipse(ctx, rx - 44, ry - 52 + bob, 11, 20, '#a16207', 1);
+      drawPixelEllipse(ctx, rx - 44, ry - 52 + bob, 7, 15, '#facc15', 1);
+      drawPixelEllipse(ctx, rx + 44, ry - 52 - bob, 11, 20, '#0369a1', 1);
+      drawPixelEllipse(ctx, rx + 44, ry - 52 - bob, 7, 15, '#38bdf8', 1);
+      // Twin storm crown prongs
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(rx - 18, ry - 94 + bob, 8, 14);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(rx + 10, ry - 94 + bob, 8, 14);
+      ctx.fillStyle = '#fef9c3';
+      ctx.fillRect(rx - 16, ry - 72 + bob, 14, 6);
+      ctx.fillStyle = '#7dd3fc';
+      ctx.fillRect(rx + 2, ry - 72 + bob, 14, 6);
+      // Dual yellow/blue core reactor
+      drawPixelEllipse(ctx, rx - 6, ry - 48 + bob, 10, 12, '#facc15', 0.95);
+      drawPixelEllipse(ctx, rx + 6, ry - 48 + bob, 10, 12, '#38bdf8', 0.95);
+      drawPixelEllipse(ctx, rx, ry - 48 + bob, 6, 6, '#ffffff', 1);
+    }
+    return;
+  }
+
   if (boss.kind === 'boss_abyssal_leviathan') {
     // Thủy Quái Vực Thẳm Omega: abyssal kraken dread-hull, bioluminescent tendrils & void maw
     ctx.fillStyle = OUTLINE_INK;
@@ -2671,12 +2713,14 @@ function drawBossEntity(
           ? 1.96
           : boss.kind === 'boss_frost_empress'
             ? 1.84
-            : boss.kind === 'boss_tempest' ||
-                boss.kind === 'boss_overlord' ||
-                boss.kind === 'boss_colossus' ||
-                boss.kind === 'boss_beholder'
-              ? 1.78
-              : 1.65;
+            : boss.kind === 'boss_storm_herald'
+              ? 1.92
+              : boss.kind === 'boss_tempest' ||
+                  boss.kind === 'boss_overlord' ||
+                  boss.kind === 'boss_colossus' ||
+                  boss.kind === 'boss_beholder'
+                ? 1.78
+                : 1.65;
   const bossScale = baseBossScale * scaleMult;
   const clips = resolveBossClips(boss);
   const drawn = drawFirstAvailableClip(ctx, clips, drawX, drawY, nowSec, {
@@ -2764,6 +2808,9 @@ function drawBossEntity(
     } else if (boss.kind === 'boss_frost_empress') {
       queueGlow('cyan', drawX, drawY - 46, 62, 0.62);
       queueGlow('violet', drawX, drawY - 46, 44, 0.34);
+    } else if (boss.kind === 'boss_storm_herald') {
+      queueGlow('fire', drawX - 24, drawY - 46, 54, 0.56);
+      queueGlow('cyan', drawX + 24, drawY - 46, 54, 0.56);
     } else if (boss.kind === 'boss_destroyer') {
       queueGlow('crimson', drawX, drawY - 46, 68, 0.65);
       queueGlow('fire', drawX, drawY - 46, 44, 0.44);
@@ -2974,6 +3021,144 @@ function drawBossLaserLanesGround(
   }
 }
 
+interface OrbitalVisualSpec {
+  orbitR: number;
+  omega: number;
+  phaseOffset: number;
+  outerCol: string;
+  midCol: string;
+  coreCol: string;
+  sparkCol: string;
+  glowCol: GlowColor;
+}
+
+const LIGHTNING_ORB_VISUAL: OrbitalVisualSpec = {
+  orbitR: 74,
+  omega: 2.7,
+  phaseOffset: 0,
+  outerCol: '#facc15',
+  midCol: '#38bdf8',
+  coreCol: '#fef9c3',
+  sparkCol: '#e0f2fe',
+  glowCol: 'cyan',
+};
+
+const FIRE_ORB_VISUAL: OrbitalVisualSpec = {
+  orbitR: 92,
+  omega: -2.2,
+  phaseOffset: Math.PI / 6,
+  outerCol: '#dc2626',
+  midCol: '#fb923c',
+  coreCol: '#fef08a',
+  sparkCol: '#fde047',
+  glowCol: 'fire',
+};
+
+function drawOrbitalRing(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  count: number,
+  nowSec: number,
+  spec: OrbitalVisualSpec,
+): void {
+  if (count <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = 0.24;
+  ctx.strokeStyle = spec.midCol;
+  ctx.lineWidth = 1.25;
+  ctx.setLineDash([5, 6]);
+  ctx.beginPath();
+  ctx.arc(cx, cy, spec.orbitR, 0, TWO_PI);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  for (let k = 0; k < count; k++) {
+    const ang = nowSec * spec.omega + spec.phaseOffset + (k / count) * TWO_PI;
+    const ox = Math.round(cx + Math.cos(ang) * spec.orbitR);
+    const oy = Math.round(cy + Math.sin(ang) * spec.orbitR);
+    drawPixelEllipse(ctx, ox, oy, 8, 8, OUTLINE_INK, 1);
+    drawPixelEllipse(ctx, ox, oy, 6, 6, spec.outerCol, 1);
+    drawPixelEllipse(ctx, ox, oy, 4, 4, spec.midCol, 1);
+    ctx.fillStyle = spec.coreCol;
+    ctx.fillRect(ox - 2, oy - 2, 4, 4);
+    const sparkA = ang + Math.PI * 0.5;
+    const sx = Math.round(ox + Math.cos(sparkA) * 7);
+    const sy = Math.round(oy + Math.sin(sparkA) * 7);
+    ctx.fillStyle = spec.sparkCol;
+    ctx.fillRect(sx - 1, sy - 1, 3, 3);
+    queueGlow(spec.glowCol, ox, oy, 18, 0.36);
+  }
+  drawCallsLastFrame += count;
+}
+
+function drawHeroGachaOrbsAndMagnet(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  orbs: SnapPlayerOrbs | undefined,
+  nowSec: number,
+): void {
+  if (!orbs) return;
+  if (orbs.magnetStacks > 0) {
+    const mr = Math.min(58, 30 + orbs.magnetStacks * 4);
+    const spin = -nowSec * 2.4;
+    ctx.save();
+    ctx.globalAlpha = 0.42;
+    ctx.strokeStyle = '#2dd4bf';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(cx, cy, mr, spin, spin + 1.45);
+    ctx.stroke();
+    ctx.strokeStyle = '#fbbf24';
+    ctx.beginPath();
+    ctx.arc(cx, cy, mr, spin + Math.PI, spin + Math.PI + 1.45);
+    ctx.stroke();
+    ctx.restore();
+  }
+  drawOrbitalRing(ctx, cx, cy, orbs.lightningOrbs, nowSec, LIGHTNING_ORB_VISUAL);
+  drawOrbitalRing(ctx, cx, cy, orbs.fireOrbs, nowSec, FIRE_ORB_VISUAL);
+}
+
+function drawSpiritSwords(
+  ctx: CanvasRenderingContext2D,
+  swords: readonly SnapSpiritSword[],
+  nowSec: number,
+): void {
+  if (swords.length === 0) return;
+  for (let i = 0; i < swords.length; i++) {
+    const sw = swords[i];
+    const sx = Math.round(sw.x);
+    const sy = Math.round(sw.y);
+    const active = sw.stateFlag > 0;
+    const isPull = sw.stateFlag === 2;
+    ctx.save();
+    ctx.translate(sx, sy);
+    ctx.rotate(sw.aim);
+    if (active) {
+      ctx.globalAlpha = 0.38;
+      ctx.fillStyle = isPull ? '#2dd4bf' : '#38bdf8';
+      ctx.fillRect(-26, -3, 18, 6);
+      ctx.globalAlpha = 1;
+    }
+    // Ink blade outline + steel/spirit edge + gold crossguard
+    ctx.fillStyle = OUTLINE_INK;
+    ctx.fillRect(-10, -4, 24, 8);
+    ctx.fillStyle = isPull ? '#5eead4' : '#38bdf8';
+    ctx.fillRect(-4, -3, 16, 6);
+    ctx.fillStyle = '#e0f2fe';
+    ctx.fillRect(-2, -1, 14, 2);
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillRect(-6, -5, 3, 10);
+    ctx.fillStyle = '#f87171';
+    ctx.fillRect(-9, -2, 3, 4);
+    ctx.restore();
+    queueGlow(isPull ? 'emerald' : 'cyan', sx, sy, active ? 22 : 14, 0.34 + 0.06 * Math.sin(nowSec * 9 + sw.id));
+  }
+  drawCallsLastFrame += swords.length;
+}
+
 function drawActiveGroundHazards(
   ctx: CanvasRenderingContext2D,
   hazards: readonly BansungHazardWire[],
@@ -3007,6 +3192,18 @@ function drawActiveGroundHazards(
       borderCol = pulse > 0.5 ? '#bef264' : '#4ade80';
       accentCol = '#dcfce7';
       glowCol = 'emerald';
+    } else if (hz.kind === 'storm_yellow') {
+      baseFill = `rgba(113, 63, 18, ${(0.40 * fade).toFixed(3)})`;
+      coreFill = `rgba(250, 204, 21, ${((0.20 + 0.16 * pulse) * fade).toFixed(3)})`;
+      borderCol = pulse > 0.5 ? '#fef08a' : '#facc15';
+      accentCol = '#fef9c3';
+      glowCol = 'fire';
+    } else if (hz.kind === 'storm_blue') {
+      baseFill = `rgba(12, 74, 110, ${(0.42 * fade).toFixed(3)})`;
+      coreFill = `rgba(56, 189, 248, ${((0.20 + 0.16 * pulse) * fade).toFixed(3)})`;
+      borderCol = pulse > 0.5 ? '#e0f2fe' : '#38bdf8';
+      accentCol = '#bae6fd';
+      glowCol = 'cyan';
     } else if (hz.kind === 'shock_field') {
       baseFill = `rgba(14, 116, 144, ${(0.36 * fade).toFixed(3)})`;
       coreFill = `rgba(34, 211, 238, ${((0.16 + 0.14 * pulse) * fade).toFixed(3)})`;
@@ -3091,11 +3288,17 @@ function drawActiveGroundHazards(
         ctx.fillStyle = life > 0.72 ? accentCol : borderCol;
         ctx.fillRect(bx, by, sz - 1, sz - 1);
       }
-    } else if (hz.kind === 'shock_field') {
-      const arcStep = Math.floor(nowSec * 14);
+    } else if (
+      hz.kind === 'shock_field' ||
+      hz.kind === 'storm_yellow' ||
+      hz.kind === 'storm_blue'
+    ) {
+      const arcStep = Math.floor(nowSec * 15);
+      const isStorm = hz.kind === 'storm_yellow' || hz.kind === 'storm_blue';
+      const arcCount = isStorm ? 4 : 3;
       ctx.strokeStyle = accentCol;
-      ctx.lineWidth = 1.5;
-      for (let k = 0; k < 3; k++) {
+      ctx.lineWidth = isStorm ? 2 : 1.5;
+      for (let k = 0; k < arcCount; k++) {
         const a0 = ((hash2i(hz.id, arcStep + k, 0x71e3) & 0xff) / 255) * TWO_PI;
         const a1 = a0 + 1.1 + (((k + 1) * 0.7) % 1.4);
         const x0 = Math.round(cx + Math.cos(a0) * r * 0.72);
@@ -3109,6 +3312,16 @@ function drawActiveGroundHazards(
         ctx.lineTo(mx, my);
         ctx.lineTo(x1, y1);
         ctx.stroke();
+      }
+      if (isStorm) {
+        const vortexAng = nowSec * (hz.kind === 'storm_yellow' ? 3.2 : -3.2) + hz.id;
+        for (let k = 0; k < 4; k++) {
+          const ang = vortexAng + (k * Math.PI) * 0.5;
+          const sx = Math.round(cx + Math.cos(ang) * r * 0.48);
+          const sy = Math.round(cy + Math.sin(ang) * r * 0.4);
+          ctx.fillStyle = borderCol;
+          ctx.fillRect(sx - 2, sy - 2, 4, 4);
+        }
       }
     } else {
       // void_zone rotating abyssal glyph specks
@@ -3205,18 +3418,24 @@ function drawStandardTelegraphs(
     const isLocked = tg.phase > 0 || Boolean(tg.active);
     const isDanger = tg.danger === 1;
     const isGrenade = typeof tg.label === 'string' && tg.label.startsWith('LỰU ĐẠN');
+    const isBlueStorm = tg.color === 2 && typeof tg.label === 'string' && tg.label.includes('BÃO SÉT');
+    const isYellowStorm = tg.color === 5;
     const rgb =
-      isDanger && !isGrenade
-        ? '255, 36, 76'
-        : tg.color === 4
-          ? '192, 132, 252'
-          : tg.color === 3
-            ? '74, 222, 128'
-            : tg.color === 2
-              ? '56, 189, 248'
-              : tg.color === 1
-                ? '255, 146, 43'
-                : '255, 51, 102';
+      isYellowStorm
+        ? '250, 204, 21'
+        : isBlueStorm
+          ? '56, 189, 248'
+          : isDanger && !isGrenade
+            ? '255, 36, 76'
+            : tg.color === 4
+              ? '192, 132, 252'
+              : tg.color === 3
+                ? '74, 222, 128'
+                : tg.color === 2
+                  ? '56, 189, 248'
+                  : tg.color === 1
+                    ? '255, 146, 43'
+                    : '255, 51, 102';
     const shape = tg.shape ?? (tg.kind === 0 ? 'line' : 'circle');
 
     if (shape === 'line') {
@@ -5283,6 +5502,26 @@ export function renderBansungScene(
               0.16 + activeTier * 0.05,
             );
           }
+          if (
+            p.state !== BANSUNG_STATE_DEAD &&
+            p.state !== BANSUNG_STATE_DOWNED &&
+            store.skillOrbs.length > 0
+          ) {
+            let playerOrbs: SnapPlayerOrbs | undefined;
+            for (let oi = 0; oi < store.skillOrbs.length; oi++) {
+              if (store.skillOrbs[oi].playerIdx === p.idx) {
+                playerOrbs = store.skillOrbs[oi];
+                break;
+              }
+            }
+            drawHeroGachaOrbsAndMagnet(
+              ctx,
+              drawX + stunJitterX,
+              drawY + stunJitterY - 12,
+              playerOrbs,
+              nowSec,
+            );
+          }
           drawCallsLastFrame += 2;
         }
         break;
@@ -5333,6 +5572,7 @@ export function renderBansungScene(
   bansungFx.drawAirborneDecals(ctx, vx0, vy0, vx1, vy1);
   bansungFx.drawLayer(ctx, FxLayer.World, vx0, vy0, vx1, vy1, visualNowMs);
   drawMeleeSlashes(ctx, false);
+  drawSpiritSwords(ctx, store.spiritSwords, nowSec);
   drawWorldMicroHud(ctx, store, localPlayer, visibleEnemiesScratch, visualNowMs);
 
   if (o.showCrosshair !== false) {
