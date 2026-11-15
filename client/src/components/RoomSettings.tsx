@@ -54,12 +54,13 @@ export function RoomRuleSummary({ rules, playerCount }: { rules: RoomRules; play
     <div className="room-rule-summary">
       <div className="rule-facts">
         <span><Users size={14} className="inline-icon" /> Tối đa <strong>{rules.maxPlayers}</strong> người</span>
-        <span><Layers size={14} className="inline-icon" /> <strong>{rules.handSize + rules.defusesPerPlayer}</strong> lá/người lúc đầu</span>
-        <span><Clock size={14} className="inline-icon" /> <strong>{rules.turnSeconds}</strong> giây/lượt</span>
+        <span><Layers size={14} className="inline-icon" /> <strong>{rules.handSize + rules.defusesPerPlayer}</strong> lá/người</span>
+        <span><Clock size={14} className="inline-icon" /> <strong>{rules.turnSeconds}</strong>s/lượt</span>
+        <span><Bomb size={14} className="inline-icon" /> <strong>{summary.bombs}</strong> Mèo Nổ</span>
       </div>
-      <ul className="rule-summary-list">{ruleSummary(rules).map((line, index) => <li key={index}>{line}</li>)}</ul>
-      <details className="rule-section rule-deck-list">
-        <summary>Thành phần bộ bài · {summary.totalCards} lá với {Math.max(2, playerCount)} người</summary>
+      <details className="cfg-details">
+        <summary>Chi tiết luật &amp; thành phần {summary.totalCards} lá</summary>
+        <ul className="rule-summary-list">{ruleSummary(rules).map((line, index) => <li key={index}>{line}</li>)}</ul>
         <div className="rule-card-counts">
           <span><span className="icon-label"><Bomb size={13} /> Mèo Nổ</span> <strong>{summary.bombs}</strong></span>
           <span><span className="icon-label"><ShieldCheck size={13} /> Gỡ Bom</span> <strong>{summary.defuses}</strong></span>

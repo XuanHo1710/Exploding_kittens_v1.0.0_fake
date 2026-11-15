@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
-import { DEFAULT_ROOM_RULES, type AccountInfo, type AntsFrame, type ChatMessage, type Emote, type GameFx, type Identity, type LinkState, type PrivateNotice, type RoomView, type ThapFrame } from '../../shared/src';
+import { DEFAULT_ROOM_RULES, type AccountInfo, type AntsFrame, type BansungFrame, type ChatMessage, type Emote, type GameFx, type Identity, type LinkState, type PrivateNotice, type RoomView, type ThapFrame } from '../../shared/src';
 import { RoomPlayerCountContext, RoomRulesContext } from './roomRulesContext';
 import { clearIdentity, loadIdentity, updateIdentity } from './identity';
 import { logoutAccount } from './api';
@@ -21,6 +21,8 @@ import { thapStore } from './thap/store';
 import { linkStore } from './link/store';
 import LinkBoard from './components/LinkBoard';
 import LotoBoard from './components/LotoBoard';
+import BansungBoard from './components/BansungBoard';
+import { bansungStore } from './bansung/store';
 import Rules from './components/Rules';
 import Modal from './components/Modal';
 import { CardPreviewLayer } from './components/CardPreview';
@@ -118,6 +120,9 @@ export default function App() {
     s.on('toast', showToast);
     s.on('ants:frame', (f: AntsFrame) => antsStore.push(f));
     s.on('thap:frame', (f: ThapFrame) => thapStore.push(f));
+    s.on('bansung:frame', (f: BansungFrame) => {
+      if (f && typeof f === 'object') bansungStore.push(f);
+    });
     s.on('link:state', (st: LinkState) => linkStore.push(st));
     s.on('notice', (n: PrivateNotice) => (n.kind === 'future' ? setNotice(n) : setReveal({ ...n, key: Date.now() })));
     s.on('fx', (f: GameFx) => setFx({ id: ++fxSeq.current, fx: f }));
@@ -153,24 +158,36 @@ export default function App() {
     socket?.disconnect().connect();
   }, [identity?.token, socket]);
 
-  const emit = (event: string, payload?: unknown) => {
-    if (!socket?.connected) {
-      if (event !== 'room:typing') showToast('Đang kết nối lại máy chủ, vui lòng thử lại sau giây lát…');
-      return;
-    }
-    socket.emit(event, payload);
-  };
-  const emitConfirmed = (event: string, payload: unknown): Promise<void> => new Promise((resolve, reject) => {
-    if (!socket?.connected) {
-      reject(new Error('Mất kết nối máy chủ. Vui lòng kết nối lại rồi thử lại.'));
-      return;
-    }
-    socket.timeout(15_000).emit(event, payload, (error: Error | null, response?: { ok: boolean; error?: string }) => {
-      if (error) reject(new Error('Chưa nhận được xác nhận. Vui lòng kiểm tra kết nối rồi thử lại.'));
-      else if (!response?.ok) reject(new Error(response?.error || 'Chưa thể lưu luật phòng. Vui lòng thử lại.'));
-      else resolve();
-    });
-  });
+  const socketRef = useRef<Socket | null>(null);
+  socketRef.current = socket;
+
+  const emit = useCallback(
+    (event: string, payload?: unknown) => {
+      const s = socketRef.current;
+      if (!s?.connected) {
+        if (event !== 'room:typing') showToast('Đang kết nối lại máy chủ, vui lòng thử lại sau giây lát…');
+        return;
+      }
+      s.emit(event, payload);
+    },
+    [showToast],
+  );
+  const emitConfirmed = useCallback(
+    (event: string, payload: unknown): Promise<void> =>
+      new Promise((resolve, reject) => {
+        const s = socketRef.current;
+        if (!s?.connected) {
+          reject(new Error('Mất kết nối máy chủ. Vui lòng kết nối lại rồi thử lại.'));
+          return;
+        }
+        s.timeout(15_000).emit(event, payload, (error: Error | null, response?: { ok: boolean; error?: string }) => {
+          if (error) reject(new Error('Chưa nhận được xác nhận. Vui lòng kiểm tra kết nối rồi thử lại.'));
+          else if (!response?.ok) reject(new Error(response?.error || 'Chưa thể lưu luật phòng. Vui lòng thử lại.'));
+          else resolve();
+        });
+      }),
+    [],
+  );
   const chatProps = {
     messages: chat,
     typing,
@@ -223,6 +240,8 @@ export default function App() {
             <ThapBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'loto' && view.loto ? (
             <LotoBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
+          ) : view.gameMode === 'bansung' ? (
+            <BansungBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'blackjack_21' ? (
             <BlackjackBoard
               view={view}

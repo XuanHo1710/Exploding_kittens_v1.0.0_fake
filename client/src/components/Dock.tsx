@@ -1,6 +1,6 @@
 /** Thanh điều khiển nổi (thay header): xu · luật · âm thanh · nền · hồ sơ */
 import { useState } from 'react';
-import { Bomb, BookOpen, Check, Coins, Copy, Moon, Sun, Volume2, VolumeX } from 'lucide-react';
+import { BookOpen, Check, Coins, Copy, Gamepad2, Moon, Sun, Volume2, VolumeX } from 'lucide-react';
 import type { AccountInfo, Identity } from '../../../shared/src';
 import PlayerAvatar from '../art/PlayerAvatar';
 import type { Settings } from '../settings';
@@ -82,12 +82,12 @@ export default function Dock({ settings, update, identity, account, online, onRu
 }
 
 /** Logo + mã phòng (bấm để copy mã) */
-export function Brand({ code }: { code?: string }) {
+export function Brand({ code, title = 'Arena Hub' }: { code?: string; title?: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="brand">
       <span className="logo">
-        <Bomb size={19} className="logo-icon" /> <span className="logo-text">Mèo Nổ</span>
+        <Gamepad2 size={18} className="logo-icon" /> <span className="logo-text">{title}</span>
       </span>
       {code && (
         <button

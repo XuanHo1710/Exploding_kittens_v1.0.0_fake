@@ -1,37 +1,43 @@
-import { useEffect, useState } from 'react';
-import { BookOpen, Check, Coins, Copy, Crown, Gamepad2, Link2, LogOut, Play, Settings2, Trophy, UserPlus, UserX } from 'lucide-react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { BookOpen, Check, Coins, Copy, Crown, Gamepad2, Link2, LogOut, Play, Settings2, Trophy, UserPlus, UserX, Users } from 'lucide-react';
 import {
   ANTS_MAX_EMPIRES,
   ANTS_MINUTE_OPTIONS,
   ANTS_START_GOLD,
   antsIncome,
+  BANSUNG_BIOMES,
+  BANSUNG_BOT_LEVELS,
+  BANSUNG_DIFFICULTIES,
+  BANSUNG_GAME_MODES,
+  BANSUNG_HERO_IDS,
+  BANSUNG_HERO_STAT_SCALE,
+  BANSUNG_MAX_BOTS,
+  BANSUNG_MAX_PLAYERS,
+  BANSUNG_REVIVE_MODES,
+  BANSUNG_STATIC_ROOT,
   BET_OPTIONS,
   DEFAULT_ANTS_CONFIG,
+  DEFAULT_BANSUNG_CONFIG,
   DEFAULT_LINK_CONFIG,
+  DEFAULT_THAP_CONFIG,
+  GAME_MODES,
   LINK_BOSSES,
   LINK_BOSS_SKILL_NAME,
   LINK_BOT_LABEL,
+  LINK_COOP_RAID_S,
+  LINK_FINAL_RAID_S,
   LINK_FOG_MS,
   LINK_KO_BONUS,
   LINK_MAX_PLAYERS,
   LINK_RAID_S,
-  LINK_COOP_RAID_S,
-  LINK_FINAL_RAID_S,
-  LINK_TITAN_RAID_S,
   LINK_SHUFFLE_CD_S,
-  linkBossMaxHp,
   LINK_STAGE1_S,
-  GAME_MODES,
+  LINK_TITAN_RAID_S,
   LOTO_CALL_MS,
   LOTO_COLORS,
   LOTO_COLOR_ORDER,
   LOTO_SHEET_PRICE,
-  lotoDefaultColors,
   MIN_PLAYERS,
-  roomDeckSummary,
-  assignThapTeams,
-  DEFAULT_THAP_CONFIG,
-  normalizeThapTeam,
   THAP_BASE,
   THAP_BOT_LABEL,
   THAP_FIRST_ROUND_S,
@@ -44,11 +50,25 @@ import {
   THAP_START_ROUND_INCOME,
   THAP_TEAM_COLORS,
   THAP_TEAM_NAMES,
-  type ThapMode,
+  assignThapTeams,
+  getBansungHero,
+  linkBossMaxHp,
+  lotoDefaultColors,
+  normalizeBansungHero,
+  normalizeThapTeam,
+  resolveBansungGameMode,
+  roomDeckSummary,
   type AccountInfo,
+  type BansungBiome,
+  type BansungBotLevel,
+  type BansungDifficulty,
+  type BansungGameMode,
+  type BansungHeroId,
+  type BansungReviveMode,
   type GameMode,
   type RoomRules,
   type RoomView,
+  type ThapMode,
 } from '../../../shared/src';
 import { copyTextSafe, fmtCoins } from './Dock';
 import PlayerAvatar from '../art/PlayerAvatar';
@@ -57,6 +77,7 @@ import Modal from './Modal';
 import RoomSettings, { RoomRuleSummary } from './RoomSettings';
 import { LobbySpectators, isSpectating, roomPeople } from './Spectators';
 import { roomInviteUrl } from '../roomLink';
+import { initBansungAudio, setBansungBgm, stopBansungBgm, syncBansungMute } from '../bansung/sound';
 import { startMiragineBgm, stopMiragineBgm } from '../thap/sound';
 import '../thap/thap.css';
 
@@ -71,6 +92,34 @@ interface Props {
 
 const NO_CHAT: RoomChat = { messages: [], typing: {}, send: () => {}, onTyping: () => {} };
 
+function SelectField({
+  label,
+  hint,
+  value,
+  disabled,
+  onChange,
+  children,
+}: {
+  label: ReactNode;
+  hint?: ReactNode;
+  value: string | number;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+  children: ReactNode;
+}) {
+  return (
+    <label className={`cfg-field${disabled ? ' is-disabled' : ''}`}>
+      <span className="cfg-label">
+        <span>{label}</span>
+        {hint && <span className="cfg-hint">{hint}</span>}
+      </span>
+      <select className="ui-select" value={value} disabled={disabled} onChange={(e) => onChange(e.target.value)}>
+        {children}
+      </select>
+    </label>
+  );
+}
+
 export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSaveRules }: Props) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [miragineGuideOpen, setMiragineGuideOpen] = useState(false);
@@ -79,18 +128,28 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
   const { typingNames, unread } = useChatState(chat, roomPeople(view), meId, true);
   const isHost = view.hostId === meId;
   const gameMode: GameMode = view.gameMode ?? 'exploding_kittens';
+
   useEffect(() => {
     if (gameMode === 'thap_hung') {
+      stopBansungBgm();
       startMiragineBgm('menu');
       return () => stopMiragineBgm();
     }
+    if (gameMode === 'bansung') {
+      stopMiragineBgm();
+      void initBansungAudio().catch(() => {});
+      syncBansungMute();
+      setBansungBgm('menu');
+      return () => stopBansungBgm();
+    }
     stopMiragineBgm();
+    stopBansungBgm();
     return undefined;
   }, [gameMode]);
+
   const modeInfo = GAME_MODES[gameMode];
   const online = view.players.filter((p) => p.connected).length;
   const bet = view.bet;
-  /** Lô Tô: mỗi người cược theo số tờ tự mua (50 xu/tờ); chế độ khác cùng mức của phòng */
   const isLoto = gameMode === 'loto';
   const picks = view.loto?.picks ?? {};
   const myColors = view.loto?.colors?.[meId] ?? lotoDefaultColors(Math.max(0, view.players.findIndex((p) => p.id === meId)));
@@ -98,55 +157,77 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
   const stakeOf = (id: string) => (isLoto ? LOTO_SHEET_PRICE * (picks[id] ?? 1) : bet);
   const poor = view.players.filter((p) => p.connected && stakeOf(p.id) > 0 && (p.coins ?? 0) < stakeOf(p.id));
   const lotoPot = view.players.filter((p) => p.connected).reduce((s, p) => s + stakeOf(p.id), 0);
-  // chỉ Mèo Nổ có chỉnh số chỗ trong luật phòng; chế độ khác luôn đủ chỗ tối đa (khớp Game.seatLimit ở server)
+
   const maxPlayers = gameMode === 'exploding_kittens' ? Math.min(view.rules.maxPlayers, modeInfo.maxPlayers) : modeInfo.maxPlayers;
   const empty = Math.max(0, maxPlayers - view.players.length);
   const me = view.players.find((player) => player.id === meId);
   const spectating = isSpectating(view, meId);
   const awaitingReady = view.players.filter((player) => player.connected && player.id !== view.hostId && !player.ready);
   const deck = roomDeckSummary(view.rules, online);
+
   const antsCfg = view.ants?.config ?? DEFAULT_ANTS_CONFIG;
-  const linkCfgRaw = view.link?.config;
-  /** 1 người, 0 máy = chơi một mình */
-  const linkBots = Math.max(0, Math.min(LINK_MAX_PLAYERS - online, linkCfgRaw?.bots ?? 0));
-  // Thập Hùng: số máy thực tế (server cắt theo ghế trống), đội từng người và đội máy dự kiến
+  const linkCfg = view.link?.config ?? DEFAULT_LINK_CONFIG;
+  const linkBots = Math.max(0, Math.min(LINK_MAX_PLAYERS - online, linkCfg.bots ?? 0));
+
   const isThap = gameMode === 'thap_hung';
   const thapCfg = view.thap?.config ?? DEFAULT_THAP_CONFIG;
   const thapBots = Math.max(0, Math.min(THAP_MAX_PLAYERS - online, thapCfg.bots));
-  /** server gửi sẵn đội hiệu lực của mọi người ngồi bàn; thiếu thì xen kẽ 0/1 theo ghế như server */
   const thapTeamOf = (id: string) => normalizeThapTeam(view.thap?.teams?.[id] ?? Math.max(0, view.players.findIndex((p) => p.id === id)) % 2);
   const thapHumans = view.players.filter((p) => p.connected);
   const thapAssign = assignThapTeams(thapHumans.map((p) => thapTeamOf(p.id)), thapBots, thapCfg.mode);
   const thapBotTeams = thapAssign.slice(thapHumans.length);
   const thapTotal = online + thapBots;
   const thapProblem =
-    thapTotal < 2 ? 'Cần ít nhất 2 phe – thêm máy nhé'
+    thapTotal < 2 ? 'Cần ≥ 2 phe (thêm máy)'
       : thapTotal > THAP_MAX_PLAYERS ? `Tối đa ${THAP_MAX_PLAYERS} phe`
-      : thapCfg.mode === 'coop' && thapBots < 1 ? 'Cùng đánh máy cần ít nhất 1 máy'
-      : thapCfg.mode === 'teams' && new Set(thapAssign).size < 2 ? 'Cần ít nhất 2 đội – đổi đội hoặc thêm máy'
+      : thapCfg.mode === 'coop' && thapBots < 1 ? 'Co-op cần ≥ 1 máy'
+      : thapCfg.mode === 'teams' && new Set(thapAssign).size < 2 ? 'Cần ≥ 2 đội khác nhau'
       : '';
   const setThap = (patch: Partial<typeof thapCfg>) => emit('thap:config', { config: { ...thapCfg, ...patch } });
+
+  const isBansung = gameMode === 'bansung';
+  const bansungCfg = view.bansung?.config ?? DEFAULT_BANSUNG_CONFIG;
+  const bansungMode = resolveBansungGameMode(bansungCfg);
+  const bansungMaxBots = Math.min(BANSUNG_MAX_BOTS, Math.max(0, BANSUNG_MAX_PLAYERS - online));
+  const bansungBots = Math.max(0, Math.min(bansungMaxBots, bansungCfg.bots));
+  const bansungTotal = online + bansungBots;
+  const bansungProblem =
+    online > modeInfo.maxPlayers
+      ? `Tối đa ${modeInfo.maxPlayers} người`
+      : bansungTotal < 1
+        ? 'Cần ≥ 1 chiến binh'
+        : '';
+  const setBansung = (patch: Partial<typeof bansungCfg>) => emit('bansung:config', { config: { ...bansungCfg, ...patch } });
+  const bansungHeroOf = (id: string): BansungHeroId => {
+    const saved = view.bansung?.heroes?.[id];
+    if (saved) return normalizeBansungHero(saved);
+    const idx = Math.max(0, view.players.findIndex((p) => p.id === id));
+    return BANSUNG_HERO_IDS[idx % BANSUNG_HERO_IDS.length] ?? 'mascot';
+  };
+  const myBansungHero = bansungHeroOf(meId);
+  const pickBansungHero = (hero: BansungHeroId) => emit('bansung:hero', { hero });
+
   const deckOk =
     gameMode === 'exploding_kittens' ? deck.canStart
       : isThap ? !thapProblem
+      : isBansung ? !bansungProblem
       : gameMode === 'ant_empire' ? online + antsCfg.bots >= 2 && online + antsCfg.bots <= ANTS_MAX_EMPIRES
       : gameMode === 'link_duel' ? online + linkBots >= 1 && online + linkBots <= LINK_MAX_PLAYERS
         : online <= modeInfo.maxPlayers;
   const canStart = online >= modeInfo.minPlayers && awaitingReady.length === 0 && deckOk && poor.length === 0;
   const setAnts = (patch: Partial<typeof antsCfg>) => emit('ants:config', { config: { ...antsCfg, ...patch } });
-  const linkCfg = view.link?.config ?? DEFAULT_LINK_CONFIG;
 
   const copyRoomCode = () => {
     void copyTextSafe(view.code).then((ok) => setCopied(ok));
     window.setTimeout(() => setCopied(false), 1500);
   };
-  /** Link mời: điện thoại mở bảng chia sẻ (Zalo, Messenger…), máy tính sao chép link */
+
   const shareInvite = async () => {
     const url = roomInviteUrl(view.code);
     const touch = window.matchMedia?.('(pointer: coarse)').matches;
     if (touch && typeof navigator.share === 'function') {
       try {
-        await navigator.share({ title: `Vào phòng ${view.code}`, text: `Vào chơi ${modeInfo.shortName} với mình nè! Phòng ${view.code}:`, url });
+        await navigator.share({ title: `Vào phòng ${view.code}`, text: `Chơi ${modeInfo.shortName} chung nè! Phòng ${view.code}:`, url });
         return;
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') return;
@@ -157,54 +238,115 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
     window.setTimeout(() => setLinkCopied(false), 1800);
   };
 
+  const potTotal = isLoto ? lotoPot : bet * online;
+
   return (
     <div className="center-screen">
       <div className="lobby-wrap">
         <div className="panel lobby">
+          {/* Header gọn: mã phòng + link mời + sĩ số */}
           <div className="lobby-head">
-            <div>
-              <p className="muted">Mã phòng. Gửi link mời để bạn bè bấm là vào thẳng phòng</p>
-              <button type="button" className="room-code-btn" onClick={copyRoomCode} title="Sao chép mã phòng">
+            <div className="lobby-code-group">
+              <button type="button" className="room-code-btn" onClick={copyRoomCode} title="Bấm để sao chép mã phòng">
+                <span className="room-code-label">PHÒNG</span>
                 <span className="room-code">{view.code}</span>
                 <span className="room-code-copy">
-                  {copied ? <Check size={16} /> : <Copy size={16} />}
-                  <small>{copied ? 'Đã chép' : 'Sao chép'}</small>
+                  {copied ? <Check size={14} /> : <Copy size={14} />}
                 </span>
               </button>
-              <button type="button" className="secondary invite-link-btn" onClick={() => void shareInvite()} title={roomInviteUrl(view.code)}>
-                {linkCopied ? <Check size={15} /> : <Link2 size={15} />} {linkCopied ? 'Đã chép link mời' : 'Gửi link mời'}
+              <button type="button" className="secondary small invite-link-btn" onClick={() => void shareInvite()} title={roomInviteUrl(view.code)}>
+                {linkCopied ? <Check size={14} /> : <Link2 size={14} />} {linkCopied ? 'Đã chép link' : 'Gửi link mời'}
               </button>
             </div>
-            <div className="lobby-count">
-              {view.players.length}/{maxPlayers}
-              <span className="muted">người ({modeInfo.shortName})</span>
+            <div className="lobby-count-pill">
+              <Users size={15} />
+              <strong>{view.players.length}/{maxPlayers}</strong>
+              <span className="muted">{modeInfo.shortName}</span>
             </div>
           </div>
 
-          {/* Chọn chế độ chơi trong phòng chờ */}
-          <div className="bet-box mode-box">
-            <div className="bet-head">
-              <b>
-                <Gamepad2 size={15} className="inline-icon" /> Trò chơi trong phòng
-              </b>
-              <span className="muted small">{isHost ? 'Chủ phòng chọn trò chơi' : 'Chủ phòng đang chọn'}</span>
-            </div>
-            <div className="bet-chips mode-chips">
+          {/* Bộ chọn trò chơi + Cược xu dạng select option nhẹ nhàng */}
+          <div className="lobby-pickers">
+            <SelectField
+              label={<span className="icon-label"><Gamepad2 size={14} /> Trò chơi</span>}
+              hint={isHost ? undefined : 'Chủ phòng chọn'}
+              value={gameMode}
+              disabled={!isHost}
+              onChange={(val) => emit('room:mode', { gameMode: val as GameMode })}
+            >
               {(Object.keys(GAME_MODES) as GameMode[]).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  className={`bet-chip${m === gameMode ? ' on' : ''}`}
-                  disabled={!isHost}
-                  onClick={() => emit('room:mode', { gameMode: m })}
-                >
-                  {GAME_MODES[m].emoji} {GAME_MODES[m].name}
-                </button>
+                <option key={m} value={m}>
+                  {GAME_MODES[m].emoji} {GAME_MODES[m].shortName} ({GAME_MODES[m].minPlayers}–{GAME_MODES[m].maxPlayers}p)
+                </option>
+              ))}
+            </SelectField>
+
+            {isLoto ? (
+              <SelectField
+                label={<span className="icon-label">🎫 Số tờ Lô Tô</span>}
+                hint={<span className="pot-inline"><Trophy size={12} /> Hũ {fmtCoins(lotoPot)}</span>}
+                value={picks[meId] ?? 1}
+                disabled={!me || spectating}
+                onChange={(val) => emit('loto:pick', { sheets: Number(val) })}
+              >
+                <option value={1}>1 tờ · {fmtCoins(LOTO_SHEET_PRICE)} xu</option>
+                <option value={2}>2 tờ · {fmtCoins(2 * LOTO_SHEET_PRICE)} xu (đủ 90 số)</option>
+              </SelectField>
+            ) : (
+              <SelectField
+                label={<span className="icon-label"><Coins size={14} /> Cược mỗi người</span>}
+                hint={
+                  potTotal > 0 ? (
+                    <span className="pot-inline"><Trophy size={12} /> Hũ {fmtCoins(potTotal)} xu</span>
+                  ) : (
+                    'Chơi vui'
+                  )
+                }
+                value={bet}
+                disabled={!isHost}
+                onChange={(val) => emit('room:bet', { amount: Number(val) })}
+              >
+                {BET_OPTIONS.map((b) => (
+                  <option key={b} value={b}>
+                    {b === 0 ? 'Miễn phí (0 xu)' : `${fmtCoins(b)} xu / người`}
+                  </option>
+                ))}
+              </SelectField>
+            )}
+          </div>
+
+          {isLoto && me && !spectating && (
+            <div className="loto-color-pick compact">
+              {Array.from({ length: picks[meId] ?? 1 }, (_, k) => (
+                <div key={k} className="loto-color-row">
+                  <span className="muted small">Màu tờ {k + 1}</span>
+                  <div className="loto-swatches">
+                    {LOTO_COLOR_ORDER.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        className={`loto-swatch${myColors[k] === c ? ' on' : ''}`}
+                        style={{ background: LOTO_COLORS[c].main }}
+                        title={LOTO_COLORS[c].name}
+                        aria-label={`Tờ ${k + 1} màu ${LOTO_COLORS[c].name}`}
+                        aria-pressed={myColors[k] === c}
+                        onClick={() => setSheetColor(k, c)}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
-            <p className="bet-note">{modeInfo.desc}</p>
-          </div>
+          )}
 
+          {(poor.length > 0 || (potTotal > 0 && account && account.coins < stakeOf(meId))) && (
+            <div className="lobby-warn small">
+              {poor.length > 0 && <span>Không đủ xu: <b>{poor.map((p) => p.name).join(', ')}</b>. </span>}
+              {account && account.coins < stakeOf(meId) && <span>Mở Hồ sơ để nhận 500 xu hằng ngày nhé.</span>}
+            </div>
+          )}
+
+          {/* Danh sách ghế người chơi gọn */}
           <div className="lobby-seats">
             {view.players.map((p) => (
               <div key={p.id} className={`lobby-seat${p.connected ? '' : ' offline'}${p.id === meId ? ' me' : ''}`}>
@@ -213,360 +355,444 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                     type="button"
                     className="seat-kick-btn"
                     onClick={() => emit('room:kick', { targetId: p.id })}
-                    title={`Kích ${p.name} khỏi phòng`}
-                    aria-label={`Kích ${p.name} khỏi phòng`}
+                    title={`Kích ${p.name}`}
+                    aria-label={`Kích ${p.name}`}
                   >
-                    <UserX size={13} />
+                    <UserX size={12} />
                   </button>
                 )}
-                <PlayerAvatar id={p.id} avatar={p.avatar} size={64} />
-                <span className="lobby-name">
-                  {p.id === view.hostId && <Crown size={14} className="inline-icon host-crown" />}
-                  {p.name}
-                </span>
-                <span className={`small seat-readiness${p.connected && (p.id === view.hostId || p.ready) ? ' ready' : ''}`}>
-                  {!p.connected ? (
-                    'Mất kết nối'
-                  ) : p.id === view.hostId ? (
-                    'Chủ phòng · đã chốt luật'
-                  ) : p.ready ? (
-                    <>
-                      <Check size={12} className="inline-icon" /> Đã đồng ý luật
-                    </>
-                  ) : (
-                    'Chờ đồng ý luật'
+                <PlayerAvatar id={p.id} avatar={p.avatar} size={46} />
+                <div className="lobby-seat-info">
+                  <span className="lobby-name">
+                    {p.id === view.hostId && <Crown size={13} className="inline-icon host-crown" />}
+                    {p.name}
+                    {p.id === meId && <em className="me-tag">bạn</em>}
+                  </span>
+                  <span className={`small seat-readiness${p.connected && (p.id === view.hostId || p.ready) ? ' ready' : ''}`}>
+                    {!p.connected
+                      ? 'Mất kết nối'
+                      : p.id === view.hostId
+                        ? 'Chủ phòng'
+                        : p.ready
+                          ? 'Sẵn sàng'
+                          : 'Chờ xác nhận'}
+                    {p.coins !== undefined && (
+                      <span className={`seat-coins${stakeOf(p.id) > 0 && p.coins < stakeOf(p.id) ? ' low' : ''}`}>
+                        · {fmtCoins(p.coins)}
+                      </span>
+                    )}
+                  </span>
+                  {isThap && thapCfg.mode === 'teams' && (
+                    <span className="thap-seat-team" style={{ borderColor: THAP_TEAM_COLORS[thapTeamOf(p.id)] }}>
+                      <i style={{ background: THAP_TEAM_COLORS[thapTeamOf(p.id)] }} /> {THAP_TEAM_NAMES[thapTeamOf(p.id)]}
+                    </span>
                   )}
-                  {p.id === meId && ' · bạn'}
-                </span>
-                {p.coins !== undefined && (
-                  <span className={`seat-coins${stakeOf(p.id) > 0 && p.coins < stakeOf(p.id) ? ' low' : ''}`}>
-                    <Coins size={12} className="inline-icon" /> {fmtCoins(p.coins)}
-                  </span>
-                )}
-                {isThap && thapCfg.mode === 'teams' && (
-                  <span className="thap-seat-team" style={{ borderColor: THAP_TEAM_COLORS[thapTeamOf(p.id)] }}>
-                    <i style={{ background: THAP_TEAM_COLORS[thapTeamOf(p.id)] }} /> {THAP_TEAM_NAMES[thapTeamOf(p.id)]}
-                  </span>
-                )}
-                {isLoto && (
-                  <span className="seat-loto">
-                    🎫 {picks[p.id] ?? 1} tờ
-                    {(view.loto?.colors?.[p.id] ?? []).slice(0, picks[p.id] ?? 1).map((c, k) => (
-                      <i key={k} className="loto-dot" style={{ background: LOTO_COLORS[c]?.main }} title={LOTO_COLORS[c]?.name} />
-                    ))}
-                  </span>
-                )}
+                  {isBansung && (() => {
+                    const heroId = bansungHeroOf(p.id);
+                    const hero = getBansungHero(heroId);
+                    return (
+                      <span className="thap-seat-team" style={{ borderColor: hero.accentHex }}>
+                        <span
+                          className="hero-sprite-icon xs"
+                          style={{ backgroundImage: `url("${BANSUNG_STATIC_ROOT}/normalized/heroes/hero_${heroId}_idle.png")` }}
+                          aria-hidden="true"
+                        />
+                        {hero.name}
+                      </span>
+                    );
+                  })()}
+                  {isLoto && (
+                    <span className="seat-loto">
+                      🎫 {picks[p.id] ?? 1} tờ
+                      {(view.loto?.colors?.[p.id] ?? []).slice(0, picks[p.id] ?? 1).map((c, k) => (
+                        <i key={k} className="loto-dot" style={{ background: LOTO_COLORS[c]?.main }} title={LOTO_COLORS[c]?.name} />
+                      ))}
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
-            {Array.from({ length: empty }, (_, i) => (
-              <div key={`e${i}`} className="lobby-seat empty">
-                <span className="empty-avatar">
-                  <UserPlus size={22} />
-                </span>
-                <span className="muted small">trống</span>
+            {empty > 0 && (
+              <div className="lobby-seat empty-summary">
+                <UserPlus size={14} />
+                <span className="muted small">Còn <b>{empty}</b> chỗ trống</span>
               </div>
-            ))}
+            )}
           </div>
 
           <LobbySpectators view={view} meId={meId} emit={emit} />
 
-          {isLoto ? (
-            <div className="bet-box">
-              <div className="bet-head">
-                <b>🎫 Mua tờ lô tô</b>
-                <span className="muted small">{fmtCoins(LOTO_SHEET_PRICE)} xu/tờ · mỗi người tự chọn</span>
-              </div>
-              <div className="bet-chips">
-                {[1, 2].map((n) => (
-                  <button
-                    key={n}
-                    className={`bet-chip${(picks[meId] ?? 1) === n ? ' on' : ''}`}
-                    disabled={!me || spectating}
-                    onClick={() => emit('loto:pick', { sheets: n })}
-                  >
-                    {n} tờ · {fmtCoins(n * LOTO_SHEET_PRICE)} xu{n === 2 ? ' (đủ 90 số)' : ''}
-                  </button>
-                ))}
-              </div>
-              {me && !spectating && (
-                <div className="loto-color-pick">
-                  {Array.from({ length: picks[meId] ?? 1 }, (_, k) => (
-                    <div key={k} className="loto-color-row">
-                      <span className="muted small">Màu tờ {k + 1}</span>
-                      <div className="loto-swatches">
-                        {LOTO_COLOR_ORDER.map((c) => (
-                          <button
-                            key={c}
-                            type="button"
-                            className={`loto-swatch${myColors[k] === c ? ' on' : ''}`}
-                            style={{ background: LOTO_COLORS[c].main }}
-                            title={LOTO_COLORS[c].name}
-                            aria-label={`Tờ ${k + 1} màu ${LOTO_COLORS[c].name}`}
-                            aria-pressed={myColors[k] === c}
-                            onClick={() => setSheetColor(k, c)}
-                          />
-                        ))}
-                      </div>
-                      <span className="small">{LOTO_COLORS[myColors[k]]?.name}</span>
-                    </div>
-                  ))}
-                  {(picks[meId] ?? 1) === 2 && <p className="muted small">2 tờ chọn trùng màu hay khác màu đều được.</p>}
-                </div>
-              )}
-              <p className="bet-note">
-                Hũ {fmtCoins(lotoPot)} xu – ai KINH trước (đủ 5 số một hàng ngang) ăn cả hũ <Trophy size={14} className="inline-icon" />
-                {me && account && account.coins < stakeOf(meId) && <span className="bad-text"> · Bạn thiếu xu, vào Hồ sơ nhận 500 xu/ngày nhé.</span>}
-              </p>
-              {poor.length > 0 && <p className="bad-text small">Không đủ xu: {poor.map((p) => p.name).join(', ')}</p>}
-            </div>
-          ) : (
-          <div className="bet-box">
-            <div className="bet-head">
-              <b>
-                <Coins size={15} className="inline-icon" /> Cược mỗi người
-              </b>
-              <span className="muted small">{isHost ? 'Chủ phòng chọn' : 'Chủ phòng đang chọn'}</span>
-            </div>
-            <div className="bet-chips">
-              {BET_OPTIONS.map((b) => (
-                <button key={b} className={`bet-chip${b === bet ? ' on' : ''}`} disabled={!isHost} onClick={() => emit('room:bet', { amount: b })}>
-                  {b === 0 ? 'Miễn phí' : `${fmtCoins(b)} xu`}
-                </button>
-              ))}
-            </div>
-            <p className="bet-note">
-              {bet === 0 ? (
-                'Chơi vui, không mất xu.'
-              ) : gameMode === 'blackjack_21' ? (
-                <>
-                  Tổng hũ cược {fmtCoins(bet * online)} xu – So điểm với Nhà Cái (Xì Bàng ×3, Xì Dách / Ngũ Linh ×2){' '}
-                  <Trophy size={14} className="inline-icon" />
-                </>
-              ) : (
-                <>
-                  Hũ {fmtCoins(bet * online)} xu – người thắng ván ăn trọn hũ <Trophy size={14} className="inline-icon" />
-                </>
-              )}
-              {bet > 0 && account && account.coins < bet && <span className="bad-text"> · Bạn thiếu xu, vào Hồ sơ nhận 500 xu/ngày nhé.</span>}
-            </p>
-            {poor.length > 0 && <p className="bad-text small">Không đủ xu: {poor.map((p) => p.name).join(', ')}</p>}
-          </div>
-          )}
-
+          {/* Thiết lập chi tiết từng game: tất cả choice dùng select option + tóm tắt gọn */}
           <div className="lobby-rules">
             <div className="lobby-rules-head">
-              <div>
-                <h3>Luật đã chốt của phòng ({modeInfo.name})</h3>
-                <p className="muted small">Phiên bản {view.rulesVersion} · đổi luật hoặc đổi game sẽ yêu cầu mọi người xác nhận lại.</p>
+              <div className="lobby-rules-title">
+                <h3>Thiết lập · {modeInfo.shortName}</h3>
+                <span className="cfg-ver">v{view.rulesVersion}</span>
               </div>
               {isHost && gameMode === 'exploding_kittens' && (
-                <button className="secondary" onClick={() => setSettingsOpen(true)}>
-                  <Settings2 size={15} /> Sửa luật
+                <button type="button" className="secondary small" onClick={() => setSettingsOpen(true)}>
+                  <Settings2 size={14} /> Sửa luật
+                </button>
+              )}
+              {isThap && (
+                <button type="button" className="secondary small" onClick={() => setMiragineGuideOpen(true)}>
+                  <BookOpen size={14} /> Bảng 16 Lính
                 </button>
               )}
             </div>
+
             {gameMode === 'exploding_kittens' ? (
-              <>
-                <RoomRuleSummary rules={view.rules} playerCount={online} />
-                <p className="muted small">Nếu chữ trên ảnh lá bài khác luật ở đây, áp dụng luật phòng đã chốt.</p>
-              </>
+              <RoomRuleSummary rules={view.rules} playerCount={online} />
             ) : gameMode === 'ant_empire' ? (
               <>
-                <div className="ants-lobby-cfg">
-                  <div>
-                    <span className="muted small">Đế chế máy (🤖)</span>
-                    <div className="bet-chips">
-                      {Array.from({ length: Math.max(0, ANTS_MAX_EMPIRES - view.players.length) + 1 }, (_, n) => n).map((n) => (
-                        <button key={n} type="button" className={`bet-chip${n === antsCfg.bots ? ' on' : ''}`} disabled={!isHost} onClick={() => setAnts({ bots: n })}>{n}</button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="muted small">Độ khó của máy</span>
-                    <div className="bet-chips">
-                      {(['easy', 'normal', 'hard'] as const).map((lv) => (
-                        <button key={lv} type="button" className={`bet-chip${lv === antsCfg.botLevel ? ' on' : ''}`} disabled={!isHost} onClick={() => setAnts({ botLevel: lv })}>
-                          {{ easy: 'Dễ', normal: 'Thường', hard: 'Khó' }[lv]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="muted small">Thời gian trận</span>
-                    <div className="bet-chips">
-                      {ANTS_MINUTE_OPTIONS.map((m) => (
-                        <button key={m} type="button" className={`bet-chip${m === antsCfg.minutes ? ' on' : ''}`} disabled={!isHost} onClick={() => setAnts({ minutes: m })}>
-                          {m ? `${m} phút` : 'Không giới hạn'}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                <div className="cfg-select-grid">
+                  <SelectField
+                    label="Đế chế máy (🤖)"
+                    hint={`Tổng ${online + antsCfg.bots}/${ANTS_MAX_EMPIRES}`}
+                    value={antsCfg.bots}
+                    disabled={!isHost}
+                    onChange={(v) => setAnts({ bots: Number(v) })}
+                  >
+                    {Array.from({ length: Math.max(0, ANTS_MAX_EMPIRES - view.players.length) + 1 }, (_, n) => (
+                      <option key={n} value={n}>{n === 0 ? 'Không máy' : `${n} máy`}</option>
+                    ))}
+                  </SelectField>
+                  <SelectField
+                    label="Độ khó máy"
+                    value={antsCfg.botLevel}
+                    disabled={!isHost || antsCfg.bots === 0}
+                    onChange={(v) => setAnts({ botLevel: v as 'easy' | 'normal' | 'hard' })}
+                  >
+                    <option value="easy">Dễ</option>
+                    <option value="normal">Thường</option>
+                    <option value="hard">Khó</option>
+                  </SelectField>
+                  <SelectField
+                    label="Thời gian trận"
+                    value={antsCfg.minutes}
+                    disabled={!isHost}
+                    onChange={(v) => setAnts({ minutes: Number(v) })}
+                  >
+                    {ANTS_MINUTE_OPTIONS.map((m) => (
+                      <option key={m} value={m}>{m ? `${m} phút` : 'Không giới hạn'}</option>
+                    ))}
+                  </SelectField>
                 </div>
-                <ul className="rule-summary-list">
-                  <li>Tổng <b>{online + antsCfg.bots}</b> đế chế (tối đa {ANTS_MAX_EMPIRES}) trên bản đồ 2D rộng theo số người, <b>sáng toàn bộ</b> – thấy hết căn cứ địch.</li>
-                  <li>Khởi đầu {ANTS_START_GOLD} vàng; <b>mỗi 1 phút được cấp thêm vàng</b>, lần sau nhiều hơn lần trước ({antsIncome(1)}, {antsIncome(2)}, {antsIncome(3)}…).</li>
-                  <li>Bấm 1 ô trong danh sách <b>10 loại kiến</b> là trại <b>tự ra quân liên tục</b> – từng con một, mỗi con trừ vàng lúc bắt đầu nở; hết vàng thì chờ vàng rồi tự ra tiếp.</li>
-                  <li>Mỗi đế chế có <b>3 trụ</b>: 2 Trụ Phụ + 1 Trụ Chính. Trụ tự bắn kiến địch tới gần, mỗi phát hạ gọn 1 con, nạp đạn 5 giây (Trụ Chính đạn to, bắn xa hơn).</li>
-                  <li><b>Phá Trụ Chính</b> của mọi đế chế khác để thắng.{antsCfg.minutes ? ` Hết ${antsCfg.minutes} phút: điểm sức mạnh cao nhất thắng.` : ''} Máy thắng thì hoàn cược.</li>
-                </ul>
+                <div className="cfg-tags">
+                  <span>Khởi đầu {ANTS_START_GOLD} vàng</span>
+                  <span>10 loài kiến tự xuất quân</span>
+                  <span>Phá Trụ Chính địch</span>
+                </div>
+                <details className="cfg-details">
+                  <summary>Xem luật &amp; thu nhập mỗi phút</summary>
+                  <ul className="rule-summary-list">
+                    <li>Nhận vàng mỗi phút tăng dần ({antsIncome(1)}, {antsIncome(2)}, {antsIncome(3)}…).</li>
+                    <li>Mỗi đế chế có 2 Trụ Phụ + 1 Trụ Chính tự bắn kiến địch mỗi 5 giây.</li>
+                  </ul>
+                </details>
               </>
             ) : isThap ? (
               <>
-                <div className="miragine-lobby-hero">
-                  <img src="/database-miraginewar/ui/title_bg.jpg" alt="Miragine War" className="miragine-lobby-banner" />
-                  <div className="miragine-lobby-overlay">
-                    <div>
-                      <b>⚔️ Miragine War – Chế Độ 10 Người Realtime</b>
-                      <p className="muted small">Clone 100% nguyên bản đồ họa, âm thanh (mainLoop / gameLoop) & cơ chế triệu hồi theo đợt 30 giây</p>
-                    </div>
-                    <button type="button" className="secondary small" onClick={() => setMiragineGuideOpen(true)}>
-                      <BookOpen size={15} /> Bảng 16 Lính & Khắc Chế Gốc
-                    </button>
-                  </div>
-                </div>
-                <div className="ants-lobby-cfg">
-                  <div>
-                    <span className="muted small">Kiểu trận</span>
-                    <div className="bet-chips">
-                      {(Object.keys(THAP_MODE_LABEL) as ThapMode[]).map((m) => (
-                        <button key={m} type="button" className={`bet-chip${m === thapCfg.mode ? ' on' : ''}`} disabled={!isHost} onClick={() => setThap({ mode: m })}>
-                          {m === 'ffa' ? '⚔️' : m === 'teams' ? '🤝' : '🛡️'} {THAP_MODE_LABEL[m]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="muted small">Thành máy (🤖) · tổng {thapTotal}/{THAP_MAX_PLAYERS} phe</span>
-                    <div className="bet-chips">
-                      {Array.from({ length: Math.max(0, THAP_MAX_PLAYERS - view.players.length) + 1 }, (_, n) => n).map((n) => (
-                        <button key={n} type="button" className={`bet-chip${n === thapBots ? ' on' : ''}`} disabled={!isHost} onClick={() => setThap({ bots: n })}>{n}</button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="muted small">Độ khó của máy</span>
-                    <div className="bet-chips">
-                      {(['easy', 'normal', 'hard'] as const).map((lv) => (
-                        <button key={lv} type="button" className={`bet-chip${lv === thapCfg.botLevel ? ' on' : ''}`} disabled={!isHost || thapBots === 0} onClick={() => setThap({ botLevel: lv })}>
-                          {THAP_BOT_LABEL[lv]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="muted small">Thời gian trận</span>
-                    <div className="bet-chips">
-                      {THAP_MINUTE_OPTIONS.map((m) => (
-                        <button key={m} type="button" className={`bet-chip${m === thapCfg.minutes ? ' on' : ''}`} disabled={!isHost} onClick={() => setThap({ minutes: m })}>
-                          {m ? `${m} phút` : 'Không giới hạn'}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                <div className="cfg-select-grid">
+                  <SelectField
+                    label="Kiểu trận"
+                    value={thapCfg.mode}
+                    disabled={!isHost}
+                    onChange={(v) => setThap({ mode: v as ThapMode })}
+                  >
+                    <option value="ffa">Hỗn chiến (FFA)</option>
+                    <option value="teams">Lập đội (Đồng minh)</option>
+                    <option value="coop">Co-op (Đánh máy)</option>
+                  </SelectField>
+                  <SelectField
+                    label="Thành máy"
+                    hint={`${thapTotal}/${THAP_MAX_PLAYERS}`}
+                    value={thapBots}
+                    disabled={!isHost}
+                    onChange={(v) => setThap({ bots: Number(v) })}
+                  >
+                    {Array.from({ length: Math.max(0, THAP_MAX_PLAYERS - view.players.length) + 1 }, (_, n) => (
+                      <option key={n} value={n}>{n === 0 ? 'Không máy' : `+${n} máy`}</option>
+                    ))}
+                  </SelectField>
+                  <SelectField
+                    label="Độ khó máy"
+                    value={thapCfg.botLevel}
+                    disabled={!isHost || thapBots === 0}
+                    onChange={(v) => setThap({ botLevel: v as 'easy' | 'normal' | 'hard' })}
+                  >
+                    {(['easy', 'normal', 'hard'] as const).map((lv) => (
+                      <option key={lv} value={lv}>{THAP_BOT_LABEL[lv]}</option>
+                    ))}
+                  </SelectField>
+                  <SelectField
+                    label="Thời gian"
+                    value={thapCfg.minutes}
+                    disabled={!isHost}
+                    onChange={(v) => setThap({ minutes: Number(v) })}
+                  >
+                    {THAP_MINUTE_OPTIONS.map((m) => (
+                      <option key={m} value={m}>{m ? `${m} phút` : 'Không giới hạn'}</option>
+                    ))}
+                  </SelectField>
                   {thapCfg.mode === 'teams' && (
-                    <div>
-                      <span className="muted small">Đội của bạn {spectating || !me ? '(chỉ người ngồi bàn được chọn)' : '· ai cùng đội là đồng minh, không đánh nhau'}</span>
-                      <div className="bet-chips thap-team-chips">
-                        {THAP_TEAM_NAMES.map((name, t) => (
-                          <button
-                            key={t}
-                            type="button"
-                            className={`bet-chip thap-team-pick${me && thapTeamOf(meId) === t ? ' on' : ''}`}
-                            style={{ borderColor: THAP_TEAM_COLORS[t] }}
-                            disabled={!me || spectating}
-                            onClick={() => emit('thap:team', { team: t })}
-                          >
-                            <i style={{ background: THAP_TEAM_COLORS[t] }} /> {name}
-                          </button>
-                        ))}
-                      </div>
-                      {thapBots > 0 && (
-                        <p className="muted small">
-                          Máy dự kiến vào:{' '}
-                          {thapBotTeams.map((t, i) => (
-                            <span key={i} className="thap-seat-team" style={{ borderColor: THAP_TEAM_COLORS[t] }}>
-                              <i style={{ background: THAP_TEAM_COLORS[t] }} /> 🤖 {THAP_TEAM_NAMES[t]}
-                            </span>
-                          ))}
-                        </p>
-                      )}
-                    </div>
+                    <SelectField
+                      label="Đội của bạn"
+                      hint={
+                        <span className="thap-seat-team" style={{ borderColor: THAP_TEAM_COLORS[thapTeamOf(meId)] }}>
+                          <i style={{ background: THAP_TEAM_COLORS[thapTeamOf(meId)] }} />
+                        </span>
+                      }
+                      value={thapTeamOf(meId)}
+                      disabled={!me || spectating}
+                      onChange={(v) => emit('thap:team', { team: Number(v) })}
+                    >
+                      {THAP_TEAM_NAMES.map((name, t) => (
+                        <option key={t} value={t}>{name}</option>
+                      ))}
+                    </SelectField>
                   )}
                 </div>
-                <ul className="rule-summary-list">
-                  <li>
-                    Tối đa <b>{THAP_MAX_PLAYERS} Thành</b> (người + máy) chiến đấu realtime trên bản đồ thảo nguyên <code>database-miraginewar/terrains</code> lặp vô hạn, <b>sáng toàn bộ</b>.{' '}
-                    {thapCfg.mode === 'ffa' ? <><b>Solo 10 người (Hỗn chiến)</b>: mỗi người một phe, tất cả cùng đánh nhau tự do!</>
-                      : thapCfg.mode === 'teams' ? <><b>Lập đội</b>: tự chọn 1 trong {THAP_TEAM_NAMES.length} đội, cùng đội là đồng minh; máy tự vào đội ít người.</>
-                      : <><b>Co-op 10 người (Cùng đánh máy)</b>: mọi người chung 1 liên quân chống lại toàn bộ máy.</>}
-                  </li>
-                  <li><b>Cơ chế vàng & triệu hồi chuẩn 100% Miragine War gốc:</b> Khởi đầu {THAP_START_GOLD} vàng, Lương Hiệp (Income) <b>{THAP_START_ROUND_INCOME} vàng</b>. Đợt đầu tiên sau <b>{THAP_FIRST_ROUND_S} giây</b>, các đợt tiếp theo mỗi <b>{THAP_ROUND_S} giây</b> sẽ phát toàn bộ Lương Hiệp vào Vàng.</li>
-                  <li>Chọn <b>1 trong 16 binh chủng nguyên bản Miragine War</b> ở bảng 2×8: Cổng Triệu Hồi (<code>door.png</code>) sẽ tự động xuất lính đó liên tục khi đủ vàng (tối đa {THAP_MAX_POP} quân số), đồng thời <b>tăng Lương Hiệp</b> tương ứng từng con lính xuất ra. Chọn lính đắt hơn vàng hiện có thì tự tích vàng qua các đợt!</li>
-                  <li><b>Chỉ có 3 nút điều binh trực quan:</b> <b>🎯 Tấn Công - Chỉ Định</b> (chọn hoặc bấm thẳng vào Thành địch để dồn quân công phá) · <b>🛡️ Phòng Thủ</b> (rút quân giữ Pha Lê Thành) · <b>🚩 Tập Kết</b> (chấm cờ tụ quân trên bản đồ).</li>
-                  <li>Pha Lê Thành {THAP_BASE.hp} máu, tự phóng sét bảo vệ quanh mình (100 công, tầm 600). <b>Pha Lê vỡ là bị loại.</b> Phe/đội cuối cùng còn trụ lại chiến thắng{thapCfg.minutes ? `; hết ${thapCfg.minutes} phút thì phe/đội nhiều điểm nhất thắng` : ''}.</li>
-                </ul>
+
+                {thapCfg.mode === 'teams' && thapBots > 0 && (
+                  <div className="cfg-bot-teams small muted">
+                    Máy vào:{' '}
+                    {thapBotTeams.map((t, i) => (
+                      <span key={i} className="thap-seat-team" style={{ borderColor: THAP_TEAM_COLORS[t] }}>
+                        <i style={{ background: THAP_TEAM_COLORS[t] }} /> {THAP_TEAM_NAMES[t]}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className="cfg-tags">
+                  <span>16 binh chủng gốc</span>
+                  <span>Lương hiệp mỗi {THAP_ROUND_S}s</span>
+                  <span>Pha Lê {THAP_BASE.hp} HP · max {THAP_MAX_POP} quân</span>
+                </div>
+
+                <details className="cfg-details">
+                  <summary>Xem cơ chế triệu hồi &amp; điều binh</summary>
+                  <ul className="rule-summary-list">
+                    <li>Khởi đầu {THAP_START_GOLD} vàng, lương hiệp {THAP_START_ROUND_INCOME} vàng (đợt đầu sau {THAP_FIRST_ROUND_S}s).</li>
+                    <li>Chọn lính để Cổng tự xuất và cộng thêm Lương Hiệp; 3 lệnh: Tấn Công · Phòng Thủ · Tập Kết.</li>
+                  </ul>
+                </details>
               </>
             ) : gameMode === 'link_duel' ? (
               <>
-                <div className="ants-lobby-cfg">
-                  <div>
-                    <span className="muted small">Thêm máy (🤖) · tổng {online + linkBots}/{LINK_MAX_PLAYERS} người</span>
-                    <div className="bet-chips">
-                      {Array.from({ length: Math.max(0, LINK_MAX_PLAYERS - view.players.length) + 1 }, (_, n) => n).map((n) => (
-                        <button key={n} type="button" className={`bet-chip${n === linkBots ? ' on' : ''}`} disabled={!isHost} onClick={() => emit('link:config', { config: { ...linkCfg, bots: n } })}>{n}</button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="muted small">Độ khó của máy</span>
-                    <div className="bet-chips">
-                      {(['easy', 'normal', 'hard'] as const).map((lv) => (
-                        <button key={lv} type="button" className={`bet-chip${lv === linkCfg.botLevel ? ' on' : ''}`} disabled={!isHost || linkBots === 0} onClick={() => emit('link:config', { config: { ...linkCfg, botLevel: lv } })}>
-                          {LINK_BOT_LABEL[lv]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                <div className="cfg-select-grid">
+                  <SelectField
+                    label="Thêm máy (🤖)"
+                    hint={`Tổng ${online + linkBots}/${LINK_MAX_PLAYERS}`}
+                    value={linkBots}
+                    disabled={!isHost}
+                    onChange={(v) => emit('link:config', { config: { ...linkCfg, bots: Number(v) } })}
+                  >
+                    {Array.from({ length: Math.max(0, LINK_MAX_PLAYERS - view.players.length) + 1 }, (_, n) => (
+                      <option key={n} value={n}>{n === 0 ? 'Không máy' : `+${n} máy`}</option>
+                    ))}
+                  </SelectField>
+                  <SelectField
+                    label="Độ khó máy"
+                    value={linkCfg.botLevel}
+                    disabled={!isHost || linkBots === 0}
+                    onChange={(v) => emit('link:config', { config: { ...linkCfg, botLevel: v as 'easy' | 'normal' | 'hard' } })}
+                  >
+                    {(['easy', 'normal', 'hard'] as const).map((lv) => (
+                      <option key={lv} value={lv}>{LINK_BOT_LABEL[lv]}</option>
+                    ))}
+                  </SelectField>
                 </div>
-                <ul className="rule-summary-list">
-                  <li>1–{LINK_MAX_PLAYERS} người (1 người không thêm máy là chơi một mình, 2 người là solo 1v1). Nối 2 ô <b>cùng con thú</b> bằng đường gấp khúc <b>tối đa 2 lần</b> (được vòng ra ngoài mép bàn). Bàn 16×9, mọi người cùng một đề.</li>
-                  <li><b>Màn 1 – Đua Nối ({LINK_STAGE1_S} giây):</b> mỗi cặp nạp ⚡ Sấm (không tính combo). Đầy Sấm tung <b>❄️ Đóng Băng</b> hoặc <b>🌫️ Mây Mù</b> (che bàn {LINK_FOG_MS / 1000} giây) – mặc định vào <b>người dẫn đầu</b>, bấm vào bàn nhỏ của ai thì nhắm người đó. Dọn sạch bàn trước được thưởng lớn.</li>
-                  <li>
-                    <b>Liên hoàn {LINK_BOSSES.length} Màn Boss (Màn 1 → 2 → 3 → Màn 4 Co-op 2 Boss → 👑 Đại Ma Vương → 🌌 Trùm Cuối Cự Thần):</b> cả phòng cùng đánh, mỗi cặp là một cú đấm, Sấm đầy tung <b>⚡ Siêu Đấm</b>. 3 Boss đầu dùng chung <b>{LINK_RAID_S / 60} phút</b> (hạ nhanh thì dư giờ cho Boss sau); riêng <b>Màn Boss 4 (Co-op 2 Boss)</b> được cấp mới <b>{LINK_COOP_RAID_S / 60} phút</b>, <b>👑 Đại Ma Vương</b> (3 thanh máu) <b>{LINK_FINAL_RAID_S / 60} phút</b>, <b>🌌 Cự Thần Thiên Hà</b> (10 thanh máu, mỗi người <b>2 bàn</b>, sát thương x2) <b>{LINK_TITAN_RAID_S / 60} phút</b>!
-                    <ul>
-                      {LINK_BOSSES.map((b, i) => (
-                        <li key={b.id}>
-                          {b.emoji} <b>{b.name}</b>{b.coop && b.partners ? <> (<b>Co-op 2 Boss · {(b.raidS ?? 0) / 60} phút riêng:</b> {b.partners[0].emoji} {b.partners[0].name} × {b.partners[1].emoji} {b.partners[1].name})</> : null}{(b.bars ?? 1) > 1 ? <> (<b>{b.final ? 'TRÙM CUỐI' : 'HỢP THỂ'} · {b.bars} thanh máu{b.dual ? ` · 2 bàn · sát thương x${b.dmgMul ?? 1}` : ''} · {(b.raidS ?? 0) / 60} phút riêng</b>)</> : null} – {linkBossMaxHp(i, online + linkBots)} máu – {new Set(b.skills).size} chiêu: {[...new Set(b.skills)].map((k) => LINK_BOSS_SKILL_NAME[k]).join(' · ')}{b.spinS ? <> · <b>🌀 {LINK_BOSS_SKILL_NAME.board_spin} (hồi {b.spinS} giây)</b></> : null}
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                  <li><b>🔀 Đảo Bàn:</b> chiêu tự đảo bàn mình cho dễ nối, miễn phí, hồi chiêu {LINK_SHUFFLE_CD_S} giây (phím R).</li>
-                  <li><b>Tổng điểm</b> = điểm Màn 1 + sát thương lên Boss + <b>+{LINK_KO_BONUS}</b> cho mỗi Boss mình kết liễu. Cao hơn thì thắng cả hũ.</li>
-                </ul>
+                <div className="cfg-tags">
+                  <span>Màn 1 Đua nối ({LINK_STAGE1_S}s)</span>
+                  <span>Liên hoàn {LINK_BOSSES.length} Boss</span>
+                  <span>Phím R: Đảo bàn ({LINK_SHUFFLE_CD_S}s)</span>
+                </div>
+                <details className="cfg-details">
+                  <summary>Xem danh sách {LINK_BOSSES.length} Boss &amp; chiêu thức</summary>
+                  <ul className="rule-summary-list">
+                    <li>Đầy Sấm ở Màn 1 tung Đóng Băng / Mây Mù ({LINK_FOG_MS / 1000}s); qua Boss tung ⚡ Siêu Đấm (+{LINK_KO_BONUS} khi kết liễu).</li>
+                    <li>3 Boss đầu dùng chung {LINK_RAID_S / 60}p · Boss 4 Co-op ({LINK_COOP_RAID_S / 60}p) · Ma Vương ({LINK_FINAL_RAID_S / 60}p) · Cự Thần ({LINK_TITAN_RAID_S / 60}p, 2 bàn).</li>
+                    {LINK_BOSSES.map((b, i) => (
+                      <li key={b.id}>
+                        {b.emoji} <b>{b.name}</b> ({linkBossMaxHp(i, online + linkBots)} HP): {[...new Set(b.skills)].map((k) => LINK_BOSS_SKILL_NAME[k]).join(' · ')}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
               </>
             ) : isLoto ? (
-              <ul className="rule-summary-list">
-                <li>Mỗi tờ <b>9 hàng × 9 cột</b> (3 khối), mỗi hàng <b>5 số</b>; cột theo chục: 1–9, 10–19 … 80–90. Mua <b>2 tờ</b> thì 2 tờ ghép lại có đủ <b>90 số</b>, mỗi số đúng 1 lần.</li>
-                <li>Máy gọi ngẫu nhiên 1 số mỗi <b>{LOTO_CALL_MS / 1000} giây</b> (có đọc số), số trúng tự đóng dấu trên tờ của bạn. Hàng còn thiếu 1 số là <b>CHỜ</b>.</li>
-                <li>Ai đủ <b>5 số trên một hàng ngang</b> trước là <b>KINH</b> – ăn cả hũ. Nhiều người KINH cùng một số thì chia đều.</li>
-              </ul>
+              <div className="cfg-tags">
+                <span>Bảng 9×9 · 5 số/hàng</span>
+                <span>Gọi số mỗi {LOTO_CALL_MS / 1000}s</span>
+                <span>Đủ 5 số 1 hàng → KINH ăn hũ</span>
+              </div>
+            ) : isBansung ? (
+              <>
+                <div className="cfg-select-grid">
+                  <SelectField
+                    label="Chế độ"
+                    value={bansungMode}
+                    disabled={!isHost}
+                    onChange={(v) => setBansung({ gameMode: v as BansungGameMode })}
+                  >
+                    {BANSUNG_GAME_MODES.map((m) => (
+                      <option key={m} value={m}>
+                        {m === 'survival' ? 'Sinh Tồn' : '10 Đợt Cổ Điển'}
+                      </option>
+                    ))}
+                  </SelectField>
+
+                  <SelectField
+                    label="Bản đồ"
+                    value={bansungCfg.biome}
+                    disabled={!isHost}
+                    onChange={(v) => setBansung({ biome: v as BansungBiome })}
+                  >
+                    {BANSUNG_BIOMES.map((b) => (
+                      <option key={b} value={b}>
+                        {b === 'desert' ? '🏜️ Sa Mạc Cổ' : b === 'crypt' ? '🩸 Hầm Mộ Đỏ' : '🤖 Đấu Trường Cyber'}
+                      </option>
+                    ))}
+                  </SelectField>
+
+                  <SelectField
+                    label="Độ khó"
+                    value={bansungCfg.difficulty}
+                    disabled={!isHost}
+                    onChange={(v) => setBansung({ difficulty: v as BansungDifficulty })}
+                  >
+                    {BANSUNG_DIFFICULTIES.map((d) => (
+                      <option key={d} value={d}>
+                        {d === 'normal' ? 'Thường' : d === 'hard' ? 'Khó' : 'Địa Ngục'}
+                      </option>
+                    ))}
+                  </SelectField>
+
+                  <SelectField
+                    label="Bot AI"
+                    hint={`${bansungTotal} người+bot`}
+                    value={bansungBots}
+                    disabled={!isHost}
+                    onChange={(v) => setBansung({ bots: Number(v) })}
+                  >
+                    {Array.from({ length: bansungMaxBots + 1 }, (_, bots) => (
+                      <option key={bots} value={bots}>
+                        {bots === 0 ? 'Không bot' : `+${bots} Bot AI`}
+                      </option>
+                    ))}
+                  </SelectField>
+
+                  <SelectField
+                    label="Trình độ Bot"
+                    value={bansungCfg.botLevel}
+                    disabled={!isHost || bansungBots === 0}
+                    onChange={(v) => setBansung({ botLevel: v as BansungBotLevel })}
+                  >
+                    {BANSUNG_BOT_LEVELS.map((lv) => (
+                      <option key={lv} value={lv}>
+                        {lv === 'easy' ? 'Dễ' : lv === 'normal' ? 'Vừa' : 'Khó'}
+                      </option>
+                    ))}
+                  </SelectField>
+
+                  <SelectField
+                    label="Hồi sinh"
+                    value={bansungCfg.reviveMode}
+                    disabled={!isHost}
+                    onChange={(v) => setBansung({ reviveMode: v as BansungReviveMode })}
+                  >
+                    {BANSUNG_REVIVE_MODES.map((rv) => (
+                      <option key={rv} value={rv}>
+                        {rv === 'coop' ? 'Cứu Co-op' : rv === 'circle' ? 'Vòng Cứu' : rv === 'wave_only' ? 'Cuối Đợt' : 'Hardcore'}
+                      </option>
+                    ))}
+                  </SelectField>
+
+                  {bansungMode === 'waves' && (
+                    <SelectField
+                      label="Sau Đợt 10"
+                      value={bansungCfg.endless ? '1' : '0'}
+                      disabled={!isHost}
+                      onChange={(v) => setBansung({ endless: v === '1' })}
+                    >
+                      <option value="0">Kết thúc thắng</option>
+                      <option value="1">♾️ Vô Tận</option>
+                    </SelectField>
+                  )}
+                </div>
+
+                {/* Bộ chọn nhân vật Bắn Súng nhỏ gọn */}
+                <div className="bansung-hero-pick">
+                  <div className="cfg-label">
+                    <span>Nhân vật của bạn</span>
+                    <span className="cfg-hint">{!me || spectating ? 'Đang xem' : getBansungHero(myBansungHero).name}</span>
+                  </div>
+                  <div className="bansung-hero-grid">
+                    {BANSUNG_HERO_IDS.map((heroId) => {
+                      const hero = getBansungHero(heroId);
+                      const active = myBansungHero === heroId;
+                      return (
+                        <button
+                          key={heroId}
+                          type="button"
+                          className={`hero-pick-btn${active ? ' on' : ''}`}
+                          disabled={!me || spectating}
+                          onClick={() => pickBansungHero(heroId)}
+                          style={{ borderColor: active ? hero.accentHex : undefined }}
+                        >
+                          <span
+                            className="hero-sprite-icon sm"
+                            style={{ backgroundImage: `url("${BANSUNG_STATIC_ROOT}/normalized/heroes/hero_${heroId}_idle.png")` }}
+                            aria-hidden="true"
+                          />
+                          <span>
+                            <strong>{hero.name}</strong>
+                            <small>HP {hero.hp * BANSUNG_HERO_STAT_SCALE} · SH {hero.shield * BANSUNG_HERO_STAT_SCALE} · NL {hero.energy}</small>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="cfg-tags">
+                  <span>WASD di chuyển</span>
+                  <span>Chuột ngắm bắn · R nạp</span>
+                  <span>Space lướt · Q chiêu</span>
+                  <span>Gacha 3 thẻ khi lên cấp</span>
+                </div>
+
+                <details className="cfg-details">
+                  <summary>Chi tiết chế độ &amp; phím tắt</summary>
+                  <ul className="rule-summary-list">
+                    {bansungMode === 'survival' ? (
+                      <li>Sinh Tồn bản đồ rộng 132×84: farm XP rớt từ quái, mở Gacha nâng cấp &amp; tiến hóa vũ khí (Mk.I → Mk.IV).</li>
+                    ) : (
+                      <li>10 đợt &amp; Boss (Mini-Boss Đợt 4, nhiệm vụ Đợt 5–7, Boss Đợt 10); chọn Perk sau đợt 2, 4, 6, 8.</li>
+                    )}
+                    <li>Phím 1–5 đổi súng · E nhặt đồ · đứng vào vòng sáng để cứu đồng đội ngã gục.</li>
+                  </ul>
+                </details>
+              </>
             ) : gameMode === 'blackjack_21' ? (
-              <ul className="rule-summary-list">
-                <li>Bộ bài Tây 52 lá chuẩn (lưu trong <code>database/playing-cards/</code>). Chủ phòng làm <b>Nhà Cái</b>.</li>
-                <li>Chia mỗi người 2 lá. <b>Xì Bàng</b> (2 lá Át), <b>Xì Dách</b> (Át + 10/J/Q/K), <b>Ngũ Linh</b> (5 lá ≤ 21 điểm).</li>
-                <li>Nhà con cần đủ tuổi <b>≥ 16 điểm</b> mới được dừng; Nhà Cái cần <b>≥ 15 điểm</b> và có quyền xét bài từng người.</li>
-              </ul>
+              <div className="cfg-tags">
+                <span>Chủ phòng làm Nhà Cái</span>
+                <span>Nhà con ≥ 16đ · Cái ≥ 15đ</span>
+                <span>Xì Bàng ×3 · Xì Dách / Ngũ Linh ×2</span>
+              </div>
             ) : (
-              <ul className="rule-summary-list">
-                <li>Bộ bài Tây 52 lá chuẩn (2–4 người, chuẩn 4 người mỗi người <b>13 lá</b>). Thứ tự: <b>3 &lt; 4 &lt; … &lt; A &lt; 2 (Heo)</b>; chất <b>♠ &lt; ♣ &lt; ♦ &lt; ♥</b>.</li>
-                <li>Ván đầu tiên: người có lá nhỏ nhất (<b>3♠</b> khi đủ 4 người) đi trước; các ván sau người thắng đi trước.</li>
-                <li>Hỗ trợ đầy đủ: <b>Rác, Đôi, Sám cô, Sảnh, Tứ Quý, 3 Đôi Thông, 4 Đôi Thông</b> chặt Heo / Đôi Heo và <b>Tới Trắng</b>!</li>
-              </ul>
+              <div className="cfg-tags">
+                <span>2–4 người · 13 lá/người</span>
+                <span>3♠ đi trước ván đầu</span>
+                <span>Tứ Quý &amp; Đôi Thông chặt Heo</span>
+              </div>
             )}
+
             {awaitingReady.length > 0 && (
               <p className="muted small" role="status">
-                Chờ xác nhận: {awaitingReady.map((player) => player.name).join(', ')}.
+                Chờ xác nhận: <b>{awaitingReady.map((player) => player.name).join(', ')}</b>
               </p>
             )}
           </div>
@@ -580,11 +806,11 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                 {online < modeInfo.minPlayers ? (
                   `Cần ít nhất ${modeInfo.minPlayers} người`
                 ) : !deckOk ? (
-                  isThap ? thapProblem : gameMode === 'ant_empire' ? 'Cần ít nhất 2 đế chế – thêm máy nhé' : gameMode === 'link_duel' ? `Cần 2–${LINK_MAX_PLAYERS} người – thêm máy nhé` : 'Số người hoặc bộ bài chưa hợp lệ'
+                  isThap ? thapProblem : isBansung ? bansungProblem : gameMode === 'ant_empire' ? 'Cần ≥ 2 đế chế' : gameMode === 'link_duel' ? `Cần 1–${LINK_MAX_PLAYERS} người` : 'Luật chưa hợp lệ'
                 ) : poor.length > 0 ? (
-                  'Có người chưa đủ xu'
+                  'Có người thiếu xu'
                 ) : awaitingReady.length > 0 ? (
-                  'Chờ mọi người đồng ý luật'
+                  'Chờ mọi người sẵn sàng'
                 ) : (
                   <>
                     <Play size={18} /> Bắt đầu {modeInfo.shortName}
@@ -592,20 +818,21 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                 )}
               </button>
             ) : spectating ? (
-              <span className="muted small">Bạn đang xem. Bấm “Vào bàn chơi” ở mục Khán giả nếu còn ghế trống.</span>
+              <span className="muted small">Đang xem · bấm “Vào bàn chơi” ở trên nếu còn ghế.</span>
             ) : (
               <button className={me?.ready ? 'secondary big' : 'primary big'} onClick={() => emit('room:ready', { ready: !me?.ready, rulesVersion: view.rulesVersion })}>
                 {me?.ready ? (
                   <>
-                    <Check size={16} /> Đã sẵn sàng · hủy
+                    <Check size={16} /> Đã sẵn sàng · Hủy
                   </>
                 ) : (
-                  'Đồng ý luật & sẵn sàng'
+                  'Đồng ý luật & Sẵn sàng'
                 )}
               </button>
             )}
           </div>
         </div>
+
         <div className="lobby-chat">
           <ChatPanel
             messages={chat.messages}
@@ -619,6 +846,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
           />
         </div>
       </div>
+
       {settingsOpen && isHost && gameMode === 'exploding_kittens' && (
         <RoomSettings
           initialRules={view.rules}
@@ -633,8 +861,9 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
           }}
         />
       )}
+
       {miragineGuideOpen && (
-        <Modal title="Miragine War – Menu & Bảng 16 Binh Chủng Nguyên Bản" onClose={() => setMiragineGuideOpen(false)} width={760}>
+        <Modal title="Miragine War – Bảng 16 Binh Chủng Nguyên Bản" onClose={() => setMiragineGuideOpen(false)} width={760}>
           <div className="miragine-menu-modal">
             <div className="miragine-menu-hero">
               <img src="/database-miraginewar/ui/title_bg.jpg" alt="Miragine War" className="miragine-title-img" />

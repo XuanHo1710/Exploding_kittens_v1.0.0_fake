@@ -68,11 +68,11 @@ export function LobbySpectators({ view, meId, emit }: { view: RoomView; meId: st
           )
         )}
       </div>
-      {list.length ? (
+      {list.length > 0 && (
         <div className="spectator-list">
           {list.map((s) => (
             <span key={s.id} className={`spectator-item${s.connected ? '' : ' offline'}${s.id === meId ? ' me' : ''}`}>
-              <PlayerAvatar id={s.id} avatar={s.avatar} size={26} />
+              <PlayerAvatar id={s.id} avatar={s.avatar} size={24} />
               {s.name}
               {s.id === meId && <span className="muted small"> · bạn</span>}
               {isHost && (
@@ -83,8 +83,6 @@ export function LobbySpectators({ view, meId, emit }: { view: RoomView; meId: st
             </span>
           ))}
         </div>
-      ) : (
-        <p className="muted small">Chưa có ai xem. Gửi mã phòng {view.code} và bấm “Xem” để vào xem.</p>
       )}
     </div>
   );

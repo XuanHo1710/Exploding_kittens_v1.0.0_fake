@@ -144,6 +144,28 @@ export default function Rules({ rules: suppliedRules, playerCount: suppliedPlaye
               <li><b>Xu (khi có cược):</b> Nhất ăn cược của Bét, Nhì/Ba hoà vốn. Bị chặt Heo phải trả người chặt; Bét còn Heo trên tay (thối Heo) phải trả người Nhất. Heo đen (♠ ♣) = ½ mức cược, Heo đỏ (♦ ♥) = 1 mức cược. Tới Trắng ăn cả hũ.</li>
             </ul>
           </section>
+          <section>
+            <h3 className="rules-sec-title">
+              🔫 Luật Bắn Súng Co-op (Soul &amp; Steel — 1–4 Người)
+            </h3>
+            <ul>
+              <li><b>Đấu trường 6336×4032 &amp; Lớp nhân vật:</b> Chơi đơn hoặc Co-op tối đa 4 người (hỗ trợ thêm tối đa 4 đồng đội AI) trên bản đồ mở rộng <b>6336×4032 px</b> (132×84 ô, 12 cổng quái quanh biên &amp; 5 bệ vũ khí) qua 3 vùng: <b>Sa Mạc (Desert Ruins)</b>, <b>Hầm Mộ Đỏ (Crimson Crypt)</b> và <b>Phòng Thí Nghiệm (Cyber Lab)</b>. Chọn 1 trong 4 lớp: <b>Mascot Gunner</b> (Súng Trường), <b>Cyber Ranger</b> (Tiểu Liên, lướt nhanh), <b>Pyromancer</b> (Súng Plasma, năng lượng cao), <b>Knight</b> (Shotgun, máu &amp; giáp dày).</li>
+              <li><b>Sinh Tồn (Mặc Định) &amp; 10 Đợt Cổ Điển:</b>
+                <ul>
+                  <li><b>Sinh Tồn (Mặc Định):</b> Trụ vững giữa các đợt quái và Boss ngày càng hung hãn trên chiến trường lớn. Hạ quái nhặt Ngọc XP để lên cấp, mở khóa thẻ nâng cấp Gacha và tiến hóa vũ khí để chống chọi trước làn sóng quái biến dị leo thang vô tận.</li>
+                  <li><b>10 Đợt Cổ Điển:</b> Vượt 10 đợt (Mini-Boss Đợt 4, Thủ Cổng / Trạm Tiếp Tế / Pháo Kích Đợt 5–7, Trùm Cuối Đợt 10, chọn <b>1 trong 3 Perk</b> sau đợt 2, 4, 6, 8, kèm tùy chọn Vô Tận).</li>
+                </ul>
+              </li>
+              <li><b>Farm XP Lên Cấp · Hộp Gacha 3 Thẻ &amp; Tiến Hóa Súng (Mk.I → Mk.IV):</b> Quái bị hạ rơi <b>Ngọc XP</b> (tự hút và chia sẻ 40% XP cộng hưởng cho đồng đội trong bán kính 600px). Mỗi lần lên cấp mở <b>Hộp Gacha 3 Thẻ</b> (bấm thẻ hoặc phím <b>1 / 2 / 3</b>) gồm:
+                <ul>
+                  <li><b>Tiến Hóa Súng (Mk.I → Mk.II Cường Hóa → Mk.III Thức Tỉnh → Mk.IV Tối Thượng):</b> Nâng cấp súng đang cầm để tăng mạnh sát thương, tốc độ bắn, xuyên thấu, giảm năng lượng tiêu hao và thêm tia đạn / nòng súng phát sáng theo cấp.</li>
+                  <li><b>Thẻ Kỹ Năng Gacha (Phổ Thông → Huyền Thoại):</b> Cộng dồn <b>Sát thương súng</b>, <b>Máu tối đa + Hồi máu &amp; Giáp</b>, <b>Tốc độ bắn &amp; Nạp đạn</b>, <b>Thêm tia đạn (Multishot)</b>, <b>Chí mạng &amp; Xuyên giáp</b>, <b>Tốc chạy &amp; Tầm hút XP</b>.</li>
+                </ul>
+              </li>
+              <li><b>Điều khiển PC / Mobile:</b> PC dùng <b>WASD / Mũi tên</b> di chuyển, <b>Chuột &amp; Chuột trái</b> ngắm bắn, <b>Space / Chuột phải</b> Lướt né (Dash có miễn nhiễm), <b>1–5 / Cuộn chuột</b> đổi vũ khí (hoặc phím <b>1 / 2 / 3</b> chọn thẻ Gacha khi lên cấp), <b>Q</b> dùng kỹ năng nhân vật, <b>R</b> nạp đạn (bấm lại đúng vùng vàng <b>Active Reload</b> để nạp nhanh + tăng sát thương băng đạn), <b>E</b> nhặt vũ khí / tương tác, <b>G / Chuột giữa</b> Ping chiến thuật, <b>M</b> đổi Radar / Toàn cảnh. Mobile hỗ trợ 2 cần ảo (Twin-stick).</li>
+              <li><b>Giáp, Hồi sinh &amp; Hũ Xu:</b> <b>Giáp (Shield)</b> chắn đạn trước Máu và tự hồi khi không nhận sát thương; bắn tiêu hao <b>Năng Lượng Xanh</b> (tự hồi và nhặt cầu năng lượng cộng hưởng). Khi gục (<b>Downed</b>), đồng đội đứng vào vòng cứu để hồi sinh (hoặc hồi sau mỗi đợt / không cứu ở luật Khắc nghiệt). Thắng trận chia hũ Co-op (70% cho người sống sót + 30% MVP); thua hết hoàn cược cho người còn ở trận.</li>
+            </ul>
+          </section>
         </div>
       </RoomPlayerCountContext.Provider>
     </RoomRulesContext.Provider>
