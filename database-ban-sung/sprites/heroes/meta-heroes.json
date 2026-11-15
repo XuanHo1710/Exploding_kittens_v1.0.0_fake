@@ -1,7 +1,7 @@
 {
   "version": 1,
   "slice": "w11",
-  "generatedAt": "2026-11-14T10:14:45.404Z",
+  "generatedAt": "2026-11-15T08:32:50.428Z",
   "normStandard": {
     "heroGrid": "48x48",
     "heroPivot": {
@@ -460,6 +460,101 @@
         "dead": {
           "file": "knight_dead.png",
           "assetId": "hero_knight_dead",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 10,
+          "loop": false
+        }
+      }
+    },
+    "laser": {
+      "id": "laser",
+      "name": "Laser Vanguard",
+      "shoulderOffset": {
+        "x": 4,
+        "y": -18
+      },
+      "headTopY": -41,
+      "starterWeapon": "laser_cannon",
+      "nativeFacing": "right",
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "states": {
+        "idle": {
+          "file": "laser_idle.png",
+          "assetId": "hero_laser_idle",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "run": {
+          "file": "laser_run.png",
+          "assetId": "hero_laser_run",
+          "meta": [
+            6,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 14,
+          "loop": true
+        },
+        "shoot": {
+          "file": "laser_shoot.png",
+          "assetId": "hero_laser_shoot",
+          "meta": [
+            3,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 24,
+          "loop": false
+        },
+        "dash": {
+          "file": "laser_dash.png",
+          "assetId": "hero_laser_dash",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 14.3,
+          "loop": false
+        },
+        "stunned": {
+          "file": "laser_stunned.png",
+          "assetId": "hero_laser_stunned",
+          "meta": [
+            2,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 10,
+          "loop": true
+        },
+        "dead": {
+          "file": "laser_dead.png",
+          "assetId": "hero_laser_dead",
           "meta": [
             4,
             48,
@@ -1812,6 +1907,312 @@
         "shape": "capsule",
         "color": "#3b5bdb",
         "accent": "#fcc419"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_laser_idle": {
+      "id": "hero_laser_idle",
+      "path": "sprites/heroes/laser_idle.png",
+      "normalizedPath": "normalized/heroes/hero_laser_idle.png",
+      "category": "hero",
+      "heroId": "laser",
+      "state": "idle",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 6,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 670,
+      "sha256": "d771449cdb461306799dca15de84be22296b62cbe0dd67fbff6eb49ece32a11d",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -18
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_laser_vanguard_idle"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_laser_run": {
+      "id": "hero_laser_run",
+      "path": "sprites/heroes/laser_run.png",
+      "normalizedPath": "normalized/heroes/hero_laser_run.png",
+      "category": "hero",
+      "heroId": "laser",
+      "state": "run",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        6,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 288,
+      "height": 48,
+      "bytes": 928,
+      "sha256": "0b51b971b3545539adfe29927bbffa2ae672c75562859f4b7e8cd24793ae1dd3",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -18
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_laser_vanguard_run"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_laser_shoot": {
+      "id": "hero_laser_shoot",
+      "path": "sprites/heroes/laser_shoot.png",
+      "normalizedPath": "normalized/heroes/hero_laser_shoot.png",
+      "category": "hero",
+      "heroId": "laser",
+      "state": "shoot",
+      "frames": 3,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 24,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        3,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 144,
+      "height": 48,
+      "bytes": 642,
+      "sha256": "00be66326bf5ec88dbfd8db313dede8d8760f6c61538239b1cddbd70fced584e",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -18
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_laser_vanguard_shoot"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_laser_dash": {
+      "id": "hero_laser_dash",
+      "path": "sprites/heroes/laser_dash.png",
+      "normalizedPath": "normalized/heroes/hero_laser_dash.png",
+      "category": "hero",
+      "heroId": "laser",
+      "state": "dash",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14.3,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 853,
+      "sha256": "d54d545f558c30d7ea68c437f4c07b62d7834c2466700005c1ef8c034325231e",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -18
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_laser_vanguard_dash"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_laser_stunned": {
+      "id": "hero_laser_stunned",
+      "path": "sprites/heroes/laser_stunned.png",
+      "normalizedPath": "normalized/heroes/hero_laser_stunned.png",
+      "category": "hero",
+      "heroId": "laser",
+      "state": "stunned",
+      "frames": 2,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        2,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 96,
+      "height": 48,
+      "bytes": 501,
+      "sha256": "0ee5fe04f94ff9a46739c4211af6f8134db3a887fc24fc712319c59b7d066a73",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -18
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_laser_vanguard_stunned"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_laser_dead": {
+      "id": "hero_laser_dead",
+      "path": "sprites/heroes/laser_dead.png",
+      "normalizedPath": "normalized/heroes/hero_laser_dead.png",
+      "category": "hero",
+      "heroId": "laser",
+      "state": "dead",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 791,
+      "sha256": "be7f459c49c19d300cfe23d96f5527a1ae6041812c7141af21feabf2a220a376",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -18
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_laser_vanguard_dead"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
       },
       "sourceId": "generated_synth",
       "license": "GENERATED-SYNTH",

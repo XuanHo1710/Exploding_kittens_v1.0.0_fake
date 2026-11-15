@@ -425,6 +425,7 @@ async function generatePortraitFromHero(heroClass, heroIdleNormRel, sourceId, re
     ranger: '#2ce8f5',
     pyro: '#e43b44',
     knight: '#8b9bb4',
+    laser: '#ff9ee2',
   };
   const { img, rect } = makePixelCanvas(32, 32);
   rect(0, 0, 32, 32, '#181425');
@@ -786,7 +787,8 @@ async function buildPack() {
       offY: -94,
       fps: 8,
       loop: true,
-      note: 'Pre-normalized Boss I Arsenal idle strip (4f @ 96x96)',
+      sourceId: 'crawl_tiles_cc0',
+      note: 'CC0 Boss I Arsenal Dread Gunner idle strip (4f @ 96x96)',
     },
     {
       id: 'boss_arsenal_run',
@@ -799,7 +801,8 @@ async function buildPack() {
       offY: -94,
       fps: 10,
       loop: true,
-      note: 'Pre-normalized Boss I Arsenal run strip (4f @ 96x96)',
+      sourceId: 'crawl_tiles_cc0',
+      note: 'CC0 Boss I Arsenal Dread Gunner run strip (4f @ 96x96)',
     },
     {
       id: 'boss_arsenal_attack',
@@ -812,7 +815,8 @@ async function buildPack() {
       offY: -94,
       fps: 12,
       loop: false,
-      note: 'Pre-normalized Boss I Arsenal attack strip (4f @ 96x96)',
+      sourceId: 'crawl_tiles_cc0',
+      note: 'CC0 Boss I Arsenal Dread Gunner attack strip (4f @ 96x96)',
     },
     {
       id: 'boss_arsenal_dead',
@@ -825,7 +829,8 @@ async function buildPack() {
       offY: -94,
       fps: 8,
       loop: false,
-      note: 'Pre-normalized Boss I Arsenal dead strip (4f @ 96x96)',
+      sourceId: 'crawl_tiles_cc0',
+      note: 'CC0 Boss I Arsenal Dread Gunner dead strip (4f @ 96x96)',
     },
   ];
   for (const pre of preservedNormalizedEntries) {
@@ -833,9 +838,10 @@ async function buildPack() {
     const preBuf = await fs.readFile(absPre).catch(() => null);
     if (!preBuf) continue;
     const sha = sha256Hex(preBuf);
+    const preSourceId = pre.sourceId || 'generated_synth';
     recordProvenance({
       relPath: pre.relPath,
-      sourceId: 'generated_synth',
+      sourceId: preSourceId,
       note: `${pre.note}; sha256=${sha.slice(0, 12)}`,
     });
     setSprite(pre.id, {
@@ -850,11 +856,11 @@ async function buildPack() {
       loop: pre.loop,
       ...(pre.pivot ? { pivot: pre.pivot } : {}),
       fallback: defaultFallback(pre.category, pre.id),
-      sourceId: 'generated_synth',
+      sourceId: preSourceId,
     });
   }
 
-  for (const cls of ['mascot', 'ranger', 'pyro', 'knight']) {
+  for (const cls of ['mascot', 'ranger', 'pyro', 'knight', 'laser']) {
     const heroIdle = sprites[`hero_${cls}_idle`];
     const portraitEntry = await generatePortraitFromHero(cls, heroIdle.path, heroIdle.sourceId, recordProvenance);
     setSprite(`ui_portrait_${cls}`, portraitEntry);

@@ -2433,12 +2433,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_beholder",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 2214,
-      "sha256": "8940cb565fb2bc1a96d47cb3561da14f7c36fd864d76ce23ca2b3381a33f750b"
+      "bytes": 3366,
+      "sha256": "62a3d09b10a8a83b7c4fe2cf11e77ebaf7adfe07ae36881f6204d27a6d9fd6a6"
     },
     "boss_beholder_move": {
       "id": "boss_beholder_move",
@@ -2453,12 +2453,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_beholder",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 3890,
-      "sha256": "e3bc961749fea1becb136b92064e3d19fe97e185d93837b5cdbb250485a2a7ee"
+      "bytes": 4251,
+      "sha256": "4e57f627518e36f8ffd69131609d1680c2fc0c4f6bbd436baa2b01d7dcce9315"
     },
     "boss_beholder_volley_cast": {
       "id": "boss_beholder_volley_cast",
@@ -2473,12 +2473,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_beholder",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 3641,
-      "sha256": "ec773107678126d9424929da85f31ec53af223476d0c7d19bbb1d75c351c3449"
+      "bytes": 4604,
+      "sha256": "4a09096435dcac5e2701245330cb423f9c06d9d995c5842943307e2f0ffca736"
     },
     "boss_beholder_slam_leap": {
       "id": "boss_beholder_slam_leap",
@@ -2493,12 +2493,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_beholder",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 4333,
-      "sha256": "048f246e2db4be9e8d8f774aaf07a009f2678a67fea3282d0440f653b1b6a426"
+      "bytes": 4822,
+      "sha256": "a76547932ea04f403e37e67a979bcca6208fe1e6f6bcbfe697b85ebe558af760"
     },
     "boss_beholder_beam_windup": {
       "id": "boss_beholder_beam_windup",
@@ -2513,12 +2513,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_beholder",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 2490,
-      "sha256": "318354af6108eed298d2f8d0231fc089f76e2f71ae9b3c7af9c34d572075c23c"
+      "bytes": 3382,
+      "sha256": "ce6c7509957fc095452ed04cab5c0e642d6f0d43403f9ab01f3dbb53c0e36a42"
     },
     "boss_beholder_enrage_roar": {
       "id": "boss_beholder_enrage_roar",
@@ -2533,12 +2533,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_beholder",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 3957,
-      "sha256": "b87394021f60d170f68c5996d0dca3c77030ccdd9d16903dff756cbc391911c7"
+      "bytes": 4813,
+      "sha256": "9a5a6b7101623475a18c82f596813eb940b7e45ac0bd666bf793ebdb55063f75"
     },
     "boss_beholder_stagger": {
       "id": "boss_beholder_stagger",
@@ -2553,12 +2553,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_beholder",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 2201,
-      "sha256": "ecd1f86b5f8e8b80456c409b1669629067887775d8b15f38f5bb4cd8ad7d3781"
+      "bytes": 4869,
+      "sha256": "cc4df9375c3fd833c2c2cb6dea7fb9b29fe851db13071ae44703e8216cec2664"
     },
     "boss_beholder_dead": {
       "id": "boss_beholder_dead",
@@ -2573,12 +2573,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_beholder",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1566,
-      "sha256": "a6bab6a7223b2dacca351e9d3412a4bfee2730402138381d24b589c39dabae84"
+      "bytes": 10590,
+      "sha256": "d56ce02deab4cf3ba364bc76318a939c34266def88ce0e5ae181ec5d960d7502"
     },
     "boss_colossus_idle": {
       "id": "boss_colossus_idle",
@@ -2593,12 +2593,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_colossus",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1521,
-      "sha256": "364cff968f1799408faedd1782c9f48bfaca78e90bdf3edf8731569d4f93b437"
+      "bytes": 2821,
+      "sha256": "8fac0179b4736224b95e7b8dbf26fd050ad35fe9c4d597992079dbce22bce9f5"
     },
     "boss_colossus_run": {
       "id": "boss_colossus_run",
@@ -2613,12 +2613,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_colossus",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 2213,
-      "sha256": "0a165fcd3a6cfda945a07b9b6846928677a9e26fb69ed0017fd34c444b939081"
+      "bytes": 3796,
+      "sha256": "3519457ac744b125563358a014c14dd5db374a8986a7e8b4d680abbd0b4f2c7d"
     },
     "boss_colossus_attack": {
       "id": "boss_colossus_attack",
@@ -2633,12 +2633,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_colossus",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 2214,
-      "sha256": "db39e7fdbdb9dd06c2d52e34dc416e2b5d58029ef94f66f43275839b551d7f6f"
+      "bytes": 3522,
+      "sha256": "9791efaefc5a396f01a83a25cd880ccc4bd82455e34387dbb9af3aaddadd99a6"
     },
     "boss_colossus_overheat_stun": {
       "id": "boss_colossus_overheat_stun",
@@ -2653,12 +2653,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_colossus",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1244,
-      "sha256": "68e1305e84e91a1f3dcd1eefdc80a42020123ecce74cba552d4d41e6005efaf7"
+      "bytes": 2973,
+      "sha256": "192d6a1f8610db8dcef6515b25d8a9332ae4a76dc981a31c9bbdf6e5f7f34624"
     },
     "boss_colossus_dead": {
       "id": "boss_colossus_dead",
@@ -2673,12 +2673,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_colossus",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 668,
-      "sha256": "1bf17a57e1af73b69680729e74bbd353a9e23a0c29cacc497933cad23ebbfc89"
+      "bytes": 5252,
+      "sha256": "7d7564bd063c7a93a50547be74421c518ca886a59c7f1817acff41f8813f70b7"
     },
     "iron_drone_idle": {
       "id": "iron_drone_idle",
@@ -2773,12 +2773,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_overlord",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1187,
-      "sha256": "140c1ebe67a4de89727f4f51085d0d864d398ded5d4a226215c8a841573074b2"
+      "bytes": 2606,
+      "sha256": "f4a75917cfd35334279ff9a78d5a15383399e5c733c7edd96e8407b6eebed4a2"
     },
     "boss_overlord_charge": {
       "id": "boss_overlord_charge",
@@ -2793,12 +2793,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_overlord",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1190,
-      "sha256": "838d26873c59837e30a55e7da6877c59a36fab9d5a67936a50510b3084ef2ffc"
+      "bytes": 2548,
+      "sha256": "4fe565d805727ebcadf6bfed79528681b7a9ab6ae4e69b2b9b9d78d94b05a6e0"
     },
     "boss_overlord_stun": {
       "id": "boss_overlord_stun",
@@ -2813,12 +2813,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_overlord",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1038,
-      "sha256": "bd7bbe2d25a577ba6e5bef829b448378d4168c48bc2bc293396c5fd33a252533"
+      "bytes": 2036,
+      "sha256": "73c492a94e81425682c79bc38ba0defb622bfe6d3492c156b22037c14e3a0cac"
     },
     "boss_overlord_dead": {
       "id": "boss_overlord_dead",
@@ -2833,12 +2833,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_overlord",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1250,
-      "sha256": "1869a871487bdbe6a2b04ed288a4e180a2a6d6b56185bc444b4c6632dba417b8"
+      "bytes": 8115,
+      "sha256": "c2489033747b7ec9282ce5f087d1106beb080b0484925d2230d5463a806b2fd2"
     },
     "boss_tempest_idle": {
       "id": "boss_tempest_idle",
@@ -2853,12 +2853,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_tempest",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1282,
-      "sha256": "da8a3a75090940b939d312ea946210e3ab595ccb5bac086498259c3948201de5"
+      "bytes": 2595,
+      "sha256": "f70be23429e0e628e0f742d46336eb02087821c24c7e6a9028d314c72630b1cb"
     },
     "boss_tempest_run": {
       "id": "boss_tempest_run",
@@ -2873,12 +2873,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_tempest",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1726,
-      "sha256": "3a473445f75345583c248035970fe75d424dde830b4f7b340685af5eab353592"
+      "bytes": 3552,
+      "sha256": "1457ba60432f68213f57b0d4c290ebd212005a99e45b258c9837046b95ee122a"
     },
     "boss_tempest_attack": {
       "id": "boss_tempest_attack",
@@ -2893,12 +2893,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_tempest",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1923,
-      "sha256": "122be45ca7babf519138de8ada406900babb4ca2533cc19c23a965de9ed1e2d1"
+      "bytes": 4691,
+      "sha256": "49ebdb6065ea94d2729df4bc439816392afd03ab377e342863f472dbe9e5ed59"
     },
     "boss_tempest_dead": {
       "id": "boss_tempest_dead",
@@ -2913,12 +2913,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_tempest",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 431,
-      "sha256": "82a60f38a47cad35c65f40df3e50cb988394cc4fffe9fcb1ac48c299b1b26e6f"
+      "bytes": 5931,
+      "sha256": "02ff0e5d57a846fd17e7325093afde90c17ac72d0dada950c3df291d0ad44df3"
     },
     "boss_destroyer_idle": {
       "id": "boss_destroyer_idle",
@@ -2933,12 +2933,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_destroyer",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1408,
-      "sha256": "66e1a119b2114c6b955b0fca8fa34dffe856e35871961b5c65dade07f14868da"
+      "bytes": 3391,
+      "sha256": "ee0194bfd3f854da91d7a7811f885594922991b2f8d84f0b97a04a56cd888dfc"
     },
     "boss_destroyer_run": {
       "id": "boss_destroyer_run",
@@ -2953,12 +2953,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_destroyer",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1979,
-      "sha256": "993e3d072cd60a77cc442902adac9033d34399c8e9c59808ee0359f8831f690e"
+      "bytes": 5038,
+      "sha256": "7e35013e05d489bbc28481cf513cc378111a4c309cfbcaf422ab1610d7dd2714"
     },
     "boss_destroyer_attack": {
       "id": "boss_destroyer_attack",
@@ -2973,12 +2973,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_destroyer",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 2076,
-      "sha256": "49133a15ff492dcf8d19308f83a320e40ea85a39f4dda58297e387bae652df2f"
+      "bytes": 5100,
+      "sha256": "8745006998ec6c79f55a3a79f075c4d4258afc4b77c59ddb7a99baed0368874c"
     },
     "boss_destroyer_dead": {
       "id": "boss_destroyer_dead",
@@ -2993,12 +2993,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_destroyer",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 457,
-      "sha256": "6c00668a00251ab8c09739be44775e0067c2794580486ed8d4fdca0ee8dc51d5"
+      "bytes": 7994,
+      "sha256": "2783d21f6610b75672448df23dae5548658d4bd895f4d497b0c7b44fe5300055"
     },
     "boss_frost_empress_idle": {
       "id": "boss_frost_empress_idle",
@@ -3013,12 +3013,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_frost_empress",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1470,
-      "sha256": "abc899ee998af32354457b9a50aa4bf1df6c8a1f025943df4053f30d3ce47615"
+      "bytes": 2078,
+      "sha256": "b5822b85a1055655599de86089d3197e1e0e750f43bc2737147e8c7e06612df2"
     },
     "boss_frost_empress_run": {
       "id": "boss_frost_empress_run",
@@ -3033,12 +3033,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_frost_empress",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1958,
-      "sha256": "7c768fdc8b877a8c1ffbf2199177d0e2a9f891bb193e37b86852424c36691ca2"
+      "bytes": 3009,
+      "sha256": "8b8e93737dc13aee9335714443fb59f828311dfdccba8c9b55cb5ef7f57f8d87"
     },
     "boss_frost_empress_attack": {
       "id": "boss_frost_empress_attack",
@@ -3053,12 +3053,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_frost_empress",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 2541,
-      "sha256": "5abf9669871c3392819d8cbfdd97956b986e72e4aa3cd91743639063628d691c"
+      "bytes": 2662,
+      "sha256": "00e4074167612ff43df17325d7f7d47849c1f8fff831b67f698c4e63fdcd7423"
     },
     "boss_frost_empress_dead": {
       "id": "boss_frost_empress_dead",
@@ -3073,12 +3073,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_frost_empress",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 470,
-      "sha256": "950e4a98c6eb28c997cf1dac80dc4f155481e5e327bad1594c6d9efc322ee4d8"
+      "bytes": 4892,
+      "sha256": "64793d7357196670da0c303bf2a98f57c563b0533189de4dd5f0f385d79cb63d"
     },
     "boss_abyssal_leviathan_idle": {
       "id": "boss_abyssal_leviathan_idle",
@@ -3093,12 +3093,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_abyssal_leviathan",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1799,
-      "sha256": "e6a67ecc25c9f1e03344f9ef7ed3f5ba36c4d21641bc7151b5e89fd17b76c6ee"
+      "bytes": 2004,
+      "sha256": "8ccd78e3787b340dd5d4ac117d9492700428609650c34c7025e912a6833c738c"
     },
     "boss_abyssal_leviathan_run": {
       "id": "boss_abyssal_leviathan_run",
@@ -3113,12 +3113,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_abyssal_leviathan",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 2806,
-      "sha256": "6920c876333eedfab3f691197997bad4bcd90a63cf64216b23b7bbdaaa2f6d96"
+      "bytes": 2400,
+      "sha256": "0a7d7efc095d87243622f4a5d8c15928df5981ea1e9f4072b96c29fd0b72affe"
     },
     "boss_abyssal_leviathan_attack": {
       "id": "boss_abyssal_leviathan_attack",
@@ -3133,12 +3133,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_abyssal_leviathan",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 2442,
-      "sha256": "ed04a24cbc612150d72d4b366e0e6b2b3357da4c38d840b7621d939da8463396"
+      "bytes": 2944,
+      "sha256": "a0fba913f59f93d9b6054b326b61f2bd78d4f2dd32d4759dd0af9d13fe4b7c7d"
     },
     "boss_abyssal_leviathan_dead": {
       "id": "boss_abyssal_leviathan_dead",
@@ -3153,12 +3153,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_abyssal_leviathan",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 461,
-      "sha256": "207ce23f18bf2452ac465b2ad62c5fa043ee5a802b28440ccdf068feff4bc9f6"
+      "bytes": 4320,
+      "sha256": "591c4b8cd8fe594ed69c39744145edc19fae72f86655112b2e06cf0c1e7af207"
     },
     "overlord_weakpoint_idle": {
       "id": "overlord_weakpoint_idle",
@@ -3173,12 +3173,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 32,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/overlord_weakpoint",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 425,
-      "sha256": "c6963a9bc05342fb0e790a712f4193a7a61708152b80eeca413a56a114f7336e"
+      "bytes": 972,
+      "sha256": "359ba87668f15804ba2cfd63a560d0b6b5964d316c1fd92c2c831d24746000ce"
     },
     "emp_pylon_idle": {
       "id": "emp_pylon_idle",
@@ -3193,12 +3193,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 48,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/emp_pylon",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 531,
-      "sha256": "3acea623118cd45a11772a5bb21cebaa28bc7e33c6fc72623ecb48c75d57807a"
+      "bytes": 859,
+      "sha256": "929032f967f8e695600389e132d73e406d9d6a432e1a47a0faff254fd6adc361"
     },
     "tile_desert_floor": {
       "id": "tile_desert_floor",
@@ -3972,12 +3972,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_storm_herald",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 1493,
-      "sha256": "4ca6744f112cc4ab6d32019f5a00da7000aa8ba6113daa6a4109f10516116978"
+      "bytes": 2882,
+      "sha256": "7b9fb8c18ba3539aa95cc986112f282dbb2aac59a00a076121be422d4990f911"
     },
     "boss_storm_herald_run": {
       "id": "boss_storm_herald_run",
@@ -3992,12 +3992,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_storm_herald",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 2317,
-      "sha256": "d18c0705a12cc58ee192d634b7ce84e666f72725d4f59074d0a88f89fd0fe043"
+      "bytes": 3539,
+      "sha256": "575a585e0ea368814486d973eba933b83548fa2e46adfd69d96e0f4bf8580b71"
     },
     "boss_storm_herald_attack": {
       "id": "boss_storm_herald_attack",
@@ -4012,12 +4012,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_storm_herald",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 2281,
-      "sha256": "1c8208d47c84c8f26584638ed5446d7f5a2bc23692bd488178e48c39a8cb93df"
+      "bytes": 4926,
+      "sha256": "0b880533f658bd15a2620b9e5d172ba6381f964f31034f76ca50fa1397fe2ab6"
     },
     "boss_storm_herald_dead": {
       "id": "boss_storm_herald_dead",
@@ -4032,12 +4032,12 @@
       "nativeFacing": "right",
       "category": "boss",
       "tier": 96,
-      "sourceId": "generated_synth",
+      "sourceId": "crawl_tiles_cc0",
       "license": "CC0-1.0",
-      "url": "local://generated/boss_storm_herald",
+      "url": "https://raw.githubusercontent.com/crawl/tiles/master/",
       "fallback": false,
-      "bytes": 534,
-      "sha256": "0e09500320ecc1ef617a1e34dadf54eeb31be205418ec53815ce7058799367e9"
+      "bytes": 6924,
+      "sha256": "984f74b1e2374de5e0a209a391f3541b889e5c53a169e71e04b8b43df8a06887"
     }
   }
 }

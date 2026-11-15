@@ -386,6 +386,32 @@ const HERO_PROFILES = {
       bootShade: C.MONO_2,
     },
   },
+  laser: {
+    id: 'laser',
+    name: 'Laser Vanguard',
+    aliases: ['hero_laser_vanguard'],
+    shoulderOffset: { x: 4, y: -18 },
+    headTopY: -41,
+    starterWeapon: 'laser_cannon',
+    fallback: { shape: 'capsule', color: '#e6eef8', accent: '#ff9ee2' },
+    pal: {
+      hoodHi: C.WHITE,
+      hoodBase: C.MONO_5,
+      hoodShade: C.MONO_4,
+      torsoHi: C.WHITE,
+      torsoBase: C.MONO_5,
+      torsoShade: C.ARCANE_0,
+      trim: C.PINK_LIGHT,
+      belt: C.ARCANE_0,
+      buckle: C.CYAN_BRIGHT,
+      capeHi: C.PINK_LIGHT,
+      capeBase: C.ARCANE_2,
+      capeShade: C.ARCANE_0,
+      bootHi: C.MONO_5,
+      bootBase: C.ARCANE_2,
+      bootShade: C.ARCANE_0,
+    },
+  },
 };
 
 function drawHeroHead(cv, heroId, hx, hy, opts) {
@@ -512,6 +538,36 @@ function drawHeroHead(cv, heroId, hx, hy, opts) {
       cv.set(hx + 2, hy - 1, C.GOLD);
       cv.rect(hx + 5, hy - 1, 2, 2, C.ORANGE);
       cv.set(hx + 6, hy - 1, flashFace ? C.WHITE : C.GOLD);
+    }
+    return;
+  }
+
+  if (heroId === 'laser') {
+    // Sleek white-silver Prism Vanguard helmet with glowing laser fin & magenta-cyan visor
+    // Top prism antenna fin
+    cv.rect(hx - 3, hy - 11, 5, 4, C.ARCANE_2);
+    cv.rect(hx - 2, hy - 12, 4, 2, C.PINK_LIGHT);
+    cv.set(hx + 1, hy - 12, C.CYAN_BRIGHT);
+    // Ear emitter pod
+    cv.rect(hx - 6, hy - 3, 3, 5, C.ARCANE_0);
+    cv.set(hx - 5, hy - 2, blink ? C.WHITE : C.PINK_LIGHT);
+
+    // Helmet shell
+    cv.oval(hx, hy, 8.4, 6.9, pal.hoodBase, pal.hoodShade, pal.hoodHi);
+    cv.hline(hx - 4, hx + 6, hy - 5, C.ARCANE_2);
+
+    // Dark optic visor cavity + high-output laser visor lens
+    cv.rect(hx + 0, hy - 3, 8, 6, C.OUTLINE);
+    if (dizzy) {
+      cv.hline(hx + 1, hx + 3, hy - 1, C.PINK_LIGHT);
+      cv.hline(hx + 5, hx + 7, hy + 1, C.CYAN);
+    } else if (blink) {
+      cv.hline(hx + 1, hx + 7, hy, C.PINK_LIGHT);
+    } else {
+      cv.rect(hx + 1, hy - 2, 7, 3, C.ARCANE_2);
+      cv.hline(hx + 2, hx + 7, hy - 1, C.PINK_LIGHT);
+      cv.hline(hx + 3, hx + 6, hy - 1, flashFace ? C.WHITE : C.CYAN_BRIGHT);
+      if (squinted) cv.hline(hx + 1, hx + 7, hy - 2, C.OUTLINE);
     }
     return;
   }
@@ -653,6 +709,13 @@ function drawHeroFrame(heroId, state, frameIdx) {
     cv.hline(bx - 3, bx + 5, by + 3, pal.belt);
     cv.rect(bx + 1, by - 1, 2, 4, C.GOLD);
     cv.hline(bx + 0, bx + 3, by, C.GOLD);
+  } else if (heroId === 'laser') {
+    // Prism exosuit collar + glowing magenta/cyan chest core
+    cv.hline(bx - 4, bx + 5, by - 5, C.ARCANE_2);
+    cv.hline(bx - 4, bx + 5, by + 3, pal.belt);
+    cv.rect(bx + 1, by - 2, 3, 3, C.ARCANE_2);
+    cv.rect(bx + 2, by - 1, 2, 2, C.CYAN_BRIGHT);
+    cv.set(bx + 2, by - 1, C.WHITE);
   }
 
   // 4. Head & Headgear
@@ -660,7 +723,7 @@ function drawHeroFrame(heroId, state, frameIdx) {
 
   // 5. Dash speed-streaks & landing dust micro-pixels
   if (speedStreaks) {
-    cv.hline(bx - 14, bx - 9, by - 3, heroId === 'pyro' ? C.ORANGE : C.CYAN);
+    cv.hline(bx - 14, bx - 9, by - 3, heroId === 'pyro' ? C.ORANGE : heroId === 'laser' ? C.PINK_LIGHT : C.CYAN);
     cv.hline(bx - 16, bx - 10, by + 2, C.WHITE);
   }
   if (dustTrail) {
@@ -679,6 +742,14 @@ function drawBackCapeOrScarf(cv, heroId, bx, by, wave) {
     cv.rect(bx - 9, by - 5 + wy, 5, 2, pal.capeHi);
     cv.rect(bx - 12 - wave, by - 4 + wy, 4, 2, pal.capeBase);
     cv.rect(bx - 10 - wave, by - 2, 4, 2, pal.capeShade);
+    return;
+  }
+  if (heroId === 'laser') {
+    // Heavy dorsal laser battery pack & glowing prism coil on back (-X)
+    cv.rect(bx - 10, by - 5 + Math.round(wy * 0.5), 5, 9, C.MONO_3);
+    cv.rect(bx - 9, by - 4 + Math.round(wy * 0.5), 3, 7, C.ARCANE_0);
+    cv.rect(bx - 9, by - 3 + Math.round(wy * 0.5), 2, 5, wave >= 2 ? C.CYAN_BRIGHT : C.PINK_LIGHT);
+    cv.set(bx - 9, by - 2 + Math.round(wy * 0.5), C.WHITE);
     return;
   }
   // Flowing cloak / cape behind torso
@@ -801,6 +872,10 @@ function drawDeadProne(cv, heroId, cx) {
   } else if (heroId === 'knight') {
     cv.rect(cx + 4, 30, 3, 3, C.GOLD);
     cv.rect(cx + 9, 36, 2, 4, C.OUTLINE);
+  } else if (heroId === 'laser') {
+    cv.rect(cx + 4, 31, 4, 2, C.PINK_LIGHT);
+    cv.rect(cx + 7, 36, 4, 2, C.ARCANE_2);
+    cv.set(cx + 8, 36, C.CYAN_BRIGHT);
   }
 }
 

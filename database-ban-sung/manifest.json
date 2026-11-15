@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-15T07:27:40.947Z",
+  "generatedAt": "2026-11-15T08:44:42.600Z",
   "defaults": {
     "baseTilePx": 32,
     "nativeFacing": "right",
@@ -318,7 +318,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_abyssal_leviathan_attack": {
       "path": "normalized/bosses/boss_abyssal_leviathan_attack.png",
@@ -335,7 +335,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_abyssal_leviathan_dead": {
       "path": "normalized/bosses/boss_abyssal_leviathan_dead.png",
@@ -352,7 +352,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_abyssal_leviathan_idle": {
       "path": "normalized/bosses/boss_abyssal_leviathan_idle.png",
@@ -369,7 +369,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_abyssal_leviathan_run": {
       "path": "normalized/bosses/boss_abyssal_leviathan_run.png",
@@ -386,7 +386,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_arsenal_attack": {
       "path": "normalized/bosses/boss_arsenal_attack.png",
@@ -403,7 +403,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_arsenal_dead": {
       "path": "normalized/bosses/boss_arsenal_dead.png",
@@ -420,7 +420,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_arsenal_idle": {
       "path": "normalized/bosses/boss_arsenal_idle.png",
@@ -437,7 +437,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_arsenal_run": {
       "path": "normalized/bosses/boss_arsenal_run.png",
@@ -454,7 +454,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_beholder": {
       "path": "normalized/bosses/boss_beholder_idle.png",
@@ -471,7 +471,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_beholder_beam_windup": {
       "path": "normalized/bosses/boss_beholder_beam_windup.png",
@@ -488,7 +488,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_beholder_dead": {
       "path": "normalized/bosses/boss_beholder_dead.png",
@@ -505,7 +505,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_beholder_enrage_roar": {
       "path": "normalized/bosses/boss_beholder_enrage_roar.png",
@@ -522,7 +522,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_beholder_idle": {
       "path": "normalized/bosses/boss_beholder_idle.png",
@@ -539,7 +539,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_beholder_move": {
       "path": "normalized/bosses/boss_beholder_move.png",
@@ -556,7 +556,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_beholder_slam_leap": {
       "path": "normalized/bosses/boss_beholder_slam_leap.png",
@@ -573,7 +573,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_beholder_stagger": {
       "path": "normalized/bosses/boss_beholder_stagger.png",
@@ -590,7 +590,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_beholder_volley_cast": {
       "path": "normalized/bosses/boss_beholder_volley_cast.png",
@@ -607,7 +607,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_colossus": {
       "path": "normalized/bosses/boss_colossus_idle.png",
@@ -624,7 +624,7 @@
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_colossus_attack": {
       "path": "normalized/bosses/boss_colossus_attack.png",
@@ -641,7 +641,7 @@
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_colossus_dead": {
       "path": "normalized/bosses/boss_colossus_dead.png",
@@ -658,7 +658,7 @@
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_colossus_idle": {
       "path": "normalized/bosses/boss_colossus_idle.png",
@@ -675,7 +675,7 @@
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_colossus_overheat_stun": {
       "path": "normalized/bosses/boss_colossus_overheat_stun.png",
@@ -692,7 +692,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_colossus_run": {
       "path": "normalized/bosses/boss_colossus_run.png",
@@ -709,7 +709,7 @@
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_destroyer": {
       "path": "normalized/bosses/boss_destroyer_idle.png",
@@ -726,7 +726,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_destroyer_attack": {
       "path": "normalized/bosses/boss_destroyer_attack.png",
@@ -743,7 +743,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_destroyer_dead": {
       "path": "normalized/bosses/boss_destroyer_dead.png",
@@ -760,7 +760,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_destroyer_idle": {
       "path": "normalized/bosses/boss_destroyer_idle.png",
@@ -777,7 +777,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_destroyer_run": {
       "path": "normalized/bosses/boss_destroyer_run.png",
@@ -794,7 +794,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_dread_colossus_attack": {
       "path": "normalized/bosses/boss_colossus_attack.png",
@@ -811,7 +811,7 @@
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_dread_colossus_charge": {
       "path": "normalized/bosses/boss_colossus_run.png",
@@ -828,7 +828,7 @@
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_dread_colossus_dead": {
       "path": "normalized/bosses/boss_colossus_dead.png",
@@ -845,7 +845,7 @@
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_dread_colossus_idle": {
       "path": "normalized/bosses/boss_colossus_idle.png",
@@ -862,7 +862,7 @@
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_dread_colossus_overheat_stun": {
       "path": "normalized/bosses/boss_colossus_overheat_stun.png",
@@ -879,7 +879,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_dread_colossus_run": {
       "path": "normalized/bosses/boss_colossus_run.png",
@@ -896,7 +896,7 @@
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_frost_empress": {
       "path": "normalized/bosses/boss_frost_empress_idle.png",
@@ -913,7 +913,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_frost_empress_attack": {
       "path": "normalized/bosses/boss_frost_empress_attack.png",
@@ -930,7 +930,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_frost_empress_dead": {
       "path": "normalized/bosses/boss_frost_empress_dead.png",
@@ -947,7 +947,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_frost_empress_idle": {
       "path": "normalized/bosses/boss_frost_empress_idle.png",
@@ -964,7 +964,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_frost_empress_run": {
       "path": "normalized/bosses/boss_frost_empress_run.png",
@@ -981,7 +981,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_overlord": {
       "path": "normalized/bosses/boss_overlord_idle.png",
@@ -998,7 +998,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_overlord_charge": {
       "path": "normalized/bosses/boss_overlord_charge.png",
@@ -1015,7 +1015,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_overlord_core_dead": {
       "path": "normalized/bosses/boss_overlord_dead.png",
@@ -1032,7 +1032,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_overlord_core_idle": {
       "path": "normalized/bosses/boss_overlord_idle.png",
@@ -1049,7 +1049,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_overlord_core_laser": {
       "path": "normalized/bosses/boss_overlord_charge.png",
@@ -1066,7 +1066,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_overlord_core_stun": {
       "path": "normalized/bosses/boss_overlord_stun.png",
@@ -1083,7 +1083,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_overlord_dead": {
       "path": "normalized/bosses/boss_overlord_dead.png",
@@ -1100,7 +1100,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_overlord_idle": {
       "path": "normalized/bosses/boss_overlord_idle.png",
@@ -1117,7 +1117,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_overlord_stun": {
       "path": "normalized/bosses/boss_overlord_stun.png",
@@ -1134,7 +1134,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_sand_beholder_beam_windup": {
       "path": "normalized/bosses/boss_beholder_beam_windup.png",
@@ -1151,7 +1151,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_sand_beholder_dead": {
       "path": "normalized/bosses/boss_beholder_dead.png",
@@ -1168,7 +1168,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_sand_beholder_enrage_roar": {
       "path": "normalized/bosses/boss_beholder_enrage_roar.png",
@@ -1185,7 +1185,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_sand_beholder_idle": {
       "path": "normalized/bosses/boss_beholder_idle.png",
@@ -1202,7 +1202,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_sand_beholder_move": {
       "path": "normalized/bosses/boss_beholder_move.png",
@@ -1219,7 +1219,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_sand_beholder_slam_leap": {
       "path": "normalized/bosses/boss_beholder_slam_leap.png",
@@ -1236,7 +1236,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_sand_beholder_stagger": {
       "path": "normalized/bosses/boss_beholder_stagger.png",
@@ -1253,7 +1253,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_sand_beholder_volley_cast": {
       "path": "normalized/bosses/boss_beholder_volley_cast.png",
@@ -1270,7 +1270,7 @@
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_storm_herald": {
       "path": "normalized/bosses/boss_storm_herald_idle.png",
@@ -1287,7 +1287,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_storm_herald_attack": {
       "path": "normalized/bosses/boss_storm_herald_attack.png",
@@ -1304,7 +1304,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_storm_herald_dead": {
       "path": "normalized/bosses/boss_storm_herald_dead.png",
@@ -1321,7 +1321,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_storm_herald_idle": {
       "path": "normalized/bosses/boss_storm_herald_idle.png",
@@ -1338,7 +1338,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_storm_herald_run": {
       "path": "normalized/bosses/boss_storm_herald_run.png",
@@ -1355,7 +1355,7 @@
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_tempest": {
       "path": "normalized/bosses/boss_tempest_idle.png",
@@ -1372,7 +1372,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_tempest_attack": {
       "path": "normalized/bosses/boss_tempest_attack.png",
@@ -1389,7 +1389,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_tempest_dead": {
       "path": "normalized/bosses/boss_tempest_dead.png",
@@ -1406,7 +1406,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_tempest_idle": {
       "path": "normalized/bosses/boss_tempest_idle.png",
@@ -1423,7 +1423,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "boss_tempest_run": {
       "path": "normalized/bosses/boss_tempest_run.png",
@@ -1440,7 +1440,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "bullet_enemy_orb": {
       "path": "normalized/projectiles/bullet_enemy_orb.png",
@@ -2269,7 +2269,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "emp_pylon_idle": {
       "path": "normalized/bosses/emp_pylon_idle.png",
@@ -2286,7 +2286,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "fireball": {
       "path": "normalized/projectiles/proj_fireball.png",
@@ -2577,6 +2577,23 @@
       },
       "sourceId": "generated_synth"
     },
+    "fx_fire_orb": {
+      "path": "normalized/vfx/fx_fire_orb.png",
+      "category": "vfx",
+      "frames": 8,
+      "cellW": 36,
+      "cellH": 36,
+      "offX": -18,
+      "offY": -18,
+      "fps": 16,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e43b44",
+        "accent": "#feae34"
+      },
+      "sourceId": "crawl_tiles_cc0"
+    },
     "fx_fireball": {
       "path": "normalized/projectiles/proj_fireball.png",
       "category": "vfx",
@@ -2593,6 +2610,91 @@
         "accent": "#fee761"
       },
       "sourceId": "internal_miragine"
+    },
+    "fx_light_slash": {
+      "path": "normalized/vfx/fx_light_slash.png",
+      "category": "vfx",
+      "frames": 7,
+      "cellW": 64,
+      "cellH": 64,
+      "offX": -32,
+      "offY": -32,
+      "fps": 24,
+      "loop": false,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "crawl_tiles_cc0"
+    },
+    "fx_light_sword": {
+      "path": "normalized/vfx/fx_light_sword.png",
+      "category": "vfx",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -24,
+      "fps": 16,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "crawl_tiles_cc0"
+    },
+    "fx_lightning_bolt_blue": {
+      "path": "normalized/vfx/fx_lightning_bolt_blue.png",
+      "category": "vfx",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 96,
+      "offX": -24,
+      "offY": -88,
+      "fps": 22,
+      "loop": false,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "crawl_tiles_cc0"
+    },
+    "fx_lightning_bolt_yellow": {
+      "path": "normalized/vfx/fx_lightning_bolt_yellow.png",
+      "category": "vfx",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 96,
+      "offX": -24,
+      "offY": -88,
+      "fps": 22,
+      "loop": false,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "crawl_tiles_cc0"
+    },
+    "fx_lightning_orb": {
+      "path": "normalized/vfx/fx_lightning_orb.png",
+      "category": "vfx",
+      "frames": 8,
+      "cellW": 36,
+      "cellH": 36,
+      "offX": -18,
+      "offY": -18,
+      "fps": 18,
+      "loop": true,
+      "fallback": {
+        "shape": "circle",
+        "color": "#fee761",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "crawl_tiles_cc0"
     },
     "fx_muzzle_kinetic": {
       "path": "normalized/vfx/fx_muzzle_kinetic.png",
@@ -3948,6 +4050,258 @@
         "shape": "capsule",
         "color": "#3b5bdb",
         "accent": "#fcc419"
+      },
+      "sourceId": "generated_synth",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_dash": {
+      "path": "normalized/heroes/hero_laser_dash.png",
+      "category": "hero",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14.3,
+      "loop": false,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_dead": {
+      "path": "normalized/heroes/hero_laser_dead.png",
+      "category": "hero",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": false,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_idle": {
+      "path": "normalized/heroes/hero_laser_idle.png",
+      "category": "hero",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 6,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_run": {
+      "path": "normalized/heroes/hero_laser_run.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_shoot": {
+      "path": "normalized/heroes/hero_laser_shoot.png",
+      "category": "hero",
+      "frames": 3,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 24,
+      "loop": false,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_stunned": {
+      "path": "normalized/heroes/hero_laser_stunned.png",
+      "category": "hero",
+      "frames": 2,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_vanguard_dash": {
+      "path": "normalized/heroes/hero_laser_dash.png",
+      "category": "hero",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14.3,
+      "loop": false,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_vanguard_dead": {
+      "path": "normalized/heroes/hero_laser_dead.png",
+      "category": "hero",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": false,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_vanguard_idle": {
+      "path": "normalized/heroes/hero_laser_idle.png",
+      "category": "hero",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 6,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_vanguard_run": {
+      "path": "normalized/heroes/hero_laser_run.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_vanguard_shoot": {
+      "path": "normalized/heroes/hero_laser_shoot.png",
+      "category": "hero",
+      "frames": 3,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 24,
+      "loop": false,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_synth",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_vanguard_stunned": {
+      "path": "normalized/heroes/hero_laser_stunned.png",
+      "category": "hero",
+      "frames": 2,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
       },
       "sourceId": "generated_synth",
       "pivot": {
@@ -6483,7 +6837,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "overlord_hull_dead": {
       "path": "normalized/bosses/boss_overlord_dead.png",
@@ -6500,7 +6854,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "overlord_hull_idle": {
       "path": "normalized/bosses/boss_overlord_idle.png",
@@ -6517,7 +6871,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "overlord_hull_stun": {
       "path": "normalized/bosses/boss_overlord_stun.png",
@@ -6534,7 +6888,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "overlord_weakpoint": {
       "path": "normalized/bosses/overlord_weakpoint_idle.png",
@@ -6551,7 +6905,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "overlord_weakpoint_idle": {
       "path": "normalized/bosses/overlord_weakpoint_idle.png",
@@ -6568,7 +6922,7 @@
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "crawl_tiles_cc0"
     },
     "p_frag_grenade": {
       "path": "normalized/projectiles/p_frag_grenade.png",
@@ -9277,6 +9631,23 @@
       "fallback": {
         "shape": "rect",
         "color": "#8b9bb4",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_synth"
+    },
+    "ui_portrait_laser": {
+      "path": "normalized/ui/ui_portrait_laser.png",
+      "category": "ui",
+      "frames": 1,
+      "cellW": 32,
+      "cellH": 32,
+      "offX": -16,
+      "offY": -16,
+      "fps": 0,
+      "loop": false,
+      "fallback": {
+        "shape": "rect",
+        "color": "#ff9ee2",
         "accent": "#262b44"
       },
       "sourceId": "generated_synth"
