@@ -40,6 +40,7 @@ import {
   BANSUNG_PFLAG_HIT_FLASH,
   BANSUNG_PFLAG_INVULN,
   BANSUNG_PFLAG_RELOADING,
+  BANSUNG_PFLAG_SHIELD_BARRIER,
   BANSUNG_PICKUPS,
   BANSUNG_PICKUP_CONSTS,
   BANSUNG_PICKUP_IDS,
@@ -64,7 +65,6 @@ import {
   BANSUNG_FX_STATUS_REVIVED,
   BANSUNG_FX_STATUS_RELOAD_PERFECT,
   BANSUNG_TILE_SIZE,
-  BANSUNG_WEAPON_IDS,
   BANSUNG_WEAPON_TIERS,
   BANSUNG_EFLAG_ARMORED,
   BANSUNG_EFLAG_BURNING,
@@ -83,9 +83,11 @@ import {
   FX_STATUS,
   OVERLORD_STATS,
   dequantizeAim,
+  getBossHpBars,
   getWeaponByIdx,
   getWeaponSpec,
   normalizeWeaponTier,
+  resolveBossBarState,
   type BansungBiome,
   type BansungBossFrame,
   type BansungBossPartView,
@@ -108,6 +110,7 @@ import {
   drawHeroShadow,
   getHeroHeadAnchor,
   resolveHeroClipKey,
+  resolveWeaponClipKey,
 } from './anim';
 import { bansungInput } from './input';
 import {
@@ -1736,7 +1739,10 @@ function drawSnapPickup(
     const weapon = getWeaponByIdx(pk.subId & 0xff);
     const bobY = ry - 26 + Math.round(Math.sin(nowSec * 3.8 + pk.id) * 3);
     if (weapon) {
+      const resolvedKey = resolveWeaponClipKey(weapon.id);
       const clipCandidates = [
+        resolvedKey,
+        weapon.spriteKey,
         `wpn_${weapon.id}`,
         `gun_${weapon.id}`,
         weapon.id,
@@ -2706,11 +2712,40 @@ function drawBossEntity(
       const barW = Math.round(clamp(74 * scaleMult, 44, 128));
       const bx = Math.round(drawX - barW / 2);
       const by = headY - 12;
-      const ratio = boss.maxHp > 0 ? clamp(boss.hp / boss.maxHp, 0, 1) : 0;
-      ctx.fillStyle = 'rgba(10, 14, 24, 0.85)';
+      const bossTotalBars = Math.max(
+        1,
+        boss.hpBars ?? getBossHpBars(boss.kind, scaleMult < 0.85),
+      );
+      const barState = bossTotalBars >= 2
+        ? resolveBossBarState(boss.hp, boss.maxHp, bossTotalBars)
+        : null;
+      const ratio = barState
+        ? clamp(barState.curBarHp / Math.max(1, barState.hpPerBar), 0, 1)
+        : boss.maxHp > 0
+          ? clamp(boss.hp / boss.maxHp, 0, 1)
+          : 0;
+      ctx.fillStyle = 'rgba(10, 14, 24, 0.88)';
       ctx.fillRect(bx - 1, by - 1, barW + 2, 7);
-      ctx.fillStyle = splitTier >= 2 ? '#f43f5e' : splitTier === 1 ? '#fb923c' : '#ef4444';
+      if (barState?.underBarColor) {
+        ctx.fillStyle = barState.underBarColor;
+        ctx.globalAlpha = 0.42;
+        ctx.fillRect(bx, by, barW, 5);
+        ctx.globalAlpha = 1;
+      }
+      ctx.fillStyle = barState
+        ? barState.barColor
+        : splitTier >= 2
+          ? '#f43f5e'
+          : splitTier === 1
+            ? '#fb923c'
+            : '#ef4444';
       ctx.fillRect(bx, by, Math.round(barW * ratio), 5);
+      if (barState && bossTotalBars >= 2) {
+        ctx.font = '900 8px "Chakra Petch", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = barState.barColor;
+        ctx.fillText(`x${barState.remainingBars}`, bx + barW + 3, by + 5);
+      }
       if (splitTier > 0) {
         ctx.font = '900 9px "Chakra Petch", sans-serif';
         ctx.textAlign = 'center';
@@ -4060,9 +4095,23 @@ function drawWorldMicroHud(
         ctx.fillStyle = (p.flags & BANSUNG_PFLAG_BOT) !== 0 ? '#a5f3fc' : '#e2e8f0';
         ctx.fillText(rosterInfo.name.slice(0, 10), Math.round(head.x), by - 3);
       }
-    } else if ((p.flags & BANSUNG_PFLAG_RELOADING) !== 0) {
+    } else if (
+      p.state !== BANSUNG_STATE_DEAD &&
+      p.state !== BANSUNG_STATE_DOWNED &&
+      p.hp > 0 &&
+      (isLocal && store.me
+        ? Boolean(store.me.slots?.[store.me.slotIdx]?.maxClip) &&
+          store.me.reloadTotalMs > 0 &&
+          store.me.reloadMs > 0
+        : (p.flags & BANSUNG_PFLAG_RELOADING) !== 0)
+    ) {
       const pulseBright = (Math.floor(nowMs / 150) & 1) === 0;
-      const hasBar = isLocal && store.me && store.me.reloadTotalMs > 0;
+      const hasBar =
+        isLocal &&
+        store.me &&
+        Boolean(store.me.slots?.[store.me.slotIdx]?.maxClip) &&
+        store.me.reloadTotalMs > 0 &&
+        store.me.reloadMs > 0;
       const textY = ry - (hasBar ? 58 : 54);
       ctx.save();
       ctx.font = 'bold 13px "JetBrains Mono", monospace';
@@ -5120,8 +5169,8 @@ export function renderBansungScene(
           const weaponId =
             isLocal && store.me
               ? store.me.slots[store.me.slotIdx]?.id
-              : BANSUNG_WEAPON_IDS[p.weaponIdx];
-          const localWeaponIdx = weaponId ? BANSUNG_WEAPON_IDS.indexOf(weaponId) : p.weaponIdx;
+              : getWeaponByIdx(p.weaponIdx)?.id;
+          const localWeaponIdx = weaponId ? getWeaponSpec(weaponId).idx : p.weaponIdx;
           const activeTier: BansungWeaponTier =
             isLocal && store.me?.weaponTiers
               ? normalizeWeaponTier(store.me.weaponTiers[store.me.slotIdx] ?? p.weaponTier)
@@ -5187,6 +5236,41 @@ export function renderBansungScene(
             p.x = prevX;
             p.y = prevY;
             p.spawnAlpha = prevAlpha;
+          }
+          if (
+            (p.flags & BANSUNG_PFLAG_SHIELD_BARRIER) !== 0 &&
+            p.state !== BANSUNG_STATE_DEAD &&
+            p.state !== BANSUNG_STATE_DOWNED
+          ) {
+            const remMs = isLocal && store.me ? (store.me.shieldBuffMs ?? 0) : 30_000;
+            const expiringBlink =
+              remMs > 0 && remMs <= 3000 ? 0.45 + 0.55 * (Math.floor(nowMs / 110) & 1) : 1;
+            const sx = drawX + stunJitterX;
+            const sy = drawY + stunJitterY - 12;
+            const br = 24 + Math.sin(nowSec * 5.2) * 1.2;
+            ctx.save();
+            ctx.globalAlpha = 0.24 * expiringBlink;
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.arc(sx, sy, br, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 0.88 * expiringBlink;
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(sx, sy, br, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.strokeStyle = '#7dd3fc';
+            ctx.lineWidth = 1.6;
+            const arcSpin = nowSec * 2.8;
+            ctx.beginPath();
+            ctx.arc(sx, sy, br + 3, arcSpin, arcSpin + 1.35);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(sx, sy, br + 3, arcSpin + Math.PI, arcSpin + Math.PI + 1.35);
+            ctx.stroke();
+            ctx.restore();
+            queueGlow('cyan', sx, sy, 34, 0.24 * expiringBlink);
           }
           if (activeTier >= 2 && p.state !== BANSUNG_STATE_DEAD && p.state !== BANSUNG_STATE_DOWNED) {
             const glowCol: GlowColor =

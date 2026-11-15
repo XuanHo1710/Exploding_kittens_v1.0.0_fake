@@ -23,6 +23,7 @@ import {
   BANSUNG_PFLAG_FIRING,
   BANSUNG_PFLAG_HIT_FLASH,
   BANSUNG_PFLAG_LEFT,
+  BANSUNG_PFLAG_RELOADING,
   BANSUNG_PICKUP_FIELDS,
   BANSUNG_PLAYABLE_BOUNDS,
   BANSUNG_PLAYER_FIELDS,
@@ -486,6 +487,7 @@ export interface BansungHudPrivate extends BansungPrivate {
   shieldDrPct: number;
   shieldDelayMs: number;
   shieldRegenTotalMs: number;
+  shieldBuffMs: number;
   skillCdMs?: number;
   skillMaxMs?: number;
   skillActiveMs?: number;
@@ -631,6 +633,10 @@ function normalizePrivateSlice(raw: BansungPrivate): BansungHudPrivate {
     typeof raw.shieldDelayMs === 'number' && Number.isFinite(raw.shieldDelayMs) && raw.shieldDelayMs >= 0
       ? Math.round(raw.shieldDelayMs)
       : 0;
+  const shieldBuffMs =
+    typeof raw.shieldBuffMs === 'number' && Number.isFinite(raw.shieldBuffMs) && raw.shieldBuffMs >= 0
+      ? Math.round(raw.shieldBuffMs)
+      : 0;
 
   return {
     ...raw,
@@ -650,6 +656,7 @@ function normalizePrivateSlice(raw: BansungPrivate): BansungHudPrivate {
     shieldDrPct,
     shieldDelayMs,
     shieldRegenTotalMs,
+    shieldBuffMs,
   };
 }
 
@@ -2134,18 +2141,33 @@ export class BansungStore {
     const spawnAlpha = this.getSpawnAlpha(`p:${src.idx}`, now);
     const prevLeft = existing ? existing.facingLeft : (src.flags & BANSUNG_PFLAG_LEFT) !== 0;
     const facingRight = solveFacing(!prevLeft, Math.cos(aim), Math.sin(aim));
+    let flags = src.flags;
+    if (src.idx === this.myIdx && this.me) {
+      const slot = this.me.slots?.[this.me.slotIdx];
+      const localReloading =
+        Boolean(slot && slot.maxClip > 0) &&
+        this.me.reloadTotalMs > 0 &&
+        this.me.reloadMs > 0 &&
+        src.state !== BANSUNG_STATE_DEAD &&
+        src.state !== BANSUNG_STATE_DOWNED;
+      if (localReloading) flags |= BANSUNG_PFLAG_RELOADING;
+      else flags &= ~BANSUNG_PFLAG_RELOADING;
+    } else if (src.state === BANSUNG_STATE_DEAD || src.state === BANSUNG_STATE_DOWNED) {
+      flags &= ~BANSUNG_PFLAG_RELOADING;
+    }
 
     if (!existing) {
       this.players.set(src.idx, {
         ...src,
+        flags,
         x,
         y,
         aim,
         phase: 0,
         facingLeft: !facingRight,
         spawnAlpha,
-        atkAt: (src.flags & BANSUNG_PFLAG_FIRING) !== 0 ? now : 0,
-        hitFlashAt: (src.flags & BANSUNG_PFLAG_HIT_FLASH) !== 0 ? now : 0,
+        atkAt: (flags & BANSUNG_PFLAG_FIRING) !== 0 ? now : 0,
+        hitFlashAt: (flags & BANSUNG_PFLAG_HIT_FLASH) !== 0 ? now : 0,
       });
       return;
     }
@@ -2158,7 +2180,7 @@ export class BansungStore {
     existing.shield = src.shield;
     existing.armor = src.shield;
     existing.state = src.state;
-    existing.flags = src.flags;
+    existing.flags = flags;
     existing.heroIdx = src.heroIdx;
     existing.weaponIdx = src.weaponIdx;
     existing.revivePct = src.revivePct;
@@ -2166,8 +2188,8 @@ export class BansungStore {
     existing.phase += moved * 0.08;
     existing.facingLeft = !facingRight;
     existing.spawnAlpha = spawnAlpha;
-    if ((src.flags & BANSUNG_PFLAG_FIRING) !== 0) existing.atkAt = now;
-    if ((src.flags & BANSUNG_PFLAG_HIT_FLASH) !== 0) existing.hitFlashAt = now;
+    if ((flags & BANSUNG_PFLAG_FIRING) !== 0) existing.atkAt = now;
+    if ((flags & BANSUNG_PFLAG_HIT_FLASH) !== 0) existing.hitFlashAt = now;
   }
 
   private upsertEnemy(src: SnapEnemy, x: number, y: number, aim: number, now: number): void {

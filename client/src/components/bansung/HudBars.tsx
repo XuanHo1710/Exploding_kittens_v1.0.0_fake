@@ -18,9 +18,9 @@ import {
   Map as MapIcon,
   MessageSquare,
   Radar,
+  ShoppingBag,
   Skull,
   Sparkles,
-  Zap,
 } from 'lucide-react';
 import {
   BANSUNG_BIOME_PALETTES,
@@ -47,6 +47,7 @@ import {
   BANSUNG_RELOAD_LOCKOUT_U,
   BANSUNG_RELOAD_SWEET_MAX,
   BANSUNG_RELOAD_SWEET_MIN,
+  BANSUNG_STAMINA,
   BANSUNG_STATE_DEAD,
   BANSUNG_STATE_DOWNED,
   BANSUNG_STATE_STUN,
@@ -63,6 +64,7 @@ import {
   getXpToNextLevel,
   normalizeWeaponTier,
   resolveBansungGameMode,
+  resolveBossBarState,
   type BansungHeroId,
   type BansungPerkId,
   type BansungPingKind,
@@ -156,8 +158,6 @@ const RARITY_BORDER: Readonly<Record<'common' | 'rare' | 'epic', string>> = {
   rare: '#4dabf7',
   epic: '#cc5de8',
 };
-
-const BOSS_PHASE_MARKS = [0.5, 0.25] as const;
 
 interface SurvivalStageUiMeta {
   readonly shortLabel: string;
@@ -342,7 +342,7 @@ const HUD_FALLBACK_CSS = `@layer bs-hud-default {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-width: 300px;
+    max-width: min(460px, 92vw);
   }
 
   .bs-hero-card {
@@ -400,11 +400,13 @@ const HUD_FALLBACK_CSS = `@layer bs-hud-default {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    width: 192px;
+    min-width: 148px;
+    width: fit-content;
   }
 
   .bs-shield-delay-track {
-    width: 100%;
+    width: 148px;
+    max-width: 100%;
     height: 3px;
     margin-top: -2px;
     border-radius: 2px;
@@ -432,11 +434,13 @@ const HUD_FALLBACK_CSS = `@layer bs-hud-default {
   .bs-bar {
     position: relative;
     width: 100%;
+    max-width: min(340px, 66vw);
     height: 12px;
     background: #12151f;
     border: 1px solid #2b303b;
     border-radius: 2px;
     overflow: hidden;
+    transition: width 260ms ease-out;
   }
 
   .bs-bar-lag {
@@ -604,42 +608,95 @@ const HUD_FALLBACK_CSS = `@layer bs-hud-default {
     opacity: 0.58;
   }
 
-  .bs-boss-bar {
+  .bs-boss-dock {
     position: absolute;
-    top: 12px;
+    top: 14px;
     left: 50%;
     transform: translateX(-50%);
-    width: min(540px, 64vw);
+    width: min(560px, 64vw);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    pointer-events: none;
+    z-index: 12;
+  }
+
+  .bs-boss-dock--multi {
+    width: min(760px, 78vw);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 16px;
+    row-gap: 8px;
+  }
+
+  .bs-boss-entry {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 7px 10px;
-    background: var(--bs-bg-panel);
-    border: 2px solid #5a2328;
-    border-radius: 6px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
-  }
-
-  .bs-boss-dmg-pop {
-    padding: 1px 6px;
-    border-radius: 3px;
-    background: rgba(239, 68, 68, 0.24);
-    border: 1px solid #f87171;
-    color: #fef08a;
-    font-size: 10px;
-    font-weight: 900;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .bs-boss-head {
-    display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: 11px;
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .bs-boss-track {
+    position: relative;
+    width: 100%;
+    height: 12px;
+    background: #090c14;
+    border: 1.5px solid rgba(255, 255, 255, 0.34);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.72), inset 0 1px 2px rgba(0, 0, 0, 0.78);
+    transform: skewX(-18deg);
+    overflow: hidden;
+  }
+
+  .bs-boss-under {
+    position: absolute;
+    inset: 0;
+  }
+
+  .bs-boss-fill {
+    position: relative;
+    height: 100%;
+    transition: width 85ms linear;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.26), inset 0 -2px 0 rgba(0, 0, 0, 0.28);
+  }
+
+  .bs-boss-fill-edge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 3px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.75);
+  }
+
+  .bs-boss-subline {
+    width: 72%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.16);
+    transform: skewX(-18deg);
+    overflow: hidden;
+  }
+
+  .bs-boss-subline-fill {
+    height: 100%;
+    background: #f5e6a8;
+    transition: width 100ms linear;
+  }
+
+  .bs-boss-name {
+    font-size: 12px;
     font-weight: 800;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
+    color: #f8fafc;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 2px #000000;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    line-height: 1.15;
   }
 
   .bs-hud-tr {
@@ -946,9 +1003,12 @@ const HUD_FALLBACK_CSS = `@layer bs-hud-default {
   @media (max-width: 760px) {
     .bs-hud-tl { top: 8px; left: 8px; }
     .bs-hero-portrait { width: 34px; height: 34px; flex-basis: 34px; }
-    .bs-hero-bars { width: 128px; }
+    .bs-hero-bars { min-width: 118px; width: fit-content; }
     .bs-squad { width: 146px; }
-    .bs-boss-bar { width: min(320px, 56vw); top: 8px; }
+    .bs-boss-dock { width: min(320px, 58vw); top: 8px; }
+    .bs-boss-dock--multi { width: min(460px, 76vw); column-gap: 10px; }
+    .bs-boss-track { height: 10px; }
+    .bs-boss-name { font-size: 10px; }
     .bs-survival-strip { width: min(320px, 54vw); top: 8px; padding: 4px 6px; }
     .bs-survival-strip--under-boss { top: 64px; }
     .bs-survival-seg-label { font-size: 7px; }
@@ -999,13 +1059,29 @@ interface ResourceBarProps {
   max: number;
   fillColor: string;
   height?: number;
+  widthPx?: number;
   className?: string;
   label?: string;
+  ariaLabel?: string;
+  title?: string;
   valueText?: string;
   showLag?: boolean;
   shimmer?: boolean;
   flash?: boolean;
   marks?: readonly number[];
+  trackColor?: string;
+}
+
+function computeScaledBarWidthPx(
+  maxVal: number,
+  baseVal: number,
+  basePx = 148,
+  maxPx = 328,
+): number {
+  const safeBase = Math.max(1, baseVal);
+  if (maxVal <= safeBase) return basePx;
+  const growth = (maxVal - safeBase) / safeBase;
+  return clamp(Math.round(basePx + Math.min(growth, 2.2) * 84), basePx, maxPx);
 }
 
 function ResourceBar({
@@ -1013,13 +1089,17 @@ function ResourceBar({
   max,
   fillColor,
   height = 12,
+  widthPx,
   className,
   label,
+  ariaLabel,
+  title,
   valueText,
   showLag = true,
   shimmer = false,
   flash = false,
   marks,
+  trackColor,
 }: ResourceBarProps) {
   const safeMax = max > 0 ? max : 1;
   const clamped = clamp(value, 0, safeMax);
@@ -1031,9 +1111,14 @@ function ResourceBar({
       className={['bs-bar', shimmer ? 'bs-bar--shimmer' : '', flash ? 'bs-bar--flash' : '', className ?? '']
         .filter(Boolean)
         .join(' ')}
-      style={{ height }}
+      style={{
+        height,
+        ...(widthPx !== undefined ? { width: widthPx } : {}),
+        ...(trackColor ? { background: trackColor } : {}),
+      }}
+      title={title}
       role="progressbar"
-      aria-label={label}
+      aria-label={ariaLabel ?? label}
       aria-valuemin={0}
       aria-valuemax={Math.round(safeMax)}
       aria-valuenow={Math.round(clamped)}
@@ -1157,7 +1242,7 @@ export function ActiveReloadBar({
   reloading = false,
 }: ActiveReloadBarProps) {
   const [now, setNow] = useState(() => Date.now());
-  const isReloadActive = reloadTotalMs > 0 && (reloading || reloadMs > 0);
+  const isReloadActive = reloadTotalMs > 0 && reloadMs > 0 && (reloading || reloadMs > 0);
   const showSuccess = perfectedAt > 0 && now - perfectedAt < 900;
 
   useEffect(() => {
@@ -1360,15 +1445,21 @@ export function TopLeftHud({
   const maxHp = me?.maxHp ?? Math.max(baseHp, hp);
   const shield = localPlayer?.shield ?? baseShield;
   const maxShield = me?.maxShield ?? Math.max(baseShield, shield, 1);
-  const stamina = me?.stamina ?? 100;
-  const maxStamina = me?.maxStamina ?? 100;
-  const dashCost = me?.dashCost ?? 35;
+  const stamina = me?.stamina ?? BANSUNG_STAMINA.BASE_MAX;
+  const maxStamina = me?.maxStamina ?? BANSUNG_STAMINA.BASE_MAX;
+  const dashCost = me?.dashCost ?? BANSUNG_STAMINA.DASH_COST;
   const shieldDrPct = me?.shieldDrPct ?? 25;
   const shieldDelayMs = me?.shieldDelayMs ?? 0;
   const shieldRegenTotalMs = Math.max(1000, me?.shieldRegenTotalMs ?? 5000);
+  const shieldBuffMs = Math.max(0, me?.shieldBuffMs ?? 0);
   const dashCostMark = clamp(dashCost / Math.max(1, maxStamina), 0.1, 0.9);
   const energy = me?.energy ?? hero.energy;
   const maxEnergy = me?.maxEnergy ?? Math.max(hero.energy, energy, 1);
+
+  const hpBarWidth = computeScaledBarWidthPx(maxHp, baseHp);
+  const shBarWidth = computeScaledBarWidthPx(maxShield, baseShield);
+  const stmBarWidth = computeScaledBarWidthPx(maxStamina, BANSUNG_STAMINA.BASE_MAX);
+  const enBarWidth = computeScaledBarWidthPx(maxEnergy, hero.energy);
 
   const isSurvival = resolveIsSurvivalMode(snapshot, view);
   const level = Math.max(1, Math.floor(me?.level ?? 1));
@@ -1411,7 +1502,16 @@ export function TopLeftHud({
     return () => window.clearTimeout(t);
   }, [dryFireAt]);
 
-  const isReloading = ((localPlayer?.flags ?? 0) & BANSUNG_PFLAG_RELOADING) !== 0;
+  const activeSlot = me?.slots?.[me.slotIdx];
+  const isReloading = Boolean(
+    activeSlot &&
+      activeSlot.maxClip > 0 &&
+      me &&
+      me.reloadTotalMs > 0 &&
+      me.reloadMs > 0 &&
+      localPlayer?.state !== BANSUNG_STATE_DEAD &&
+      localPlayer?.state !== BANSUNG_STATE_DOWNED,
+  );
 
   return (
     <div className="bs-hud-tl">
@@ -1431,28 +1531,31 @@ export function TopLeftHud({
             )}
           </div>
           <ResourceBar
-            label="HP"
+            ariaLabel="HP"
             value={hp}
             max={maxHp}
+            widthPx={hpBarWidth}
             fillColor="var(--bs-hp)"
             className="bs-bar--hp"
           />
           <ResourceBar
-            label={shield > 0 ? `SH -${shieldDrPct}%` : 'SH'}
+            ariaLabel="Shield"
             value={shield}
             max={maxShield}
-            fillColor="var(--bs-sh)"
-            className="bs-bar--sh"
-            shimmer={shieldRegening}
-            valueText={
-              shield < maxShield && shieldDelayMs > 0
-                ? `${Math.ceil(shield)}/${Math.round(maxShield)} · ${(shieldDelayMs / 1000).toFixed(1)}s`
-                : `${Math.ceil(shield)}/${Math.round(maxShield)}`
+            widthPx={shBarWidth}
+            fillColor={
+              shieldBuffMs > 0
+                ? 'linear-gradient(90deg, #38bdf8, #fbbf24)'
+                : 'var(--bs-sh)'
             }
+            className="bs-bar--sh"
+            shimmer={shieldRegening || shieldBuffMs > 0}
+            title={`SH -${shieldDrPct}%`}
           />
           {shield < maxShield && shieldDelayMs > 0 && (
             <div
               className="bs-shield-delay-track"
+              style={{ width: shBarWidth }}
               title={`Khiên hồi lại sau ${(shieldDelayMs / 1000).toFixed(1)}s không nhận sát thương`}
             >
               <div
@@ -1464,9 +1567,10 @@ export function TopLeftHud({
             </div>
           )}
           <ResourceBar
-            label="STM"
+            ariaLabel="Stamina"
             value={stamina}
             max={maxStamina}
+            widthPx={stmBarWidth}
             fillColor={
               stamina < dashCost
                 ? 'linear-gradient(90deg, #b45309, #f59e0b)'
@@ -1475,17 +1579,13 @@ export function TopLeftHud({
             className="bs-bar--stm"
             showLag={false}
             marks={[dashCostMark]}
-            valueText={
-              stamina < dashCost
-                ? `${Math.floor(stamina)}/${Math.round(maxStamina)} (Hết)`
-                : `${Math.floor(stamina)}/${Math.round(maxStamina)}`
-            }
           />
           <ResourceBar
-            label="EN"
+            ariaLabel="Energy"
             value={energy}
             max={maxEnergy}
             height={8}
+            widthPx={enBarWidth}
             fillColor="var(--bs-en)"
             className="bs-bar--en"
             showLag={false}
@@ -1497,17 +1597,31 @@ export function TopLeftHud({
                 LV {level}
               </span>
               <ResourceBar
+                ariaLabel={`XP Level ${level}`}
                 value={xp}
                 max={xpToNext}
+                widthPx={110}
                 fillColor="linear-gradient(90deg, #10b981, #22d3ee)"
                 height={9}
                 className="bs-bar--xp"
                 showLag={false}
-                valueText={`${Math.floor(xp)}/${Math.round(xpToNext)}`}
               />
             </div>
           )}
           <div className="bs-pills">
+            {shieldBuffMs > 0 && (
+              <span
+                className="bs-pill"
+                style={{
+                  color: '#7dd3fc',
+                  borderColor: '#fbbf24',
+                  background: 'rgba(14, 116, 144, 0.42)',
+                }}
+                title="Khiên bảo hộ miễn nhiễm mọi đòn tấn công"
+              >
+                🛡️ {Math.ceil(shieldBuffMs / 1000)}s
+              </span>
+            )}
             {isSurvival ? (
               <>
                 <span className="bs-pill" style={{ color: '#a5d8ff' }} title="Đợt quái hiện tại">
@@ -1582,22 +1696,60 @@ export interface BossHudBarProps {
   bosses?: readonly SnapBoss[];
 }
 
-const BOSS_BAR_COLORS = [
-  '#ef4444',
-  '#f97316',
-  '#f59e0b',
-  '#eab308',
-  '#84cc16',
-  '#10b981',
-  '#06b6d4',
-  '#3b82f6',
-  '#8b5cf6',
-  '#ec4899',
-  '#0284c7',
-  '#6366f1',
-] as const;
+function resolveCleanBossName(b: SnapBoss): string {
+  const spec = BANSUNG_ENEMIES[b.kind];
+  const raw = b.title?.trim() || spec?.name || spec?.vnName || b.kind.replace(/^boss_/, '').replace(/_/g, ' ');
+  return raw.replace(/^\s*\[[^\]]+\]\s*/g, '').trim();
+}
 
-/** Top-center Boss bar supporting 1..16+ simultaneous Bosses, x2..x12 Multi-Bar HP & Destructible Body Parts. */
+function BossSingleBar({ boss }: { boss: SnapBoss }) {
+  const hp = Math.max(0, boss.hp);
+  const maxHp = Math.max(1, boss.maxHp);
+  const totalBars = Math.max(2, boss.hpBars ?? getBossHpBars(boss.kind, (boss.scale ?? 1) < 0.85));
+  const barState = resolveBossBarState(hp, maxHp, totalBars);
+  const fillPct = Math.max(0, Math.min(100, (barState.curBarHp / Math.max(1, barState.hpPerBar)) * 100));
+  const stunned = boss.state === BANSUNG_STATE_STUN;
+  const maxStagger = Math.max(1, boss.maxStagger ?? 0);
+  const staggerPct =
+    (boss.maxStagger ?? 0) > 0
+      ? Math.max(0, Math.min(100, ((boss.stagger ?? 0) / maxStagger) * 100))
+      : 0;
+  const bossName = resolveCleanBossName(boss);
+  const fillColor = barState.barColor;
+  const underColor = barState.underBarColor;
+  const sublineColor = stunned ? '#fb923c' : (boss.telegraph ?? 0) > 0 ? '#fca5a5' : '#f5e6a8';
+
+  return (
+    <div className="bs-boss-entry" aria-label={`Boss ${bossName}`}>
+      <div className="bs-boss-track">
+        {underColor && <div className="bs-boss-under" style={{ background: underColor }} />}
+        <div
+          className="bs-boss-fill"
+          style={{
+            width: `${fillPct}%`,
+            background: fillColor,
+          }}
+        >
+          {fillPct > 1 && <div className="bs-boss-fill-edge" />}
+        </div>
+      </div>
+
+      <div className="bs-boss-subline">
+        <div
+          className="bs-boss-subline-fill"
+          style={{
+            width: `${stunned ? 100 : staggerPct}%`,
+            background: sublineColor,
+          }}
+        />
+      </div>
+
+      <div className="bs-boss-name">{bossName}</div>
+    </div>
+  );
+}
+
+/** Top-center minimal layered Boss HP dock: skewed layered bars + centered Boss name only, 2-col parallel for 2+ bosses. */
 export function BossHudBar({ boss, bosses }: BossHudBarProps) {
   const allBosses = useMemo(() => {
     const seen = new Set<number>();
@@ -1617,341 +1769,14 @@ export function BossHudBar({ boss, bosses }: BossHudBarProps) {
     return list;
   }, [boss, bosses]);
 
-  const primary = allBosses[0];
-  const totalHp = allBosses.reduce((sum, b) => sum + Math.max(0, b.hp), 0);
-  const totalMaxHp = allBosses.reduce((sum, b) => sum + Math.max(1, b.maxHp), 0);
+  if (allBosses.length === 0) return null;
 
-  const prevHpRef = useRef<{ sig: string; hp: number }>({ sig: '', hp: 0 });
-  const [recentDmg, setRecentDmg] = useState(0);
-
-  useEffect(() => {
-    if (allBosses.length === 0) {
-      prevHpRef.current = { sig: '', hp: 0 };
-      setRecentDmg(0);
-      return;
-    }
-    const sig = allBosses.map((b) => b.id).join(',');
-    const prev = prevHpRef.current;
-    if (prev.sig === sig && prev.hp > totalHp) {
-      const delta = Math.round(prev.hp - totalHp);
-      if (delta > 0) {
-        setRecentDmg(delta);
-        prevHpRef.current = { sig, hp: totalHp };
-        const timer = window.setTimeout(() => setRecentDmg(0), 950);
-        return () => window.clearTimeout(timer);
-      }
-    }
-    prevHpRef.current = { sig, hp: totalHp };
-    return undefined;
-  }, [allBosses, totalHp]);
-
-  if (!primary) return null;
-
-  const spec = BANSUNG_ENEMIES[primary.kind];
-  const multiCount = allBosses.length;
-  const maxSplitTier = allBosses.reduce((m, b) => Math.max(m, b.splitTier ?? 0), 0);
-  const bossTitle =
-    multiCount > 1
-      ? maxSplitTier > 0
-        ? `ĐÀN BOSS PHÂN THÂN (×${multiCount})`
-        : `HỘI ĐỒNG BOSS (×${multiCount})`
-      : primary.title ?? spec?.name ?? primary.kind.replace(/^boss_/, '').toUpperCase();
-  const bossSub =
-    multiCount > 1
-      ? allBosses
-          .slice(0, 3)
-          .map((b) => b.title ?? BANSUNG_ENEMIES[b.kind]?.name ?? b.kind)
-          .join(' · ') + (multiCount > 3 ? ` +${multiCount - 3}` : '')
-      : primary.subtitle ?? spec?.vnName ?? '';
-  const phase = Math.max(1, primary.phase || 1);
-  const stunned = primary.state === BANSUNG_STATE_STUN;
-  const telegraphActive = allBosses.some((b) => (b.telegraph ?? 0) > 0);
-  const hasStagger =
-    multiCount === 1 && typeof primary.stagger === 'number' && (primary.maxStagger ?? 0) > 0;
-  const totalBars =
-    multiCount === 1
-      ? Math.max(2, primary.hpBars ?? getBossHpBars(primary.kind, (primary.scale ?? 1) < 0.85))
-      : 1;
-  const hpPerBar = Math.max(1, totalMaxHp / Math.max(1, totalBars));
-  const activeBarIdx =
-    multiCount === 1 && totalHp > 0
-      ? Math.min(totalBars - 1, Math.floor(Math.max(0, totalHp - 0.001) / hpPerBar))
-      : 0;
-  const remainingBars = totalHp <= 0 ? 0 : activeBarIdx + 1;
-  const curBarHp =
-    multiCount === 1
-      ? totalHp <= 0
-        ? 0
-        : Math.min(hpPerBar, totalHp - activeBarIdx * hpPerBar)
-      : totalHp;
-  const barColor =
-    multiCount === 1
-      ? stunned
-        ? '#ff922b'
-        : BOSS_BAR_COLORS[activeBarIdx % BOSS_BAR_COLORS.length]
-      : stunned
-        ? '#ff6b6b'
-        : 'var(--bs-boss)';
-  const underBarColor =
-    multiCount === 1 && activeBarIdx > 0
-      ? BOSS_BAR_COLORS[(activeBarIdx - 1) % BOSS_BAR_COLORS.length]
-      : undefined;
-  const bossParts = multiCount === 1 ? primary.parts ?? [] : [];
-
+  const isMulti = allBosses.length > 1;
   return (
-    <div className="bs-boss-bar" aria-label={`Boss ${bossTitle}`}>
-      <div className="bs-boss-head">
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-          <span
-            style={{
-              padding: '1px 5px',
-              borderRadius: 3,
-              background: maxSplitTier >= 2 ? '#be123c' : phase >= 2 ? '#c92a2a' : '#495057',
-              color: '#fff',
-              fontSize: 10,
-              fontWeight: 900,
-              flexShrink: 0,
-            }}
-          >
-            {multiCount > 1 ? `×${multiCount}` : maxSplitTier >= 2 ? '1→4→16' : `P${phase}`}
-          </span>
-          {multiCount === 1 && totalBars >= 2 && (
-            <span
-              style={{
-                padding: '1px 6px',
-                borderRadius: 3,
-                background: barColor,
-                color: '#0b101d',
-                fontSize: 10,
-                fontWeight: 900,
-                flexShrink: 0,
-              }}
-              title={`Boss có ${totalBars} thanh máu (${remainingBars}/${totalBars})`}
-            >
-              ×{totalBars} ({remainingBars}/{totalBars})
-            </span>
-          )}
-          <span style={{ color: '#ffe3e3' }}>{bossTitle}</span>
-          {bossSub && (
-            <span style={{ color: '#cbd5e1', fontSize: 9, fontWeight: 700, textTransform: 'none' }}>
-              · {bossSub}
-            </span>
-          )}
-        </span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-          {recentDmg > 0 && <span className="bs-boss-dmg-pop">-{recentDmg} DMG</span>}
-          {stunned && (
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 2,
-                padding: '1px 5px',
-                borderRadius: 3,
-                background: '#d9480f',
-                color: '#fff9db',
-                fontSize: 9,
-                fontWeight: 900,
-              }}
-            >
-              <Zap size={10} /> CHOÁNG!
-            </span>
-          )}
-          {!stunned && telegraphActive && (
-            <span
-              style={{
-                padding: '1px 5px',
-                borderRadius: 3,
-                background: '#a61e4d',
-                color: '#fff',
-                fontSize: 9,
-                fontWeight: 900,
-              }}
-            >
-              ! DANGER
-            </span>
-          )}
-        </span>
-      </div>
-
-      <div
-        style={{
-          position: 'relative',
-          borderRadius: 3,
-          background: underBarColor ? `${underBarColor}55` : undefined,
-        }}
-      >
-        <ResourceBar
-          value={multiCount === 1 ? curBarHp : totalHp}
-          max={multiCount === 1 ? hpPerBar : Math.max(1, totalMaxHp)}
-          fillColor={barColor}
-          height={16}
-          marks={BOSS_PHASE_MARKS}
-          valueText={`${Math.ceil(Math.max(0, totalHp))} / ${Math.round(totalMaxHp)} HP`}
-        />
-      </div>
-
-      {bossParts.length > 0 && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${Math.min(bossParts.length, 4)}, minmax(0, 1fr))`,
-            gap: 4,
-            marginTop: 5,
-          }}
-        >
-          {bossParts.map((part) => {
-            const pPct = part.broken ? 0 : Math.max(0, Math.min(100, Math.round((part.hp / Math.max(1, part.maxHp)) * 100)));
-            return (
-              <div
-                key={part.id}
-                style={{
-                  background: part.broken ? 'rgba(69, 10, 10, 0.72)' : 'rgba(15, 23, 42, 0.85)',
-                  border: `1px solid ${part.broken ? '#f43f5e' : 'rgba(251, 191, 36, 0.55)'}`,
-                  borderRadius: 4,
-                  padding: '2px 5px',
-                  fontSize: 9,
-                  color: part.broken ? '#fda4af' : '#fef08a',
-                }}
-                title={`${part.vnName} — Phá để gây CHOÁNG & mở skill: ${part.unlocksSkillVn}`}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 4, fontWeight: 800 }}>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {part.broken ? `✕ ${part.vnName}` : `◎ ${part.vnName}`}
-                  </span>
-                  <span style={{ flexShrink: 0 }}>{part.broken ? 'PHÁ VỠ' : `${pPct}%`}</span>
-                </div>
-                <div
-                  style={{
-                    height: 3,
-                    marginTop: 2,
-                    borderRadius: 2,
-                    background: 'rgba(255,255,255,0.12)',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${pPct}%`,
-                      height: '100%',
-                      background: part.broken ? '#f43f5e' : '#fbbf24',
-                    }}
-                  />
-                </div>
-                <div
-                  style={{
-                    marginTop: 1,
-                    fontSize: 8,
-                    color: part.broken ? '#fda4af' : '#cbd5e1',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {part.broken ? `Đã mở: ${part.unlocksSkillVn}` : `Phá → ${part.unlocksSkillVn}`}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {multiCount > 1 && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${Math.min(multiCount, 5)}, minmax(0, 1fr))`,
-            gap: 4,
-            marginTop: 4,
-          }}
-        >
-          {allBosses.slice(0, 8).map((b, idx) => {
-            const pct = Math.max(0, Math.min(100, Math.round((b.hp / Math.max(1, b.maxHp)) * 100)));
-            const shortName =
-              b.kind === 'boss_arsenal'
-                ? 'Arsenal'
-                : b.kind === 'boss_overlord'
-                  ? 'Overlord'
-                  : b.kind === 'boss_colossus'
-                    ? 'Colossus'
-                    : b.kind === 'boss_tempest'
-                      ? 'Bão Tố'
-                      : b.kind === 'boss_destroyer'
-                        ? 'Hủy Diệt'
-                        : b.kind === 'boss_frost_empress'
-                          ? 'Băng Hoàng'
-                          : b.kind === 'boss_abyssal_leviathan'
-                            ? 'Thủy Quái'
-                            : 'Beholder';
-            return (
-              <div
-                key={b.id}
-                style={{
-                  background: 'rgba(15, 23, 42, 0.78)',
-                  border: '1px solid rgba(248, 113, 113, 0.35)',
-                  borderRadius: 4,
-                  padding: '2px 4px',
-                  fontSize: 9,
-                  color: '#fecaca',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
-                  <span>
-                    #{idx + 1} {shortName}
-                  </span>
-                  <span>{pct}%</span>
-                </div>
-                <div
-                  style={{
-                    height: 3,
-                    marginTop: 2,
-                    borderRadius: 2,
-                    background: 'rgba(255,255,255,0.12)',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${pct}%`,
-                      height: '100%',
-                      background: b.splitTier ? '#fb923c' : '#ef4444',
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-          {multiCount > 8 && (
-            <div
-              style={{
-                background: 'rgba(15, 23, 42, 0.78)',
-                border: '1px solid rgba(248, 113, 113, 0.35)',
-                borderRadius: 4,
-                padding: '2px 5px',
-                fontSize: 9,
-                fontWeight: 900,
-                color: '#fde047',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              +{multiCount - 8} khác
-            </div>
-          )}
-        </div>
-      )}
-
-      {hasStagger && (
-        <ResourceBar
-          value={primary.stagger ?? 0}
-          max={primary.maxStagger ?? 1}
-          fillColor={stunned ? '#ff922b' : 'var(--bs-stagger)'}
-          height={5}
-          showLag={false}
-          shimmer={stunned}
-        />
-      )}
+    <div className={`bs-boss-dock${isMulti ? ' bs-boss-dock--multi' : ''}`}>
+      {allBosses.slice(0, 6).map((b) => (
+        <BossSingleBar key={b.id} boss={b} />
+      ))}
     </div>
   );
 }
@@ -2371,21 +2196,25 @@ export interface TopRightUtilityProps {
   unreadChat?: number;
   chatOpen?: boolean;
   guideOpen?: boolean;
+  shopOpen?: boolean;
   disableMinimapHotkey?: boolean;
+  onToggleShop?: () => void;
   onToggleChat?: () => void;
   onToggleGuide?: () => void;
   onLeave?: () => void;
   onPing?: (kind: BansungPingKind, x: number, y: number) => void;
 }
 
-/** Top-right HUD cluster: Guide, Chat+unread, optional Dock/Leave, 154x98 Minimap, Active Perks strip. */
+/** Top-right HUD cluster: Shop [B], Guide, Chat+unread, optional Dock/Leave, 154x98 Minimap, Active Perks strip. */
 export function TopRightUtility({
   perks = [],
   dock,
   unreadChat = 0,
   chatOpen = false,
   guideOpen = false,
+  shopOpen = false,
   disableMinimapHotkey = false,
+  onToggleShop,
   onToggleChat,
   onToggleGuide,
   onLeave,
@@ -2403,6 +2232,18 @@ export function TopRightUtility({
     <div className="bs-hud-tr">
       <div className="bs-util-row">
         {dock && <div className="bs-dock">{dock}</div>}
+        {onToggleShop && (
+          <button
+            type="button"
+            className={['bs-util-btn', shopOpen ? 'bs-util-btn--active' : ''].filter(Boolean).join(' ')}
+            onClick={onToggleShop}
+            title="Cửa hàng vũ khí [B]"
+            style={{ color: '#ffd43b' }}
+          >
+            <ShoppingBag size={13} />
+            <span>[B]</span>
+          </button>
+        )}
         {onToggleGuide && (
           <button
             type="button"
@@ -2934,7 +2775,9 @@ export interface HudBarsProps {
   unreadChat?: number;
   chatOpen?: boolean;
   guideOpen?: boolean;
+  shopOpen?: boolean;
   ended?: boolean;
+  onToggleShop?: () => void;
   onToggleChat?: () => void;
   onToggleGuide?: () => void;
   onLeave?: () => void;
@@ -2957,7 +2800,9 @@ export function HudBars({
   unreadChat = 0,
   chatOpen = false,
   guideOpen = false,
+  shopOpen = false,
   ended = false,
+  onToggleShop,
   onToggleChat,
   onToggleGuide,
   onLeave,
@@ -3034,7 +2879,9 @@ export function HudBars({
         unreadChat={unreadChat}
         chatOpen={chatOpen}
         guideOpen={guideOpen}
-        disableMinimapHotkey={guideOpen || ended}
+        shopOpen={shopOpen}
+        disableMinimapHotkey={guideOpen || shopOpen || ended}
+        onToggleShop={onToggleShop}
         onToggleChat={onToggleChat}
         onToggleGuide={onToggleGuide}
         onLeave={onLeave}

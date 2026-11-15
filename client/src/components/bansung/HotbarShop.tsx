@@ -7,6 +7,7 @@ import {
   Check,
   ChevronsUp,
   Clock,
+  Coins,
   Crosshair,
   Flame,
   Gift,
@@ -15,9 +16,11 @@ import {
   Package,
   RefreshCw,
   Shield,
+  ShoppingBag,
   Sparkles,
   TrendingUp,
   Wind,
+  X,
   Zap,
 } from 'lucide-react';
 import {
@@ -30,6 +33,7 @@ import {
   BANSUNG_STATE_DEAD,
   BANSUNG_STATE_DOWNED,
   BANSUNG_STATIC_ROOT,
+  BANSUNG_WEAPON_IDS,
   type BansungCommand,
   type BansungGachaCard,
   type BansungGachaCategory,
@@ -47,13 +51,17 @@ import {
   BANSUNG_RELOAD_LOCKOUT_U,
   BANSUNG_RELOAD_SWEET_MAX,
   BANSUNG_RELOAD_SWEET_MIN,
+  BANSUNG_SUPPLY_HEAL_COST,
+  BANSUNG_WEAPON_MAX_TIER,
   BANSUNG_WEAPON_TIERS,
   formatWeaponDmgText,
   getGachaSkillSpec,
   getGadgetSpec,
   getWeaponByIdx,
   getWeaponEvolutionStats,
+  getWeaponShopPrice,
   getWeaponSpec,
+  getWeaponUpgradeCoinCost,
   normalizeWeaponTier,
   type BansungGadgetSpec,
   type BansungWeaponSpec,
@@ -125,6 +133,10 @@ export interface HotbarShopProps {
   showPerkModal?: boolean;
   /** Set false to suppress the Survival XP Level-Up Gacha modal (default: true). */
   showGachaModal?: boolean;
+  /** Controlled visibility of the in-match [B] Armory & Supply Coin Shop modal. */
+  shopOpen?: boolean;
+  /** Toggle handler for closing or opening the Armory & Supply Coin Shop modal. */
+  onToggleShop?: () => void;
   className?: string;
 }
 
@@ -153,12 +165,12 @@ export const BANSUNG_WEAPON_ICON_META: Readonly<Record<BansungWeaponId, SpriteSh
   crescent_blade: { path: 'normalized/weapons/wpn_crescent_blade.png', frames: 4, cellW: 48, cellH: 48 },
   reaper_scythe: { path: 'normalized/weapons/wpn_reaper_scythe.png', frames: 4, cellW: 64, cellH: 64 },
   shock_baton: { path: 'normalized/weapons/wpn_shock_baton.png', frames: 4, cellW: 48, cellH: 48 },
-  dual_pistols: { path: 'normalized/weapons/gun_dual_pistols.png', frames: 3, cellW: 28, cellH: 18 },
-  minigun: { path: 'normalized/weapons/gun_minigun.png', frames: 3, cellW: 44, cellH: 20 },
-  saw_launcher: { path: 'normalized/weapons/gun_saw_launcher.png', frames: 3, cellW: 40, cellH: 20 },
-  flamethrower: { path: 'normalized/weapons/gun_flamethrower.png', frames: 3, cellW: 42, cellH: 18 },
-  cryo_cannon: { path: 'normalized/weapons/gun_cryo_cannon.png', frames: 3, cellW: 42, cellH: 18 },
-  gravity_gun: { path: 'normalized/weapons/gun_gravity_gun.png', frames: 3, cellW: 44, cellH: 20 },
+  dual_pistols: { path: 'normalized/weapons/gun_dual_pistols.png', frames: 4, cellW: 34, cellH: 18 },
+  minigun: { path: 'normalized/weapons/gun_minigun.png', frames: 4, cellW: 42, cellH: 18 },
+  saw_launcher: { path: 'normalized/weapons/gun_saw_launcher.png', frames: 4, cellW: 38, cellH: 18 },
+  flamethrower: { path: 'normalized/weapons/gun_flamethrower.png', frames: 4, cellW: 38, cellH: 18 },
+  cryo_cannon: { path: 'normalized/weapons/gun_cryo_cannon.png', frames: 4, cellW: 38, cellH: 18 },
+  gravity_gun: { path: 'normalized/weapons/gun_gravity_gun.png', frames: 4, cellW: 38, cellH: 18 },
   plasma_shotgun: { path: 'normalized/weapons/gun_plasma_shotgun.png', frames: 4, cellW: 38, cellH: 18 },
   twin_smg: { path: 'normalized/weapons/gun_twin_smg.png', frames: 4, cellW: 38, cellH: 18 },
   ion_beam: { path: 'normalized/weapons/gun_ion_beam.png', frames: 4, cellW: 38, cellH: 18 },
@@ -285,7 +297,7 @@ const GACHA_SHORT_SKILL_NAME: Readonly<Record<GachaSkillCategory, string>> = {
   skill_stamina: 'Thể Lực Dash',
   skill_shield: 'Khiên (5s)',
   skill_firerate: 'Tốc Bắn',
-  skill_multishot: 'Đa Tia',
+  skill_multishot: 'Tia +1',
   skill_crit: 'Chí Mạng',
   skill_mobility: 'Tốc Chạy',
 };
@@ -298,7 +310,7 @@ const GACHA_SKILL_CATEGORY_META: Readonly<
   skill_stamina: { label: 'Thể Lực (Dash)', accent: '#fbbf24', Icon: Wind },
   skill_shield: { label: 'Khiên Lưu Trữ (5s)', accent: '#38bdf8', Icon: Shield },
   skill_firerate: { label: 'Tốc Độ Đánh/Bắn', accent: '#38bdf8', Icon: Zap },
-  skill_multishot: { label: 'Đa Tia Đạn', accent: '#c084fc', Icon: Layers },
+  skill_multishot: { label: 'Thêm +1 Tia', accent: '#c084fc', Icon: Layers },
   skill_crit: { label: 'Chí Mạng', accent: '#fbbf24', Icon: Crosshair },
   skill_mobility: { label: 'Cơ Động', accent: '#22d3ee', Icon: Wind },
 };
@@ -1154,6 +1166,200 @@ const HOTBAR_DEFAULT_CSS = `
       height: 38px;
     }
   }
+
+  /* Armory & Supply Coin Shop Modal ([B]) */
+  .bs-shop-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 26;
+    background: radial-gradient(circle at 50% 42%, rgba(12, 18, 32, 0.78), rgba(4, 7, 14, 0.9));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    pointer-events: auto;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .bs-shop-modal {
+    width: min(920px, 100%);
+    max-height: calc(100vh - 36px);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 18px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #171e30 0%, #0d1220 100%);
+    border: 2px solid #090b10;
+    box-shadow: inset 0 0 0 2px #3b4254, 0 24px 60px rgba(0, 0, 0, 0.76);
+    color: #f8fafc;
+  }
+
+  .bs-shop-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .bs-shop-coins {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    background: rgba(245, 158, 11, 0.16);
+    border: 1px solid rgba(251, 191, 36, 0.55);
+    color: #fde047;
+    font-size: 13px;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bs-shop-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 5px;
+    border: 1px solid #475569;
+    background: #1e293b;
+    color: #e2e8f0;
+    cursor: pointer;
+  }
+
+  .bs-shop-close:hover {
+    border-color: #94a3b8;
+    background: #334155;
+  }
+
+  .bs-shop-services {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .bs-shop-svc-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1.5px solid #334155;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.96));
+    color: #f8fafc;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 120ms ease, transform 100ms ease;
+  }
+
+  .bs-shop-svc-btn:hover:not(:disabled) {
+    border-color: #fbbf24;
+    transform: translateY(-1px);
+  }
+
+  .bs-shop-svc-btn:disabled {
+    opacity: 0.72;
+    cursor: not-allowed;
+  }
+
+  .bs-shop-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .bs-shop-tab {
+    padding: 5px 11px;
+    border-radius: 5px;
+    border: 1px solid #334155;
+    background: #141a2b;
+    color: #cbd5e1;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .bs-shop-tab--active {
+    border-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.18);
+    color: #e0f2fe;
+  }
+
+  .bs-shop-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    overflow-y: auto;
+    padding-right: 4px;
+    max-height: 52vh;
+  }
+
+  .bs-shop-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 9px 10px;
+    border-radius: 6px;
+    border: 1.5px solid #2b354b;
+    background: rgba(15, 23, 42, 0.88);
+  }
+
+  .bs-shop-card--owned {
+    border-color: rgba(52, 211, 153, 0.6);
+    background: rgba(16, 42, 34, 0.42);
+  }
+
+  .bs-shop-buy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 100%;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 4px;
+    border: 1px solid #d97706;
+    background: linear-gradient(180deg, #b45309, #92400e);
+    color: #fef3c7;
+    font-size: 11px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .bs-shop-buy:hover:not(:disabled) {
+    filter: brightness(1.12);
+  }
+
+  .bs-shop-buy:disabled {
+    opacity: 1;
+    border-color: #334155;
+    background: #1e293b;
+    color: #cbd5e1;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 720px) {
+    .bs-shop-services {
+      grid-template-columns: 1fr;
+    }
+
+    .bs-shop-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 480px) {
+    .bs-shop-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 }
 `;
 
@@ -1793,7 +1999,11 @@ function ActiveReloadStrip({ me, reloadingFlag, onReload }: ActiveReloadStripPro
   const activeEvo = activeSlot ? getWeaponEvolutionStats(activeSlot.id, activeTier) : undefined;
   const activeName = activeSlot?.evolvedName ?? activeEvo?.vnName ?? activeSpec?.vnName ?? activeSlot?.id ?? '';
   const activeEnergyCost = activeEvo ? activeEvo.energyCost : (activeSpec?.energyCost ?? 0);
-  const isReloading = (me.reloadTotalMs > 0 && me.reloadMs > 0) || (reloadingFlag && me.reloadTotalMs > 0);
+  const isReloading =
+    Boolean(activeSlot && activeSlot.maxClip > 0) &&
+    me.reloadTotalMs > 0 &&
+    me.reloadMs > 0 &&
+    (reloadingFlag || me.reloadMs > 0);
   const u = isReloading ? clamp(1 - me.reloadMs / Math.max(1, me.reloadTotalMs), 0, 1) : 0;
   const rawMin = me.sweetSpot?.[0];
   const rawMax = me.sweetSpot?.[1];
@@ -2330,11 +2540,7 @@ function GachaDraftCard({
 
   const multBadgeText =
     card.category === 'skill_multishot'
-      ? (card.value ?? 1) >= 3
-        ? '+3'
-        : (card.value ?? 1) >= 2
-          ? '+2'
-          : '+1'
+      ? '+1'
       : isWeaponUnlock
         ? card.multLabel
           ? `${card.multLabel} MỚI`
@@ -2645,9 +2851,306 @@ export function GachaDraftModal({
   );
 }
 
+interface ArmoryShopModalProps {
+  me: BansungPrivate;
+  disabled: boolean;
+  onBuyWeapon: (weaponId: BansungWeaponId) => void;
+  onUpgradeActive: () => void;
+  onSupplyHeal: () => void;
+  onClose: () => void;
+}
+
+type ShopCategoryFilter = 'all' | BansungWeaponSpec['category'];
+
+const SHOP_FILTER_TABS: readonly { id: ShopCategoryFilter; label: string }[] = [
+  { id: 'all', label: 'Tất cả' },
+  { id: 'kinetic', label: 'Súng đạn' },
+  { id: 'explosive', label: 'Phóng nổ' },
+  { id: 'energy', label: 'Phép / NL' },
+  { id: 'melee', label: 'Cận chiến' },
+];
+
+const SHOP_PURCHASABLE_WEAPONS: readonly BansungWeaponId[] = BANSUNG_WEAPON_IDS.filter(
+  (id) => id !== 'pistol',
+);
+
+function ArmoryShopModal({
+  me,
+  disabled,
+  onBuyWeapon,
+  onUpgradeActive,
+  onSupplyHeal,
+  onClose,
+}: ArmoryShopModalProps) {
+  const [catFilter, setCatFilter] = useState<ShopCategoryFilter>('all');
+
+  const ownedWeaponIds = useMemo(() => {
+    const set = new Set<BansungWeaponId>();
+    for (const s of me.slots) {
+      if (s?.id) set.add(s.id);
+    }
+    return set;
+  }, [me.slots]);
+
+  const activeSlot = getHotbarSlotAt(me.slots, me.slotIdx);
+  const activeSpec = activeSlot ? getWeaponSpec(activeSlot.id) : undefined;
+  const activeTier = activeSlot
+    ? normalizeWeaponTier(me.weaponTiers?.[me.slotIdx] ?? activeSlot.tier ?? 1)
+    : 1;
+  const isMaxTier = activeTier >= BANSUNG_WEAPON_MAX_TIER;
+  const upgradeCost = getWeaponUpgradeCoinCost(activeTier);
+  const canUpgrade =
+    !disabled && Boolean(activeSlot) && !isMaxTier && upgradeCost > 0 && me.coins >= upgradeCost;
+  const canHeal = !disabled && me.coins >= BANSUNG_SUPPLY_HEAL_COST;
+
+  const filteredWeapons = useMemo(() => {
+    if (catFilter === 'all') return SHOP_PURCHASABLE_WEAPONS;
+    return SHOP_PURCHASABLE_WEAPONS.filter((id) => getWeaponSpec(id).category === catFilter);
+  }, [catFilter]);
+
+  return (
+    <div
+      className="bs-shop-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Kho vũ khí và cửa hàng tiếp tế"
+      onPointerDown={stopPointerPropagation}
+      onMouseDown={preventFocusOnMouseDown}
+      onClick={stopPointerPropagation}
+    >
+      <div className="bs-shop-modal" onClick={stopPointerPropagation}>
+        <div className="bs-shop-head">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <ShoppingBag size={18} color="#fbbf24" />
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: '0.03em' }}>
+                KHO VŨ KHÍ &amp; TIẾP TẾ [B]
+              </div>
+              <div style={{ fontSize: 11, color: '#94a3b8' }}>
+                Mua trang bị vào ô trống (hoặc thay ô đang chọn) · Nhấn [B] / Esc để đóng
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className="bs-shop-coins" aria-label={`Xu hiện có ${me.coins}`}>
+              <Coins size={14} />
+              {me.coins} xu
+            </span>
+            <button
+              type="button"
+              className="bs-shop-close"
+              onMouseDown={preventFocusOnMouseDown}
+              onClick={onClose}
+              aria-label="Đóng cửa hàng"
+            >
+              <X size={15} />
+            </button>
+          </div>
+        </div>
+
+        <div className="bs-shop-services">
+          <button
+            type="button"
+            className="bs-shop-svc-btn"
+            disabled={!canUpgrade}
+            onMouseDown={preventFocusOnMouseDown}
+            onClick={onUpgradeActive}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+              {activeSlot && (
+                <WeaponSpriteIcon
+                  meta={getWeaponIconMeta(activeSlot.id)}
+                  alt={activeSpec?.vnName || activeSlot.id}
+                  maxWidth={44}
+                  maxHeight={24}
+                />
+              )}
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: '#e2e8f0' }}>
+                  Nâng cấp vũ khí đang cầm
+                </div>
+                <div style={{ fontSize: 10.5, color: '#94a3b8' }}>
+                  {activeSlot && activeSpec
+                    ? isMaxTier
+                      ? `${activeSpec.vnName || activeSpec.name} · Đã tối đa Mk.${BANSUNG_WEAPON_MAX_TIER}`
+                      : `${activeSpec.vnName || activeSpec.name} · Mk.${activeTier} → Mk.${activeTier + 1} (+DMG & Nạp đầy đạn)`
+                    : 'Không có vũ khí đang cầm'}
+                </div>
+              </div>
+            </div>
+            <span
+              style={{
+                flexShrink: 0,
+                fontSize: 11,
+                fontWeight: 900,
+                color: isMaxTier ? '#34d399' : '#fde047',
+              }}
+            >
+              {isMaxTier ? 'MAX' : `${upgradeCost} xu`}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className="bs-shop-svc-btn"
+            disabled={!canHeal}
+            onMouseDown={preventFocusOnMouseDown}
+            onClick={onSupplyHeal}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+              <Heart size={18} color="#f87171" />
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: '#e2e8f0' }}>
+                  Tiếp tế chiến đấu khẩn cấp
+                </div>
+                <div style={{ fontSize: 10.5, color: '#94a3b8' }}>
+                  Hồi 100% HP, Khiên, Năng lượng &amp; +1 Gadget
+                </div>
+              </div>
+            </div>
+            <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 900, color: '#fde047' }}>
+              {BANSUNG_SUPPLY_HEAL_COST} xu
+            </span>
+          </button>
+        </div>
+
+        <div className="bs-shop-tabs" role="tablist" aria-label="Lọc loại vũ khí">
+          {SHOP_FILTER_TABS.map((tab) => {
+            const count =
+              tab.id === 'all'
+                ? SHOP_PURCHASABLE_WEAPONS.length
+                : SHOP_PURCHASABLE_WEAPONS.filter((id) => getWeaponSpec(id).category === tab.id).length;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={catFilter === tab.id}
+                className={`bs-shop-tab${catFilter === tab.id ? ' bs-shop-tab--active' : ''}`}
+                onMouseDown={preventFocusOnMouseDown}
+                onClick={() => setCatFilter(tab.id)}
+              >
+                {tab.label} ({count})
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="bs-shop-grid">
+          {filteredWeapons.map((weaponId) => {
+            const spec = getWeaponSpec(weaponId);
+            const rarityTheme = WEAPON_RARITY_THEME[spec.rarity];
+            const owned = ownedWeaponIds.has(weaponId);
+            const price = getWeaponShopPrice(weaponId);
+            const canBuy = !disabled && !owned && me.coins >= price;
+            const dmgText = formatWeaponDmgText(spec, 1);
+            const desc = `${spec.name} · Tầm ${Math.round(spec.range)}px · Chí mạng ${Math.round(spec.critChance * 100)}%`;
+
+            return (
+              <div
+                key={weaponId}
+                className={`bs-shop-card${owned ? ' bs-shop-card--owned' : ''}`}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                  <span
+                    style={{
+                      fontSize: 9.5,
+                      fontWeight: 900,
+                      color: rarityTheme.color,
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {rarityTheme.label} · {WEAPON_CATEGORY_BADGE[spec.category]}
+                  </span>
+                  <span style={{ fontSize: 10, fontWeight: 900, color: '#fde047' }}>{dmgText}</span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 34 }}>
+                  <div
+                    style={{
+                      width: 58,
+                      height: 32,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'rgba(9, 13, 24, 0.72)',
+                      borderRadius: 4,
+                      border: `1px solid ${rarityTheme.glow}`,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <WeaponSpriteIcon
+                      meta={getWeaponIconMeta(weaponId)}
+                      alt={spec.vnName || spec.name}
+                      maxWidth={50}
+                      maxHeight={26}
+                    />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 800,
+                        color: '#f8fafc',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {spec.vnName || spec.name}
+                    </div>
+                    <div style={{ fontSize: 10, color: '#94a3b8' }}>
+                      {spec.magSize > 0 ? `Băng ${spec.magSize}` : 'Cận chiến'} ·{' '}
+                      {spec.energyCost > 0 ? `${spec.energyCost} EN` : '0 EN'}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    fontSize: 10,
+                    color: '#cbd5e1',
+                    lineHeight: 1.3,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    minHeight: 26,
+                  }}
+                  title={desc}
+                >
+                  {desc}
+                </div>
+
+                <button
+                  type="button"
+                  className="bs-shop-buy"
+                  disabled={!canBuy}
+                  onMouseDown={preventFocusOnMouseDown}
+                  onClick={() => onBuyWeapon(weaponId)}
+                >
+                  {owned ? (
+                    <>
+                      <Check size={12} /> ĐÃ CÓ TRONG TÚI
+                    </>
+                  ) : (
+                    <>
+                      <Coins size={12} /> MUA {price} XU
+                    </>
+                  )}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Soul-Knight bottom 5-slot weapon/gadget hotbar, nearby Weapon Pedestal [E] swap prompt,
- * Survival Level-Up 3-card Gacha modal, and between-wave Perk Draft modal for Ban Sung Co-op.
+ * Survival Level-Up 3-card Gacha modal, Armory Coin Shop ([B]), and between-wave Perk Draft modal.
  */
 export function HotbarShop({
   snapshot: snapshotProp,
@@ -2668,6 +3171,8 @@ export function HotbarShop({
   showPedestalPrompt = true,
   showPerkModal = true,
   showGachaModal = true,
+  shopOpen = false,
+  onToggleShop,
   className,
 }: HotbarShopProps) {
   useEffect(() => {
@@ -2814,7 +3319,22 @@ export function HotbarShop({
   }
 
   const spectating = isSpectatingSnapshot(snapshot);
-  const reloadingFlag = Boolean(localPlayer && (localPlayer.flags & BANSUNG_PFLAG_RELOADING) !== 0);
+  const hudActiveSlot = getHotbarSlotAt(me.slots, me.slotIdx);
+  const reloadingFlag = spectating
+    ? Boolean(
+        localPlayer &&
+          (localPlayer.flags & BANSUNG_PFLAG_RELOADING) !== 0 &&
+          localPlayer.state !== BANSUNG_STATE_DEAD &&
+          localPlayer.state !== BANSUNG_STATE_DOWNED,
+      )
+    : Boolean(
+        hudActiveSlot &&
+          hudActiveSlot.maxClip > 0 &&
+          me.reloadTotalMs > 0 &&
+          me.reloadMs > 0 &&
+          localPlayer?.state !== BANSUNG_STATE_DEAD &&
+          localPlayer?.state !== BANSUNG_STATE_DOWNED,
+      );
   const activeReloadRatio =
     me.reloadTotalMs > 0 && me.reloadMs > 0
       ? clamp(1 - me.reloadMs / me.reloadTotalMs, 0, 1)
@@ -2922,6 +3442,17 @@ export function HotbarShop({
           perkChoices={me.perkChoices}
           ownedPerks={me.perks}
           onSelectPerk={handleSelectPerk}
+        />
+      )}
+
+      {shopOpen && !spectating && !hasGachaOverlay && !hasPerkOverlay && (
+        <ArmoryShopModal
+          me={me}
+          disabled={!isAlive}
+          onBuyWeapon={(weaponId) => emitCommand({ t: 'shop', op: 'buy_weapon', weaponId })}
+          onUpgradeActive={() => emitCommand({ t: 'shop', op: 'upgrade_active', slotIdx: me.slotIdx })}
+          onSupplyHeal={() => emitCommand({ t: 'shop', op: 'supply_heal' })}
+          onClose={() => onToggleShop?.()}
         />
       )}
     </>

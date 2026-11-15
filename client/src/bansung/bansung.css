@@ -1108,6 +1108,103 @@
   border-color: rgba(251, 191, 36, 0.42);
 }
 
+/* Unlayered dark button overrides beat global unlayered `button` rules in styles.css */
+.bs-game .bs-util-btn {
+  padding: 0 8px;
+  border-radius: 4px;
+  border: 1px solid var(--bs-border-px);
+  background: var(--bs-bg-panel);
+  color: #e9ecef;
+}
+
+.bs-game .bs-util-btn:hover:not(:disabled) {
+  border-color: #74c0fc;
+  background: rgba(27, 32, 48, 0.94);
+  filter: none;
+}
+
+.bs-game .bs-util-btn--active {
+  border-color: #ffd43b;
+  color: #ffd43b;
+}
+
+.bs-game .bs-shop-close {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 5px;
+  border: 1px solid #475569;
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+.bs-game .bs-shop-close:hover:not(:disabled) {
+  border-color: #94a3b8;
+  background: #334155;
+  filter: none;
+}
+
+.bs-game .bs-shop-svc-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1.5px solid #334155;
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.94), rgba(15, 23, 42, 0.98));
+  color: #f8fafc;
+}
+
+.bs-game .bs-shop-svc-btn:hover:not(:disabled) {
+  border-color: #fbbf24;
+  background: linear-gradient(180deg, rgba(38, 52, 74, 0.96), rgba(18, 28, 50, 0.98));
+  filter: none;
+}
+
+.bs-game .bs-shop-svc-btn:disabled {
+  opacity: 0.72;
+  background: linear-gradient(180deg, rgba(22, 30, 46, 0.92), rgba(13, 18, 32, 0.96));
+  color: #cbd5e1;
+}
+
+.bs-game .bs-shop-tab {
+  padding: 5px 11px;
+  border-radius: 5px;
+  border: 1px solid #334155;
+  background: #141a2b;
+  color: #cbd5e1;
+}
+
+.bs-game .bs-shop-tab:hover:not(:disabled) {
+  border-color: #64748b;
+  background: #1e293b;
+  color: #f8fafc;
+  filter: none;
+}
+
+.bs-game .bs-shop-tab--active {
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.22);
+  color: #e0f2fe;
+}
+
+.bs-game .bs-shop-buy {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 4px;
+  border: 1px solid #d97706;
+  background: linear-gradient(180deg, #b45309, #92400e);
+  color: #fef3c7;
+}
+
+.bs-game .bs-shop-buy:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+.bs-game .bs-shop-buy:disabled {
+  opacity: 1;
+  border-color: #334155;
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
 .bs-scoreboard-tier {
   display: inline-block;
   margin-left: 4px;

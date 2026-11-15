@@ -262,7 +262,7 @@ function inferCategoryFromKey(key: string): SpriteCategory {
   if (key.startsWith('pk_') || key.startsWith('prop_pickup_')) return 'pickup';
   if (key.startsWith('fx_') || key.startsWith('vfx_') || key.startsWith('muzzle_') || key.startsWith('casing_') || key === 'storm' || key === 'impact_spark') return 'fx';
   if (key.startsWith('bullet_') || key.startsWith('proj_') || key.startsWith('p_') || key === 'fireball' || key === 'thunderball' || key === 'rail_beam' || key === 'needle_orb' || key === 'sniper_slug' || key === 'plasma_bolt' || key === 'electric_arc_bolt' || key === 'laser_map_beam' || key === 'flame_stream_orb' || key === 'cryo_shard' || key === 'saw_disc' || key === 'gravity_orb') return 'projectile';
-  if (key.startsWith('wpn_') || key.startsWith('gun_') || key.startsWith('w_') || key.startsWith('gadget_')) return 'weapon';
+  if (key.startsWith('wpn_') || key.startsWith('gun_') || key.startsWith('w_') || key.startsWith('gadget_') || key === 'lightning_staff' || key === 'arcane_book' || key === 'plasma_rifle' || key === 'railgun_piercer') return 'weapon';
   if (key.startsWith('prop_') || key.includes('barrel') || key.includes('crate') || key.includes('crystal') || key === 'door') return 'prop';
   if (/^(scarab|skirmisher|bomb_goblin|cactus_brute|cactus_spitter|laser_sniper|pyro_shaman|thunder_mage|iron_drone|frost_mage|venom_stalker|shield_warden|mortar_beetle|void_acolyte|saw_berserker|healing_priest|shock_drone_mk2|mob_|miragine_b|B\d+_)/.test(key)) return 'enemy';
   return 'prop';
