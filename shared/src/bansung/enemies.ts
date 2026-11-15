@@ -225,16 +225,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'melee',
     unlockWave: 1,
     cost: 1,
-    hp: 28,
+    hp: 72,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 0,
+    armor: 2,
     speed: 148,
     radius: 10,
     mass: 0.7,
     kbResist: 0,
     stunMult: 1.0,
-    damage: 8,
+    damage: 12,
     attackRange: 24,
     windupTicks: 5,
     cooldownTicks: 22,
@@ -257,16 +257,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'melee',
     unlockWave: 1,
     cost: 2,
-    hp: 68,
+    hp: 138,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 1,
+    armor: 3,
     speed: 118,
     radius: 12,
     mass: 1.0,
     kbResist: 0.15,
     stunMult: 1.0,
-    damage: 11,
+    damage: 15,
     attackRange: 28,
     windupTicks: 8,
     cooldownTicks: 27,
@@ -290,16 +290,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'bomber',
     unlockWave: 2,
     cost: 3,
-    hp: 52,
+    hp: 115,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 0,
+    armor: 2,
     speed: 104,
     radius: 12,
     mass: 0.9,
     kbResist: 0.1,
     stunMult: 1.15,
-    damage: 34,
+    damage: 42,
     attackRange: 180,
     windupTicks: 42,
     cooldownTicks: 30,
@@ -323,7 +323,7 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'brute',
     unlockWave: 3,
     cost: 6,
-    hp: 260,
+    hp: 480,
     armorTypeID: 1,
     armorType: 'armored',
     armor: 3,
@@ -332,7 +332,7 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     mass: 3.5,
     kbResist: 0.65,
     stunMult: 0.5,
-    damage: 20,
+    damage: 28,
     attackRange: 38,
     windupTicks: 14,
     cooldownTicks: 45,
@@ -356,16 +356,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'ranged',
     unlockWave: 1,
     cost: 3,
-    hp: 75,
+    hp: 135,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 0,
+    armor: 2,
     speed: 78,
     radius: 13,
     mass: 1.0,
     kbResist: 0.1,
     stunMult: 1.0,
-    damage: 10,
+    damage: 15,
     attackRange: 320,
     preferredRange: [210, 320],
     backoffDist: 140,
@@ -390,16 +390,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'ranged',
     unlockWave: 2,
     cost: 6,
-    hp: 65,
+    hp: 125,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 0,
+    armor: 2,
     speed: 84,
     radius: 12,
     mass: 1.0,
     kbResist: 0.1,
     stunMult: 1.0,
-    damage: 28,
+    damage: 34,
     attackRange: 560,
     preferredRange: [360, 560],
     backoffDist: 220,
@@ -424,16 +424,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'caster',
     unlockWave: 3,
     cost: 5,
-    hp: 115,
+    hp: 210,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 1,
+    armor: 4,
     speed: 74,
     radius: 13,
     mass: 1.1,
     kbResist: 0.2,
     stunMult: 0.9,
-    damage: 18,
+    damage: 24,
     attackRange: 380,
     preferredRange: [240, 380],
     backoffDist: 160,
@@ -458,16 +458,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'caster',
     unlockWave: 4,
     cost: 7,
-    hp: 105,
+    hp: 195,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 1,
+    armor: 3,
     speed: 80,
     radius: 12,
     mass: 1.0,
     kbResist: 0.15,
     stunMult: 0.9,
-    damage: 24,
+    damage: 30,
     attackRange: 440,
     preferredRange: [280, 440],
     backoffDist: 175,
@@ -492,10 +492,10 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'boss',
     unlockWave: 4,
     cost: 0,
-    hp: 2400,
+    hp: 6400,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 2,
+    armor: 16,
     speed: 72,
     radius: 34,
     mass: 999,
@@ -530,10 +530,10 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'boss',
     unlockWave: 7,
     cost: 0,
-    hp: 3600,
+    hp: 10500,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 4,
+    armor: 22,
     speed: 86,
     radius: 34,
     mass: 999,
@@ -564,10 +564,10 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'boss',
     unlockWave: 10,
     cost: 0,
-    hp: 4800,
+    hp: 14500,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 4,
+    armor: 22,
     speed: 95,
     radius: 44,
     mass: 999,
@@ -632,10 +632,10 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'boss',
     unlockWave: 2,
     cost: 0,
-    hp: 2600,
+    hp: 7200,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 3,
+    armor: 18,
     speed: 88,
     radius: 42,
     mass: 999,
@@ -666,16 +666,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'caster',
     unlockWave: 3,
     cost: 4,
-    hp: 88,
+    hp: 190,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 1,
+    armor: 4,
     speed: 96,
     radius: 14,
     mass: 1.0,
     kbResist: 0.15,
     stunMult: 0.9,
-    damage: 13,
+    damage: 20,
     attackRange: 360,
     preferredRange: [210, 320],
     backoffDist: 135,
@@ -700,16 +700,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'melee',
     unlockWave: 2,
     cost: 3,
-    hp: 74,
+    hp: 165,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 0,
+    armor: 3,
     speed: 148,
     radius: 13,
     mass: 0.9,
     kbResist: 0.1,
     stunMult: 1.0,
-    damage: 11,
+    damage: 18,
     attackRange: 250,
     preferredRange: [30, 80],
     backoffDist: 0,
@@ -734,16 +734,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'brute',
     unlockWave: 5,
     cost: 6,
-    hp: 270,
+    hp: 540,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 3,
+    armor: 10,
     speed: 78,
     radius: 19,
     mass: 3.5,
     kbResist: 0.72,
     stunMult: 0.5,
-    damage: 19,
+    damage: 28,
     attackRange: 135,
     preferredRange: [40, 100],
     backoffDist: 0,
@@ -768,16 +768,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'ranged',
     unlockWave: 4,
     cost: 5,
-    hp: 120,
+    hp: 240,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 2,
+    armor: 6,
     speed: 82,
     radius: 16,
     mass: 1.8,
     kbResist: 0.35,
     stunMult: 0.8,
-    damage: 21,
+    damage: 28,
     attackRange: 460,
     preferredRange: [260, 400],
     backoffDist: 160,
@@ -802,16 +802,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'caster',
     unlockWave: 6,
     cost: 6,
-    hp: 98,
+    hp: 215,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 1,
+    armor: 4,
     speed: 94,
     radius: 14,
     mass: 1.0,
     kbResist: 0.15,
     stunMult: 0.85,
-    damage: 17,
+    damage: 24,
     attackRange: 400,
     preferredRange: [230, 340],
     backoffDist: 140,
@@ -836,16 +836,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'melee',
     unlockWave: 4,
     cost: 5,
-    hp: 140,
+    hp: 300,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 2,
+    armor: 6,
     speed: 132,
     radius: 16,
     mass: 1.6,
     kbResist: 0.35,
     stunMult: 0.75,
-    damage: 18,
+    damage: 26,
     attackRange: 185,
     preferredRange: [30, 90],
     backoffDist: 0,
@@ -870,16 +870,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'caster',
     unlockWave: 5,
     cost: 5,
-    hp: 108,
+    hp: 225,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 1,
+    armor: 4,
     speed: 92,
     radius: 14,
     mass: 1.0,
     kbResist: 0.2,
     stunMult: 0.9,
-    damage: 12,
+    damage: 18,
     attackRange: 380,
     preferredRange: [230, 340],
     backoffDist: 150,
@@ -904,16 +904,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'ranged',
     unlockWave: 6,
     cost: 5,
-    hp: 128,
+    hp: 250,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 2,
+    armor: 6,
     speed: 126,
     radius: 14,
     mass: 1.4,
     kbResist: 0.3,
     stunMult: 0.65,
-    damage: 13,
+    damage: 20,
     attackRange: 360,
     preferredRange: [180, 290],
     backoffDist: 120,
@@ -938,16 +938,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'caster',
     unlockWave: 3,
     cost: 5,
-    hp: 105,
+    hp: 220,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 1,
+    armor: 4,
     speed: 102,
     radius: 14,
     mass: 1.0,
     kbResist: 0.2,
     stunMult: 0.85,
-    damage: 16,
+    damage: 22,
     attackRange: 400,
     preferredRange: [220, 340],
     backoffDist: 145,
@@ -972,16 +972,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'brute',
     unlockWave: 4,
     cost: 7,
-    hp: 260,
+    hp: 560,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 5,
+    armor: 11,
     speed: 68,
     radius: 22,
     mass: 2.6,
     kbResist: 0.72,
     stunMult: 0.6,
-    damage: 24,
+    damage: 34,
     attackRange: 280,
     preferredRange: [80, 220],
     backoffDist: 0,
@@ -1006,16 +1006,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'ranged',
     unlockWave: 5,
     cost: 6,
-    hp: 118,
+    hp: 245,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 3,
+    armor: 7,
     speed: 88,
     radius: 15,
     mass: 1.3,
     kbResist: 0.35,
     stunMult: 0.85,
-    damage: 28,
+    damage: 36,
     attackRange: 640,
     preferredRange: [340, 560],
     backoffDist: 210,
@@ -1040,16 +1040,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'caster',
     unlockWave: 5,
     cost: 6,
-    hp: 145,
+    hp: 295,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 2,
+    armor: 6,
     speed: 86,
     radius: 16,
     mass: 1.4,
     kbResist: 0.3,
     stunMult: 0.9,
-    damage: 15,
+    damage: 22,
     attackRange: 360,
     preferredRange: [180, 310],
     backoffDist: 115,
@@ -1074,16 +1074,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'melee',
     unlockWave: 6,
     cost: 6,
-    hp: 155,
+    hp: 320,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 3,
+    armor: 7,
     speed: 146,
     radius: 15,
     mass: 1.5,
     kbResist: 0.45,
     stunMult: 0.8,
-    damage: 22,
+    damage: 30,
     attackRange: 210,
     windupTicks: 16,
     cooldownTicks: 52,
@@ -1106,16 +1106,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'melee',
     unlockWave: 7,
     cost: 7,
-    hp: 168,
+    hp: 350,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 2,
+    armor: 6,
     speed: 140,
     radius: 16,
     mass: 1.3,
     kbResist: 0.4,
     stunMult: 0.75,
-    damage: 25,
+    damage: 34,
     attackRange: 240,
     windupTicks: 14,
     cooldownTicks: 48,
@@ -1138,10 +1138,10 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'boss',
     unlockWave: 6,
     cost: 0,
-    hp: 9600,
+    hp: 24000,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 5,
+    armor: 24,
     speed: 98,
     radius: 46,
     mass: 999,
@@ -1172,10 +1172,10 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'boss',
     unlockWave: 10,
     cost: 0,
-    hp: 18500,
+    hp: 44000,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 7,
+    armor: 32,
     speed: 78,
     radius: 56,
     mass: 999,
@@ -1206,10 +1206,10 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'boss',
     unlockWave: 8,
     cost: 0,
-    hp: 13200,
+    hp: 32000,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 6,
+    armor: 26,
     speed: 96,
     radius: 50,
     mass: 999,
@@ -1240,10 +1240,10 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'boss',
     unlockWave: 12,
     cost: 0,
-    hp: 24500,
+    hp: 58000,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 8,
+    armor: 38,
     speed: 82,
     radius: 60,
     mass: 999,
@@ -1274,16 +1274,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'melee',
     unlockWave: 3,
     cost: 5,
-    hp: 165,
+    hp: 360,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 5,
+    armor: 10,
     speed: 98,
     radius: 17,
     mass: 2.2,
     kbResist: 0.65,
     stunMult: 0.7,
-    damage: 18,
+    damage: 26,
     attackRange: 195,
     preferredRange: [70, 145],
     backoffDist: 35,
@@ -1308,16 +1308,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'caster',
     unlockWave: 3,
     cost: 4,
-    hp: 95,
+    hp: 210,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 2,
+    armor: 6,
     speed: 132,
     radius: 14,
     mass: 1.0,
     kbResist: 0.25,
     stunMult: 0.9,
-    damage: 14,
+    damage: 20,
     attackRange: 280,
     preferredRange: [155, 240],
     backoffDist: 95,
@@ -1342,16 +1342,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'bomber',
     unlockWave: 4,
     cost: 5,
-    hp: 112,
+    hp: 240,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 1,
+    armor: 4,
     speed: 112,
     radius: 15,
     mass: 1.2,
     kbResist: 0.3,
     stunMult: 0.9,
-    damage: 19,
+    damage: 26,
     attackRange: 340,
     preferredRange: [185, 290],
     backoffDist: 105,
@@ -1376,16 +1376,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'melee',
     unlockWave: 5,
     cost: 6,
-    hp: 132,
+    hp: 275,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 2,
+    armor: 5,
     speed: 158,
     radius: 14,
     mass: 1.1,
     kbResist: 0.3,
     stunMult: 0.85,
-    damage: 21,
+    damage: 28,
     attackRange: 250,
     windupTicks: 20,
     cooldownTicks: 56,
@@ -1408,16 +1408,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'caster',
     unlockWave: 5,
     cost: 6,
-    hp: 118,
+    hp: 250,
     armorTypeID: 0,
     armorType: 'light',
-    armor: 2,
+    armor: 5,
     speed: 108,
     radius: 15,
     mass: 1.1,
     kbResist: 0.3,
     stunMult: 0.85,
-    damage: 18,
+    damage: 25,
     attackRange: 400,
     preferredRange: [220, 350],
     backoffDist: 120,
@@ -1442,16 +1442,16 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
     role: 'brute',
     unlockWave: 6,
     cost: 7,
-    hp: 220,
+    hp: 520,
     armorTypeID: 1,
     armorType: 'armored',
-    armor: 6,
+    armor: 12,
     speed: 88,
     radius: 19,
     mass: 2.8,
     kbResist: 0.75,
     stunMult: 0.65,
-    damage: 25,
+    damage: 35,
     attackRange: 175,
     preferredRange: [65, 130],
     backoffDist: 28,
@@ -1536,10 +1536,10 @@ export function computeMobLevelScaling(level: number): MobLevelScaling {
   const steps = lv - 1;
   return {
     level: lv,
-    hpMult: 1 + steps * 0.28,
-    armorBonus: steps * 2,
-    dmgMult: 1 + steps * 0.08,
-    speedMult: Math.min(1.35, 1 + steps * 0.025),
+    hpMult: 1 + steps * 0.45,
+    armorBonus: steps * 4,
+    dmgMult: 1 + steps * 0.11,
+    speedMult: Math.min(1.40, 1 + steps * 0.03),
   };
 }
 
@@ -1559,6 +1559,111 @@ export function getBossHpBars(kind: BansungEnemyId | string, mini = false): numb
   const base = (BANSUNG_BOSS_HP_BARS as Record<string, number>)[kind] ?? 2;
   if (mini) return Math.max(2, Math.floor(base / 2));
   return base;
+}
+
+export interface BansungBossBarColorSpec {
+  readonly color: string;
+  readonly textOnColor: '#ffffff' | '#0b101d';
+  readonly vnName: string;
+}
+
+/**
+ * Ordered multi-bar boss HP palette:
+ * - Always starts from Tím (`#a855f7`) at full HP (`seqIdx = 0`)
+ * - Steps through Vàng (`#facc15`), Xanh (`#22c55e`), Cam (`#f97316`), extended high-contrast
+ *   colors when > 5 bars, and ALWAYS finishes on Đỏ (`#ef4444`) as the final bar:
+ *   - 2 bars: Tím -> Đỏ
+ *   - 3 bars: Tím -> Vàng -> Đỏ
+ *   - 4 bars: Tím -> Vàng -> Xanh -> Đỏ
+ *   - 5 bars: Tím -> Vàng -> Xanh -> Cam -> Đỏ
+ */
+export const BANSUNG_BOSS_BAR_PALETTE: readonly BansungBossBarColorSpec[] = [
+  { color: '#a855f7', textOnColor: '#ffffff', vnName: 'Tím' },
+  { color: '#facc15', textOnColor: '#0b101d', vnName: 'Vàng' },
+  { color: '#22c55e', textOnColor: '#0b101d', vnName: 'Xanh' },
+  { color: '#f97316', textOnColor: '#0b101d', vnName: 'Cam' },
+  { color: '#ef4444', textOnColor: '#ffffff', vnName: 'Đỏ' },
+  { color: '#06b6d4', textOnColor: '#0b101d', vnName: 'Ngọc' },
+  { color: '#ec4899', textOnColor: '#ffffff', vnName: 'Hồng' },
+  { color: '#3b82f6', textOnColor: '#ffffff', vnName: 'Xanh dương' },
+  { color: '#84cc16', textOnColor: '#0b101d', vnName: 'Chanh' },
+  { color: '#e879f9', textOnColor: '#0b101d', vnName: 'Tím hồng' },
+  { color: '#14b8a6', textOnColor: '#0b101d', vnName: 'Ngọc bích' },
+  { color: '#f43f5e', textOnColor: '#ffffff', vnName: 'Ruby' },
+] as const;
+
+export function getBossBarColorSpec(seqIdx: number, totalBars?: number): BansungBossBarColorSpec {
+  const safeTotal = totalBars !== undefined ? Math.max(1, Math.floor(totalBars)) : undefined;
+  const idx = Math.max(0, Math.floor(seqIdx));
+  if (safeTotal !== undefined) {
+    if (safeTotal <= 1 || idx >= safeTotal - 1) {
+      return BANSUNG_BOSS_BAR_PALETTE[4]; // Always end on Đỏ (#ef4444)
+    }
+    if (safeTotal === 2) {
+      return idx === 0 ? BANSUNG_BOSS_BAR_PALETTE[0] : BANSUNG_BOSS_BAR_PALETTE[4]; // Tím -> Đỏ
+    }
+    if (safeTotal === 3) {
+      const order = [0, 1, 4] as const; // Tím -> Vàng -> Đỏ
+      return BANSUNG_BOSS_BAR_PALETTE[order[Math.min(idx, 2)]];
+    }
+    if (safeTotal === 4) {
+      const order = [0, 1, 2, 4] as const; // Tím -> Vàng -> Xanh -> Đỏ
+      return BANSUNG_BOSS_BAR_PALETTE[order[Math.min(idx, 3)]];
+    }
+    if (safeTotal === 5) {
+      return BANSUNG_BOSS_BAR_PALETTE[Math.min(idx, 4)]; // Tím -> Vàng -> Xanh -> Cam -> Đỏ
+    }
+    // >5 bars: start with Tím -> Vàng -> Xanh -> Cam, then extended colors, always ending on Đỏ
+    if (idx < 4) return BANSUNG_BOSS_BAR_PALETTE[idx];
+    const extCount = BANSUNG_BOSS_BAR_PALETTE.length - 5;
+    return BANSUNG_BOSS_BAR_PALETTE[5 + ((idx - 4) % extCount)];
+  }
+  const len = BANSUNG_BOSS_BAR_PALETTE.length;
+  const normalized = ((idx % len) + len) % len;
+  return BANSUNG_BOSS_BAR_PALETTE[normalized];
+}
+
+export interface BansungBossBarState {
+  readonly totalBars: number;
+  readonly hpPerBar: number;
+  readonly activeBarIdx: number;
+  readonly activeSeqIdx: number;
+  readonly remainingBars: number;
+  readonly curBarHp: number;
+  readonly barColor: string;
+  readonly barTextColor: '#ffffff' | '#0b101d';
+  readonly underBarColor: string | undefined;
+}
+
+/**
+ * Resolves the active stacked HP bar, top-to-bottom sequence index (`0` = first
+ * bar burned), remaining bar count, current bar HP, and underneath reveal color.
+ */
+export function resolveBossBarState(hp: number, maxHp: number, totalBars: number): BansungBossBarState {
+  const safeBars = Math.max(1, Math.floor(totalBars));
+  const safeMax = Math.max(1, maxHp);
+  const clampedHp = Math.max(0, Math.min(safeMax, hp));
+  const hpPerBar = Math.max(1, safeMax / safeBars);
+  const activeBarIdx =
+    clampedHp > 0
+      ? Math.min(safeBars - 1, Math.floor(Math.max(0, clampedHp - 0.001) / hpPerBar))
+      : 0;
+  const remainingBars = clampedHp <= 0 ? 0 : activeBarIdx + 1;
+  const curBarHp = clampedHp <= 0 ? 0 : Math.min(hpPerBar, clampedHp - activeBarIdx * hpPerBar);
+  const activeSeqIdx = Math.max(0, safeBars - 1 - activeBarIdx);
+  const activeSpec = getBossBarColorSpec(activeSeqIdx, safeBars);
+  const underSpec = activeBarIdx > 0 ? getBossBarColorSpec(activeSeqIdx + 1, safeBars) : undefined;
+  return {
+    totalBars: safeBars,
+    hpPerBar,
+    activeBarIdx,
+    activeSeqIdx,
+    remainingBars,
+    curBarHp,
+    barColor: activeSpec.color,
+    barTextColor: activeSpec.textOnColor,
+    underBarColor: underSpec?.color,
+  };
 }
 
 export interface BansungBossBodyPartDef {
@@ -2331,8 +2436,9 @@ export interface BossSandBeholderState {
 
 export const BOSS_BEHOLDER_CFG = {
   radius: 34,
-  baseHp: 2400,
-  armor: 2,
+  baseHp: 6400,
+  armor: 16,
+  baseDr: 0.25,
   introTicks: 27,
   p1MoveSpeed: 72,
   p2MoveSpeed: 96,
@@ -2377,12 +2483,13 @@ export interface BansungBossView {
 }
 
 export const DREAD_COLOSSUS_CFG = {
-  baseHp: 3600,
+  baseHp: 10500,
   radius: 34,
   walkSpeed: 86,
   shieldWalkSpeed: 55,
-  armorNormal: 4,
+  armorNormal: 22,
   armorStunned: 0,
+  baseDr: 0.28,
   stunDmgMult: 1.5,
   shieldDr: 0.85,
   cleaveRange: 105,
@@ -2429,9 +2536,10 @@ export const BANSUNG_IRON_DRONE_CFG = {
 // --- Boss 1: Arsenal Dread Gunner (Weaponized Gun-Baron) ---
 
 export const BOSS_ARSENAL_CFG = {
-  baseHp: 2600,
+  baseHp: 7200,
   radius: 42,
-  baseArmor: 3,
+  baseArmor: 18,
+  baseDr: 0.25,
   speedP1: 88,
   speedP2: 112,
   phase2Ratio: 0.55,
@@ -2463,10 +2571,11 @@ export const BOSS_ARSENAL_CFG = {
 } as const;
 
 export const BOSS_TEMPEST_CFG = {
-  baseHp: 9600,
+  baseHp: 24000,
   hpBars: 6,
   radius: 46,
-  armor: 5,
+  armor: 24,
+  baseDr: 0.32,
   speedP1: 98,
   speedP2: 124,
   phase2Ratio: 0.55,
@@ -2488,10 +2597,11 @@ export const BOSS_TEMPEST_CFG = {
 } as const;
 
 export const BOSS_DESTROYER_CFG = {
-  baseHp: 18500,
+  baseHp: 44000,
   hpBars: 10,
   radius: 56,
-  armor: 7,
+  armor: 32,
+  baseDr: 0.40,
   speedP1: 78,
   speedP2: 104,
   phase2Ratio: 0.55,
@@ -2517,10 +2627,11 @@ export const BOSS_DESTROYER_CFG = {
 } as const;
 
 export const BOSS_FROST_EMPRESS_CFG = {
-  baseHp: 13200,
+  baseHp: 32000,
   hpBars: 7,
   radius: 50,
-  armor: 6,
+  armor: 26,
+  baseDr: 0.35,
   speedP1: 96,
   speedP2: 122,
   phase2Ratio: 0.55,
@@ -2542,10 +2653,11 @@ export const BOSS_FROST_EMPRESS_CFG = {
 } as const;
 
 export const BOSS_LEVIATHAN_CFG = {
-  baseHp: 24500,
+  baseHp: 58000,
   hpBars: 12,
   radius: 60,
-  armor: 8,
+  armor: 38,
+  baseDr: 0.45,
   speedP1: 82,
   speedP2: 110,
   phase2Ratio: 0.55,
@@ -2584,14 +2696,15 @@ export type OverlordState =
   | 'dead';
 
 export const OVERLORD_STATS = {
-  baseHp: 4800,
+  baseHp: 14500,
   coOpHpPerExtraPlayer: 0.55,
   endlessHpScale: 0.35,
   radius: 44,
   hoverZ: 18,
   armorType: 'armored' as const,
-  baseArmor: 4,
-  matrixArmor: 8,
+  baseArmor: 22,
+  matrixArmor: 38,
+  baseDr: 0.30,
   speedP1: 95,
   speedP2: 120,
   phase2Ratio: 0.6,
@@ -3271,7 +3384,7 @@ export function computeMobHpMult(wave: number, playerCount: number, difficulty =
   const n = clampCoopPlayers(playerCount);
   const w = Math.max(1, wave);
   const d = getDiffScale(difficulty);
-  return (1 + 0.14 * (w - 1)) * (1 + 0.35 * (n - 1)) * d.hp;
+  return (1 + 0.24 * (w - 1)) * (1 + 0.40 * (n - 1)) * d.hp;
 }
 
 /** Computes boss HP multiplier (`d37`–`d40`). */
@@ -3282,14 +3395,14 @@ export function computeBossHpMult(
 ): number {
   const n = clampCoopPlayers(playerCount);
   const d = getDiffScale(difficulty);
-  return (1 + 0.65 * (n - 1)) * d.bossHp * (1 + 0.35 * Math.max(0, endlessTier));
+  return (1 + 0.72 * (n - 1)) * d.bossHp * (1 + 0.45 * Math.max(0, endlessTier));
 }
 
 /** Computes regular mob damage multiplier (`d40`). */
 export function computeMobDmgMult(wave: number, difficulty = 'normal'): number {
   const w = Math.max(1, wave);
   const d = getDiffScale(difficulty);
-  return Math.min(2.2, (1 + 0.06 * (w - 1)) * d.dmg);
+  return Math.min(2.6, (1 + 0.085 * (w - 1)) * d.dmg);
 }
 
 // ---------------------------------------------------------------------------
@@ -3311,9 +3424,9 @@ export const BANSUNG_SURVIVAL_SPECIAL_ORDER: readonly BansungEnemyId[] = [
   'thunder_mage',
 ] as const;
 
-/** Boss spawn milestones inside each cycle: 2m (Arsenal x2), 5m (Overlord x3), 8m (Colossus x4), 12m (Beholder x5), 14m (Frost Empress x7), 15m (Tempest x6), 17m (5 Mini-Bosses), 18m (Destroyer x10), 19m10s (Abyssal Leviathan x12) */
-export const BANSUNG_SURVIVAL_BOSS_MILESTONES_S = [120, 300, 480, 720] as const;
-export const BANSUNG_SURVIVAL_EXTENDED_BOSS_MILESTONES_S = [120, 300, 480, 720, 840, 900, 1020, 1080, 1150] as const;
+/** Boss spawn milestones inside each cycle: 3m/5m/7m = 1 Boss; 9m+ onward = 2 Co-op Bosses. */
+export const BANSUNG_SURVIVAL_BOSS_MILESTONES_S = [180, 300, 420, 540] as const;
+export const BANSUNG_SURVIVAL_EXTENDED_BOSS_MILESTONES_S = [180, 300, 420, 540, 660, 780, 900, 1020, 1140] as const;
 
 export const BANSUNG_SURVIVAL_BOSS_ORDER: readonly BansungEnemyId[] = [
   'boss_arsenal',
@@ -3322,9 +3435,9 @@ export const BANSUNG_SURVIVAL_BOSS_ORDER: readonly BansungEnemyId[] = [
   'boss_beholder',
   'boss_frost_empress',
   'boss_tempest',
-  'boss_beholder',
   'boss_destroyer',
   'boss_abyssal_leviathan',
+  'boss_destroyer',
 ] as const;
 
 export interface BansungSurvivalStageSpec {
@@ -3374,10 +3487,10 @@ export const BANSUNG_SURVIVAL_STAGES: readonly [
     vnName: '2p Đầu Nhẹ Nhàng · Farm Cấp',
     startSec: 0,
     endSec: 120,
-    hpMultRange: [0.68, 0.85],
-    dmgMultRange: [0.72, 0.86],
-    speedMult: 0.96,
-    bonusArmor: 0,
+    hpMultRange: [1.15, 1.5],
+    dmgMultRange: [0.95, 1.15],
+    speedMult: 0.98,
+    bonusArmor: 1,
     eliteChanceRange: [0, 0.05],
     evolvedFlag: false,
     burstCadenceS: 2.6,
@@ -3395,10 +3508,10 @@ export const BANSUNG_SURVIVAL_STAGES: readonly [
     vnName: '2-5p Boss Súng & Đặc Chủng',
     startSec: 120,
     endSec: 300,
-    hpMultRange: [1.15, 1.55],
-    dmgMultRange: [0.95, 1.18],
-    speedMult: 1.02,
-    bonusArmor: 1,
+    hpMultRange: [1.65, 2.3],
+    dmgMultRange: [1.15, 1.4],
+    speedMult: 1.04,
+    bonusArmor: 4,
     eliteChanceRange: [0.10, 0.22],
     evolvedFlag: false,
     burstCadenceS: 2.2,
@@ -3420,10 +3533,10 @@ export const BANSUNG_SURVIVAL_STAGES: readonly [
     vnName: '5-8p Boss Công Nghệ & Quái Trâu',
     startSec: 300,
     endSec: 480,
-    hpMultRange: [1.75, 2.25],
-    dmgMultRange: [1.15, 1.38],
-    speedMult: 1.06,
-    bonusArmor: 2,
+    hpMultRange: [2.5, 3.45],
+    dmgMultRange: [1.35, 1.65],
+    speedMult: 1.08,
+    bonusArmor: 8,
     eliteChanceRange: [0.22, 0.34],
     evolvedFlag: false,
     burstCadenceS: 2.1,
@@ -3447,10 +3560,10 @@ export const BANSUNG_SURVIVAL_STAGES: readonly [
     vnName: '8-12p+ Đại Boss & Tiến Hóa',
     startSec: 480,
     endSec: 1200,
-    hpMultRange: [2.35, 3.3],
-    dmgMultRange: [1.3, 1.6],
-    speedMult: 1.12,
-    bonusArmor: 3,
+    hpMultRange: [3.6, 5.4],
+    dmgMultRange: [1.55, 1.95],
+    speedMult: 1.14,
+    bonusArmor: 14,
     eliteChanceRange: [0.35, 0.45],
     evolvedFlag: true,
     burstCadenceS: 1.85,
@@ -3569,30 +3682,12 @@ function buildSurvivalBossEncounter(
   cycle: number,
   dmgMult: number,
 ): BansungSurvivalBossEncounter {
-  const patternPool: readonly BansungBossEncounterMode[] = [
-    'single',
-    'duo',
-    'trio',
-    'splitter_giant',
-    'single',
-    'single',
-    'mini_swarm_5',
-    'single',
-    'single',
-  ];
-  // Cycle 0 matches 1 -> 2 -> 3 -> Splitter -> Tempest x6 -> Frost Empress x7 -> 5 Mini-Bosses -> Destroyer x10 -> Leviathan x12!
-  const modeIdx = cycle === 0 ? slotIdx % patternPool.length : (slotIdx + cycle) % patternPool.length;
-  const mode =
-    primaryKind === 'boss_destroyer' || primaryKind === 'boss_abyssal_leviathan'
-      ? 'single'
-      : (primaryKind === 'boss_tempest' || primaryKind === 'boss_frost_empress') && cycle === 0
-        ? 'single'
-        : patternPool[modeIdx];
   const bossDmgMult = dmgMult * (1 + 0.14 * cycle + 0.05 * slotIdx);
-
-  if (mode === 'duo') {
-    const secondKind = BANSUNG_SURVIVAL_BOSS_ORDER[(slotIdx + 1 + cycle) % BANSUNG_SURVIVAL_BOSS_ORDER.length];
-    const k2 = secondKind === primaryKind ? 'boss_arsenal' : secondKind;
+  // Minutes 3, 5, 7 (slots 0, 1, 2 in cycle 0) always spawn a single Boss; 9m+ onward spawns 2 Co-op Bosses.
+  if (cycle > 0 || slotIdx >= 3) {
+    const partnerIdx = (slotIdx + 1 + cycle) % BANSUNG_SURVIVAL_BOSS_ORDER.length;
+    const rawPartner = BANSUNG_SURVIVAL_BOSS_ORDER[partnerIdx];
+    const k2 = rawPartner === primaryKind ? 'boss_tempest' === primaryKind ? 'boss_colossus' : 'boss_tempest' : rawPartner;
     return {
       mode: 'duo',
       count: 2,
@@ -3600,76 +3695,28 @@ function buildSurvivalBossEncounter(
       scale: 0.96,
       splitTier: 0,
       hpPerBossMult: 0.72,
-      dmgMult: bossDmgMult,
+      dmgMult: bossDmgMult * 0.92,
       kinds: [primaryKind, k2],
-      label: `${BANSUNG_ENEMIES[primaryKind]?.vnName ?? primaryKind} ×2 (Cặp Boss)`,
-    };
-  }
-  if (mode === 'trio') {
-    const nOrder = BANSUNG_SURVIVAL_BOSS_ORDER.length;
-    const k2 = BANSUNG_SURVIVAL_BOSS_ORDER[(slotIdx + 1) % nOrder];
-    const k3 = BANSUNG_SURVIVAL_BOSS_ORDER[(slotIdx + 2) % nOrder];
-    return {
-      mode: 'trio',
-      count: 3,
-      mini: false,
-      scale: 0.9,
-      splitTier: 0,
-      hpPerBossMult: 0.58,
-      dmgMult: bossDmgMult,
-      kinds: [primaryKind, k2, k3],
-      label: 'Tam Trụ Đại Boss ×3',
-    };
-  }
-  if (mode === 'mini_swarm_5') {
-    return {
-      mode: 'mini_swarm_5',
-      count: 5,
-      mini: cycle > 0 || slotIdx >= 4,
-      scale: 0.72,
-      splitTier: 0,
-      hpPerBossMult: 0.34,
-      dmgMult: bossDmgMult * 0.85,
-      kinds: [
-        'boss_tempest',
-        'boss_arsenal',
-        'boss_overlord',
-        'boss_colossus',
-        'boss_beholder',
-      ],
-      label: 'Bầy 5 Mini-Boss Hộ Vệ',
-    };
-  }
-  if (mode === 'splitter_giant') {
-    return {
-      mode: 'splitter_giant',
-      count: 1,
-      mini: false,
-      scale: 1.68,
-      splitTier: 2,
-      hpPerBossMult: 1.15,
-      dmgMult: bossDmgMult * 1.12,
-      kinds: [primaryKind],
-      label: `${BANSUNG_ENEMIES[primaryKind]?.name ?? primaryKind} KHỔNG LỒ (1→4→16)`,
+      label: `${BANSUNG_ENEMIES[primaryKind]?.vnName ?? primaryKind} + ${BANSUNG_ENEMIES[k2]?.vnName ?? k2}`,
     };
   }
   return {
     mode: 'single',
     count: 1,
     mini: false,
-    scale: 1.0 + Math.min(0.45, cycle * 0.08),
+    scale: 1.0,
     splitTier: 0,
     hpPerBossMult: 1.0,
     dmgMult: bossDmgMult,
     kinds: [primaryKind],
-    label: BANSUNG_ENEMIES[primaryKind]?.name ?? primaryKind,
+    label: BANSUNG_ENEMIES[primaryKind]?.vnName ?? BANSUNG_ENEMIES[primaryKind]?.name ?? primaryKind,
   };
 }
 
 /**
  * Resolves Survival stage, Special Mob unlocks (`1/3/5/7/9/11` min),
  * infinite escalating cycle scaling (`cycle -> ∞`), and Boss encounters
- * (`2m` 1 Boss, `5m` 2 Bosses, `8m` 3 Bosses, `12m` Giant Splitter 1→4→16, `17m` 5 Mini-Bosses).
+ * (`3m/5m/7m` = 1 Boss; `9m+` onward = 2 Co-op Bosses).
  */
 export function getSurvivalScheduleState(
   elapsedMs: number,
@@ -4332,9 +4379,9 @@ export const BANSUNG_PICKUPS: Record<PickupKind, PickupDef> = {
     kindIdx: 4,
     kind: 'armor_plate',
     netKind: 'armor',
-    name: 'Armor Plate',
-    vnName: 'Mảnh Giáp',
-    amount: 20,
+    name: 'Aegis Shield (30s)',
+    vnName: 'Khiên Bảo Hộ 30s',
+    amount: 30,
     magnetized: true,
     needsFilter: 'armor',
     sharedCoopRatio: 0,
@@ -4456,26 +4503,26 @@ export const BANSUNG_PICKUP_CONSTS = {
 export const BANSUNG_LOOT_TABLES = {
   pot: {
     none: 18,
-    energy_orb: 34,
+    energy_orb: 37,
     coin: 22,
     xp_orb_s: 12,
     hp_orb: 9,
-    armor_plate: 5,
+    armor_plate: 2,
   },
   common: {
     none: 10,
-    coin: 26,
+    coin: 31,
     energy_orb: 26,
     xp_orb_s: 12,
     hp_orb: 13,
-    armor_plate: 8,
+    armor_plate: 3,
     weapon_pedestal: 5,
   },
   rare: {
-    coin: 18,
+    coin: 24,
     energy_cell: 20,
     hp_pack: 18,
-    armor_plate: 16,
+    armor_plate: 10,
     xp_orb_m: 12,
     weapon_pedestal: 16,
   },
@@ -4483,10 +4530,10 @@ export const BANSUNG_LOOT_TABLES = {
     dropChance: 0.34,
     weights: {
       energy_orb: 38,
-      coin: 26,
+      coin: 32,
       xp_orb_s: 16,
       hp_orb: 12,
-      armor_plate: 8,
+      armor_plate: 2,
     },
   },
   elite_kill: {

@@ -404,6 +404,10 @@ export const BANSUNG_PFLAG_INVULN = 16;
 export const BANSUNG_PFLAG_BOT = 32;
 export const BANSUNG_PFLAG_RELOADING = 64;
 export const BANSUNG_PFLAG_DISCONNECTED = 128;
+export const BANSUNG_PFLAG_SHIELD_BARRIER = 256;
+
+/** Duration (ms) of the pickup Aegis full-protection shield (`armor_plate`). */
+export const BANSUNG_SHIELD_BARRIER_MS = 30_000;
 
 // Enemy flags (e[+7])
 export const BANSUNG_EFLAG_LEFT = 1;
@@ -783,6 +787,8 @@ export interface BansungPrivate {
   shieldDrPct?: number;
   shieldDelayMs?: number;
   shieldRegenTotalMs?: number;
+  /** Remaining 30s Aegis full-protection barrier duration (ms), if active */
+  shieldBuffMs?: number;
   /** Hero Signature Active Skill ([F] / HUD button) state */
   skillCdMs?: number;
   skillMaxMs?: number;
@@ -839,6 +845,13 @@ export type BansungCommand =
   | { t: 'perk'; id: BansungPerkId }
   /** Choose survival XP level-up gacha card (0..2) */
   | { t: 'gacha'; pick: 0 | 1 | 2 }
+  /** In-match coin armory shop actions */
+  | {
+      t: 'shop';
+      op: 'buy_weapon' | 'upgrade_active' | 'supply_heal';
+      weaponId?: BansungWeaponId;
+      slotIdx?: number;
+    }
   | { t: 'ping'; kind: BansungPingKind; x: number; y: number }
   /** Spectator follow & viewport-cull target */
   | { t: 'spec'; targetIdx: number };
