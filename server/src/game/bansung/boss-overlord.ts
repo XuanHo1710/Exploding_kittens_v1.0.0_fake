@@ -574,7 +574,7 @@ function syncBossCombatProfile(boss: OverlordBossState): void {
   }
   if (boss.state === 'weakpoint_matrix') {
     boss.flatArmor = OVERLORD_STATS.matrixArmor;
-    boss.damageReduction = 0.4;
+    boss.damageReduction = 0.55;
     boss.vulnMult = 1;
     boss.ccImmune = false;
     return;
@@ -588,13 +588,13 @@ function syncBossCombatProfile(boss: OverlordBossState): void {
   }
   if (boss.state === 'enter' || boss.state === 'phase_shift') {
     boss.flatArmor = OVERLORD_STATS.baseArmor;
-    boss.damageReduction = 0;
+    boss.damageReduction = OVERLORD_STATS.baseDr;
     boss.vulnMult = 1;
     boss.ccImmune = true;
     return;
   }
   boss.flatArmor = OVERLORD_STATS.baseArmor;
-  boss.damageReduction = 0;
+  boss.damageReduction = OVERLORD_STATS.baseDr;
   boss.vulnMult = 1;
   boss.ccImmune = false;
 }
@@ -1171,7 +1171,7 @@ function tickPylons(
       for (let j = 0; j < ctx.players.length; j++) {
         const hero = ctx.players[j];
         if (!hero.alive || hero.downed || hero.hp <= 0) continue;
-        if ((hero.dashIframesMs ?? 0) > 0) continue;
+        if ((hero.dashIframesMs ?? 0) > 0 || (hero.shieldBuffMs ?? 0) > 0) continue;
         const d = Math.hypot(hero.x - p.x, hero.y - p.y);
         if (d > pulseR + hero.radius) continue;
 
@@ -1800,7 +1800,7 @@ export function stepOverlordBoss(
         for (let j = 0; j < ctx.players.length; j++) {
           const hero = ctx.players[j];
           if (!hero.alive || hero.downed || hero.hp <= 0) continue;
-          if ((hero.dashIframesMs ?? 0) > 0) continue;
+          if ((hero.dashIframesMs ?? 0) > 0 || (hero.shieldBuffMs ?? 0) > 0) continue;
 
           for (let l = 0; l < boss.laserLanes.length; l++) {
             const lane = boss.laserLanes[l];
@@ -1867,7 +1867,7 @@ export function stepOverlordBoss(
         for (let j = 0; j < ctx.players.length; j++) {
           const hero = ctx.players[j];
           if (!hero.alive || hero.downed || hero.hp <= 0) continue;
-          if ((hero.dashIframesMs ?? 0) > 0) continue;
+          if ((hero.dashIframesMs ?? 0) > 0 || (hero.shieldBuffMs ?? 0) > 0) continue;
           if (Math.hypot(hero.x - boss.x, hero.y - boss.y) > r + hero.radius) continue;
 
           const shockHit: BansungDamageHit = { baseDmg: OVERLORD_CFG.overloadDmg, dmgKind: 'energy' };

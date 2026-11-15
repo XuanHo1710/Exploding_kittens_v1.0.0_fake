@@ -212,6 +212,7 @@ export function createArsenalBoss(opts: {
     tier: 'boss',
     armorType: spec.armorType,
     flatArmor: spec.armor,
+    damageReduction: BOSS_ARSENAL_CFG.baseDr,
     alive: true,
     hp: maxHp,
     maxHp,
@@ -289,6 +290,8 @@ export function stunArsenalBoss(boss: ArsenalBossState, durationMs: number): voi
   const ticks = Math.max(18, Math.round(durationMs / BANSUNG_TICK_EXACT_MS));
   boss.stunTicks = Math.max(boss.stunTicks ?? 0, ticks);
   boss.combatTarget.stunMs = Math.max(boss.combatTarget.stunMs ?? 0, durationMs);
+  boss.combatTarget.damageReduction = 0;
+  boss.combatTarget.flatArmor = Math.round(boss.armor * 0.4);
   boss.state = 'stunned';
   boss.stateTick = 0;
   boss.laserFiredDamage = false;
@@ -362,6 +365,8 @@ export function stepArsenalBoss(boss: ArsenalBossState, ctx: ArsenalStepContext)
     boss.stateTick += 1;
     if ((boss.stunTicks ?? 0) <= 0) {
       boss.combatTarget.stunMs = 0;
+      boss.combatTarget.damageReduction = BOSS_ARSENAL_CFG.baseDr;
+      boss.combatTarget.flatArmor = boss.armor;
       boss.state = 'patrol';
       boss.stateTick = 0;
       boss.actionCdTicks = 12;

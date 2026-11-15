@@ -202,6 +202,7 @@ export function createFrostEmpressBoss(opts: {
     tier: 'boss',
     armorType: spec.armorType,
     flatArmor: BOSS_FROST_EMPRESS_CFG.armor,
+    damageReduction: BOSS_FROST_EMPRESS_CFG.baseDr,
     alive: true,
     hp: maxHp,
     maxHp,
@@ -249,6 +250,8 @@ export function stunFrostEmpressBoss(boss: FrostEmpressBossState, durationMs: nu
   const ticks = Math.max(18, Math.round(durationMs / BANSUNG_TICK_EXACT_MS));
   boss.stunTicks = Math.max(boss.stunTicks, ticks);
   boss.combatTarget.stunMs = Math.max(boss.combatTarget.stunMs ?? 0, durationMs);
+  boss.combatTarget.damageReduction = 0;
+  boss.combatTarget.flatArmor = Math.round(boss.armor * 0.4);
   boss.state = 'stunned';
   boss.stateTick = 0;
   boss.beamFiredDamage = false;
@@ -356,6 +359,8 @@ export function stepFrostEmpressBoss(boss: FrostEmpressBossState, ctx: FrostEmpr
     boss.stateTick += 1;
     if (boss.stunTicks <= 0) {
       boss.combatTarget.stunMs = 0;
+      boss.combatTarget.damageReduction = BOSS_FROST_EMPRESS_CFG.baseDr;
+      boss.combatTarget.flatArmor = boss.armor;
       const queued = boss.queuedEnragedSkills.shift();
       if (queued) {
         enterFrostSkill(boss, queued, target);

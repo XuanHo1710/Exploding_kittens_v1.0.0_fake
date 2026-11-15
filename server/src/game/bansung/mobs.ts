@@ -383,6 +383,7 @@ export interface MobState extends BansungCombatTarget {
   stunMult: number;
   armorType: BansungArmorType;
   flatArmor: number;
+  damageReduction?: number;
   hp: number;
   maxHp: number;
   shield: number;
@@ -883,6 +884,16 @@ export function spawnMob(mgr: MobManager, opts: SpawnMobOptions): MobState {
     stunMult: stats.stunMult,
     armorType,
     flatArmor,
+    damageReduction: Math.min(
+      0.52,
+      Number(
+        (
+          (armorType === 'armored' ? 0.14 : stats.role === 'brute' ? 0.12 : 0.04) +
+          Math.min(0.26, Math.max(0, lvScaling.level - 1) * 0.024) +
+          (isElite ? 0.12 : isEvolved ? 0.06 : 0)
+        ).toFixed(3),
+      ),
+    ),
     hp: maxHp,
     maxHp,
     shield: 0,

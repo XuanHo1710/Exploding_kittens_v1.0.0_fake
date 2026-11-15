@@ -2020,7 +2020,7 @@ export class WaveDirector {
       );
     }
 
-    // Milestone Boss spawns at 2m (1 Boss), 5m (2 Bosses), 8m (3 Bosses), 12m (Giant Splitter 1->4->16), 17m (5 Mini-Bosses) -> Endless Cycles ∞
+    // Milestone Boss spawns: 3m/5m/7m = 1 Boss; 9m+ onward = 2 Co-op Bosses
     if (schedule.bossKind && schedule.bossSlotIdx >= 0) {
       const slotKey = `${schedule.cycle}:${schedule.bossSlotIdx}`;
       if (slotKey !== this.survivalLastBossSlotKey) {
@@ -2221,7 +2221,7 @@ export class WaveDirector {
               bestShrine = s;
             }
           }
-          allowedWeapons = bestShrine.weaponPool;
+          allowedWeapons = bossId ? undefined : bestShrine.weaponPool;
         }
       } else if (shrines && shrines.length > 0) {
         const shrine = shrines[this.survivalPedestalDropCursor % shrines.length];
@@ -2231,7 +2231,7 @@ export class WaveDirector {
         const len = Math.hypot(dx, dy) || 1;
         rawX = shrine.x + (dx / len) * 64;
         rawY = shrine.y + (dy / len) * 64;
-        allowedWeapons = shrine.weaponPool;
+        allowedWeapons = bossId ? undefined : shrine.weaponPool;
       } else {
         const fallbackSpots: readonly [number, number][] = [
           bossPad,

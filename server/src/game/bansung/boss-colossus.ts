@@ -553,7 +553,7 @@ function syncBossDefenseStats(boss: DreadColossusState): void {
     boss.flatArmor = DREAD_COLOSSUS_CFG.armorStunned;
     boss.vulnMult = DREAD_COLOSSUS_CFG.stunDmgMult;
   } else {
-    boss.damageReduction = 0;
+    boss.damageReduction = DREAD_COLOSSUS_CFG.baseDr;
     boss.flatArmor = DREAD_COLOSSUS_CFG.armorNormal;
     boss.vulnMult = 1.0;
   }
@@ -1255,7 +1255,7 @@ export function createDreadColossus(
     tier: 'boss',
     armorType: 'armored',
     flatArmor: DREAD_COLOSSUS_CFG.armorNormal,
-    damageReduction: 0,
+    damageReduction: DREAD_COLOSSUS_CFG.baseDr,
     vulnMult: 1.0,
     ccImmune: true,
     hitFlashMs: 0,

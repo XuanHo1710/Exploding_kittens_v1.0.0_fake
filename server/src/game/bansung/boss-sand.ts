@@ -523,6 +523,7 @@ export class SandBeholderBoss {
       tier: 'boss',
       armorType: 'armored',
       flatArmor: BOSS_BEHOLDER_CFG.armor,
+      damageReduction: BOSS_BEHOLDER_CFG.baseDr,
       alive: true,
       hp: maxHp,
       maxHp,
@@ -911,8 +912,13 @@ export class SandBeholderBoss {
     this.combatTarget.hp = this.state.hp;
     this.combatTarget.maxHp = this.state.maxHp;
     this.combatTarget.alive = this.state.hp > 0 && this.state.state !== 'dead';
+    const isStaggered = this.state.state === 'stagger';
+    this.combatTarget.flatArmor = isStaggered
+      ? Math.round(BOSS_BEHOLDER_CFG.armor * 0.4)
+      : BOSS_BEHOLDER_CFG.armor;
+    this.combatTarget.damageReduction = isStaggered ? 0 : BOSS_BEHOLDER_CFG.baseDr;
     this.combatTarget.vulnMult =
-      this.state.state === 'stagger' ? BOSS_BEHOLDER_CFG.staggerDmgMult : 1.0;
+      isStaggered ? BOSS_BEHOLDER_CFG.staggerDmgMult : 1.0;
     this.combatTarget.dashIframesMs = this.isInvulnerable() ? 100 : 0;
   }
 
@@ -1602,7 +1608,9 @@ export class SandBeholderBoss {
       if (dist > slamRadius) continue;
 
       const inDashIframes =
-        (t.dashIframesMs ?? 0) > 0 || (t.combatTarget?.dashIframesMs ?? 0) > 0;
+        (t.dashIframesMs ?? 0) > 0 ||
+        (t.combatTarget?.dashIframesMs ?? 0) > 0 ||
+        (t.combatTarget?.shieldBuffMs ?? 0) > 0;
       const dmg = dist <= SLAM_INNER_RADIUS_PX ? SLAM_DMG_INNER : SLAM_DMG_OUTER;
       const kdx = dist > 1e-4 ? dx / dist : 1;
       const kdy = dist > 1e-4 ? dy / dist : 0;
@@ -1841,7 +1849,9 @@ export class SandBeholderBoss {
       }
 
       const inDashIframes =
-        (t.dashIframesMs ?? 0) > 0 || (t.combatTarget?.dashIframesMs ?? 0) > 0;
+        (t.dashIframesMs ?? 0) > 0 ||
+        (t.combatTarget?.dashIframesMs ?? 0) > 0 ||
+        (t.combatTarget?.shieldBuffMs ?? 0) > 0;
       if (inDashIframes) {
         out.heroHits.push({
           targetId: t.id,

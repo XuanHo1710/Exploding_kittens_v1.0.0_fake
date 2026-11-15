@@ -22,6 +22,7 @@ import {
   BANSUNG_PLAYABLE_BOUNDS,
   BANSUNG_PROP_FIELDS,
   BANSUNG_PROP_INDEX,
+  BANSUNG_SHIELD_BARRIER_MS,
   BANSUNG_STAMINA,
   BANSUNG_STARTER_PERK_IDS,
   BANSUNG_STATUS_CRATE,
@@ -29,7 +30,6 @@ import {
   BANSUNG_TICK_HZ,
   BANSUNG_WEAPONS,
   BANSUNG_WEAPON_IDS,
-  BANSUNG_WEAPON_INDEX,
   FX_DMG,
   FX_STATUS,
   aggregatePerkMods,
@@ -123,16 +123,16 @@ export const BANSUNG_STATIC_SHIELD_CONSTS = {
 
 export const BANSUNG_BARREL_LOOT_TABLES = {
   barrel_explosive: {
-    none: 55,
+    none: 58,
     coin: 25,
     energy_orb: 15,
-    armor_plate: 5,
+    armor_plate: 2,
   },
   barrel_emp: {
-    none: 50,
+    none: 53,
     energy_orb: 30,
     coin: 15,
-    armor_plate: 5,
+    armor_plate: 2,
   },
 } as const;
 
@@ -233,6 +233,8 @@ export interface PickupHeroState extends Partial<SurvivalHeroGachaState> {
   baseMaxStamina?: number;
   shieldDamageReduction?: number;
   regenDelayMs?: number;
+  /** Active 30s Aegis protection barrier remaining duration (ms). */
+  shieldBuffMs?: number;
 
   heroId?: BansungHeroId;
   hasPet?: boolean;
@@ -476,7 +478,10 @@ export function isHeroEligibleForPickup(
     case 'energy':
       return hero.energy < hero.maxEnergy;
     case 'armor':
-      return getHeroShield(hero) < getHeroMaxShield(hero);
+      return (
+        (hero.shieldBuffMs ?? 0) < BANSUNG_SHIELD_BARRIER_MS * 0.9 ||
+        getHeroShield(hero) < getHeroMaxShield(hero)
+      );
     case 'always':
       return true;
     case 'interact':
@@ -503,14 +508,14 @@ export function computePickupMagnetRadius(
 
 /**
  * Encodes `BansungFrame.pk[+4]` (`subVal`) per `d32`:
- * - `weapon_pedestal`: `BANSUNG_WEAPON_INDEX[weaponId]`
+ * - `weapon_pedestal`: `BANSUNG_WEAPONS[weaponId].idx`
  * - orbs/coins: `stack (bits 0..11) | (expiringFlag << 12)`
  */
 export function encodePickupSubVal(
   pickup: Pick<PickupInstance, 'kind' | 'stack' | 'ttlS' | 'weaponId'>,
 ): number {
   if (pickup.kind === 'weapon_pedestal') {
-    return pickup.weaponId ? (BANSUNG_WEAPON_INDEX[pickup.weaponId] ?? 0) : 0;
+    return pickup.weaponId ? (BANSUNG_WEAPONS[pickup.weaponId]?.idx ?? 0) : 0;
   }
   const stackBits = clamp(Math.floor(pickup.stack), 1, 0x0fff) & 0x0fff;
   const expiringFlag = pickup.ttlS <= BANSUNG_PICKUP_CONSTS.TTL_BLINK_S + TIMER_EPS ? 1 : 0;
@@ -889,7 +894,7 @@ export function applySurvivalGachaSkillToHero(
   switch (card.category) {
     case 'skill_damage': {
       const dmgAdd = primary > 0 ? primary : 0.12;
-      g.gachaDmgMult += dmgAdd;
+      g.gachaDmgMult = Math.min(3.5, g.gachaDmgMult + dmgAdd);
       break;
     }
     case 'skill_hp': {
@@ -920,16 +925,16 @@ export function applySurvivalGachaSkillToHero(
     case 'skill_firerate': {
       const rofAdd = primary > 0 ? primary : 0.12;
       const reloadAdd = spec?.secondaryValue ?? rofAdd;
-      g.gachaFireRateMult += rofAdd;
-      g.gachaReloadSpeedMult += reloadAdd;
+      g.gachaFireRateMult = Math.min(2.6, g.gachaFireRateMult + rofAdd);
+      g.gachaReloadSpeedMult = Math.min(2.6, g.gachaReloadSpeedMult + reloadAdd);
       break;
     }
     case 'skill_multishot': {
-      const extraProj = Math.max(1, Math.round(primary > 0 ? primary : 1));
+      const extraProj = Math.max(1, Math.min(1, Math.round(primary > 0 ? primary : 1)));
       const enSave = Math.max(0, spec?.secondaryValue ?? 0);
-      g.extraMultishot += extraProj;
+      g.extraMultishot = Math.min(3, g.extraMultishot + extraProj);
       if (enSave > 0) {
-        g.gachaEnergyCostMult = Math.max(0.5, g.gachaEnergyCostMult - enSave);
+        g.gachaEnergyCostMult = Math.max(0.55, g.gachaEnergyCostMult - enSave);
       }
       break;
     }
@@ -1919,7 +1924,8 @@ export class PickupManager {
         );
       }
     } else if (p.kind === 'armor_plate') {
-      addHeroShield(collector, amount);
+      // Image-2 Shield pickup: 30s full protection barrier that blocks all incoming attacks
+      collector.shieldBuffMs = BANSUNG_SHIELD_BARRIER_MS;
     } else if (p.kind === 'energy_orb' || p.kind === 'energy_cell') {
       const gained = Math.max(0, Math.min(collector.maxEnergy - collector.energy, amount));
       collector.energy += gained;

@@ -17,6 +17,7 @@ import {
   BANSUNG_MAP_H,
   BANSUNG_MAP_W,
   BANSUNG_MAX_PLAYERS,
+  BANSUNG_WEAPONS,
   getBansungPerk,
   normalizeBansungConfig,
   normalizeBansungHero,
@@ -25,6 +26,7 @@ import {
   type BansungHeroId,
   type BansungPerkId,
   type BansungPingKind,
+  type BansungWeaponId,
 } from '../../../../shared/src';
 
 // ============================================================================
@@ -286,6 +288,42 @@ export function validateBansungCommand(
         return { ok: false, reason: 'invalid_gacha_pick' };
       }
       return { ok: true, cmd: { t: 'gacha', pick: pick as 0 | 1 | 2 } };
+    }
+
+    case 'shop': {
+      const op = raw.op;
+      if (op !== 'buy_weapon' && op !== 'upgrade_active' && op !== 'supply_heal') {
+        return { ok: false, reason: 'invalid_shop_op' };
+      }
+      let weaponId: BansungWeaponId | undefined;
+      if (op === 'buy_weapon') {
+        const w = raw.weaponId;
+        if (
+          typeof w !== 'string' ||
+          FORBIDDEN_PROTO_KEYS.has(w) ||
+          !Object.prototype.hasOwnProperty.call(BANSUNG_WEAPONS, w)
+        ) {
+          return { ok: false, reason: 'invalid_shop_weapon' };
+        }
+        weaponId = w as BansungWeaponId;
+      }
+      let slotIdx: number | undefined;
+      if (raw.slotIdx !== undefined) {
+        const s = finiteNumberOrNull(raw.slotIdx);
+        if (s === null || !Number.isInteger(s) || s < 0 || s > BANSUNG_SEC_LIMITS.MAX_WEAPON_SLOT_IDX) {
+          return { ok: false, reason: 'invalid_shop_slot' };
+        }
+        slotIdx = s;
+      }
+      return {
+        ok: true,
+        cmd: {
+          t: 'shop',
+          op,
+          ...(weaponId ? { weaponId } : {}),
+          ...(slotIdx !== undefined ? { slotIdx } : {}),
+        },
+      };
     }
 
     case 'skill': {

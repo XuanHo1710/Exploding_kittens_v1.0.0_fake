@@ -44,6 +44,7 @@ import {
   BANSUNG_PFLAG_HIT_FLASH,
   BANSUNG_PFLAG_INVULN,
   BANSUNG_PFLAG_LEFT,
+  BANSUNG_PFLAG_SHIELD_BARRIER,
   BANSUNG_PLAYER_FIELDS,
   BANSUNG_PLAYABLE_BOUNDS,
   BANSUNG_PROJECTILE_KINDS,
@@ -59,7 +60,6 @@ import {
   BANSUNG_TICK_EXACT_MS,
   BANSUNG_TICK_HZ,
   BANSUNG_TOTAL_WAVES,
-  BANSUNG_WEAPON_INDEX,
   FX_BEAM,
   FX_BLAST,
   FX_DEATH,
@@ -71,7 +71,11 @@ import {
   dequantizeAim,
   getBansungHero,
   getBossHpBars,
+  BANSUNG_SUPPLY_HEAL_COST,
+  BANSUNG_WEAPON_MAX_TIER,
+  getWeaponShopPrice,
   getWeaponSpec,
+  getWeaponUpgradeCoinCost,
   getXpToNextLevel,
   normalizeBansungConfig,
   normalizeBansungHero,
@@ -1121,6 +1125,7 @@ export class BansungWorld implements BotWorldView {
         hitIframesMs: 0,
         hitFlashMs: 0,
         dashIframesMs: 0,
+        shieldBuffMs: 0,
         stunMs: 0,
         stunImmuneMs: 0,
         stunDrStage: 0,
@@ -1236,6 +1241,7 @@ export class BansungWorld implements BotWorldView {
       hitIframesMs: p.hitIframesMs,
       hitFlashMs: p.hitFlashMs,
       dashIframesMs: p.dashIframesMs,
+      shieldBuffMs: p.shieldBuffMs,
       stunMs: p.stunMs,
       stunImmuneMs: p.stunImmuneMs,
       stunDrStage: p.stunDrStage,
@@ -1691,6 +1697,11 @@ export class BansungWorld implements BotWorldView {
         break;
       }
 
+      case 'shop': {
+        this.handleShopCommand(player, cmd);
+        break;
+      }
+
       case 'ping': {
         if (!fromBot && !canSendTacticalPing(player.guard, this.elapsedMs)) return;
         if (!fromBot) markTacticalPing(player.guard, this.elapsedMs);
@@ -1813,8 +1824,9 @@ export class BansungWorld implements BotWorldView {
       }
 
       if (p.life === 'alive' && !p.downed) {
-        const regenScale = Math.max(0.5, p.mods.armorRegenMul ?? 1);
-        tickHeroShield(p, DT_MS * regenScale);
+        // recomputeHeroStats already sets p.regenRateMul = mods.armorRegenMul; pass raw DT_MS
+        // so shieldDelayMs counts down full real-time seconds without double-scaling regen.
+        tickHeroShield(p, DT_MS);
         p.armor = p.shield;
         p.maxArmor = p.maxShield;
       }
@@ -2281,11 +2293,13 @@ export class BansungWorld implements BotWorldView {
         const mRes = stepHeroMeleeSwing(p.weaponState, weaponCtx);
         p.x = p.weaponState.x;
         p.y = p.weaponState.y;
+        if (mRes.lifestealHp > 0 && p.hp > 0 && p.hp < p.maxHp) {
+          p.hp = Math.min(p.maxHp, p.hp + mRes.lifestealHp);
+        }
         const spec = p.slots[p.slotIdx]?.id;
         if (spec) {
           destroyMobProjectilesInRadius(this.mobMgr, p.x, p.y, 68);
         }
-        void mRes;
       }
     }
 
@@ -2716,8 +2730,14 @@ export class BansungWorld implements BotWorldView {
       a.maxHp = p.maxHp;
       a.shield = p.shield;
       a.maxShield = p.maxShield;
+      a.shieldDelayMs = p.shieldDelayMs;
+      a.shieldRegenAccMs = p.shieldRegenAccMs;
+      a.regenDelayMs = p.regenDelayMs;
+      a.shieldDamageReduction = p.shieldDamageReduction;
+      a.regenRateMul = p.regenRateMul;
       a.dashIframesMs = p.dashIframesMs;
       a.hitIframesMs = p.hitIframesMs;
+      a.shieldBuffMs = p.shieldBuffMs;
       a.stunMs = p.stunMs;
       a.dots = p.dots;
     }
@@ -2886,6 +2906,7 @@ export class BansungWorld implements BotWorldView {
           p.shieldDelayMs = a.shieldDelayMs;
           p.shieldRegenAccMs = a.shieldRegenAccMs;
           p.hitIframesMs = a.hitIframesMs;
+          p.shieldBuffMs = a.shieldBuffMs;
           p.hitFlashMs = a.hitFlashMs;
           p.stunMs = a.stunMs;
           if (Math.abs(a.x - p.x) > 0.05 || Math.abs(a.y - p.y) > 0.05) {
@@ -3812,15 +3833,7 @@ export class BansungWorld implements BotWorldView {
     const count = Math.max(1, spec.count || 1);
     const positions = spec.positions ?? [{ x: spec.x, y: spec.y }];
     const isSurvival = resolveBansungGameMode(this.config) === 'survival';
-    if (isSurvival || !spec.mini) {
-      // Clear lingering non-boss wave mobs when a major Boss enters; only Boss summon skills spawn adds during Boss fights.
-      this.mobMgr.mobs.length = 0;
-      this.mobMgr.mobById.clear();
-      this.mobMgr.mobByNumId.clear();
-      this.mobMgr.projectiles.length = 0;
-      this.mobMgr.telegraphs.clear();
-      this.director.spawnTelegraphs.length = 0;
-    }
+    // Keep already-spawned mobs alive when Boss enters; WaveDirector stops new regular mob spawns while bossAlive is true.
     const cycleCount = isSurvival
       ? this.director.getSurvivalClock().cycle
       : Math.max(0, Math.floor((this.director.wave - BANSUNG_TOTAL_WAVES) / 5));
@@ -4087,6 +4100,110 @@ export class BansungWorld implements BotWorldView {
     p.gachaPending = p.gachaQueue + (p.gachaChoices ? 1 : 0);
     this.hooks.changed();
     return true;
+  }
+
+  private handleShopCommand(
+    p: BansungRuntimePlayer,
+    cmd: Extract<BansungCommand, { t: 'shop' }>,
+  ): boolean {
+    if (p.left || p.life !== 'alive' || p.downed) return false;
+
+    if (cmd.op === 'supply_heal') {
+      if (p.coins < BANSUNG_SUPPLY_HEAL_COST) return false;
+      p.coins -= BANSUNG_SUPPLY_HEAL_COST;
+      p.hp = p.maxHp;
+      p.shield = p.maxShield;
+      p.armor = p.shield;
+      p.energy = p.maxEnergy;
+      p.weaponState.energy = p.energy;
+      if (p.gadgetSlot) {
+        const maxCharges = BANSUNG_GADGETS[p.gadgetSlot.id].maxCharges;
+        p.gadgetSlot.charges = Math.min(maxCharges, p.gadgetSlot.charges + 1);
+        p.gadgetSlot.cdTicksLeft = 0;
+      }
+      this.syncWeaponAndHeroState(p);
+      this.fx.push(FX_STATUS, p.idx, BANSUNG_FX_STATUS_GACHA, 1, Math.round(p.x), Math.round(p.y));
+      this.logs.push(`${p.name} mua tiếp tế hồi đầy HP, Khiên & Năng lượng (-${BANSUNG_SUPPLY_HEAL_COST} xu).`);
+      this.hooks.changed();
+      return true;
+    }
+
+    if (cmd.op === 'upgrade_active') {
+      const targetSlot =
+        cmd.slotIdx !== undefined && cmd.slotIdx >= 0 && cmd.slotIdx < BANSUNG_MAX_WEAPON_SLOTS
+          ? cmd.slotIdx
+          : p.weaponState.activeSlot;
+      const slotObj = p.weaponState.slots[targetSlot];
+      if (!slotObj) return false;
+      const curTier = Math.max(1, slotObj.tier ?? 1);
+      if (curTier >= BANSUNG_WEAPON_MAX_TIER) return false;
+      const cost = getWeaponUpgradeCoinCost(curTier);
+      if (cost <= 0 || p.coins < cost) return false;
+      const up = upgradeHeroWeaponTier(p.weaponState, targetSlot);
+      if (!up.ok) return false;
+
+      p.coins -= cost;
+      const spec = getWeaponSpec(slotObj.weaponId);
+      if (spec.magSize > 0) {
+        slotObj.ammoInMag = spec.magSize;
+      }
+      if (p.weaponState.reload && p.weaponState.reload.slot === targetSlot) {
+        p.weaponState.reload = null;
+      }
+      p.slots = buildWeaponSlotsSnapshot(p.weaponState);
+      recomputeHeroStats(p);
+      p.armor = p.shield;
+      p.maxArmor = p.maxShield;
+      this.syncWeaponAndHeroState(p);
+      this.fx.push(
+        FX_STATUS,
+        p.idx,
+        BANSUNG_FX_STATUS_GACHA,
+        slotObj.tier ?? up.toTier,
+        Math.round(p.x),
+        Math.round(p.y),
+      );
+      this.logs.push(`${p.name} nâng cấp ${spec.vnName || spec.name} lên Mk.${up.toTier} (-${cost} xu).`);
+      this.hooks.changed();
+      return true;
+    }
+
+    if (cmd.op === 'buy_weapon' && cmd.weaponId) {
+      const spec = getWeaponSpec(cmd.weaponId);
+      if (!spec) return false;
+      // Do not overwrite/duplicate an already-owned weapon
+      if (p.weaponState.slots.some((s) => s?.weaponId === cmd.weaponId)) return false;
+      const cost = getWeaponShopPrice(cmd.weaponId);
+      if (p.coins < cost) return false;
+
+      let targetSlot =
+        cmd.slotIdx !== undefined && cmd.slotIdx >= 0 && cmd.slotIdx < BANSUNG_MAX_WEAPON_SLOTS
+          ? cmd.slotIdx
+          : p.weaponState.slots.findIndex((s) => s === null);
+      if (targetSlot < 0) targetSlot = p.weaponState.activeSlot;
+
+      const equipped = equipWeaponInSlot(p.weaponState, targetSlot, cmd.weaponId);
+      if (!equipped) return false;
+
+      p.coins -= cost;
+      p.weaponState.activeSlot = targetSlot;
+      p.slotIdx = targetSlot;
+      p.slots = buildWeaponSlotsSnapshot(p.weaponState);
+      this.syncWeaponAndHeroState(p);
+      this.fx.push(
+        FX_STATUS,
+        p.idx,
+        BANSUNG_FX_STATUS_GACHA,
+        equipped.tier ?? 1,
+        Math.round(p.x),
+        Math.round(p.y),
+      );
+      this.logs.push(`${p.name} mua ${spec.vnName || spec.name} (-${cost} xu).`);
+      this.hooks.changed();
+      return true;
+    }
+
+    return false;
   }
 
   private stepGachaTimers(): void {
@@ -4544,7 +4661,7 @@ export class BansungWorld implements BotWorldView {
       }
       p.weaponState.reload = null;
       this.pickupMgr.spawnPickup('energy_orb', p.x + 28, p.y, { stack: 2 });
-      this.pickupMgr.spawnPickup('armor_plate', p.x - 28, p.y, { stack: 2 });
+      this.pickupMgr.spawnPickup('hp_orb', p.x - 28, p.y, { stack: 2 });
     } else if (p.heroId === 'ranger') {
       const baseDmg = Math.round(36 * (p.mods.dmgMul ?? 1) * (p.gachaMods?.dmgMult ?? 1));
       for (let k = -3; k <= 3; k++) {
@@ -4571,7 +4688,8 @@ export class BansungWorld implements BotWorldView {
       }
     } else if (p.heroId === 'pyro') {
       const novaR = 240;
-      p.shield = Math.min(p.maxShield, p.shield + 35);
+      p.shield = Math.min(p.maxShield, p.shield + 8);
+      p.shieldDelayMs = 0;
       p.armor = p.shield;
       this.fx.push(FX_BLAST, BANSUNG_FX_BLAST_HERO_NOVA, Math.round(p.x), Math.round(p.y), novaR, p.actorId);
       const fireDmg = Math.round(68 * (p.mods.dmgMul ?? 1) * (p.gachaMods?.dmgMult ?? 1));
@@ -4592,7 +4710,8 @@ export class BansungWorld implements BotWorldView {
     } else {
       const slamR = 220;
       p.invulnTimer = Math.max(p.invulnTimer, 1.2);
-      p.shield = Math.min(p.maxShield, p.shield + 50);
+      p.shield = Math.min(p.maxShield, p.shield + 12);
+      p.shieldDelayMs = 0;
       p.armor = p.shield;
       this.fx.push(FX_BLAST, BANSUNG_FX_BLAST_HERO_NOVA, Math.round(p.x), Math.round(p.y), slamR, p.actorId);
       destroyMobProjectilesInRadius(this.mobMgr, p.x, p.y, slamR);
@@ -4958,7 +5077,7 @@ export class BansungWorld implements BotWorldView {
       slots: p.slots as readonly BansungWeaponSlot[],
       slotIdx: p.weaponState.activeSlot,
       weaponId: slotWeapon,
-      reloadMs: reload ? Math.round((reload.durationTicks - reload.progressTicks) * DT_MS) : 0,
+      reloadMs: reload ? Math.max(1, Math.round((reload.durationTicks - reload.progressTicks) * DT_MS)) : 0,
       reloadTotalMs: reload ? Math.round(reload.durationTicks * DT_MS) : 0,
       reloading: Boolean(reload),
       reloadAttempted: reload ? reload.attempted : false,
@@ -5463,6 +5582,7 @@ export class BansungWorld implements BotWorldView {
       if (p.invulnTimer > 0 || p.gachaGraceMs > 0) flags |= BANSUNG_PFLAG_INVULN;
       if (p.bot) flags |= BANSUNG_PFLAG_BOT;
       if (p.left) flags |= BANSUNG_PFLAG_DISCONNECTED;
+      if ((p.shieldBuffMs ?? 0) > 0) flags |= BANSUNG_PFLAG_SHIELD_BARRIER;
 
       const curWeaponId =
         p.weaponState.slots[p.weaponState.activeSlot]?.weaponId ??
@@ -5479,7 +5599,7 @@ export class BansungWorld implements BotWorldView {
       out[off + 6] = state;
       out[off + 7] = flags;
       out[off + 8] = BANSUNG_HERO_INDEX[p.heroId];
-      out[off + 9] = BANSUNG_WEAPON_INDEX[curWeaponId];
+      out[off + 9] = getWeaponSpec(curWeaponId).idx;
       out[off + 10] = revivePct;
       out[off + 11] = getHeroActiveWeaponTier(p.weaponState);
     }
@@ -5572,7 +5692,7 @@ export class BansungWorld implements BotWorldView {
       skillMaxMs: Math.round(p.skillMaxMs),
       ...(p.skillActiveMs > 0 ? { skillActiveMs: Math.round(p.skillActiveMs) } : {}),
       ...(isInitial ? { skillName: getBansungHero(p.heroId).activeSkill.vnName } : {}),
-      reloadMs: reload ? Math.round((reload.durationTicks - reload.progressTicks) * DT_MS) : 0,
+      reloadMs: reload ? Math.max(1, Math.round((reload.durationTicks - reload.progressTicks) * DT_MS)) : 0,
       reloadTotalMs: reload ? Math.round(reload.durationTicks * DT_MS) : 0,
       ...(reload
         ? {
@@ -5625,6 +5745,9 @@ export class BansungWorld implements BotWorldView {
         : {}),
       ...((p.shieldDelayMs ?? 0) > 0
         ? { shieldDelayMs: Math.max(0, Math.round(p.shieldDelayMs ?? 0)) }
+        : {}),
+      ...((p.shieldBuffMs ?? 0) > 0
+        ? { shieldBuffMs: Math.max(0, Math.round(p.shieldBuffMs ?? 0)) }
         : {}),
       ...(isInitial ||
       Math.round(p.regenDelayMs ?? BANSUNG_SHIELD.REGEN_DELAY_MS) !==

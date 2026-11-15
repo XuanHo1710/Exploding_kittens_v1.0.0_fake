@@ -79,8 +79,8 @@ export const BANSUNG_AFFINITY: Readonly<
 export const BANSUNG_SHIELD = {
   REGEN_DELAY_MS: 5000, // 5.0s zero-damage wait before shield recharges (2200ms with Fast Shield perk)
   FAST_REGEN_DELAY_MS: 2200,
-  REGEN_INTERVAL_MS: 750, // +10 shield per tick while timer == 0 & alive
-  REGEN_AMOUNT: 10,
+  REGEN_INTERVAL_MS: 250, // +1 shield per 250ms (4 shield/s) so shield climbs gradually
+  REGEN_AMOUNT: 1,
   HERO_HP_IFRAMES_MS: 250, // prevents multi-pellet/swarm 1-tick deletion on HP loss
   DASH_IFRAMES_MS: 280, // full dodge invulnerability (d20)
   HIT_FLASH_MS: 90, // ~3 frames at 30Hz white offscreen tint
@@ -183,6 +183,8 @@ export interface BansungCombatTarget {
   strongShield?: boolean;
   dashIframesMs?: number;
   hitIframesMs?: number;
+  /** Active 30s Aegis barrier from `armor_plate` pickup; blocks all incoming damage & CC. */
+  shieldBuffMs?: number;
   hitFlashMs?: number;
   ccImmune?: boolean;
   stunMs?: number;
@@ -399,6 +401,23 @@ export function applyBansungDamage(
       stunAppliedMs: 0,
       flags: 0,
       fxFlags: 0,
+      dmgKindIdx,
+    };
+  }
+
+  if ((target.shieldBuffMs ?? 0) > 0) {
+    return {
+      hpDmg: 0,
+      shieldDmg: 0,
+      totalDmg: 0,
+      rawDmg: 0,
+      blocked: true,
+      isCrit: false,
+      brokeShield: false,
+      killed: false,
+      stunAppliedMs: 0,
+      flags: BANSUNG_DMG_FLAG_IMMUNE,
+      fxFlags: BANSUNG_DMG_FLAG_IMMUNE,
       dmgKindIdx,
     };
   }
@@ -653,7 +672,7 @@ export function applyStunWithDR(
 
   const dmgKindIdx = opts?.dmgKindIdx ?? BANSUNG_DAMAGE_KIND_INDEX.energy;
 
-  if (target.ccImmune || (target.stunImmuneMs ?? 0) > 0) {
+  if (target.ccImmune || (target.stunImmuneMs ?? 0) > 0 || (target.shieldBuffMs ?? 0) > 0) {
     opts?.popups?.push([target.id, 0, BANSUNG_DMG_FLAG_IMMUNE, dmgKindIdx]);
     return 0;
   }
@@ -703,6 +722,7 @@ export function applyDot(
   opts?: BansungDotApplyOptions,
 ): boolean {
   if (!target.alive || target.downed || target.hp <= 0) return false;
+  if ((target.shieldBuffMs ?? 0) > 0) return false;
 
   if (kind === 'burn' && (target.fireWard || hasPerk(target, 'fire_ward'))) {
     opts?.popups?.push([
@@ -810,6 +830,9 @@ export function tickStatuses(
   }
   if (entity.dashIframesMs && entity.dashIframesMs > 0) {
     entity.dashIframesMs = Math.max(0, entity.dashIframesMs - dtMs);
+  }
+  if (entity.shieldBuffMs && entity.shieldBuffMs > 0) {
+    entity.shieldBuffMs = Math.max(0, entity.shieldBuffMs - dtMs);
   }
 
   if ((entity.stunImmuneMs ?? 0) > 0) {

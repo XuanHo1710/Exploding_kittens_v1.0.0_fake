@@ -51,7 +51,6 @@ import {
   BANSUNG_TICK_EXACT_MS,
   BANSUNG_TICK_HZ,
   BANSUNG_WAVE_ENERGY_RESTORE,
-  BANSUNG_WEAPON_INDEX,
   BANSUNG_WEAPON_MAX_TIER,
   BANSUNG_WEAPONS,
   FX_BEAM,
@@ -853,10 +852,11 @@ function getEffectiveReloadParams(
   const quickHands = Boolean(hero.hasQuickHands || perkReloadMul > 1);
   let durationTicks = spec.reloadTicks;
   if (reloadMul > 1) {
-    durationTicks = Math.max(1, Math.round(spec.reloadTicks / reloadMul));
+    durationTicks = Math.round(spec.reloadTicks / reloadMul);
   } else if (quickHands) {
-    durationTicks = Math.max(1, Math.round(spec.reloadTicks * BANSUNG_QUICK_HANDS_RELOAD_MULT));
+    durationTicks = Math.round(spec.reloadTicks * BANSUNG_QUICK_HANDS_RELOAD_MULT);
   }
+  durationTicks = Math.max(1, durationTicks);
 
   const sweetMinU = quickHands ? BANSUNG_QUICK_HANDS_SWEET_SPOT[0] : BANSUNG_RELOAD_SWEET_MIN;
   const sweetMaxU = quickHands ? BANSUNG_QUICK_HANDS_SWEET_SPOT[1] : BANSUNG_RELOAD_SWEET_MAX;
@@ -900,7 +900,7 @@ export function startHeroReload(
   const slot = hero.slots[slotIdx];
   if (!slot) return false;
   const spec = getWeaponSpec(slot.weaponId);
-  if (spec.magSize <= 0 || slot.ammoInMag >= spec.magSize) return false;
+  if (spec.reloadTicks <= 0 || spec.magSize <= 0 || slot.ammoInMag >= spec.magSize) return false;
 
   hero.burst = null;
   hero.charge = null;
@@ -1023,6 +1023,9 @@ export function getHeroWeaponMoveMult(hero: BansungHeroWeaponState): number {
 
 /** Returns weapon-related player bitflags (`BANSUNG_PFLAG_FIRING | BANSUNG_PFLAG_RELOADING`). */
 export function getHeroPlayerFlags(hero: BansungHeroWeaponState): number {
+  if (!hero.alive || hero.downed) {
+    return 0;
+  }
   let flags = 0;
   if (hero.burst || hero.charge || hero.activeSwing) {
     flags |= BANSUNG_PFLAG_FIRING;
@@ -1345,14 +1348,20 @@ export class BansungBulletPool {
     b.isEnergy =
       params.isEnergy ??
       (params.kind === 'plasma_bolt' ||
+        params.kind === 'plasma_pellet' ||
         params.kind === 'thunder_orb' ||
         params.kind === 'electric_arc_bolt' ||
+        params.kind === 'tesla_arc' ||
         params.kind === 'rail_beam' ||
         params.kind === 'laser_map_beam' ||
+        params.kind === 'ion_lance' ||
         params.kind === 'turret_bolt' ||
         params.kind === 'turret_thunder' ||
         params.kind === 'flame_stream_orb' ||
         params.kind === 'cryo_shard' ||
+        params.kind === 'blizzard_bolt' ||
+        params.kind === 'chronos_slug' ||
+        params.kind === 'void_cannon_orb' ||
         params.kind === 'gravity_orb');
     b.isExplosive =
       params.isExplosive ??
@@ -2302,22 +2311,22 @@ function pointOnSegmentInArc(
 export function stepHeroMeleeSwing(
   hero: BansungHeroWeaponState,
   ctx: BansungWeaponWorldContext,
-): { bulletsDestroyed: number; meleeHits: number } {
+): { bulletsDestroyed: number; meleeHits: number; lifestealHp: number } {
   const swing = hero.activeSwing;
-  if (!swing) return { bulletsDestroyed: 0, meleeHits: 0 };
+  if (!swing) return { bulletsDestroyed: 0, meleeHits: 0, lifestealHp: 0 };
 
   if (!hero.alive || hero.downed || hero.stunned) {
     hero.activeSwing = null;
-    return { bulletsDestroyed: 0, meleeHits: 0 };
+    return { bulletsDestroyed: 0, meleeHits: 0, lifestealHp: 0 };
   }
 
   const k = ctx.tickNo - swing.startTick;
-  if (k < 0) return { bulletsDestroyed: 0, meleeHits: 0 };
+  if (k < 0) return { bulletsDestroyed: 0, meleeHits: 0, lifestealHp: 0 };
   if (k >= swing.activeTicks) {
     if (k >= swing.activeTicks + swing.recoveryTicks) {
       hero.activeSwing = null;
     }
-    return { bulletsDestroyed: 0, meleeHits: 0 };
+    return { bulletsDestroyed: 0, meleeHits: 0, lifestealHp: 0 };
   }
 
   const spec = getWeaponSpec(swing.weaponId) as BansungMeleeWeaponSpec;
@@ -2361,6 +2370,7 @@ export function stepHeroMeleeSwing(
 
   let meleeHits = 0;
   let bulletsDestroyed = 0;
+  let lifestealHp = 0;
 
   // 1. Enemies inside swept sector
   ctx.actorGrid.queryCircle(
@@ -2407,6 +2417,9 @@ export function stepHeroMeleeSwing(
 
     if (!hitRes.blocked) {
       meleeHits++;
+      if (swing.weaponId === 'reaper_scythe') {
+        lifestealHp += swing.charged ? 4 : 2;
+      }
       applyRadialKnockback(a, ox, oy, spec.knockback, ctx);
 
       // Shock Baton secondary chain lightning (charged only)
@@ -2561,7 +2574,7 @@ export function stepHeroMeleeSwing(
   if (k === swing.activeTicks - 1 && swing.recoveryTicks <= 0) {
     hero.activeSwing = null;
   }
-  return { bulletsDestroyed, meleeHits };
+  return { bulletsDestroyed, meleeHits, lifestealHp };
 }
 
 function executeRangedShot(
@@ -3569,7 +3582,11 @@ export function stepBulletPool(
           ) {
             triggerThunderChain(b, hit.actor, ctx, dmgCtx);
           }
-          if (b.kind === 'cryo_shard') {
+          if (
+            b.kind === 'cryo_shard' ||
+            b.kind === 'blizzard_bolt' ||
+            (b.slowSplashRadius > 0 && b.slowPct > 0)
+          ) {
             b.x = hit.x;
             b.y = hit.y;
             triggerCryoChillAoE(b, ctx, dmgCtx);
