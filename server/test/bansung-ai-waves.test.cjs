@@ -827,11 +827,14 @@ test('mobs: thunder_mage wobbling thunderball (slow+microstun) and cover-ignorin
 // ============================================================================
 
 test('boss-sand: co-op HP scaling, intro invulnerability, Phase 1 volley/slam/dash-evade/pillar-occluded beam', () => {
-  assert.equal(bossSand.computeSandBeholderMaxHp(1, 'normal'), 2400);
-  assert.equal(bossSand.computeSandBeholderMaxHp(4, 'normal'), 7080);
+  assert.equal(bossSand.computeSandBeholderMaxHp(1, 'normal'), BOSS_BEHOLDER_CFG.baseHp);
+  assert.equal(
+    bossSand.computeSandBeholderMaxHp(4, 'normal'),
+    Math.round(BOSS_BEHOLDER_CFG.baseHp * shared.computeBossHpMult(4, 'normal')),
+  );
   assert.equal(
     bossSand.computeSandBeholderMaxHp(1, 'normal', { miniBoss: true }),
-    Math.round(2400 * BANSUNG_WAVES[3].miniBoss.hpMult),
+    Math.round(BOSS_BEHOLDER_CFG.baseHp * BANSUNG_WAVES[3].miniBoss.hpMult),
   );
 
   const pillar = makeObstacle(1, 780, 520, 64, 160, 'pillar');
@@ -842,7 +845,7 @@ test('boss-sand: co-op HP scaling, intro invulnerability, Phase 1 volley/slam/da
   assert.equal(boss.state.state, 'intro');
   const blockedHit = boss.applyHit({ baseDmg: 200, dmgKind: 'true', attackerId: 'p1' });
   assert.equal(blockedHit.blocked, true, 'intro state must block all incoming damage');
-  assert.equal(boss.state.hp, 2400);
+  assert.equal(boss.state.hp, BOSS_BEHOLDER_CFG.baseHp);
 
   const pExposed = makeBossPlayer(1, 900, 600);
   for (let i = 0; i < BOSS_BEHOLDER_CFG.introTicks; i++) {
@@ -922,8 +925,12 @@ test('boss-sand: Phase 2 enrage adds/double-slam/3-ring volley & stagger gauge i
   const boss = bossSand.createSandBeholderBoss({ x: 900, y: 600, initialState: 'move' });
   const hero = makeBossPlayer(1, 1050, 600);
 
-  // Drop HP <= 50% -> immediate enrage_roar transition
-  boss.applyHit({ baseDmg: 1300, dmgKind: 'true', attackerId: hero.id });
+  // Drop HP <= 50% -> immediate enrage_roar transition (accounting for boss DR)
+  boss.applyHit({
+    baseDmg: Math.ceil((boss.state.maxHp * 0.55) / (1 - BOSS_BEHOLDER_CFG.baseDr)),
+    dmgKind: 'true',
+    attackerId: hero.id,
+  });
   assert.equal(boss.state.phase, 2);
   assert.equal(boss.state.state, 'enrage_roar');
 
@@ -1056,7 +1063,10 @@ test('boss-colossus: cleave heat, swept dash + wall crash, mortar barrage, drone
   assert.equal(boss.heat, heatBeforeMortar + DREAD_COLOSSUS_CFG.mortarHeat);
 
   // 4. Phase 2 drone phalanx at <= 55% HP: 85% DR, crit suppression, and shatter overheat stun (armor=0, vulnMult=1.5)
-  bossColossus.damageDreadColossus(boss, { baseDmg: boss.hp - Math.floor(boss.maxHp * 0.5), dmgKind: 'true' });
+  bossColossus.damageDreadColossus(boss, {
+    baseDmg: Math.ceil((boss.hp - Math.floor(boss.maxHp * 0.5)) / (1 - DREAD_COLOSSUS_CFG.baseDr)),
+    dmgKind: 'true',
+  });
   boss.state = bossColossus.COLOSSUS_STATE.MARCH;
   let dronesSpawned = false;
   for (let t = 0; t < 25; t++) {
@@ -1134,7 +1144,10 @@ test('boss-colossus: drone phalanx anti-softlock timeout & 100 heat overheat thr
   const player = makeMobTarget(1, 'p1', 1200, 600, { id: 1, hp: 5000, maxHp: 5000, shield: 100, maxShield: 100 });
 
   // Force 55% drone phase & verify timeout triggers drone_timeout + overheat_stun
-  bossColossus.damageDreadColossus(boss, { baseDmg: Math.floor(boss.maxHp * 0.5), dmgKind: 'true' });
+  bossColossus.damageDreadColossus(boss, {
+    baseDmg: Math.ceil((boss.maxHp * 0.5) / (1 - DREAD_COLOSSUS_CFG.baseDr)),
+    dmgKind: 'true',
+  });
   let timedOut = false;
   for (let t = 0; t < DREAD_COLOSSUS_CFG.droneTimeoutTicks + 30; t++) {
     const res = bossColossus.stepDreadColossus(boss, { obsGrid, players: [player] });
@@ -1281,9 +1294,13 @@ test('boss-overlord: Phase 2 cross-hatch, weakpoint_matrix break -> 8% shatter +
   const boss = bossOverlord.createOverlordBoss({ x: 960, y: 640, playerCount: 2, difficulty: 'normal' });
   const p1 = makeMobTarget(1, 1, 1120, 640, { hp: 500, maxHp: 500, shield: 50, maxShield: 50 });
 
-  // Drop HP <= 60% -> phase_shift -> weakpoint_matrix
+  // Drop HP <= 60% -> phase_shift -> weakpoint_matrix (accounting for boss DR)
   boss.state = 'patrol_spiral';
-  bossOverlord.damageOverlordBoss(boss, { baseDmg: Math.floor(boss.maxHp * 0.45), dmgKind: 'true', attackerId: 1 });
+  bossOverlord.damageOverlordBoss(boss, {
+    baseDmg: Math.ceil((boss.maxHp * 0.45) / (1 - OVERLORD_STATS.baseDr)),
+    dmgKind: 'true',
+    attackerId: 1,
+  });
   assert.equal(boss.phase, 2);
   assert.equal(boss.state, 'phase_shift');
 
@@ -1914,17 +1931,17 @@ test('survival: 20-min repeating cycle (0-5m swarm_light, 5-10m heavy_brute, 10-
     assert.equal(pausedOut.spawns.length, 0, 'regular wave bursts must pause when bossAlive is true');
   }
 
-  // 3. Survival 4-Boss milestones (2m Arsenal, 5m Overlord, 8m Colossus, 12m Beholder) + pedestal drops
+  // 3. Survival Boss milestones (3m/5m/7m = 1 Boss; 9m+ onward = 2 Co-op Bosses) + pedestal drops
   const bossDir = new directorMod.WaveDirector({
     gameMode: 'survival',
     difficulty: 'normal',
     seed: 177,
   });
   const expectedBossSlots = [
-    { timeS: 125, expectedBoss: 'boss_arsenal', expectedStageIdx: 1 },
-    { timeS: 305, expectedBoss: 'boss_overlord', expectedStageIdx: 2 },
-    { timeS: 485, expectedBoss: 'boss_colossus', expectedStageIdx: 3 },
-    { timeS: 725, expectedBoss: 'boss_beholder', expectedStageIdx: 3 },
+    { timeS: 185, expectedBoss: 'boss_arsenal', expectedStageIdx: 1, expectedCount: 1, expectedMode: 'single' },
+    { timeS: 305, expectedBoss: 'boss_overlord', expectedStageIdx: 2, expectedCount: 1, expectedMode: 'single' },
+    { timeS: 425, expectedBoss: 'boss_colossus', expectedStageIdx: 2, expectedCount: 1, expectedMode: 'single' },
+    { timeS: 545, expectedBoss: 'boss_beholder', expectedStageIdx: 3, expectedCount: 2, expectedMode: 'duo' },
   ];
   for (let idx = 0; idx < expectedBossSlots.length; idx++) {
     const slot = expectedBossSlots[idx];
@@ -1939,6 +1956,8 @@ test('survival: 20-min repeating cycle (0-5m swarm_light, 5-10m heavy_brute, 10-
     }
     assert.ok(spawnedBoss, `Boss slot ${idx} at ${slot.timeS}s must emit spawnBoss`);
     assert.equal(spawnedBoss.id, slot.expectedBoss, `Boss slot ${idx} must spawn ${slot.expectedBoss}`);
+    assert.equal(spawnedBoss.count, slot.expectedCount, `Boss slot ${idx} count`);
+    assert.equal(spawnedBoss.mode, slot.expectedMode, `Boss slot ${idx} mode`);
     assert.equal(spawnedBoss.mini, false);
     assert.equal(bossDir.getSurvivalClock().stageIdx, slot.expectedStageIdx);
     if (idx === 0) {
@@ -1976,12 +1995,13 @@ test('survival: 20-min repeating cycle (0-5m swarm_light, 5-10m heavy_brute, 10-
   assert.ok(stage3Spawns.length > 0, 'Stage 3 evolved_horde must emit bursts');
 
   const evoMgr = mobsMod.createMobManager({ mapW: BANSUNG_MAP_W, mapH: BANSUNG_MAP_H, rng: makeRng(79) });
+  const stage3BonusArmor = BANSUNG_SURVIVAL_STAGES[3].bonusArmor;
   for (const s of stage3Spawns) {
     assert.equal(s.evolved, true, 'Stage 3 evolved_horde spawns must set evolved: true');
     assert.equal(
       s.armorAdd,
-      s.elite === 'armored' ? 5 : 3,
-      'Stage 3 evolved_horde must add +3 bonusArmor (+2 when armored elite)',
+      s.elite === 'armored' ? stage3BonusArmor + 2 : stage3BonusArmor,
+      'Stage 3 evolved_horde must add Stage 3 bonusArmor (+2 when armored elite)',
     );
     const mob = mobsMod.spawnMobFromDirector(evoMgr, s);
     assert.equal(mob.evolved, true, 'spawnMobFromDirector must preserve evolved flag');
@@ -2436,14 +2456,14 @@ test('BansungWorld integration: heal_drone gadget, Colossus iron_drone phalanx f
   for (let i = 0; i < 20; i++) wDrone.step();
   assert.ok(pyro.hp > hpAfterDeploy, 'active heal_drone must heal injured owner across 30Hz ticks');
 
-  // Spawn Dread Colossus at its 8m Survival slot (480s) and trigger iron_drone phalanx
-  wDrone.director.skipToSurvivalTime(485);
+  // Spawn Dread Colossus at its 7m Survival slot (420s) and trigger iron_drone phalanx
+  wDrone.director.skipToSurvivalTime(425);
   wDrone.step();
   const colossusEntry = wDrone.activeBosses.find((entry) => entry.kind === 'boss_colossus');
-  assert.ok(colossusEntry, 'survival 485s must spawn boss_colossus');
+  assert.ok(colossusEntry, 'survival 425s must spawn boss_colossus');
   const colossus = colossusEntry.boss;
   bossColossus.damageDreadColossus(colossus, {
-    baseDmg: colossus.hp - Math.floor(colossus.maxHp * 0.5),
+    baseDmg: Math.ceil((colossus.hp - Math.floor(colossus.maxHp * 0.5)) / (1 - DREAD_COLOSSUS_CFG.baseDr)),
     dmgKind: 'true',
   });
   colossus.state = bossColossus.COLOSSUS_STATE.MARCH;
@@ -2776,7 +2796,7 @@ test('survival: Stamina RMB dash gating, deduction, regen & Shield 25% DR + 5.0s
   assert.ok(p.shield > 35, `shield must regenerate once 5.0s damage-free delay expires (got ${p.shield})`);
 });
 
-test('survival: Boss I (boss_arsenal) despawns trash, pauses wave bursts & executes 5 telegraph/DANGER patterns', (t) => {
+test('survival: Boss I (boss_arsenal) keeps living mobs, pauses new wave bursts & executes 5 telegraph/DANGER patterns', (t) => {
   const { createArsenalBoss, stepArsenalBoss, toArsenalBossFrame } = require('../dist/server/src/game/bansung/boss-arsenal.js');
   const w = new BansungWorld(
     [{ id: 'p0', name: 'Scout', heroId: 'mascot' }],
@@ -2787,7 +2807,7 @@ test('survival: Boss I (boss_arsenal) despawns trash, pauses wave bursts & execu
   t.after(() => w.stop());
   const p = w.players[0];
 
-  // Seed regular trash mobs before 2m boss spawn
+  // Seed regular trash mobs before 3m boss spawn
   for (let i = 0; i < 5; i++) {
     mobsMod.spawnMob(w.mobMgr, {
       id: `trash_${i}`,
@@ -2801,18 +2821,18 @@ test('survival: Boss I (boss_arsenal) despawns trash, pauses wave bursts & execu
   }
   assert.equal(w.mobMgr.mobs.filter((m) => m.alive).length, 5);
 
-  // Advance to 2:00 (120s) -> boss_arsenal spawns & clears existing regular mobs cleanly!
-  w.director.skipToSurvivalTime(121);
+  // Advance to 3:00 (180s) -> boss_arsenal spawns while preserving already-spawned living mobs!
+  w.director.skipToSurvivalTime(181);
   w.step();
   const arsenalEntry = w.activeBosses.find((entry) => entry.kind === 'boss_arsenal');
-  assert.ok(arsenalEntry, 'survival 2:00 milestone must spawn boss_arsenal');
+  assert.ok(arsenalEntry, 'survival 3:00 milestone must spawn boss_arsenal');
   assert.equal(
     w.mobMgr.mobs.filter((m) => m.alive).length,
-    0,
-    'spawning a Survival Boss must clear lingering regular trash mobs',
+    5,
+    'spawning a Survival Boss must keep existing spawned mobs alive',
   );
 
-  // Step 45 ticks without summon -> regular wave bursts stay suppressed while Boss is alive
+  // Step 45 ticks without summon -> no new regular wave bursts spawn while Boss is alive
   arsenalEntry.boss.summonCdTicks = 999;
   arsenalEntry.boss.actionCdTicks = 999;
   for (let i = 0; i < 45; i++) {
@@ -2821,7 +2841,7 @@ test('survival: Boss I (boss_arsenal) despawns trash, pauses wave bursts & execu
   }
   assert.equal(
     w.mobMgr.mobs.filter((m) => m.alive).length,
-    0,
+    5,
     'regular wave spawns must remain paused while boss_arsenal is alive',
   );
 

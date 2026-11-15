@@ -1652,9 +1652,9 @@ test('T08.3 gun evolution tiers Mk.I -> Mk.IV: upgradeHeroWeaponTier, damage, RO
   }
 
   assert.equal(tierSnapshots[0].count, 1);
-  assert.equal(tierSnapshots[1].count, 2);
-  assert.equal(tierSnapshots[2].count, 3);
-  assert.equal(tierSnapshots[3].count, 4);
+  assert.equal(tierSnapshots[1].count, 1);
+  assert.equal(tierSnapshots[2].count, 2);
+  assert.equal(tierSnapshots[3].count, 2);
 
   assert.ok(tierSnapshots[3].dmgMult > tierSnapshots[0].dmgMult, 'Mk.IV boosts bullet damage mult');
   assert.equal(tierSnapshots[0].pierceLeft, 1);
@@ -1665,14 +1665,13 @@ test('T08.3 gun evolution tiers Mk.I -> Mk.IV: upgradeHeroWeaponTier, damage, RO
     `Mk.IV cooldown (${tierSnapshots[3].cdTicks}) must be faster than Mk.I (${tierSnapshots[0].cdTicks})`,
   );
 
-  // Symmetric fan spread check across Mk.IV 4-projectile volley
+  // Symmetric fan spread check across Mk.IV 2-projectile volley
   const mk4Angles = tierSnapshots[3].angles;
   assert.ok(
-    mk4Angles[0] < mk4Angles[1] && mk4Angles[1] < 0 && mk4Angles[2] > 0 && mk4Angles[2] < mk4Angles[3],
+    mk4Angles.length === 2 && mk4Angles[0] < 0 && mk4Angles[1] > 0,
     'Mk.IV volley forms a symmetric multi-angle fan',
   );
-  assert.ok(Math.abs(mk4Angles[0] + mk4Angles[3]) < 1e-6);
-  assert.ok(Math.abs(mk4Angles[1] + mk4Angles[2]) < 1e-6);
+  assert.ok(Math.abs(mk4Angles[0] + mk4Angles[1]) < 1e-6);
 
   // Combat pierce + damage proof: Mk.I stops on front enemy; Mk.IV pierces through to hit rear enemy & deals higher dmg per hit
   const wMk1 = makeWorld();
@@ -1789,11 +1788,11 @@ test('T08.4 survival Gacha skill cards: all 6 skills stack cleanly, update hero 
   assert.ok(Math.abs(hero.gachaFireRateMult - 1.3) < 1e-9);
   assert.ok(Math.abs(hero.gachaReloadSpeedMult - 1.32) < 1e-9);
 
-  // 4. skill_multishot (+2 extra projectiles, -8% energy cost)
+  // 4. skill_multishot (+1 extra projectile, -8% energy cost)
   const multiCard = S.BANSUNG_GACHA_SKILL_MAP.skill_multishot.epic;
   assert.equal(P.applySurvivalGachaSkillToHero(hero, multiCard).ok, true);
-  assert.equal(hero.extraMultishot, 2);
-  assert.equal(hero.gachaMods.extraMultishot, 2);
+  assert.equal(hero.extraMultishot, 1);
+  assert.equal(hero.gachaMods.extraMultishot, 1);
   assert.ok(hero.gachaEnergyCostMult < 1);
 
   // 5. skill_crit (+32% crit chance, +60% crit dmg, +2 pierce)
@@ -1829,7 +1828,7 @@ test('T08.4 survival Gacha skill cards: all 6 skills stack cleanly, update hero 
     },
   });
   stepWeaponAndBullets(wCombat, hCombat, { fireHeld: true, ctxExtra: { rng: () => 0.99 } }, 1, 1);
-  assert.equal(wCombat.bullets.count, 3, 'skill_multishot (+2) makes 1-pellet pistol fire 3 bullets');
+  assert.equal(wCombat.bullets.count, 2, 'skill_multishot (+1) makes 1-pellet pistol fire 2 bullets');
   assert.ok(Math.abs(wCombat.bullets.active[0].dmgMult - 1.32) < 1e-9);
   assert.ok(
     Math.abs(
@@ -1990,4 +1989,240 @@ test('T09.2 gacha skill_stamina (x1/x2) & skill_shield storage/DR/regen upgrades
   assert.equal(hero.maxShield, 140, 'legendary x2 skill_shield adds +100 maxShield storage');
   assert.ok(hero.shieldDamageReduction > 0.25, 'skill_shield increases bullet DR above 25%');
   assert.ok(hero.regenDelayMs < BANSUNG_SHIELD.REGEN_DELAY_MS, 'skill_shield trims 5s shield regen delay');
+});
+
+test('T09.3 cross-check 36 weapons anim/idx/balance, boss bar palette order & reload guards', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const manifestPath = path.resolve(__dirname, '../../database-ban-sung/manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const sprites = manifest.sprites || {};
+
+  assert.equal(S.BANSUNG_WEAPON_IDS.length, 36, 'expected 36 weapons');
+  const seenIdx = new Set();
+
+  function weaponMetrics(spec) {
+    const mult = (spec.pellets || 1) * (spec.burstCount || 1);
+    const shotDmg = (spec.damage || 0) * mult;
+    const cycleSec =
+      ((spec.cooldownTicks || 1) +
+        ((spec.burstCount || 1) > 1 ? (spec.burstCount - 1) * (spec.burstStepTicks || 1) : 0)) /
+      S.BANSUNG_TICK_HZ;
+    const rawDps = shotDmg / cycleSec;
+    const effDps = rawDps * (1 + (spec.critChance || 0) * ((spec.critMult || 1.5) - 1));
+    const clipShots = spec.magSize > 0 ? Math.ceil(spec.magSize / (spec.burstCount || 1)) : 0;
+    const sustainDps =
+      spec.magSize > 0
+        ? (shotDmg * clipShots) / (clipShots * cycleSec + (spec.reloadTicks || 0) / S.BANSUNG_TICK_HZ)
+        : effDps;
+    return { rawDps, effDps, sustainDps };
+  }
+
+  for (const id of S.BANSUNG_WEAPON_IDS) {
+    const spec = S.getWeaponSpec(id);
+    assert.ok(spec, `missing spec for ${id}`);
+    assert.equal(spec.id, id);
+    assert.equal(seenIdx.has(spec.idx), false, `duplicate weapon idx ${spec.idx} on ${id}`);
+    seenIdx.add(spec.idx);
+    assert.equal(S.getWeaponByIdx(spec.idx)?.id, id, `getWeaponByIdx(${spec.idx}) must resolve ${id}`);
+    if (typeof spec.minEnergyCost === 'number') {
+      assert.ok(
+        spec.minEnergyCost <= spec.energyCost,
+        `${id}: minEnergyCost (${spec.minEnergyCost}) must not exceed energyCost (${spec.energyCost})`,
+      );
+    }
+    const entry = sprites[id] || sprites[spec.spriteKey];
+    assert.ok(entry, `manifest.json missing sprite entry for ${id} (${spec.spriteKey})`);
+    assert.deepEqual(
+      {
+        cellW: spec.anim.cellW,
+        cellH: spec.anim.cellH,
+        frames: spec.anim.frames,
+        offX: spec.anim.offX,
+        offY: spec.anim.offY,
+      },
+      {
+        cellW: entry.cellW,
+        cellH: entry.cellH,
+        frames: entry.frames,
+        offX: entry.offX,
+        offY: entry.offY,
+      },
+      `${id} anim metadata must match manifest.json`,
+    );
+  }
+  assert.equal(seenIdx.size, 36);
+
+  // Staves, heavy weapons, rare vs mythic/celestial balance cross-checks
+  const staff = weaponMetrics(S.BANSUNG_WEAPONS.lightning_staff);
+  const tome = weaponMetrics(S.BANSUNG_WEAPONS.arcane_book);
+  const twinSmg = weaponMetrics(S.BANSUNG_WEAPONS.twin_smg);
+  const dualPistols = weaponMetrics(S.BANSUNG_WEAPONS.dual_pistols);
+  assert.ok(S.BANSUNG_WEAPONS.lightning_staff.energyCost <= 4, 'lightning_staff energy cost balanced');
+  assert.ok(staff.sustainDps >= 80, `lightning_staff sustainDps (${staff.sustainDps.toFixed(1)}) >= 80`);
+  assert.ok(tome.sustainDps >= 120, `arcane_book sustainDps (${tome.sustainDps.toFixed(1)}) >= 120`);
+  assert.ok(twinSmg.effDps < 200, `twin_smg rare effDps (${twinSmg.effDps.toFixed(1)}) capped < 200`);
+  assert.ok(dualPistols.effDps < 200, `dual_pistols rare effDps (${dualPistols.effDps.toFixed(1)}) capped < 200`);
+  for (const highId of ['gravity_gun', 'void_cannon', 'orbital_cannon', 'cryo_cannon', 'chronos_rifle', 'phantom_bow']) {
+    const m = weaponMetrics(S.BANSUNG_WEAPONS[highId]);
+    assert.ok(m.effDps >= 250, `${highId} high-tier effDps (${m.effDps.toFixed(1)}) >= 250`);
+  }
+
+  // Boss multi-bar palette: Tím -> Vàng -> Xanh -> Cam -> Đỏ (and extra colors for >5 bars)
+  assert.deepEqual(
+    S.BANSUNG_BOSS_BAR_PALETTE.slice(0, 5).map((c) => c.color),
+    ['#a855f7', '#facc15', '#22c55e', '#f97316', '#ef4444'],
+    'top 5 boss HP bars burn top-down in order Tím -> Vàng -> Xanh -> Cam -> Đỏ',
+  );
+  const twoBars = [2000, 500].map((hp) => S.resolveBossBarState(hp, 2000, 2));
+  assert.deepEqual(twoBars.map((s) => s.barColor), ['#a855f7', '#ef4444'], '2 bars: Tím -> Đỏ');
+  assert.equal(twoBars[0].underBarColor, '#ef4444');
+  assert.equal(twoBars[1].underBarColor, undefined);
+
+  const threeBars = [3000, 1500, 500].map((hp) => S.resolveBossBarState(hp, 3000, 3));
+  assert.deepEqual(threeBars.map((s) => s.barColor), ['#a855f7', '#facc15', '#ef4444'], '3 bars: Tím -> Vàng -> Đỏ');
+
+  const fiveBars = [1000, 750, 550, 350, 100].map((hp) => S.resolveBossBarState(hp, 1000, 5));
+  assert.deepEqual(
+    fiveBars.map((s) => s.barColor),
+    ['#a855f7', '#facc15', '#22c55e', '#f97316', '#ef4444'],
+  );
+  assert.equal(fiveBars[0].underBarColor, '#facc15');
+  assert.equal(fiveBars[4].underBarColor, undefined);
+  for (const bars of [6, 10, 12]) {
+    const full = S.resolveBossBarState(bars * 1000, bars * 1000, bars);
+    assert.equal(full.remainingBars, bars);
+    assert.equal(full.barColor, '#a855f7');
+    assert.notEqual(full.underBarColor, full.barColor);
+  }
+
+  // Reloading guards: 0-mag melee cannot start reload; dead/downed heroes never emit reloading/firing flags
+  const meleeHero = makeWeaponHero('crescent_blade', { activeSlot: 4 });
+  assert.equal(W.startHeroReload(meleeHero, 4), false);
+  assert.equal(meleeHero.reload, null);
+
+  const reloadHero = makeWeaponHero('pistol', { activeSlot: 0 });
+  reloadHero.slots[0].ammoInMag = 2;
+  assert.equal(W.startHeroReload(reloadHero, 0), true);
+  assert.notEqual(W.getHeroPlayerFlags(reloadHero) & S.BANSUNG_PFLAG_RELOADING, 0);
+  reloadHero.downed = true;
+  assert.equal(W.getHeroPlayerFlags(reloadHero), 0, 'downed hero must not emit reloading flag');
+  reloadHero.downed = false;
+  reloadHero.alive = false;
+  assert.equal(W.getHeroPlayerFlags(reloadHero), 0, 'dead hero must not emit reloading flag');
+});
+
+test('T09.4 icon sprite sheet parity, Armory Shop [B] commands & reaper/blizzard effects', (t) => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const { BansungWorld } = require('../dist/server/src/game/bansung/world.js');
+  const { validateBansungCommand } = require('../dist/server/src/game/bansung/security.js');
+
+  // 1. All 36 BANSUNG_WEAPON_ICON_META entries in HotbarShop.tsx match PNG IHDR dimensions on disk
+  const hotbarSrc = fs.readFileSync(
+    path.resolve(__dirname, '../../client/src/components/bansung/HotbarShop.tsx'),
+    'utf8',
+  );
+  const blockMatch = hotbarSrc.match(/export const BANSUNG_WEAPON_ICON_META:[^=]+=\s*\{([\s\S]*?)\};/);
+  assert.ok(blockMatch, 'BANSUNG_WEAPON_ICON_META must exist in HotbarShop.tsx');
+  const iconMatches = [...blockMatch[1].matchAll(/(\w+):\s*\{\s*path:\s*'([^']+)'\s*,\s*frames:\s*(\d+)\s*,\s*cellW:\s*(\d+)\s*,\s*cellH:\s*(\d+)/g)];
+  assert.equal(iconMatches.length, 36, 'BANSUNG_WEAPON_ICON_META must cover all 36 weapons');
+  for (const [, wid, relPath, framesStr, cellWStr, cellHStr] of iconMatches) {
+    const pngPath = path.resolve(__dirname, '../../database-ban-sung', relPath);
+    assert.ok(fs.existsSync(pngPath), `missing PNG icon sheet for ${wid}: ${pngPath}`);
+    const buf = fs.readFileSync(pngPath);
+    const pngW = buf.readUInt32BE(16);
+    const pngH = buf.readUInt32BE(20);
+    const frames = Number(framesStr);
+    const cellW = Number(cellWStr);
+    const cellH = Number(cellHStr);
+    assert.equal(pngW, frames * cellW, `${wid}: PNG width ${pngW} != frames(${frames}) * cellW(${cellW})`);
+    assert.equal(pngH, cellH, `${wid}: PNG height ${pngH} != cellH(${cellH})`);
+  }
+
+  // 2. Security validation for `{ t: 'shop' }` commands
+  assert.equal(validateBansungCommand({ t: 'shop', op: 'buy_weapon', weaponId: 'railgun' }, { arenaW: 4000, arenaH: 2500, maxPlayers: 4 }).ok, true);
+  assert.equal(validateBansungCommand({ t: 'shop', op: 'upgrade_active', slotIdx: 0 }, { arenaW: 4000, arenaH: 2500, maxPlayers: 4 }).ok, true);
+  assert.equal(validateBansungCommand({ t: 'shop', op: 'supply_heal' }, { arenaW: 4000, arenaH: 2500, maxPlayers: 4 }).ok, true);
+  assert.equal(validateBansungCommand({ t: 'shop', op: 'buy_weapon', weaponId: 'fake_gun' }, { arenaW: 4000, arenaH: 2500, maxPlayers: 4 }).ok, false);
+  assert.equal(validateBansungCommand({ t: 'shop', op: 'hack_coins' }, { arenaW: 4000, arenaH: 2500, maxPlayers: 4 }).ok, false);
+
+  // 3. BansungWorld Armory Shop transactions (buy_weapon, upgrade_active, supply_heal)
+  const noopHooks = { tick() {}, changed() {}, roomMeta() {}, frame() {}, log() {}, end() {} };
+  const world = new BansungWorld(
+    [{ id: 'p0', name: 'Buyer', heroId: 'mascot' }],
+    { bots: 0, biome: 'desert', difficulty: 'normal', gameMode: 'survival' },
+    noopHooks,
+    { seed: 303, skipWarmup: true },
+  );
+  t.after(() => world.stop());
+  const p = world.players[0];
+  p.coins = 1000;
+  const railPrice = S.getWeaponShopPrice('railgun');
+  assert.equal(world.enqueueCommand('p0', { t: 'shop', op: 'buy_weapon', weaponId: 'railgun' }).ok, true);
+  world.step();
+  assert.equal(p.coins, 1000 - railPrice, 'buying weapon deducts canonical shop price');
+  const railSlot = p.weaponState.slots.findIndex((s) => s?.weaponId === 'railgun');
+  assert.ok(railSlot >= 0, 'bought railgun must be equipped into hero slots');
+
+  const coinsBeforeUpg = p.coins;
+  const upgCost = S.getWeaponUpgradeCoinCost(1);
+  assert.equal(world.enqueueCommand('p0', { t: 'shop', op: 'upgrade_active', slotIdx: railSlot }).ok, true);
+  world.step();
+  assert.equal(p.coins, coinsBeforeUpg - upgCost, 'upgrading weapon deducts upgrade coin cost');
+  assert.equal(p.weaponState.slots[railSlot].tier, 2, 'upgraded weapon advances from Mk.1 to Mk.2');
+
+  p.hp = 10;
+  p.shield = 5;
+  p.armor = 5;
+  const coinsBeforeHeal = p.coins;
+  assert.equal(world.enqueueCommand('p0', { t: 'shop', op: 'supply_heal' }).ok, true);
+  world.step();
+  assert.equal(p.coins, coinsBeforeHeal - S.BANSUNG_SUPPLY_HEAL_COST, 'supply_heal deducts 80 xu');
+  assert.equal(p.hp, p.maxHp, 'supply_heal restores full HP');
+  assert.equal(p.shield, p.maxShield, 'supply_heal restores full Shield');
+
+  // 4. reaper_scythe melee lifesteal & blizzard_carbine isEnergy + chill AoE
+  const mw = makeWorld();
+  mw.addTarget({ id: 9001, x: 240, y: 300, hp: 300, maxHp: 300, radius: 18 });
+  const reaper = makeWeaponHero('reaper_scythe', {
+    activeSlot: 4,
+    weapons: ['pistol', null, null, null, 'reaper_scythe'],
+    energy: 100,
+    x: 200,
+    y: 300,
+  });
+  mw.fx.length = 0;
+  let totalMeleeHits = 0;
+  let totalLifesteal = 0;
+  for (let tickNo = 1; tickNo <= 6; tickNo++) {
+    mw.syncGrid();
+    W.tickHeroWeapons(
+      reaper,
+      { fireHeld: tickNo === 1, moving: false, aimDistPx: 60 },
+      mw.makeCtx(tickNo, { deferMeleeSweep: true }),
+    );
+    const mRes = W.stepHeroMeleeSwing(reaper, mw.makeCtx(tickNo));
+    totalMeleeHits += mRes.meleeHits;
+    totalLifesteal += mRes.lifestealHp;
+  }
+  assert.ok(totalMeleeHits >= 1, 'reaper_scythe swing must hit adjacent target');
+  assert.ok(totalLifesteal > 0, 'reaper_scythe must return lifestealHp when hitting an enemy');
+
+  const bw = makeWorld();
+  const bzTarget = bw.addTarget({ id: 9002, x: 380, y: 300, hp: 400, maxHp: 400, radius: 18 });
+  const blizHero = makeWeaponHero('blizzard_carbine', { x: 200, y: 300, energy: 200 });
+  stepWeaponAndBullets(bw, blizHero, { fireHeld: true }, 1, 1);
+  let firedEnergy = false;
+  for (let i = 0; i < bw.bullets.active.length; i++) {
+    const b = bw.bullets.active[i];
+    if (b.alive && b.kind === 'blizzard_bolt') {
+      assert.equal(b.isEnergy, true, 'blizzard_bolt must be tagged isEnergy for shield shred & visual beam');
+      firedEnergy = true;
+    }
+  }
+  assert.equal(firedEnergy, true, 'blizzard_carbine must spawn a blizzard_bolt projectile');
+  stepWeaponAndBullets(bw, blizHero, { fireHeld: false }, 2, 20);
+  assert.ok(bzTarget.hp < 400, 'blizzard_bolt must hit target');
+  assert.ok((bzTarget.slowMs || 0) > 0, 'blizzard_bolt hit must inflict chill slow status');
 });

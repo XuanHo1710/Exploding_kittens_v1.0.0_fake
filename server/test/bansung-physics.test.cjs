@@ -989,15 +989,18 @@ test('T04.2: Crit cap (0.85), Soul Knight shield soak, 1.25x energy/explosive bo
   assert.equal(applyBansungDamage(dashingHero, { baseDmg: 5, dmgKind: 'true', isDot: true }).blocked, false);
   assert.equal(dashingHero.hp, 65);
 
-  // Shield regen: 3200ms delay (or 2200ms fastShield), then +10 every 750ms
+  // Shield regen: 5000ms delay (or 2200ms fastShield), then gradual +1 every 250ms (4/s, no sudden 100% jump)
   const regenHero = makeHero({ shield: 0, maxShield: 30, fastShield: true });
   applyBansungDamage(regenHero, { baseDmg: 1, dmgKind: 'kinetic' });
   assert.equal(regenHero.shieldDelayMs, BANSUNG_SHIELD.FAST_REGEN_DELAY_MS);
   assert.equal(tickHeroShield(regenHero, 2199), 0);
   assert.equal(tickHeroShield(regenHero, 1), 0); // delay just reached 0
-  assert.equal(tickHeroShield(regenHero, 749), 0);
-  assert.equal(tickHeroShield(regenHero, 1), 10);
-  assert.equal(tickHeroShield(regenHero, 1500), 20);
+  assert.equal(tickHeroShield(regenHero, 249), 0);
+  assert.equal(tickHeroShield(regenHero, 1), 1);
+  assert.equal(regenHero.shield, 1);
+  assert.equal(tickHeroShield(regenHero, 2250), 9);
+  assert.equal(regenHero.shield, 10);
+  assert.equal(tickHeroShield(regenHero, 5000), 20);
   assert.equal(regenHero.shield, 30);
 });
 
