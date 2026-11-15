@@ -47,7 +47,7 @@ export const BANSUNG_CMD_REFILL = 35;
 // 2. Canonical ID Tables & Union Types
 // ============================================================================
 
-export const BANSUNG_HERO_IDS = ['mascot', 'ranger', 'pyro', 'knight'] as const;
+export const BANSUNG_HERO_IDS = ['mascot', 'ranger', 'pyro', 'knight', 'laser'] as const;
 export type BansungHeroId = (typeof BANSUNG_HERO_IDS)[number];
 
 export const BANSUNG_BIOMES = ['desert', 'crypt', 'cyber'] as const;

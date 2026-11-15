@@ -1575,10 +1575,10 @@ export function computeMobLevelScaling(level: number): MobLevelScaling {
   const steps = lv - 1;
   return {
     level: lv,
-    hpMult: 1 + steps * 0.45,
-    armorBonus: steps * 4,
-    dmgMult: 1 + steps * 0.11,
-    speedMult: Math.min(1.40, 1 + steps * 0.03),
+    hpMult: 1 + steps * 0.16,
+    armorBonus: steps * 2,
+    dmgMult: 1 + steps * 0.05,
+    speedMult: Math.min(1.30, 1 + steps * 0.025),
   };
 }
 
@@ -3490,7 +3490,7 @@ export function computeMobHpMult(wave: number, playerCount: number, difficulty =
   const n = clampCoopPlayers(playerCount);
   const w = Math.max(1, wave);
   const d = getDiffScale(difficulty);
-  return (1 + 0.24 * (w - 1)) * (1 + 0.40 * (n - 1)) * d.hp;
+  return (1 + 0.14 * (w - 1)) * (1 + 0.28 * (n - 1)) * d.hp;
 }
 
 /** Computes boss HP multiplier (`d37`–`d40`). */
@@ -3508,7 +3508,7 @@ export function computeBossHpMult(
 export function computeMobDmgMult(wave: number, difficulty = 'normal'): number {
   const w = Math.max(1, wave);
   const d = getDiffScale(difficulty);
-  return Math.min(2.6, (1 + 0.085 * (w - 1)) * d.dmg);
+  return Math.min(1.85, (1 + 0.045 * (w - 1)) * d.dmg);
 }
 
 // ---------------------------------------------------------------------------
@@ -4618,50 +4618,52 @@ export const BANSUNG_LOOT_TABLES = {
     armor_plate: 2,
   },
   common: {
-    none: 10,
-    coin: 31,
+    none: 4,
+    coin: 30,
     energy_orb: 26,
     xp_orb_s: 12,
     hp_orb: 13,
     armor_plate: 3,
-    weapon_pedestal: 5,
+    weapon_pedestal: 12,
   },
   rare: {
-    coin: 24,
-    energy_cell: 20,
-    hp_pack: 18,
-    armor_plate: 10,
-    xp_orb_m: 12,
-    weapon_pedestal: 16,
+    coin: 20,
+    energy_cell: 18,
+    hp_pack: 16,
+    armor_plate: 8,
+    xp_orb_m: 10,
+    weapon_pedestal: 28,
   },
   mob_kill: {
-    dropChance: 0.34,
+    dropChance: 0.36,
     weights: {
-      energy_orb: 38,
-      coin: 32,
+      energy_orb: 37,
+      coin: 31,
       xp_orb_s: 16,
       hp_orb: 12,
       armor_plate: 2,
+      weapon_pedestal: 2,
     },
   },
   elite_kill: {
-    dropChance: 0.90,
+    dropChance: 0.92,
     weights: {
-      coin: 20,
-      gem_coin: 20,
-      energy_cell: 24,
-      hp_orb: 20,
-      xp_orb_m: 16,
+      coin: 17,
+      gem_coin: 17,
+      energy_cell: 21,
+      hp_orb: 16,
+      xp_orb_m: 14,
+      weapon_pedestal: 15,
     },
   },
   boss_kill: {
     orbBurstCount: 16,
-    guaranteedPedestalWaves: [2, 4, 6, 7, 9, 10] as const,
+    guaranteedPedestalWaves: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const,
   },
 } as const;
 
 export const BANSUNG_PEDESTAL_TIER_WEIGHTS = {
-  waves1to3: { common: 75, rare: 25, epic: 0, legendary: 0 },
-  waves4to7: { common: 30, rare: 50, epic: 20, legendary: 0 },
-  waves8plus: { common: 0, rare: 35, epic: 45, legendary: 20 },
+  waves1to3: { common: 25, rare: 42, epic: 23, legendary: 10 },
+  waves4to7: { common: 10, rare: 34, epic: 36, legendary: 20 },
+  waves8plus: { common: 0, rare: 20, epic: 42, legendary: 38 },
 } as const;
