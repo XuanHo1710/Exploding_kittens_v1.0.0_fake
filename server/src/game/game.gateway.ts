@@ -10,10 +10,28 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
-import { isValidAvatar, type AntsCommand, type LinkCommand, type PlayRequest, type ThapCommand } from '../../../shared/src';
-import { GameError } from './game';
+import {
+  BANSUNG_EVT_CMD,
+  BANSUNG_EVT_CONFIG,
+  BANSUNG_EVT_HERO,
+  isValidAvatar,
+  type AntsCommand,
+  type BansungCommand,
+  type LinkCommand,
+  type PlayRequest,
+  type ThapCommand,
+} from '../../../shared/src';
+import { GameError, GameKickError } from './game';
+import {
+  BANSUNG_SEC_LIMITS,
+  BansungRateLimiter,
+  isSafePlainObject,
+  isWithinJsonByteBudget,
+} from './bansung/security';
 import { RoomsService } from './rooms.service';
 import { AccountsService } from '../store/accounts.service';
+
+class SilentRejectError extends Error {}
 
 interface SocketData {
   playerId: string;
@@ -31,9 +49,22 @@ function parseIdentity(auth: unknown): SocketData | null {
   return { playerId, name, avatar: isValidAvatar(a.avatar) ? a.avatar : undefined, token: typeof a.token === 'string' ? a.token.slice(0, 100) : undefined };
 }
 
-@WebSocketGateway({ cors: { origin: true } })
+@WebSocketGateway({
+  cors: { origin: true },
+  perMessageDeflate: {
+    threshold: 256,
+    zlibDeflateOptions: {
+      chunkSize: 1024,
+      memLevel: 7,
+      level: 3,
+    },
+  },
+})
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(GameGateway.name);
+  private readonly bansungConfigLimiter = new BansungRateLimiter();
+  private readonly bansungHeroLimiter = new BansungRateLimiter();
+  private readonly bansungCmdViolationLimiter = new BansungRateLimiter();
 
   @WebSocketServer() server: Server;
 
@@ -41,6 +72,16 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private readonly rooms: RoomsService,
     private readonly accounts: AccountsService,
   ) {}
+
+  private disconnectClient(client: Socket | undefined) {
+    if (client && typeof (client as { disconnect?: unknown }).disconnect === 'function') {
+      client.disconnect(true);
+    }
+  }
+
+  private socketLimitKey(client: Socket, playerId: string): string {
+    return typeof client?.id === 'string' && client.id.length > 0 ? client.id : playerId;
+  }
 
   afterInit(server: Server) {
     this.rooms.bind(server);
@@ -50,14 +91,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const id = parseIdentity(client.handshake.auth);
     if (!id) {
       client.emit('toast', 'Thiếu tên hoặc ID người chơi.');
-      client.disconnect(true);
+      this.disconnectClient(client);
       return;
     }
     // Chỉ nhận socket có token tài khoản đúng: không ai mạo danh được playerId (công khai trong phòng) của người khác
     const acc = this.accounts.verify(id.playerId, id.token);
     if (!acc) {
       client.emit('toast', this.accounts.get(id.playerId) ? 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại bằng PIN.' : 'Đăng nhập bằng PIN để vào chơi nhé.');
-      client.disconnect(true);
+      this.disconnectClient(client);
       return;
     }
     id.name = acc.name;
@@ -77,9 +118,17 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async handleDisconnect(client: Socket) {
     const { playerId } = (client.data ?? {}) as Partial<SocketData>;
+    if (typeof client?.id === 'string' && client.id.length > 0) {
+      this.bansungConfigLimiter.clearPlayer(client.id);
+      this.bansungHeroLimiter.clearPlayer(client.id);
+      this.bansungCmdViolationLimiter.clearPlayer(client.id);
+    }
     if (!playerId) return;
     const others = await this.server.in(`p:${playerId}`).fetchSockets();
     if (others.length === 0) {
+      this.bansungConfigLimiter.clearPlayer(playerId);
+      this.bansungHeroLimiter.clearPlayer(playerId);
+      this.bansungCmdViolationLimiter.clearPlayer(playerId);
       this.rooms.disconnected(playerId);
       this.rooms.forget(playerId);
     }
@@ -321,10 +370,105 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return this.handle(c, (me) => this.rooms.setThapTeam(me.playerId, body?.team));
   }
 
+  // --- Bắn Súng Co-op ---
+  @SubscribeMessage(BANSUNG_EVT_CMD)
+  bansungCmd(@ConnectedSocket() c: Socket, @MessageBody() body: unknown) {
+    return this.handle(c, (me) => {
+      const key = this.socketLimitKey(c, me.playerId);
+      if (
+        !isSafePlainObject(body, BANSUNG_SEC_LIMITS.MAX_CMD_KEYS) ||
+        !isWithinJsonByteBudget(body, BANSUNG_SEC_LIMITS.MAX_CMD_JSON_BYTES) ||
+        typeof (body as { t?: unknown }).t !== 'string'
+      ) {
+        this.rejectInvalidBansungPayload(
+          this.bansungCmdViolationLimiter,
+          key,
+          'Phát hiện gửi lệnh không hợp lệ quá nhanh, vui lòng chậm lại.',
+          'invalid_command',
+        );
+      }
+      const res = this.game(me).bansungCommand(me.playerId, body);
+      if (!res.ok) {
+        throw new SilentRejectError(res.reason === 'rate_limit' ? 'rate_limited' : res.reason ?? 'invalid_command');
+      }
+    });
+  }
+
+  @SubscribeMessage(BANSUNG_EVT_CONFIG)
+  bansungConfig(@ConnectedSocket() c: Socket, @MessageBody() body: unknown) {
+    return this.handle(c, (me) => {
+      const key = this.socketLimitKey(c, me.playerId);
+      const rl = this.bansungConfigLimiter.consume(key, 'config');
+      if (!rl.allowed) {
+        if (rl.shouldKick) {
+          throw new GameKickError('Bạn thay đổi cấu hình quá nhanh.');
+        }
+        throw new SilentRejectError('rate_limited');
+      }
+      if (
+        !isSafePlainObject(body, BANSUNG_SEC_LIMITS.MAX_CONFIG_KEYS) ||
+        !isWithinJsonByteBudget(body, BANSUNG_SEC_LIMITS.MAX_CONFIG_JSON_BYTES)
+      ) {
+        this.rejectInvalidBansungPayload(this.bansungConfigLimiter, key, 'Cấu hình phòng không hợp lệ.');
+      }
+      let raw: unknown = body;
+      if (Object.hasOwn(body, 'config')) {
+        if (Object.keys(body).length !== 1) {
+          this.rejectInvalidBansungPayload(this.bansungConfigLimiter, key, 'Cấu hình phòng không hợp lệ.');
+        }
+        raw = (body as { config: unknown }).config;
+        if (
+          !isSafePlainObject(raw, BANSUNG_SEC_LIMITS.MAX_CONFIG_KEYS) ||
+          !isWithinJsonByteBudget(raw, BANSUNG_SEC_LIMITS.MAX_CONFIG_JSON_BYTES)
+        ) {
+          this.rejectInvalidBansungPayload(this.bansungConfigLimiter, key, 'Cấu hình phòng không hợp lệ.');
+        }
+      }
+      this.rooms.setBansungConfig(me.playerId, raw);
+    });
+  }
+
+  @SubscribeMessage(BANSUNG_EVT_HERO)
+  bansungHero(@ConnectedSocket() c: Socket, @MessageBody() body: unknown) {
+    return this.handle(c, (me) => {
+      const key = this.socketLimitKey(c, me.playerId);
+      const rl = this.bansungHeroLimiter.consume(key, 'config');
+      if (!rl.allowed) {
+        if (rl.shouldKick) {
+          throw new GameKickError('Bạn đổi nhân vật quá nhanh.');
+        }
+        throw new SilentRejectError('rate_limited');
+      }
+      const isValidShape =
+        typeof body === 'string' ||
+        isSafePlainObject(body, BANSUNG_SEC_LIMITS.MAX_CMD_KEYS);
+      if (!isValidShape || !isWithinJsonByteBudget(body, BANSUNG_SEC_LIMITS.MAX_CMD_JSON_BYTES)) {
+        this.rejectInvalidBansungPayload(this.bansungHeroLimiter, key, 'Nhân vật không hợp lệ.');
+      }
+      this.rooms.setBansungHero(me.playerId, body);
+    });
+  }
+
   // --- Lô Tô Cân Đồ ---
   @SubscribeMessage('loto:pick')
   lotoPick(@ConnectedSocket() c: Socket, @MessageBody() body: { sheets?: unknown; colors?: unknown }) {
     return this.handle(c, (me) => this.rooms.setLotoPick(me.playerId, body?.sheets, body?.colors));
+  }
+
+  private rejectInvalidBansungPayload(
+    limiter: BansungRateLimiter,
+    key: string,
+    kickMessage: string,
+    silentReason?: string,
+  ): never {
+    const v = limiter.recordViolation(key);
+    if (v.shouldKick) {
+      throw new GameKickError(kickMessage);
+    }
+    if (silentReason) {
+      throw new SilentRejectError(silentReason);
+    }
+    throw new GameError(kickMessage);
   }
 
   private game(me: SocketData) {
@@ -339,13 +483,22 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const me = client.data as SocketData;
       if (!me?.playerId) throw new GameError('Thiếu thông tin người chơi.');
       if (!this.accounts.verify(me.playerId, me.token)) {
-        client.emit('toast', 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại bằng PIN.');
-        client.disconnect(true);
-        return;
+        const error = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại bằng PIN.';
+        client.emit('toast', error);
+        this.disconnectClient(client);
+        return { ok: false, error };
       }
       return { ok: true, result: await fn(me) };
     } catch (e) {
-      if (e instanceof GameError) {
+      if (e instanceof GameKickError) {
+        const who = (client.data as Partial<SocketData> | undefined)?.playerId ?? client?.id ?? 'unknown';
+        this.logger.warn(`kicking ${who}: ${e.message}`);
+        client.emit('toast', e.message);
+        this.disconnectClient(client);
+        return { ok: false, error: e.message };
+      } else if (e instanceof SilentRejectError) {
+        return { ok: false, error: e.message };
+      } else if (e instanceof GameError) {
         client.emit('toast', e.message);
         return { ok: false, error: e.message };
       } else if (e instanceof HttpException && e.getStatus() === 503) {

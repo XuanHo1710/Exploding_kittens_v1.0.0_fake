@@ -80,12 +80,37 @@ import {
   type ThapConfig,
   type ThapFrame,
   type ThapRoomView,
+  BANSUNG_HERO_IDS,
+  DEFAULT_BANSUNG_CONFIG,
+  getBansungHero,
+  normalizeBansungConfig,
+  resolveBansungGameMode,
+  type BansungConfig,
+  type BansungFrame,
+  type BansungGameMode,
+  type BansungHeroId,
+  type BansungRoomView,
 } from '../../../shared/src';
 import { AntWorld } from './ants/world';
 import { ThapWorld } from './thap/world';
+import { BansungWorld, type BansungInit } from './bansung/world';
+import { validateBansungConfig, validateBansungHero } from './bansung/security';
 import { LinkDuel } from './link/duel';
 
 export class GameError extends Error {}
+export class GameKickError extends GameError {}
+
+type BansungWorldNetHooks = BansungWorld & {
+  clearTickDeltas?: () => void;
+  resetViewerInitialized?: (playerId: string) => void;
+};
+
+function normalizeDirectGameMode(raw?: string): GameMode | undefined {
+  if (typeof raw !== 'string') return undefined;
+  const trimmed = raw.trim();
+  const key = trimmed === 'ban_sung' ? 'bansung' : trimmed;
+  return key && Object.hasOwn(GAME_MODES, key) ? (key as GameMode) : undefined;
+}
 
 const LOBBY_GRACE_MS = 15_000;
 const LOG_SIZE = 40;
@@ -146,6 +171,8 @@ export interface GameHooks {
   linkState(game: Game, playerId: string, state: LinkState): void;
   /** Thập Hùng Tranh Bá: gửi khung hình riêng cho từng người */
   thapFrame(game: Game, playerId: string, frame: ThapFrame): void;
+  /** Bắn Súng Co-op: gửi khung hình riêng cho từng người */
+  bansungFrame?(game: Game, playerId: string, frame: BansungFrame): void;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -224,6 +251,12 @@ export class Game {
   linkConfig: LinkConfig = { ...DEFAULT_LINK_CONFIG };
   private link?: LinkDuel;
 
+  // --- Trạng thái Bắn Súng Co-op ---
+  bansungConfig: BansungConfig = { ...DEFAULT_BANSUNG_CONFIG };
+  private bansung?: BansungWorld;
+  private bansungHeroes = new Map<string, BansungHeroId>();
+  private bansungEndFramePending = false;
+
   // --- Trạng thái Lô Tô Cân Đồ ---
   /** số tờ mỗi người mua (1 hoặc 2), chọn ở phòng chờ */
   private lotoPicks = new Map<string, number>();
@@ -244,9 +277,10 @@ export class Game {
     gameMode: GameMode = 'exploding_kittens',
   ) {
     this.roomRules = this.parseRules(rules);
-    if (Object.hasOwn(GAME_MODES, gameMode)) {
-      this.gameMode = gameMode;
-      this.roomRules.maxPlayers = Math.min(this.roomRules.maxPlayers, GAME_MODES[gameMode].maxPlayers);
+    const resolvedMode = normalizeDirectGameMode(gameMode as string);
+    if (resolvedMode) {
+      this.gameMode = resolvedMode;
+      this.roomRules.maxPlayers = Math.min(this.roomRules.maxPlayers, GAME_MODES[resolvedMode].maxPlayers);
     }
   }
 
@@ -266,16 +300,18 @@ export class Game {
 
   setGameMode(byId: string, mode: GameMode) {
     this.requireLobbyHost(byId);
-    if (typeof mode !== 'string' || !Object.hasOwn(GAME_MODES, mode)) throw new GameError('Chế độ chơi không hợp lệ.');
-    if (this.players.length > GAME_MODES[mode].maxPlayers) {
-      throw new GameError(`Chế độ ${GAME_MODES[mode].name} tối đa ${GAME_MODES[mode].maxPlayers} người (hiện có ${this.players.length} người).`);
+    const resolved = normalizeDirectGameMode(mode as string);
+    if (!resolved) throw new GameError('Chế độ chơi không hợp lệ.');
+    if (this.players.length > GAME_MODES[resolved].maxPlayers) {
+      throw new GameError(`Chế độ ${GAME_MODES[resolved].name} tối đa ${GAME_MODES[resolved].maxPlayers} người (hiện có ${this.players.length} người).`);
     }
-    if (this.gameMode === mode) return;
+    if (this.gameMode === resolved) return;
     this.run(() => {
-      this.gameMode = mode;
-      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, mode === 'tien_len' ? 4 : mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'link_duel' || mode === 'loto' || mode === 'thap_hung' ? 10 : this.roomRules.maxPlayers), GAME_MODES[mode].maxPlayers);
+      this.gameMode = resolved;
+      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, resolved === 'tien_len' || resolved === 'bansung' ? 4 : resolved === 'blackjack_21' || resolved === 'ant_empire' || resolved === 'link_duel' || resolved === 'loto' || resolved === 'thap_hung' ? 10 : this.roomRules.maxPlayers), GAME_MODES[resolved].maxPlayers);
+      if (resolved === 'bansung') this.bansungConfig = normalizeBansungConfig(this.bansungConfig, this.players.length);
       this.invalidateReady();
-      this.addLog(`🎮 Chủ phòng đổi sang chế độ: ${GAME_MODES[mode].emoji} ${GAME_MODES[mode].name}.`);
+      this.addLog(`🎮 Chủ phòng đổi sang chế độ: ${GAME_MODES[resolved].emoji} ${GAME_MODES[resolved].name}.`);
     });
   }
 
@@ -339,6 +375,13 @@ export class Game {
       // Chốt đội mặc định (xen kẽ theo ghế) đúng như phòng chờ đang hiển thị, trước khi bỏ người rớt mạng / xáo ghế
       if (cfg.mode === 'teams') for (const p of this.players) if (!this.thapTeams.has(p.id)) this.thapTeams.set(p.id, this.thapTeamOf(p.id));
     }
+    if (this.gameMode === 'bansung') {
+      if (players.length > GAME_MODES.bansung.maxPlayers) {
+        throw new GameError(`Chế độ Bắn Súng Co-op tối đa ${GAME_MODES.bansung.maxPlayers} người chơi.`);
+      }
+      const cfg = normalizeBansungConfig(this.bansungConfig, players.length);
+      if (players.length + cfg.bots < 1) throw new GameError('Cần ít nhất 1 chiến binh để bắt đầu.');
+    }
     const unready = players.filter((p) => p.id !== this.hostId && p.readyVersion !== this.rulesVersion);
     if (unready.length) throw new GameError(`Chờ xác nhận luật và mức cược: ${unready.map((p) => p.name).join(', ')}.`);
   }
@@ -369,6 +412,7 @@ export class Game {
         existing.name = name;
         existing.avatar = avatar;
         existing.connected = true;
+        (this.bansung as BansungWorldNetHooks | undefined)?.resetViewerInitialized?.(id);
         return;
       }
       if (this.phase !== 'lobby') throw new GameError('Phòng đang chơi, đợi ván sau hoặc bấm "Xem" để vào xem nhé.');
@@ -394,6 +438,7 @@ export class Game {
         watching.name = name;
         watching.avatar = avatar;
         watching.connected = true;
+        (this.bansung as BansungWorldNetHooks | undefined)?.resetViewerInitialized?.(id);
         return;
       }
       const seated = this.player(id);
@@ -407,6 +452,7 @@ export class Game {
         if (this.hostId === id) this.pickHost();
       }
       this.spectators.push({ id, name, avatar, connected: true });
+      (this.bansung as BansungWorldNetHooks | undefined)?.resetViewerInitialized?.(id);
       this.addLog(seated ? `👀 ${name} rời bàn, chuyển sang xem.` : `👀 ${name} vào xem.`);
     });
   }
@@ -424,7 +470,10 @@ export class Game {
   setConnected(id: string, connected: boolean) {
     const watcher = this.spectator(id);
     if (watcher) {
-      this.run(() => { watcher.connected = connected; });
+      this.run(() => {
+        watcher.connected = connected;
+        if (connected) (this.bansung as BansungWorldNetHooks | undefined)?.resetViewerInitialized?.(id);
+      });
       // Khán giả mất kết nối quá lâu: tự rời phòng để nhường chỗ
       if (!connected) {
         setTimeout(() => this.safe(() => {
@@ -437,6 +486,7 @@ export class Game {
     if (!p) return;
     this.run(() => {
       p.connected = connected;
+      if (connected) (this.bansung as BansungWorldNetHooks | undefined)?.resetViewerInitialized?.(id);
       // Mất kết nối khi đang phải trả bài (Thu Gom Rác / Trộm Mộ): chọn ngẫu nhiên, không bắt cả bàn chờ
       if (!connected && this.phase === 'playing') this.returnOne(id);
       if (!connected && this.phase === 'lobby') {
@@ -568,6 +618,10 @@ export class Game {
         this.startThap();
         return;
       }
+      if (this.gameMode === 'bansung') {
+        this.startBansung();
+        return;
+      }
       if (this.gameMode === 'loto') {
         this.startLoto();
         return;
@@ -625,6 +679,9 @@ export class Game {
       this.ants = undefined;
       this.thap?.stop();
       this.thap = undefined;
+      this.bansung?.stop();
+      this.bansung = undefined;
+      this.bansungEndFramePending = false;
       this.link?.stop();
       this.link = undefined;
       this.stopLoto();
@@ -1396,7 +1453,7 @@ export class Game {
       })),
       spectators: this.spectators.map((x) => ({ id: x.id, name: x.name, avatar: x.avatar, connected: x.connected })),
       hand: this.player(id)?.hand ?? [],
-      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' && this.gameMode !== 'link_duel' && this.gameMode !== 'loto' && this.gameMode !== 'thap_hung' ? this.current()?.id : undefined,
+      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' && this.gameMode !== 'link_duel' && this.gameMode !== 'loto' && this.gameMode !== 'thap_hung' && this.gameMode !== 'bansung' ? this.current()?.id : undefined,
       turnsRemaining: this.turnsRemaining,
       direction: this.direction,
       turnDeadline: this.phase === 'playing' ? this.turnDeadline : undefined,
@@ -1442,6 +1499,7 @@ export class Game {
       link: this.gameMode === 'link_duel' ? (this.link?.roomView(this.linkConfig) ?? { config: this.linkConfig }) : undefined,
       loto: this.gameMode === 'loto' ? this.lotoView(id) : undefined,
       thap: this.gameMode === 'thap_hung' ? this.thapView(id) : undefined,
+      bansung: this.gameMode === 'bansung' ? this.bansungView(id) : undefined,
       payouts: Object.keys(this.payouts).length ? this.payouts : undefined,
     };
   }
@@ -1679,6 +1737,256 @@ export class Game {
     };
   }
 
+  // --- Bắn Súng Co-op ---
+
+  setBansungConfig(byId: string, raw: unknown) {
+    this.requireLobbyHost(byId);
+    if (this.gameMode !== 'bansung') throw new GameError('Chỉ chỉnh được khi đang chọn chế độ Bắn Súng Co-op.');
+    const check = validateBansungConfig(raw, this.players.length);
+    if (!check.ok) throw new GameError(check.reason);
+    const next = check.config;
+    const cur = this.bansungConfig;
+    if (
+      cur.biome === next.biome &&
+      cur.difficulty === next.difficulty &&
+      cur.bots === next.bots &&
+      cur.botLevel === next.botLevel &&
+      cur.reviveMode === next.reviveMode &&
+      Boolean(cur.endless) === Boolean(next.endless) &&
+      resolveBansungGameMode(cur) === resolveBansungGameMode(next)
+    ) {
+      return;
+    }
+    const modeLabel: Record<BansungGameMode, string> = {
+      survival: 'Sinh Tồn',
+      waves: '10 Đợt',
+    };
+    const biomeLabel: Record<BansungConfig['biome'], string> = {
+      desert: 'Sa Mạc Cổ',
+      crypt: 'Hầm Mộ Bóng Tối',
+      cyber: 'Đấu Trường Cyber',
+    };
+    const diffLabel: Record<BansungConfig['difficulty'], string> = {
+      normal: 'Thường',
+      hard: 'Khó',
+      hell: 'Địa Ngục',
+    };
+    const botLabel: Record<BansungConfig['botLevel'], string> = {
+      easy: 'Dễ',
+      normal: 'Vừa',
+      hard: 'Khó',
+    };
+    const reviveLabel: Record<BansungConfig['reviveMode'], string> = {
+      coop: 'Cứu Co-op',
+      circle: 'Vòng Cứu',
+      wave_only: 'Cuối Đợt',
+      hardcore: 'Hardcore',
+    };
+    this.run(() => {
+      this.bansungConfig = next;
+      this.invalidateReady();
+      this.addLog(
+        `🔫 Cấu hình Bắn Súng Co-op: ${modeLabel[resolveBansungGameMode(next)]} · ${biomeLabel[next.biome]} · ${diffLabel[next.difficulty]} · ${next.bots} bot (${botLabel[next.botLevel]}) · ${reviveLabel[next.reviveMode]}${next.endless ? ' · ♾️ Vô Tận' : ''}.`,
+      );
+    });
+  }
+
+  private bansungHeroOf(playerId: string): BansungHeroId {
+    const saved = this.bansungHeroes.get(playerId);
+    if (saved) return saved;
+    const idx = this.players.findIndex((p) => p.id === playerId);
+    return BANSUNG_HERO_IDS[Math.max(0, idx) % BANSUNG_HERO_IDS.length] ?? 'mascot';
+  }
+
+  setBansungHero(playerId: string, raw: unknown) {
+    if (this.gameMode !== 'bansung') throw new GameError('Chỉ chọn nhân vật khi đang ở chế độ Bắn Súng Co-op.');
+    if (this.phase !== 'lobby') throw new GameError('Chỉ chọn nhân vật trước khi trận đấu bắt đầu.');
+    const p = this.player(playerId);
+    if (!p || p.left) throw new GameError('Chỉ người chơi trong phòng mới chọn được nhân vật.');
+    const check = validateBansungHero(raw);
+    if (!check.ok) throw new GameError(check.reason);
+    if (this.bansungHeroes.get(playerId) === check.heroId) return;
+    this.run(() => {
+      this.bansungHeroes.set(playerId, check.heroId);
+      this.addLog(`🦸 ${p.name} chọn nhân vật: ${getBansungHero(check.heroId).name}.`);
+    });
+  }
+
+  bansungCommand(playerId: string, rawCmd: unknown) {
+    if (this.gameMode !== 'bansung' || this.phase !== 'playing' || !this.bansung) {
+      throw new GameError('Trận Bắn Súng Co-op chưa diễn ra.');
+    }
+    const p = this.player(playerId);
+    if (!p || p.left) throw new GameError('Bạn đang xem trận này.');
+    if (!rawCmd || typeof rawCmd !== 'object' || typeof (rawCmd as { t?: unknown }).t !== 'string') {
+      throw new GameError('Lệnh không hợp lệ.');
+    }
+    const res = this.bansung.enqueueCommand(playerId, rawCmd);
+    if (!res.ok && res.shouldKick) {
+      throw new GameKickError('Phát hiện gửi lệnh quá nhanh, vui lòng chậm lại.');
+    }
+    return res;
+  }
+
+  private startBansung() {
+    const cfg = normalizeBansungConfig(this.bansungConfig, this.players.length);
+    this.bansungConfig = cfg;
+    for (const p of this.players) {
+      p.alive = true;
+      p.hand = [];
+    }
+    const inits: BansungInit[] = this.players.map((p) => {
+      const hero = this.bansungHeroOf(p.id);
+      this.bansungHeroes.set(p.id, hero);
+      return {
+        id: p.id,
+        name: p.name,
+        avatar: p.avatar,
+        color: getBansungHero(hero).accentHex,
+        hero,
+        bot: false,
+      };
+    });
+    for (let i = 0; i < cfg.bots; i++) {
+      const botHero = BANSUNG_HERO_IDS[(this.players.length + i) % BANSUNG_HERO_IDS.length] ?? 'mascot';
+      inits.push({
+        id: `bot:bs${i}`,
+        name: `🤖 ${getBansungHero(botHero).name} ${i + 1}`,
+        color: getBansungHero(botHero).accentHex,
+        hero: botHero,
+        bot: true,
+      });
+    }
+    this.bansung = new BansungWorld(inits, cfg, {
+      tick: () => this.sendBansungFrames(),
+      changed: () => this.safe(() => this.run(() => this.syncBansung())),
+    });
+    this.phase = 'playing';
+    this.bansungEndFramePending = false;
+    this.addLog(`🔫 Bắn Súng Co-op bắt đầu! ${this.players.length} người + ${cfg.bots} bot đồng minh!`);
+    this.bansung.start();
+    this.sendBansungFrames();
+  }
+
+  private syncBansung() {
+    const w = this.bansung;
+    if (!w) return;
+    for (const msg of w.drainLogs()) this.addLog(msg);
+    for (const wp of w.players) {
+      if (wp.bot) continue;
+      const p = this.player(wp.id);
+      if (p) p.alive = wp.life !== 'dead';
+    }
+    if (w.result && this.phase === 'playing') {
+      this.phase = 'ended';
+      const activeHumans = this.players.filter((p) => !p.left);
+      const statById = new Map(w.result.players.map((s) => [s.id, s]));
+      const scoreOf = (id: string) => statById.get(id)?.score ?? 0;
+      const ranked = [...activeHumans].sort(
+        (a, b) => Number(b.alive) - Number(a.alive) || scoreOf(b.id) - scoreOf(a.id),
+      );
+      if (w.result.victory) {
+        this.winnerIds = ranked.map((p) => p.id);
+        this.winnerId =
+          w.result.mvpId && activeHumans.some((p) => p.id === w.result!.mvpId)
+            ? w.result.mvpId
+            : ranked[0]?.id;
+        this.payouts = {};
+        if (this.pot > 0 && ranked.length > 0) {
+          const survivors = ranked.filter((p) => p.alive);
+          const baseTargets = survivors.length > 0 ? survivors : ranked;
+          const basePool = Math.floor(this.pot * 0.7);
+          const baseEach = Math.floor(basePool / baseTargets.length);
+          let allocated = 0;
+          for (const p of baseTargets) {
+            this.payouts[p.id] = baseEach;
+            allocated += baseEach;
+          }
+          const perfPool = this.pot - allocated;
+          const totalWeight = ranked.reduce((sum, p) => sum + Math.max(1, scoreOf(p.id)), 0);
+          for (const p of ranked) {
+            const share = Math.floor((perfPool * Math.max(1, scoreOf(p.id))) / totalWeight);
+            this.payouts[p.id] = (this.payouts[p.id] ?? 0) + share;
+            allocated += share;
+          }
+          const rem = this.pot - allocated;
+          if (rem > 0) {
+            const topId = this.winnerId ?? ranked[0].id;
+            this.payouts[topId] = (this.payouts[topId] ?? 0) + rem;
+          }
+          this.addLog(`🏆 Chiến thắng! Chia hũ ${this.pot} xu cho ${ranked.length} chiến binh.`);
+        }
+      } else {
+        this.winnerId = undefined;
+        this.winnerIds = [];
+        this.payouts = {};
+        if (this.pot > 0 && this.bet > 0) {
+          for (const p of activeHumans) this.payouts[p.id] = this.bet;
+          this.addLog(`💀 Cả đội gục ngã — hoàn lại ${this.bet} xu tiền cược cho người chơi còn ở lại.`);
+        }
+      }
+      for (const st of w.result.players) {
+        if (st.bot) {
+          st.coinDelta = 0;
+          continue;
+        }
+        const p = this.player(st.id);
+        st.coinDelta =
+          this.pot > 0 && this.bet > 0
+            ? p && !p.left
+              ? (this.payouts[st.id] ?? 0) - this.bet
+              : -this.bet
+            : 0;
+      }
+      this.bansungEndFramePending = true;
+      queueMicrotask(() => {
+        if (this.bansungEndFramePending && this.bansung === w) {
+          this.sendBansungFrames();
+        }
+      });
+    }
+  }
+
+  private sendBansungFrames() {
+    const w = this.bansung;
+    if (!w) return;
+    this.bansungEndFramePending = false;
+    for (const p of this.players) {
+      if (p.left || !p.connected) continue;
+      this.hooks.bansungFrame?.(this, p.id, w.frameFor(p.id));
+    }
+    for (const x of this.spectators) {
+      if (x.connected) this.hooks.bansungFrame?.(this, x.id, w.frameFor(x.id));
+    }
+    const netWorld = w as BansungWorldNetHooks;
+    if (typeof netWorld.clearTickDeltas === 'function') {
+      netWorld.clearTickDeltas();
+    } else {
+      w.clearPendingFx();
+    }
+  }
+
+  private bansungView(id: string): BansungRoomView {
+    const heroes: Record<string, BansungHeroId> = {};
+    for (const p of this.players) heroes[p.id] = this.bansungHeroOf(p.id);
+    const w = this.bansung;
+    if (!w) return { config: this.bansungConfig, heroes };
+    const players = w.viewPlayers();
+    const myPlayer = players.find((p) => p.id === id);
+    return {
+      config: this.bansungConfig,
+      heroes,
+      mapW: w.W,
+      mapH: w.H,
+      arenaSeed: w.arenaSeed,
+      obstacles: w.staticObstacles(),
+      players,
+      myIdx: myPlayer?.idx,
+      startedAt: w.startedAt,
+      result: w.result,
+    };
+  }
+
   // ---------- LÔ TÔ CÂN ĐỒ ----------
 
   /** Mức cược của 1 người khi bắt đầu ván: Lô Tô theo số tờ mua (50 xu/tờ), chế độ khác theo mức của phòng */
@@ -1908,6 +2216,8 @@ export class Game {
     clearTimeout(this.timer);
     this.ants?.stop();
     this.thap?.stop();
+    this.bansung?.stop();
+    this.bansungEndFramePending = false;
     this.link?.stop();
     this.stopLoto();
   }
@@ -2476,6 +2786,11 @@ export class Game {
     if (this.gameMode === 'link_duel') {
       // Rời trận = bỏ cuộc, đối thủ thắng (kết quả xử lý trong syncLink)
       if (this.link?.player(p.id)) this.link.command(p.id, { t: 'resign' });
+      return;
+    }
+    if (this.gameMode === 'bansung') {
+      // Rời trận = bỏ cuộc: chiến binh gục ở nhịp mô phỏng kế tiếp, kết quả xử lý trong syncBansung
+      this.bansung?.resign(p.id);
       return;
     }
     if (this.gameMode === 'thap_hung') {

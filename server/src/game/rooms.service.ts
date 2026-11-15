@@ -1,13 +1,44 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { randomInt, randomUUID } from 'crypto';
 import type { Server } from 'socket.io';
-import { BET_OPTIONS, CHAT_MAX_LEN, type GameMode, EMOTES, THROWABLES, normalizeRoomRules, roomDeckSummary, type ChatMessage, type Emote, type RoomRules } from '../../../shared/src';
+import {
+  BANSUNG_EVT_FRAME,
+  BET_OPTIONS,
+  CHAT_MAX_LEN,
+  EMOTES,
+  GAME_MODES,
+  THROWABLES,
+  normalizeRoomRules,
+  roomDeckSummary,
+  type BansungFrame,
+  type ChatMessage,
+  type Emote,
+  type GameMode,
+  type RoomRules,
+} from '../../../shared/src';
 import { RateLimiter } from '../rate-limit';
 import { AccountsService } from '../store/accounts.service';
 import { Game, GameError, GameHooks } from './game';
 import type { GameStake } from '../store/accounts.service';
 
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+
+type BansungHookedGameHooks = GameHooks & {
+  bansungFrame(game: Game, playerId: string, frame: BansungFrame): void;
+};
+
+type BansungGameOps = {
+  setBansungConfig?: (byId: string, raw: unknown) => unknown;
+  setBansungHero?: (playerId: string, raw: unknown) => unknown;
+};
+
+/** Normalizes external mode IDs (including `ban_sung` alias) against `GAME_MODES`. */
+export function normalizeGameMode(raw?: string): GameMode | undefined {
+  if (typeof raw !== 'string') return undefined;
+  const trimmed = raw.trim();
+  const key = trimmed === 'ban_sung' ? 'bansung' : trimmed;
+  return key && Object.hasOwn(GAME_MODES, key) ? (key as GameMode) : undefined;
+}
 
 @Injectable()
 export class RoomsService {
@@ -28,7 +59,7 @@ export class RoomsService {
 
   constructor(private readonly accounts: AccountsService) {}
 
-  private hooks: GameHooks = {
+  private hooks: BansungHookedGameHooks = {
     changed: (game) => this.broadcast(game),
     notify: (playerId, notice) => this.server.to(`p:${playerId}`).emit('notice', notice),
     fx: (game, fx) => this.members(game).forEach((p) => this.server.to(`p:${p.id}`).emit('fx', fx)),
@@ -39,6 +70,17 @@ export class RoomsService {
     thapFrame: (game, playerId, frame) => {
       if (this.playerRoom.get(playerId) !== game.code) return;
       this.server.to(`p:${playerId}`).volatile.emit('thap:frame', frame);
+    },
+    bansungFrame: (game, playerId, frame) => {
+      if (this.playerRoom.get(playerId) !== game.code) return;
+      const room = this.server?.to(`p:${playerId}`);
+      if (!room) return;
+      // Deliver initial snapshots and one-shot prop/pickup updates reliably; keep steady frames volatile.
+      if (frame.full || frame.pr !== undefined || frame.pk !== undefined) {
+        room.emit(BANSUNG_EVT_FRAME, frame);
+      } else {
+        room.volatile.emit(BANSUNG_EVT_FRAME, frame);
+      }
     },
     linkState: (game, playerId, state) => {
       if (this.playerRoom.get(playerId) !== game.code) return;
@@ -218,7 +260,9 @@ export class RoomsService {
       game.roundId = round;
       game.start(playerId);
       if (game.gameMode === 'loto' && game.pot > 0) game.note(`💰 Mua tờ: 50 xu/tờ – hũ ${game.pot} xu cho người KINH trước!`);
-      else if (typeof bet === 'number' && bet > 0) game.note(`💰 Mỗi người cược ${bet} xu – hũ ${game.pot} xu cho người thắng!`);
+      else if (game.gameMode === 'bansung' && typeof bet === 'number' && bet > 0) {
+        game.note(`💰 Mỗi người góp ${bet} xu – hũ thưởng Co-op ${game.pot} xu cho người sống sót cuối trận!`);
+      } else if (typeof bet === 'number' && bet > 0) game.note(`💰 Mỗi người cược ${bet} xu – hũ ${game.pot} xu cho người thắng!`);
       game.players.forEach((p) => this.pushAccount(p.id));
       this.broadcast(game);
     } catch (error) {
@@ -259,8 +303,10 @@ export class RoomsService {
     const pending = this.payouts.get(game);
     if (pending) return pending;
     const w = game.winner();
+    const winners = game.winners();
+    const effectiveWinner = w ?? winners[0];
     const hasCustomPayouts = Object.keys(game.payouts).length > 0;
-    if (!w && !hasCustomPayouts) {
+    if (!effectiveWinner && !hasCustomPayouts) {
       game.paid = true;
       return Promise.resolve();
     }
@@ -269,7 +315,7 @@ export class RoomsService {
     const settlement = (async () => {
       try {
         if (hasCustomPayouts) {
-          await this.accounts.rewardPayouts(game.payouts, game.winners(), opId);
+          await this.accounts.rewardPayouts(game.payouts, winners, opId);
           game.paid = true;
           this.failedPayouts.delete(game);
           if (pot > 0) {
@@ -281,13 +327,30 @@ export class RoomsService {
           }
           game.players.forEach((p) => this.pushAccount(p.id));
           this.broadcast(game);
-        } else if (w) {
-          const rewarded = await this.accounts.rewardWinner(w, pot, opId);
+        } else if (pot === 0 && winners.length > 1) {
+          if (typeof this.accounts.rewardPayouts === 'function') {
+            await this.accounts.rewardPayouts(
+              Object.fromEntries(winners.map((id) => [id, 0])),
+              winners,
+              opId,
+            );
+          } else {
+            for (const id of winners) {
+              const idOp = opId ? `${opId}:${id.replace(/[^\w:.-]/g, '_').slice(0, 40)}` : undefined;
+              await this.accounts.rewardWinner(id, 0, idOp);
+            }
+          }
+          game.paid = true;
+          this.failedPayouts.delete(game);
+          for (const id of winners) this.pushAccount(id);
+          this.broadcast(game);
+        } else if (effectiveWinner) {
+          const rewarded = await this.accounts.rewardWinner(effectiveWinner, pot, opId);
           if (!rewarded && pot > 0) throw new Error('Không tìm thấy tài khoản người thắng.');
           game.paid = true;
           this.failedPayouts.delete(game);
-          if (pot > 0) game.note(`💰 ${game.players.find((p) => p.id === w)?.name} ăn hũ ${pot} xu!`);
-          this.pushAccount(w);
+          if (pot > 0) game.note(`💰 ${game.players.find((p) => p.id === effectiveWinner)?.name} ăn hũ ${pot} xu!`);
+          this.pushAccount(effectiveWinner);
           this.broadcast(game);
         }
       } catch (error) {
@@ -341,50 +404,58 @@ export class RoomsService {
     if (this.refunds.has(game)) throw new GameError('Đang chờ hoàn xu. Chủ phòng hãy bấm bắt đầu lại để thử hoàn xu.');
   }
 
-  setGameMode(playerId: string, mode: string) {
+  private readyRoom(playerId: string): Game {
     const game = this.roomOf(playerId);
     if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
     this.assertReady(game);
-    game.setGameMode(playerId, mode as GameMode);
+    return game;
+  }
+
+  setGameMode(playerId: string, mode: string) {
+    const game = this.readyRoom(playerId);
+    const normalized = normalizeGameMode(mode);
+    if (!normalized) throw new GameError('Chế độ chơi không hợp lệ.');
+    game.setGameMode(playerId, normalized);
   }
 
   setAntsConfig(playerId: string, raw: unknown) {
-    const game = this.roomOf(playerId);
-    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
-    this.assertReady(game);
-    game.setAntsConfig(playerId, raw);
+    this.readyRoom(playerId).setAntsConfig(playerId, raw);
   }
 
   setLotoPick(playerId: string, sheets: unknown, colors?: unknown) {
-    const game = this.roomOf(playerId);
-    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
-    this.assertReady(game);
-    game.setLotoPick(playerId, sheets, colors);
+    this.readyRoom(playerId).setLotoPick(playerId, sheets, colors);
   }
 
   setThapConfig(playerId: string, raw: unknown) {
-    const game = this.roomOf(playerId);
-    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
-    this.assertReady(game);
-    game.setThapConfig(playerId, raw);
+    this.readyRoom(playerId).setThapConfig(playerId, raw);
   }
 
   setThapTeam(playerId: string, raw: unknown) {
-    const game = this.roomOf(playerId);
-    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
-    this.assertReady(game);
-    game.setThapTeam(playerId, raw);
+    this.readyRoom(playerId).setThapTeam(playerId, raw);
   }
 
   setLinkConfig(playerId: string, raw: unknown) {
-    const game = this.roomOf(playerId);
-    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
-    this.assertReady(game);
-    game.setLinkConfig(playerId, raw);
+    this.readyRoom(playerId).setLinkConfig(playerId, raw);
+  }
+
+  setBansungConfig(playerId: string, raw: unknown) {
+    const game = this.readyRoom(playerId) as Game & BansungGameOps;
+    if (typeof game.setBansungConfig !== 'function') {
+      throw new GameError('Chế độ Bắn Súng Co-op chưa sẵn sàng.');
+    }
+    game.setBansungConfig(playerId, raw);
+  }
+
+  setBansungHero(playerId: string, raw: unknown) {
+    const game = this.readyRoom(playerId) as Game & BansungGameOps;
+    if (typeof game.setBansungHero !== 'function') {
+      throw new GameError('Chế độ Bắn Súng Co-op chưa sẵn sàng.');
+    }
+    game.setBansungHero(playerId, raw);
   }
 
   create(playerId: string, name: string, avatar?: string, rules?: unknown, gameMode?: string) {
-    const mode: GameMode = gameMode === 'blackjack_21' || gameMode === 'tien_len' || gameMode === 'ant_empire' || gameMode === 'link_duel' || gameMode === 'loto' || gameMode === 'thap_hung' ? gameMode : 'exploding_kittens';
+    const mode: GameMode = normalizeGameMode(gameMode) ?? 'exploding_kittens';
     let normalized: RoomRules;
     try { normalized = normalizeRoomRules(rules); }
     catch (error) { throw new GameError(error instanceof Error ? error.message : 'Luật phòng không hợp lệ.'); }
