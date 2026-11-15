@@ -16,8 +16,10 @@
 import {
   BANSUNG_ARENA_CX,
   BANSUNG_ARENA_CY,
+  BANSUNG_DANMAKU_PALETTE,
   BANSUNG_DIFFICULTY_SCALE,
   BANSUNG_ENEMIES,
+  BANSUNG_FX_BEAM_SHOCK,
   BANSUNG_FX_BLAST_BOSS_MORTAR,
   BANSUNG_FX_BLAST_BOSS_SHOCKWAVE,
   BANSUNG_FX_BLAST_STEAM,
@@ -35,6 +37,7 @@ import {
   BANSUNG_STATE_STUN,
   BANSUNG_TICK_EXACT_MS,
   DREAD_COLOSSUS_CFG,
+  FX_BEAM,
   FX_BLAST,
   FX_DEATH,
   FX_STATUS,
@@ -63,6 +66,7 @@ import {
 import {
   LAYER_ENEMY,
   ObstacleGrid,
+  distPointToSegmentSq,
   moveCircleWithSlide,
   queryAoeObstacles,
   raycastObstacles,
@@ -73,6 +77,7 @@ import {
   type CircleBody,
   type SpatialActor,
 } from './spatial';
+import type { DanmakuMotionSpec } from './danmaku';
 
 // ============================================================================
 // 1. Constants & State Enums (d38)
@@ -238,6 +243,7 @@ export interface ColossusProjectileSpawn {
   damage: number;
   ttlTicks: number;
   fromDrone: boolean;
+  danmaku?: DanmakuMotionSpec;
 }
 
 /** Discrete boss combat event emitted for world hooks, logs, and tests. */
@@ -769,9 +775,28 @@ function emitThunderBolt(
   outProj: ColossusProjectileSpawn[],
   outSfx: Array<{ id: ColossusSfxId; x: number; y: number }>,
   ctx: ColossusStepContext,
+  fanSlot = 0,
 ): void {
   const vx = Math.cos(angleRad) * speed;
   const vy = Math.sin(angleRad) * speed;
+  const danmaku: DanmakuMotionSpec = fromDrone
+    ? {
+        danmakuKind: 'danmaku_lance',
+        palette: BANSUNG_DANMAKU_PALETTE.CYAN,
+        scaleTier: 1,
+        angVel: fanSlot * 0.42,
+      }
+    : {
+        danmakuKind: 'danmaku_ring',
+        palette: BANSUNG_DANMAKU_PALETTE.GOLD,
+        scaleTier: 2,
+        splitAfterTicks: 22,
+        splitMode: 'rose_flower',
+        splitCount: 8,
+        splitSpeed: 280,
+        splitChildKind: 'danmaku_star',
+        splitChildPalette: BANSUNG_DANMAKU_PALETTE.FLAME,
+      };
   const proj: ColossusProjectileSpawn = {
     ownerId: boss.id,
     kind: 'thunderball',
@@ -785,6 +810,7 @@ function emitThunderBolt(
     damage,
     ttlTicks: COLOSSUS_TUNING.BOLT_TTL_TICKS,
     fromDrone,
+    danmaku,
   };
   outProj.push(proj);
   ctx.onProjectile?.(proj, boss);
@@ -808,13 +834,13 @@ function pickMortarLandingSpot(
   } else {
     const anchor =
       alivePlayers.length > 0 ? alivePlayers[shellIdx % alivePlayers.length] : { x: boss.x, y: boss.y };
-    const ang = nextPrng(boss, ctx.rng) * TAU;
+    const hexAng = (shellIdx * TAU) / 6 + (nextPrng(boss, ctx.rng) - 0.5) * 0.32;
     const dist =
-      COLOSSUS_TUNING.MORTAR_SCATTER_MIN +
+      Math.max(150, COLOSSUS_TUNING.MORTAR_SCATTER_MIN) +
       nextPrng(boss, ctx.rng) *
-        (COLOSSUS_TUNING.MORTAR_SCATTER_MAX - COLOSSUS_TUNING.MORTAR_SCATTER_MIN);
-    tx = anchor.x + Math.cos(ang) * dist;
-    ty = anchor.y + Math.sin(ang) * dist;
+        (COLOSSUS_TUNING.MORTAR_SCATTER_MAX - Math.max(150, COLOSSUS_TUNING.MORTAR_SCATTER_MIN));
+    tx = anchor.x + Math.cos(hexAng) * dist;
+    ty = anchor.y + Math.sin(hexAng) * dist;
   }
 
   const body: CircleBody = { x: tx, y: ty, radius: 16 };
@@ -895,6 +921,7 @@ function stepShieldDrones(
             outProj,
             outSfx,
             ctx,
+            k,
           );
         }
       }
@@ -916,6 +943,63 @@ function stepShieldDrones(
     d.vx = (d.x - prevX) * 30;
     d.vy = (d.y - prevY) * 30;
     d.facingLeft = nearest ? nearest.player.x < d.x : Math.cos(angle) < 0;
+
+    // Soul Knight Zulan Rotating Drone Laser Pinwheel (vanishes per drone as destroyed!)
+    const pinCycle = boss.droneTimerTicks % 44;
+    const pinActive = pinCycle >= 20;
+    const pinLen = 185;
+    const rawEx = d.x + Math.cos(angle) * pinLen;
+    const rawEy = d.y + Math.sin(angle) * pinLen;
+    const rayHit = raycastObstacles(ctx.obsGrid, d.x, d.y, rawEx, rawEy, 0, 'los');
+    const ex = rayHit ? rayHit.x : rawEx;
+    const ey = rayHit ? rayHit.y : rawEy;
+    boss.telegraphs.push({
+      id: boss.id * 1000 + 300 + d.orbitIndex,
+      kind: 0,
+      shape: 'line',
+      phase: pinActive || pinCycle >= 14 ? 1 : 0,
+      color: 2,
+      prog: pinActive ? 255 : Math.round((pinCycle / 20) * 235),
+      x0: Math.round(d.x),
+      y0: Math.round(d.y),
+      x1: Math.round(ex),
+      y1: Math.round(ey),
+      r: 12,
+      halfW: 12,
+      active: pinActive,
+      danger: 1,
+      sourceKind: 'boss_colossus',
+    });
+    if (pinActive && pinCycle % 3 === 0) {
+      pushFx(
+        outFx,
+        ctx.damageCtx,
+        FX_BEAM,
+        Math.round(d.x),
+        Math.round(d.y),
+        Math.round(ex),
+        Math.round(ey),
+        BANSUNG_FX_BEAM_SHOCK,
+      );
+    }
+    if (pinActive && pinCycle % 6 === 2) {
+      for (let pi = 0; pi < ctx.players.length; pi++) {
+        const pl = ctx.players[pi];
+        if (!isPlayerTargetable(pl)) continue;
+        const hitR = 12 + pl.radius;
+        if (distPointToSegmentSq(pl.x, pl.y, d.x, d.y, ex, ey) <= hitR * hitR) {
+          applyBansungDamage(
+            pl,
+            {
+              baseDmg: 9,
+              dmgKind: 'energy',
+              attackerId: boss.idStr,
+            },
+            ctx.damageCtx,
+          );
+        }
+      }
+    }
   }
 
   boss.bossBoltCd -= 1;
@@ -959,7 +1043,6 @@ function pushMortarTelegraph(
     y1: m.y,
     r: m.radius,
     danger: 1,
-    label: 'DANGER',
     sourceKind: 'boss_colossus',
   });
 }
@@ -979,7 +1062,6 @@ function pushDashLaneTelegraph(boss: DreadColossusState): void {
     r: COLOSSUS_TUNING.DASH_TELEGRAPH_WIDTH * 0.5,
     halfW: COLOSSUS_TUNING.DASH_TELEGRAPH_WIDTH * 0.5,
     danger: 1,
-    label: 'DANGER',
     sourceKind: 'boss_colossus',
   });
 }

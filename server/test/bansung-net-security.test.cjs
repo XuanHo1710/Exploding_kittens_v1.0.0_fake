@@ -660,16 +660,16 @@ test('2b. 64px-bucket viewport culling ([cx+-860, cy+-540]) incl. SE 4224x2688 q
     });
   }
 
-  // Also inject >96 bullets inside p1's viewport and 12 SE bullets inside p2's viewport
-  for (let i = 0; i < 110; i += 1) {
+  // Also inject >192 bullets inside p1's viewport and 12 SE bullets inside p2's viewport
+  for (let i = 0; i < 210; i += 1) {
     w.bulletPool.spawn({
       kind: 'kinetic_sm',
       team: 0,
       ownerId: 'p1',
       ownerIdx: 1,
       weaponId: 'pistol',
-      x: 1960 + (i % 10) * 6,
-      y: 1200 + Math.floor(i / 10) * 6,
+      x: 1960 + (i % 15) * 6,
+      y: 1200 + Math.floor(i / 15) * 6,
       vx: 0,
       vy: 0,
       radius: 4,
@@ -723,10 +723,10 @@ test('2b. 64px-bucket viewport culling ([cx+-860, cy+-540]) incl. SE 4224x2688 q
     assert.ok(f2.e[i + 2] >= 3500 && f2.e[i + 3] >= 2100, 'SE viewport must include SE mobs and cull NW/mid mobs');
   }
 
-  assert.equal(f1.b.length / BANSUNG_BULLET_FIELDS, 96, 'Bullets must cap at 96');
+  assert.equal(f1.b.length / BANSUNG_BULLET_FIELDS, 192, 'Bullets must cap at 192 (Danmaku viewport cap)');
   assert.ok(!f0.b || f0.b.length === 0, 'Far p1/p2 bullets must be culled from p0 viewport');
   assert.equal(f2.b.length / BANSUNG_BULLET_FIELDS, 12, 'SE viewport must keep only its 12 SE bullets');
-  assert.equal(f0.fx.length / BANSUNG_FX_FIELDS, 48, 'FX must cap at 48');
+  assert.equal(f0.fx.length / BANSUNG_FX_FIELDS, 56, 'FX must cap at 56');
   assert.equal(f2.fx.length / BANSUNG_FX_FIELDS, 10, 'SE viewport must receive its 10 SE FX while culling NW FX');
 
   // Verify dead player switching spectator target moves viewport bucket query to p1 and SE p2

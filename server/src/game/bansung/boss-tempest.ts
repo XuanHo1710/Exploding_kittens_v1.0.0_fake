@@ -10,6 +10,7 @@
  *  - `chain_thunderstorm`, `cyclone_ring`, `supercell_judgment`
  */
 import {
+  BANSUNG_DANMAKU_PALETTE,
   BANSUNG_ENEMIES,
   BANSUNG_FX_BEAM_CHAIN,
   BANSUNG_FX_BEAM_LASER_MAP,
@@ -31,6 +32,12 @@ import {
   type BansungUnitState,
 } from '../../../../shared/src';
 import { applyBansungDamage, type BansungCombatTarget, type BansungDamageContext } from './damage';
+import {
+  emitRosePetalRing,
+  emitSakuyaPauseLanceRing,
+  type BossDanmakuSpawnInput,
+  type DanmakuMotionSpec,
+} from './danmaku';
 
 function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;
@@ -84,6 +91,7 @@ export interface TempestBulletSpawn {
   dmgKind: 'energy';
   ttlTicks: number;
   ownerId: number;
+  danmaku?: DanmakuMotionSpec;
 }
 
 export interface TempestBossState {
@@ -110,6 +118,7 @@ export interface TempestBossState {
   ringWave: number;
   ringBaseAng: number;
   beamAngles: number[];
+  beamSpinDir?: 1 | -1;
   beamFiredDamage: boolean;
   unlockedSkills: Set<string>;
   unlockedSkillList: string[];
@@ -311,12 +320,33 @@ function enterTempestSkill(boss: TempestBossState, skillId: string, target: Temp
     boss.state = 'supercell_telegraph';
     boss.stateTick = 0;
     boss.beamFiredDamage = false;
+    boss.beamSpinDir = boss.beamSpinDir === 1 ? -1 : 1;
     const base = target ? Math.atan2(target.y - boss.y, target.x - boss.x) : boss.aimRad;
-    boss.beamAngles = [base - 0.36, base, base + 0.36];
+    boss.beamAngles = [base, base + TWO_PI / 3, base + (2 * TWO_PI) / 3];
     return;
   }
   boss.state = 'lightning_windup';
   boss.stateTick = 0;
+}
+
+function emitTempestDanmaku(
+  boss: TempestBossState,
+  ctx: TempestStepContext,
+  b: BossDanmakuSpawnInput,
+): void {
+  ctx.onSpawnBullet({
+    kind: b.danmakuKind === 'danmaku_lance' ? 'zap' : 'plasma',
+    x: b.x,
+    y: b.y,
+    vx: b.vx,
+    vy: b.vy,
+    r: b.radius,
+    dmg: b.damage,
+    dmgKind: 'energy',
+    ttlTicks: b.ttlTicks,
+    ownerId: boss.id,
+    danmaku: b,
+  });
 }
 
 export function stepTempestBoss(boss: TempestBossState, ctx: TempestStepContext): void {
@@ -427,13 +457,14 @@ export function stepTempestBoss(boss: TempestBossState, ctx: TempestStepContext)
         boss.ringWave = 0;
         boss.ringBaseAng = boss.aimRad;
       } else if (nextPattern === 2) {
-        if (boss.unlockedSkills.has('supercell_judgment')) {
+        if (boss.unlockedSkills.has('supercell_judgment') || boss.phase === 2) {
           enterTempestSkill(boss, 'supercell_judgment', target);
           break;
         }
         boss.state = 'arc_telegraph';
         boss.beamFiredDamage = false;
-        boss.beamAngles = [boss.aimRad];
+        boss.beamSpinDir = boss.beamSpinDir === 1 ? -1 : 1;
+        boss.beamAngles = [boss.aimRad - 0.44, boss.aimRad + 0.44];
       } else {
         boss.state = 'lightning_windup';
       }
@@ -451,8 +482,10 @@ export function stepTempestBoss(boss: TempestBossState, ctx: TempestStepContext)
         const pick = alivePlayers.length > 0 ? alivePlayers[idx % alivePlayers.length] : target;
         const px = pick ? pick.x : boss.x + 180;
         const py = pick ? pick.y : boss.y;
-        const ang = boss.aimRad + idx * 1.15;
-        const offR = idx === 0 ? 12 : 85 + (idx % 3) * 42;
+        const ringCount = Math.max(1, totalStrikes - 1);
+        const ringR = Math.max(154, BOSS_TEMPEST_CFG.lightningRadius * 2.38);
+        const ang = boss.aimRad + ((idx - 1) / ringCount) * TWO_PI;
+        const offR = idx === 0 ? 0 : ringR;
         boss.strikes.push({
           id: nextId(boss),
           x: clamp(px + Math.cos(ang) * offR, boss.arenaBounds.minX + 70, boss.arenaBounds.maxX - 70),
@@ -461,7 +494,7 @@ export function stepTempestBoss(boss: TempestBossState, ctx: TempestStepContext)
           ticksLeft: BOSS_TEMPEST_CFG.lightningWarningTicks,
           maxTicks: BOSS_TEMPEST_CFG.lightningWarningTicks,
           dmg: BOSS_TEMPEST_CFG.lightningDmg,
-          label: hasChain ? 'SÉT LIÊN HOÀN!' : 'SẤM SÉT!',
+          label: '',
         });
         ctx.onSfx?.('sfx_wpn_zap', boss.x, boss.y);
       }
@@ -485,23 +518,37 @@ export function stepTempestBoss(boss: TempestBossState, ctx: TempestStepContext)
       const hasDouble = boss.unlockedSkills.has('cyclone_ring');
       const maxWaves = (boss.phase === 2 ? 3 : 2) + (hasDouble ? 1 : 0);
       if (boss.stateTick === 1 || (boss.stateTick % 12 === 1 && boss.ringWave < maxWaves)) {
-        const sectors = BOSS_TEMPEST_CFG.cycloneBolts;
-        const stepAng = TWO_PI / sectors;
-        const waveOffset = boss.ringWave * 0.24;
-        for (let s = 0; s < sectors; s++) {
-          if (CYCLONE_GAP_SET.has(s)) continue;
-          const ang = boss.ringBaseAng + waveOffset + s * stepAng;
-          ctx.onSpawnBullet({
-            kind: s % 2 === 0 ? 'zap' : 'plasma',
-            x: boss.x + Math.cos(ang) * (boss.radius + 8),
-            y: boss.y + Math.sin(ang) * (boss.radius + 8),
-            vx: Math.cos(ang) * BOSS_TEMPEST_CFG.cycloneSpeed,
-            vy: Math.sin(ang) * BOSS_TEMPEST_CFG.cycloneSpeed,
-            r: 8,
-            dmg: Math.round(BOSS_TEMPEST_CFG.cycloneDmg * ctx.dmgMult),
-            dmgKind: 'energy',
-            ttlTicks: 85,
-            ownerId: boss.id,
+        const scaledDmg = Math.max(1, Math.round(BOSS_TEMPEST_CFG.cycloneDmg * ctx.dmgMult));
+        if (boss.ringWave === 1) {
+          emitSakuyaPauseLanceRing((b) => emitTempestDanmaku(boss, ctx, b), {
+            x: boss.x,
+            y: boss.y,
+            count: boss.phase === 2 ? 16 : 12,
+            expandSpeed: 190,
+            pauseAfterTicks: 13,
+            pauseDurationTicks: 14,
+            snapSpeed: 455,
+            fanSpreadRad: 0.32,
+            rotRad: boss.ringBaseAng + 0.28,
+            damage: scaledDmg,
+            expandPalette: BANSUNG_DANMAKU_PALETTE.CYAN,
+            snapPalette: BANSUNG_DANMAKU_PALETTE.GOLD,
+          });
+        } else {
+          emitRosePetalRing((b) => emitTempestDanmaku(boss, ctx, b), {
+            x: boss.x,
+            y: boss.y,
+            count: 24,
+            petals: boss.phase === 2 ? 8 : 6,
+            baseSpeed: BOSS_TEMPEST_CFG.cycloneSpeed * 0.92,
+            petalAmp: 82,
+            rotRad: boss.ringBaseAng + boss.ringWave * 0.34,
+            damage: scaledDmg,
+            tipKind: 'danmaku_lance',
+            valleyKind: 'danmaku_orb',
+            tipPalette: BANSUNG_DANMAKU_PALETTE.GOLD,
+            valleyPalette: BANSUNG_DANMAKU_PALETTE.CYAN,
+            angVel: boss.ringWave % 2 === 0 ? 0.54 : -0.54,
           });
         }
         ctx.onSfx?.('sfx_wpn_tesla', boss.x, boss.y);
@@ -518,10 +565,12 @@ export function stepTempestBoss(boss: TempestBossState, ctx: TempestStepContext)
     case 'arc_telegraph':
     case 'supercell_telegraph': {
       const isSuper = boss.state === 'supercell_telegraph';
-      if (boss.stateTick <= 14 && target) {
+      if (boss.stateTick <= 12 && target) {
         const base = Math.atan2(target.y - boss.y, target.x - boss.x);
         boss.aimRad = base;
-        boss.beamAngles = isSuper ? [base - 0.36, base, base + 0.36] : [base];
+        boss.beamAngles = isSuper
+          ? [base, base + TWO_PI / 3, base + (2 * TWO_PI) / 3]
+          : [base - 0.44, base + 0.44];
       }
       if (boss.stateTick >= BOSS_TEMPEST_CFG.arcBeamTelegraphTicks) {
         boss.state = isSuper ? 'supercell_fire' : 'arc_fire';
@@ -533,13 +582,52 @@ export function stepTempestBoss(boss: TempestBossState, ctx: TempestStepContext)
 
     case 'arc_fire':
     case 'supercell_fire': {
-      if (!boss.beamFiredDamage) {
+      const isSuper = boss.state === 'supercell_fire';
+      const spinDir = boss.beamSpinDir ?? 1;
+      const fireDur = 38;
+      if (boss.stateTick === 1) {
         boss.beamFiredDamage = true;
         ctx.onSfx?.('sfx_wpn_laser', boss.x, boss.y);
-        for (const ang of boss.beamAngles) {
-          const x2 = boss.x + Math.cos(ang) * BOSS_TEMPEST_CFG.arcBeamLength;
-          const y2 = boss.y + Math.sin(ang) * BOSS_TEMPEST_CFG.arcBeamLength;
-          ctx.fx?.push(FX_BEAM, Math.round(boss.x), Math.round(boss.y), Math.round(x2), Math.round(y2), BANSUNG_FX_BEAM_CHAIN);
+        const burstDmg = Math.max(1, Math.round(BOSS_TEMPEST_CFG.cycloneDmg * 0.85 * ctx.dmgMult));
+        for (let k = 0; k < 8; k++) {
+          const sa = boss.aimRad + (k / 8) * TWO_PI;
+          emitTempestDanmaku(boss, ctx, {
+            danmakuKind: 'danmaku_star',
+            palette: BANSUNG_DANMAKU_PALETTE.GOLD,
+            scaleTier: 0,
+            x: boss.x + Math.cos(sa) * (boss.radius + 8),
+            y: boss.y + Math.sin(sa) * (boss.radius + 8),
+            vx: Math.cos(sa) * 250,
+            vy: Math.sin(sa) * 250,
+            radius: 6,
+            damage: burstDmg,
+            dmgKind: 'energy',
+            ttlTicks: 54,
+            angVel: spinDir * 0.65,
+          });
+        }
+      }
+      const rotStep = spinDir * (isSuper ? 0.024 : 0.021);
+      for (let i = 0; i < boss.beamAngles.length; i++) {
+        boss.beamAngles[i] += rotStep;
+      }
+      const emitFx = boss.stateTick === 1 || boss.stateTick % 2 === 0;
+      const dealTickDmg = boss.stateTick === 1 || boss.stateTick % 6 === 0;
+      const tickDmg = Math.max(1, Math.round(BOSS_TEMPEST_CFG.arcBeamDmg * 0.36 * ctx.dmgMult));
+      for (const ang of boss.beamAngles) {
+        const x2 = boss.x + Math.cos(ang) * BOSS_TEMPEST_CFG.arcBeamLength;
+        const y2 = boss.y + Math.sin(ang) * BOSS_TEMPEST_CFG.arcBeamLength;
+        if (emitFx) {
+          ctx.fx?.push(
+            FX_BEAM,
+            Math.round(boss.x),
+            Math.round(boss.y),
+            Math.round(x2),
+            Math.round(y2),
+            boss.stateTick % 4 === 0 ? BANSUNG_FX_BEAM_LASER_MAP : BANSUNG_FX_BEAM_CHAIN,
+          );
+        }
+        if (dealTickDmg) {
           for (const p of ctx.players) {
             if (!p.alive || p.downed || p.hp <= 0) continue;
             const hitR = BOSS_TEMPEST_CFG.arcBeamHalfW + (p.radius ?? 13);
@@ -547,7 +635,7 @@ export function stepTempestBoss(boss: TempestBossState, ctx: TempestStepContext)
               applyBansungDamage(
                 p,
                 {
-                  baseDmg: Math.round(BOSS_TEMPEST_CFG.arcBeamDmg * ctx.dmgMult),
+                  baseDmg: tickDmg,
                   dmgKind: 'energy',
                   attackerId: boss.idStr,
                 },
@@ -557,7 +645,7 @@ export function stepTempestBoss(boss: TempestBossState, ctx: TempestStepContext)
           }
         }
       }
-      if (boss.stateTick >= 16) {
+      if (boss.stateTick >= fireDur) {
         boss.state = 'patrol';
         boss.stateTick = 0;
         boss.actionCdTicks = boss.phase === 2 ? 26 : 36;
@@ -604,7 +692,6 @@ function rebuildTempestTelegraphs(boss: TempestBossState): void {
       y1: Math.round(s.y),
       r: s.r,
       danger: 1,
-      label: s.label,
       sourceKind: 'boss_tempest',
     });
   }
@@ -616,7 +703,9 @@ function rebuildTempestTelegraphs(boss: TempestBossState): void {
   ) {
     const active = boss.state === 'arc_fire' || boss.state === 'supercell_fire';
     const prog = active
-      ? 255
+      ? boss.stateTick > 32
+        ? clamp(Math.round(((38 - boss.stateTick) / 6) * 255), 45, 255)
+        : 255
       : clamp(Math.round((boss.stateTick / Math.max(1, BOSS_TEMPEST_CFG.arcBeamTelegraphTicks)) * 255), 0, 255);
     boss.beamAngles.forEach((ang, idx) => {
       const x2 = boss.x + Math.cos(ang) * BOSS_TEMPEST_CFG.arcBeamLength;
@@ -636,7 +725,6 @@ function rebuildTempestTelegraphs(boss: TempestBossState): void {
         halfW: BOSS_TEMPEST_CFG.arcBeamHalfW,
         active,
         danger: 1,
-        label: active ? 'SIÊU SÉT!' : 'SẮP PHÓNG SÉT!',
         sourceKind: 'boss_tempest',
       });
     });

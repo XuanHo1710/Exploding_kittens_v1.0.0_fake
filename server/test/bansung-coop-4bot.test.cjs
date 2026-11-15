@@ -41,10 +41,13 @@ function assertFinitePlayerState(player, label) {
 // 1. Registry Counts & New Content Smoke Check
 // ===========================================================================
 
-test('4-bot coop expansion: 36 weapons, 37 projectiles, 38 enemies, boss bar table (x2..x12)', () => {
+test('4-bot coop expansion: 36 weapons, 42 projectiles (incl. 5 Danmaku silhouettes), 38 enemies, boss bar table (x2..x12)', () => {
   assert.equal(BANSUNG_WEAPON_IDS.length, 36);
-  assert.equal(BANSUNG_PROJECTILE_KINDS.length, 37);
+  assert.equal(BANSUNG_PROJECTILE_KINDS.length, 42);
   assert.equal(BANSUNG_ENEMY_IDS.length, 38);
+  for (const dk of ['danmaku_orb', 'danmaku_lance', 'danmaku_star', 'danmaku_crescent', 'danmaku_ring']) {
+    assert.ok(BANSUNG_PROJECTILE_KINDS.includes(dk), `missing Danmaku projectile kind ${dk}`);
+  }
 
   for (const wId of [
     'plasma_shotgun',
@@ -614,4 +617,134 @@ test('boss_storm_herald (Lôi Thần Bão Sét x8): strictly casts ONLY Yellow &
   const fAfter = world.frameFor('bot:0', true);
   const stormFrame = [...(fAfter.bs ? [fAfter.bs] : []), ...(fAfter.bs2 || [])].find((b) => b.kind === 'boss_storm_herald');
   assert.ok(stormFrame && stormFrame.hpBars === 8, 'Storm Herald must advertise 8 HP bars');
+});
+
+test('Boss Danmaku Engine & Master-Spark Lasers: Sakuya Pause-Snap, Rose Lotus, DNA Helix, Cluster Split & zero label spam', (t) => {
+  const danmakuMod = require('../dist/server/src/game/bansung/danmaku.js');
+  const {
+    BANSUNG_BFLAG_PAUSED,
+    BANSUNG_DANMAKU_PALETTE,
+    decodeDanmakuPalette,
+    decodeDanmakuScaleMult,
+    packDanmakuBulletFlags,
+  } = shared;
+
+  // 1. Verify bit-packed Danmaku wire flags round-trip (paused, scaleTier, palette)
+  const packed = packDanmakuBulletFlags(1, true, 2, BANSUNG_DANMAKU_PALETTE.VIOLET);
+  assert.ok((packed & BANSUNG_BFLAG_PAUSED) !== 0, 'paused bit must be set');
+  assert.equal(decodeDanmakuPalette(packed), BANSUNG_DANMAKU_PALETTE.VIOLET);
+  assert.equal(decodeDanmakuScaleMult(packed), 1.68);
+
+  // 2. Verify Sakuya Pause-and-Snap Lance Ring (expand -> hover/aim -> high-speed snap)
+  const spawned = [];
+  danmakuMod.emitSakuyaPauseLanceRing(
+    (b) => spawned.push(danmakuMod.initBossDanmakuProjectile(100 + spawned.length, 9001, 38, b)),
+    {
+      x: 1000,
+      y: 1000,
+      count: 10,
+      expandSpeed: 180,
+      pauseAfterTicks: 8,
+      pauseDurationTicks: 10,
+      snapSpeed: 480,
+      damage: 14,
+      expandPalette: BANSUNG_DANMAKU_PALETTE.SILVER,
+      snapPalette: BANSUNG_DANMAKU_PALETTE.CRIMSON,
+    },
+  );
+  assert.equal(spawned.length, 10);
+
+  const heroTargets = [{ x: 1420, y: 1080, alive: true }];
+  let sawPausedPhase = false;
+  let sawSnapAcceleration = false;
+  for (let tick = 1; tick <= 24; tick++) {
+    for (const bp of spawned) {
+      const res = danmakuMod.stepBossDanmakuKinematics(bp, 1 / 30, heroTargets, () => {});
+      bp.x += res.dx;
+      bp.y += res.dy;
+      if (bp.paused) {
+        sawPausedPhase = true;
+        assert.equal(res.dx, 0);
+        assert.equal(res.dy, 0);
+      } else if (tick > 20 && Math.hypot(bp.vx, bp.vy) >= 460) {
+        sawSnapAcceleration = true;
+      }
+    }
+  }
+  assert.ok(sawPausedPhase, 'Sakuya lances must enter mid-air time-stop hover');
+  assert.ok(sawSnapAcceleration, 'Sakuya lances must snap-accelerate toward hero after hover');
+
+  // 3. Verify Cluster Split Orb spawns child stars cleanly
+  const splitParents = [];
+  const splitChildren = [];
+  danmakuMod.emitClusterSplitOrb(
+    (b) => splitParents.push(danmakuMod.initBossDanmakuProjectile(500, 9002, 37, b)),
+    {
+      x: 800,
+      y: 800,
+      aimRad: 0,
+      speed: 220,
+      splitAfterTicks: 6,
+      splitCount: 8,
+      splitMode: 'rose_flower',
+      damage: 16,
+      parentPalette: BANSUNG_DANMAKU_PALETTE.GOLD,
+      childPalette: BANSUNG_DANMAKU_PALETTE.CYAN,
+    },
+  );
+  let consumed = false;
+  for (let tick = 1; tick <= 8; tick++) {
+    const res = danmakuMod.stepBossDanmakuKinematics(
+      splitParents[0],
+      1 / 30,
+      heroTargets,
+      (child) => splitChildren.push(child),
+    );
+    if (res.status === 'split_consumed') {
+      consumed = true;
+      break;
+    }
+  }
+  assert.ok(consumed, 'Cluster parent orb must consume itself at splitAfterTicks');
+  assert.equal(splitChildren.length, 8, 'Cluster orb must emit 8 rose-flower child stars');
+
+  // 4. Verify live World Destroyer 4-Spoke Annihilation Wheel & zero text-box labels on boss telegraphs
+  const world = new BansungWorld(
+    [{ id: 'bot:0', name: 'B0', hero: 'vanguard', bot: true }],
+    { bots: 1, biome: 'cyber', difficulty: 'normal', gameMode: 'survival' },
+    { tick() {}, changed() {}, roomMeta() {}, frame() {}, log() {}, end() {} },
+    { seed: 4242, skipWarmup: true },
+  );
+  t.after(() => world.stop());
+  world.step();
+  const cx = world.players[0].x + 240;
+  const cy = world.players[0].y;
+  world.spawnWaveBoss({ id: 'boss_destroyer', x: cx, y: cy, hpMult: 1, mini: false, count: 1 });
+
+  let sawActiveMasterSpark = false;
+  let sawDanmakuWireProjectile = false;
+  for (let k = 0; k < 260; k++) {
+    world.players[0].hp = world.players[0].maxHp;
+    world.step();
+    const f = world.frameFor('bot:0', true);
+    const bf = [...(f.bs ? [f.bs] : []), ...(f.bs2 || [])].find((b) => b.kind === 'boss_destroyer');
+    if (bf && Array.isArray(bf.telegraphs)) {
+      for (const tg of bf.telegraphs) {
+        assert.equal(tg.label, undefined, 'Boss telegraphs must never emit noisy rectangular text labels');
+        if (tg.shape === 'line' && tg.active === true) {
+          sawActiveMasterSpark = true;
+        }
+      }
+    }
+    if (Array.isArray(f.b)) {
+      for (let bi = 0; bi + 6 <= f.b.length; bi += 6) {
+        const kindId = f.b[bi + 1];
+        if (kindId >= 37 && kindId <= 41) {
+          sawDanmakuWireProjectile = true;
+        }
+      }
+    }
+  }
+  assert.ok(sawActiveMasterSpark, 'World Destroyer must fire active sweeping Master-Spark beams');
+  assert.ok(sawDanmakuWireProjectile, 'World Destroyer must broadcast Danmaku silhouettes (kindId 37..41) on wire');
 });

@@ -80,6 +80,7 @@ import {
   getXpToNextLevel,
   normalizeBansungConfig,
   normalizeBansungHero,
+  packDanmakuBulletFlags,
   quantizeAim,
   resolveBansungGameMode,
   rollSurvivalGachaCards,
@@ -237,6 +238,12 @@ import {
   type BossBodyPartState,
   type BossPartGroupState,
 } from './boss-parts';
+import {
+  initBossDanmakuProjectile,
+  stepBossDanmakuKinematics,
+  type BossDanmakuProjectile,
+  type BossDanmakuSpawnInput,
+} from './danmaku';
 import {
   BANSUNG_CRAWL_MULT,
   createBotBrain,
@@ -516,20 +523,7 @@ export interface BansungRuntimePlayer extends BansungCombatTarget, PickupHeroSta
   };
 }
 
-interface BossProjectile {
-  id: number;
-  kindId: number;
-  ownerActorId: number;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  radius: number;
-  damage: number;
-  dmgKind: BansungDamageKind;
-  ttlTicks: number;
-  armored: boolean;
-}
+type BossProjectile = BossDanmakuProjectile;
 
 interface ActiveBossMeta {
   scale?: number;
@@ -656,8 +650,8 @@ const CULL_BUCKET_SIZE = 64;
 const VIEWPORT_HALF_W = 860;
 const VIEWPORT_HALF_H = 540;
 const FRAME_ENEMY_CAP = 64;
-const FRAME_BULLET_CAP = 96;
-const FRAME_FX_CAP = 48;
+const FRAME_BULLET_CAP = 192;
+const FRAME_FX_CAP = 56;
 const KNOCKBACK_DECAY_PER_S = 10;
 const STATIC_SHIELD_DMG_THRESHOLD = 1;
 const PORTAL_GATE_SPATIAL_BASE = 800_000;
@@ -1410,6 +1404,14 @@ export class BansungWorld implements BotWorldView {
       } else if (entry.kind === 'boss_overlord' && entry.boss.alive) {
         for (const t of getOverlordTelegraphs(entry.boss)) out.push(t);
       } else if (entry.kind === 'boss_arsenal' && entry.boss.alive) {
+        for (const t of entry.boss.telegraphs) out.push(t);
+      } else if (entry.kind === 'boss_tempest' && entry.boss.alive) {
+        for (const t of entry.boss.telegraphs) out.push(t);
+      } else if (entry.kind === 'boss_destroyer' && entry.boss.alive) {
+        for (const t of entry.boss.telegraphs) out.push(t);
+      } else if (entry.kind === 'boss_frost_empress' && entry.boss.alive) {
+        for (const t of entry.boss.telegraphs) out.push(t);
+      } else if (entry.kind === 'boss_abyssal_leviathan' && entry.boss.alive) {
         for (const t of entry.boss.telegraphs) out.push(t);
       } else if (entry.kind === 'boss_storm_herald' && entry.boss.alive) {
         for (const t of entry.boss.telegraphs) out.push(t);
@@ -2446,6 +2448,7 @@ export class BansungWorld implements BotWorldView {
 
   private stepBossProjectiles(): void {
     const alivePlayers = this.players.filter((p) => !p.left && p.life === 'alive');
+    const spawnedChildren: BossDanmakuSpawnInput[] = [];
     for (let i = this.bossProjectiles.length - 1; i >= 0; i--) {
       const bp = this.bossProjectiles[i];
       bp.ttlTicks -= 1;
@@ -2454,35 +2457,49 @@ export class BansungWorld implements BotWorldView {
         continue;
       }
 
-      const nx = bp.x + bp.vx * DT_S;
-      const ny = bp.y + bp.vy * DT_S;
-      const wallHit = raycastObstacles(
-        this.arena.obsGrid,
-        bp.x,
-        bp.y,
-        nx,
-        ny,
-        bp.radius,
-        'bullet',
+      const stepRes = stepBossDanmakuKinematics(
+        bp,
+        DT_S,
+        alivePlayers,
+        (child) => spawnedChildren.push(child),
+        this.fx,
       );
-      if (wallHit) {
-        if (wallHit.obstacle.destructible) {
-          damagePropByObstacleId(this.arena, wallHit.obstacle.id, bp.damage, 0, {
-            nowTick: this.tickNo,
-            fx: this.fx,
-            onPropBreak: (ev) => this.handlePropBreak(ev),
-          });
-        }
-        this.fx.push(
-          FX_IMPACT,
-          0,
-          Math.round(wallHit.x),
-          Math.round(wallHit.y),
-          quantizeAim(Math.atan2(bp.vy, bp.vx)),
-          0,
-        );
+      if (stepRes.status === 'split_consumed') {
         this.bossProjectiles.splice(i, 1);
         continue;
+      }
+
+      const nx = bp.x + stepRes.dx;
+      const ny = bp.y + stepRes.dy;
+      if (!bp.paused && (Math.abs(stepRes.dx) > 1e-5 || Math.abs(stepRes.dy) > 1e-5)) {
+        const wallHit = raycastObstacles(
+          this.arena.obsGrid,
+          bp.x,
+          bp.y,
+          nx,
+          ny,
+          bp.radius,
+          'bullet',
+        );
+        if (wallHit) {
+          if (wallHit.obstacle.destructible) {
+            damagePropByObstacleId(this.arena, wallHit.obstacle.id, bp.damage, 0, {
+              nowTick: this.tickNo,
+              fx: this.fx,
+              onPropBreak: (ev) => this.handlePropBreak(ev),
+            });
+          }
+          this.fx.push(
+            FX_IMPACT,
+            0,
+            Math.round(wallHit.x),
+            Math.round(wallHit.y),
+            quantizeAim(bp.visAngleRad),
+            0,
+          );
+          this.bossProjectiles.splice(i, 1);
+          continue;
+        }
       }
 
       bp.x = nx;
@@ -2500,6 +2517,10 @@ export class BansungWorld implements BotWorldView {
             dmgKind: bp.dmgKind,
             attackerId: String(bp.ownerActorId),
           });
+          if (bp.slowPct && bp.slowMs && p.life === 'alive') {
+            p.slowPct = Math.max(p.slowPct ?? 0, bp.slowPct);
+            p.slowMs = Math.max(p.slowMs ?? 0, bp.slowMs);
+          }
           hitTarget = true;
           break;
         }
@@ -2508,6 +2529,10 @@ export class BansungWorld implements BotWorldView {
       if (hitTarget || bp.x < 0 || bp.x > this.W || bp.y < 0 || bp.y > this.H) {
         this.bossProjectiles.splice(i, 1);
       }
+    }
+
+    for (let k = 0; k < spawnedChildren.length; k++) {
+      this.spawnBossProjectile(spawnedChildren[k]);
     }
   }
 
@@ -2841,6 +2866,7 @@ export class BansungWorld implements BotWorldView {
                 dmgKind: proj.dmgKind,
                 ttlTicks: proj.ttlTicks,
                 armored: false,
+                ...(proj.danmaku ?? {}),
               });
             },
             onSpawnAdd: (add) => {
@@ -2935,6 +2961,7 @@ export class BansungWorld implements BotWorldView {
               dmgKind: 'energy',
               ttlTicks: proj.ttlTicks,
               armored: false,
+              ...(proj.danmaku ?? {}),
             });
           },
           onObstacleHit: (obs, dmg) => {
@@ -3013,6 +3040,7 @@ export class BansungWorld implements BotWorldView {
               dmgKind: proj.dmgKind,
               ttlTicks: proj.ttlTicks,
               armored: proj.armored,
+              ...(proj.danmaku ?? {}),
             });
           },
           spawnEnergyOrb: (orb) => {
@@ -3108,9 +3136,10 @@ export class BansungWorld implements BotWorldView {
               vy: bullet.vy,
               radius: bullet.radius,
               damage: bullet.dmg,
-              dmgKind: 'kinetic',
+              dmgKind: bullet.dmgKind ?? 'kinetic',
               ttlTicks: bullet.ttlTicks,
               armored: false,
+              ...(bullet.danmaku ?? {}),
             });
           },
           onSummon: (kinds, cx, cy) => {
@@ -3181,6 +3210,7 @@ export class BansungWorld implements BotWorldView {
               dmgKind: bullet.dmgKind,
               ttlTicks: bullet.ttlTicks,
               armored: false,
+              ...(bullet.danmaku ?? {}),
             });
           },
           onSummon: (kinds, cx, cy) => {
@@ -3228,6 +3258,7 @@ export class BansungWorld implements BotWorldView {
               dmgKind: bullet.dmgKind,
               ttlTicks: bullet.ttlTicks,
               armored: bullet.dmgKind === 'explosive',
+              ...(bullet.danmaku ?? {}),
             });
           },
           onSummon: (kinds, cx, cy) => {
@@ -3284,6 +3315,7 @@ export class BansungWorld implements BotWorldView {
               dmgKind: bullet.dmgKind,
               ttlTicks: bullet.ttlTicks,
               armored: false,
+              ...(bullet.danmaku ?? {}),
             });
           },
           onSummon: (kinds, cx, cy) => {
@@ -3331,6 +3363,7 @@ export class BansungWorld implements BotWorldView {
               dmgKind: bullet.dmgKind,
               ttlTicks: bullet.ttlTicks,
               armored: bullet.dmgKind === 'explosive',
+              ...(bullet.danmaku ?? {}),
             });
           },
           onSummon: (kinds, cx, cy) => {
@@ -5325,11 +5358,16 @@ export class BansungWorld implements BotWorldView {
     );
   }
 
-  private spawnBossProjectile(opts: Omit<BossProjectile, 'id'>): void {
-    this.bossProjectiles.push({
-      id: 700_000 + (this.nextBossProjId++ % 250_000),
-      ...opts,
-    });
+  private spawnBossProjectile(opts: BossDanmakuSpawnInput): void {
+    const id = 700_000 + (this.nextBossProjId++ % 250_000);
+    this.bossProjectiles.push(
+      initBossDanmakuProjectile(
+        id,
+        opts.ownerActorId ?? 90_000,
+        opts.kindId ?? (SHOT_KIND_BY_NAME.plasma_bolt ?? 10),
+        opts,
+      ),
+    );
   }
 
   private computeTeamAvgEnergyRatio(): number {
@@ -5390,7 +5428,15 @@ export class BansungWorld implements BotWorldView {
         const liveBoss = entry.boss as unknown as GadgetEnemyActor;
         liveBoss.numId = entry.boss.id;
         out.push(liveBoss);
-      } else if (entry.kind === 'boss_arsenal' && entry.boss.alive) {
+      } else if (
+        (entry.kind === 'boss_arsenal' ||
+          entry.kind === 'boss_tempest' ||
+          entry.kind === 'boss_destroyer' ||
+          entry.kind === 'boss_frost_empress' ||
+          entry.kind === 'boss_abyssal_leviathan' ||
+          entry.kind === 'boss_storm_herald') &&
+        entry.boss.alive
+      ) {
         const liveBoss = entry.boss.combatTarget as unknown as GadgetEnemyActor;
         liveBoss.numId = entry.boss.id;
         liveBoss.radius = entry.boss.radius;
@@ -5926,13 +5972,18 @@ export class BansungWorld implements BotWorldView {
     }
 
     for (const bp of this.bossProjectiles) {
+      const baseFlags = BANSUNG_BFLAG_FROM_ENEMY | (bp.armored ? BANSUNG_BFLAG_EXPLOSIVE : 0);
+      const flags =
+        bp.paused || bp.palette !== undefined || bp.scaleTier !== undefined
+          ? packDanmakuBulletFlags(baseFlags, bp.paused, bp.scaleTier ?? 0, bp.palette ?? 0)
+          : baseFlags;
       this.bulletBuckets.insert({
         id: bp.id,
         kindId: bp.kindId,
         x: Math.round(bp.x),
         y: Math.round(bp.y),
-        aimQ: quantizeAim(Math.atan2(bp.vy, bp.vx)),
-        flags: BANSUNG_BFLAG_FROM_ENEMY | (bp.armored ? BANSUNG_BFLAG_EXPLOSIVE : 0),
+        aimQ: quantizeAim(bp.visAngleRad),
+        flags,
       });
     }
 

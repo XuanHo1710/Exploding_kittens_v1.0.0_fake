@@ -91,6 +91,14 @@ export interface StormHeraldPlayerTarget extends BansungCombatTarget {
   maxShield: number;
 }
 
+export interface StormLightningBeamRay {
+  variant: StormColorVariant;
+  angle: number;
+  spinVel: number;
+  active: boolean;
+  prog: number;
+}
+
 export interface StormHeraldBossState {
   id: number;
   idStr: string;
@@ -118,6 +126,7 @@ export interface StormHeraldBossState {
   arenaBounds: { minX: number; minY: number; maxX: number; maxY: number };
   strikes: PendingLightningStormStrike[];
   activeStorms: ActiveLightningStormHazard[];
+  stormBeams?: StormLightningBeamRay[];
   telegraphs: BansungTelegraph[];
   combatTarget: BansungCombatTarget;
 }
@@ -164,7 +173,26 @@ const STORM_VARIANT_STYLE: Readonly<Record<StormColorVariant, StormVariantStyle>
 
 const AIM_QUANT_MAX = 255;
 const TWO_PI = Math.PI * 2;
-const MAX_ACTIVE_STORMS = 18;
+const MAX_ACTIVE_STORMS = 8;
+const STORM_BEAM_LENGTH = 680;
+const STORM_BEAM_HALF_W = 16;
+
+function distSqPointSegment(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
+  const vx = x2 - x1;
+  const vy = y2 - y1;
+  const lenSq = vx * vx + vy * vy;
+  if (lenSq <= 1e-6) {
+    const dx = px - x1;
+    const dy = py - y1;
+    return dx * dx + dy * dy;
+  }
+  const t = clamp(((px - x1) * vx + (py - y1) * vy) / lenSq, 0, 1);
+  const cx = x1 + vx * t;
+  const cy = y1 + vy * t;
+  const dx = px - cx;
+  const dy = py - cy;
+  return dx * dx + dy * dy;
+}
 
 function quantizeAim8(rad: number): number {
   let n = rad % TWO_PI;
@@ -332,8 +360,8 @@ function detonateStormStrike(
   const style = STORM_VARIANT_STYLE[strike.variant];
   const rx = Math.round(strike.x);
   const ry = Math.round(strike.y);
-  // Sky-to-ground lightning bolt beam + colored storm blast
-  ctx.fx?.push(FX_BEAM, style.beamKind, rx, Math.max(0, ry - 260), rx, ry);
+  // Sky-to-ground lightning bolt beam + colored storm blast (tuple: FX_BEAM, x0, y0, x1, y1, beamKind)
+  ctx.fx?.push(FX_BEAM, rx, Math.max(0, ry - 260), rx, ry, style.beamKind);
   ctx.fx?.push(FX_BLAST, style.blastKind, rx, ry, Math.round(strike.r), boss.id);
   ctx.onSfx?.('sfx_wpn_tesla', strike.x, strike.y);
 
@@ -429,18 +457,24 @@ function spawnYellowStormWave(boss: StormHeraldBossState, ctx: StormHeraldStepCo
   const overloaded = boss.phase === 2 || boss.unlockedSkills.has('golden_tempest_overload');
   const count = BOSS_STORM_HERALD_CFG.yellowStormCount + (overloaded ? 2 : 0);
   const aliveTargets = ctx.players.filter((p) => p.alive && !p.downed && p.hp > 0);
-  const rScale = overloaded ? 1.12 : 1.0;
+  const rScale = overloaded ? 1.08 : 1.0;
+  const ringCount = Math.max(1, count - 1);
+  const ringR = Math.max(162, BOSS_STORM_HERALD_CFG.yellowRadius * 2.38);
 
   for (let k = 0; k < count; k++) {
     const p = aliveTargets[k % Math.max(1, aliveTargets.length)];
-    const ang = boss.aimRad + k * ((Math.PI * 2) / count) + (ctx.tickNo % 9) * 0.12;
-    const tx = p
-      ? p.x + (p.vx ?? 0) * 0.35 + (k >= aliveTargets.length ? Math.cos(ang) * 95 : 0)
-      : boss.x + Math.cos(ang) * 190;
-    const ty = p
-      ? p.y + (p.vy ?? 0) * 0.35 + (k >= aliveTargets.length ? Math.sin(ang) * 95 : 0)
-      : boss.y + Math.sin(ang) * 190;
-    queueStormCell(boss, 'yellow', tx, ty, k * 4, rScale);
+    const anchorX = p ? p.x + (p.vx ?? 0) * 0.25 : boss.x + Math.cos(boss.aimRad) * 180;
+    const anchorY = p ? p.y + (p.vy ?? 0) * 0.25 : boss.y + Math.sin(boss.aimRad) * 180;
+    const ang = boss.aimRad + ((k - 1) / ringCount) * TWO_PI + (ctx.tickNo % 7) * 0.08;
+    const offR = k === 0 ? 0 : ringR;
+    queueStormCell(
+      boss,
+      'yellow',
+      anchorX + Math.cos(ang) * offR,
+      anchorY + Math.sin(ang) * offR,
+      k * 3,
+      rScale,
+    );
   }
 }
 
@@ -453,13 +487,14 @@ function spawnBlueStormWave(
   const count = BOSS_STORM_HERALD_CFG.blueStormCount + (vortexed ? 2 : 0);
   const anchorX = target ? (boss.x * 0.35 + target.x * 0.65) : boss.x;
   const anchorY = target ? (boss.y * 0.35 + target.y * 0.65) : boss.y;
-  const ringR = vortexed ? 132 : 112;
-  const baseAng = boss.aimRad + (ctx.tickNo % 12) * 0.15;
-  const rScale = vortexed ? 1.12 : 1.0;
+  const ringR = Math.max(164, BOSS_STORM_HERALD_CFG.blueRadius * 2.38);
+  const ringCount = Math.max(1, count - 1);
+  const baseAng = boss.aimRad + (ctx.tickNo % 12) * 0.12;
+  const rScale = vortexed ? 1.08 : 1.0;
 
   for (let k = 0; k < count; k++) {
-    const ang = baseAng + (k / count) * TWO_PI;
-    const spread = k === count - 1 ? 0 : ringR;
+    const ang = baseAng + ((k - 1) / ringCount) * TWO_PI;
+    const spread = k === 0 ? 0 : ringR;
     queueStormCell(
       boss,
       'blue',
@@ -481,14 +516,89 @@ function spawnTwinStormWave(
   const cx = target ? target.x : boss.x + Math.cos(boss.aimRad) * 170;
   const cy = target ? target.y : boss.y + Math.sin(boss.aimRad) * 170;
   const baseAng = boss.aimRad + ctx.tickNo * 0.05;
+  const radY = Math.max(154, BOSS_STORM_HERALD_CFG.yellowRadius * 2.3);
+  const radB = Math.max(208, BOSS_STORM_HERALD_CFG.blueRadius * 2.95);
 
   for (let i = 0; i < pairs; i++) {
     const angY = baseAng + (i / pairs) * TWO_PI;
     const angB = angY + Math.PI / pairs;
-    const radY = i === 0 ? 0 : 128;
-    const radB = 148;
-    queueStormCell(boss, 'yellow', cx + Math.cos(angY) * radY, cy + Math.sin(angY) * radY, i * 4, cataclysm ? 1.12 : 1);
-    queueStormCell(boss, 'blue', cx + Math.cos(angB) * radB, cy + Math.sin(angB) * radB, i * 4 + 2, cataclysm ? 1.12 : 1);
+    queueStormCell(
+      boss,
+      'yellow',
+      cx + Math.cos(angY) * (i === 0 ? 0 : radY),
+      cy + Math.sin(angY) * (i === 0 ? 0 : radY),
+      i * 3,
+      cataclysm ? 1.08 : 1,
+    );
+    queueStormCell(
+      boss,
+      'blue',
+      cx + Math.cos(angB) * radB,
+      cy + Math.sin(angB) * radB,
+      i * 3 + 2,
+      cataclysm ? 1.08 : 1,
+    );
+  }
+}
+
+function stepStormLightningBeams(
+  boss: StormHeraldBossState,
+  windupTicks: number,
+  totalTicks: number,
+  ctx: StormHeraldStepContext,
+): void {
+  const rays = boss.stormBeams;
+  if (!rays || rays.length === 0) return;
+  const isActive = boss.stateTick > windupTicks;
+  const prog = isActive
+    ? boss.stateTick > totalTicks - 5
+      ? clamp(Math.round(((totalTicks - boss.stateTick) / 5) * 255), 45, 255)
+      : 255
+    : clamp(Math.round((boss.stateTick / Math.max(1, windupTicks)) * 255), 0, 255);
+
+  if (boss.stateTick === windupTicks + 1) {
+    ctx.onSfx?.('sfx_wpn_tesla', boss.x, boss.y);
+  }
+
+  const emitFx = isActive && (boss.stateTick === windupTicks + 1 || boss.stateTick % 2 === 0);
+  const dealTickDmg = isActive && (boss.stateTick === windupTicks + 1 || boss.stateTick % 5 === 0);
+
+  for (const ray of rays) {
+    ray.active = isActive;
+    ray.prog = prog;
+    if (isActive) {
+      ray.angle += ray.spinVel;
+    }
+    const x2 = boss.x + Math.cos(ray.angle) * STORM_BEAM_LENGTH;
+    const y2 = boss.y + Math.sin(ray.angle) * STORM_BEAM_LENGTH;
+    const style = STORM_VARIANT_STYLE[ray.variant];
+    if (emitFx) {
+      ctx.fx?.push(FX_BEAM, Math.round(boss.x), Math.round(boss.y), Math.round(x2), Math.round(y2), style.beamKind);
+    }
+    if (dealTickDmg) {
+      const baseBeamDmg =
+        ray.variant === 'yellow' ? BOSS_STORM_HERALD_CFG.yellowBurstDmg : BOSS_STORM_HERALD_CFG.blueBurstDmg;
+      const scaledDmg = Math.max(1, Math.round(baseBeamDmg * 0.34 * ctx.dmgMult));
+      for (const p of ctx.players) {
+        if (!p.alive || p.downed || p.hp <= 0) continue;
+        const hitR = STORM_BEAM_HALF_W + (p.radius ?? 13);
+        if (distSqPointSegment(p.x, p.y, boss.x, boss.y, x2, y2) <= hitR * hitR) {
+          applyBansungDamage(
+            p,
+            {
+              baseDmg: scaledDmg,
+              dmgKind: 'energy',
+              attackerId: boss.idStr,
+            },
+            ctx.damageCtx,
+          );
+          if (p.alive && !p.downed && style.slowPct > 0) {
+            p.slowPct = Math.max(p.slowPct ?? 0, style.slowPct);
+            p.slowMs = Math.max(p.slowMs ?? 0, style.slowMs);
+          }
+        }
+      }
+    }
   }
 }
 
@@ -531,6 +641,7 @@ export function stepStormHeraldBoss(boss: StormHeraldBossState, ctx: StormHerald
     boss.stunTicks = Math.max(0, boss.stunTicks - 1);
     boss.vx = 0;
     boss.vy = 0;
+    boss.stormBeams = undefined;
     boss.stateTick += 1;
     if (boss.stunTicks <= 0) {
       boss.combatTarget.stunMs = 0;
@@ -580,6 +691,7 @@ export function stepStormHeraldBoss(boss: StormHeraldBossState, ctx: StormHerald
 
   switch (boss.state) {
     case 'patrol': {
+      boss.stormBeams = undefined;
       if (boss.queuedEnragedSkills.length > 0) {
         enterStormSkill(boss, boss.queuedEnragedSkills.shift()!);
         break;
@@ -602,37 +714,72 @@ export function stepStormHeraldBoss(boss: StormHeraldBossState, ctx: StormHerald
     }
 
     case 'yellow_storm_windup': {
-      if (boss.stateTick === 8) {
+      if (boss.stateTick === 1) {
+        const base = target ? Math.atan2(target.y - boss.y, target.x - boss.x) : boss.aimRad;
+        boss.stormBeams = [0, 1, 2, 3].map((k) => ({
+          variant: 'yellow',
+          angle: base + k * (Math.PI * 0.5) + 0.35,
+          spinVel: 0.023,
+          active: false,
+          prog: 0,
+        }));
+      }
+      if (boss.stateTick === 6) {
         spawnYellowStormWave(boss, ctx);
       }
-      if (boss.stateTick >= 24) {
+      stepStormLightningBeams(boss, 14, 34, ctx);
+      if (boss.stateTick >= 34) {
+        boss.stormBeams = undefined;
         boss.state = 'patrol';
         boss.stateTick = 0;
-        boss.actionCdTicks = boss.phase === 2 ? 22 : 30;
+        boss.actionCdTicks = boss.phase === 2 ? 18 : 22;
       }
       break;
     }
 
     case 'blue_storm_windup': {
-      if (boss.stateTick === 8) {
+      if (boss.stateTick === 1) {
+        const base = target ? Math.atan2(target.y - boss.y, target.x - boss.x) : boss.aimRad;
+        boss.stormBeams = [0, 1, 2].map((k) => ({
+          variant: 'blue',
+          angle: base + (k / 3) * TWO_PI,
+          spinVel: -0.025,
+          active: false,
+          prog: 0,
+        }));
+      }
+      if (boss.stateTick === 6) {
         spawnBlueStormWave(boss, target, ctx);
       }
-      if (boss.stateTick >= 24) {
+      stepStormLightningBeams(boss, 14, 34, ctx);
+      if (boss.stateTick >= 34) {
+        boss.stormBeams = undefined;
         boss.state = 'patrol';
         boss.stateTick = 0;
-        boss.actionCdTicks = boss.phase === 2 ? 22 : 30;
+        boss.actionCdTicks = boss.phase === 2 ? 18 : 22;
       }
       break;
     }
 
     case 'twin_storm_windup': {
-      if (boss.stateTick === 8) {
+      if (boss.stateTick === 1) {
+        const base = target ? Math.atan2(target.y - boss.y, target.x - boss.x) : boss.aimRad;
+        boss.stormBeams = [
+          { variant: 'yellow', angle: base - 0.58, spinVel: 0.021, active: false, prog: 0 },
+          { variant: 'yellow', angle: base + Math.PI - 0.58, spinVel: 0.021, active: false, prog: 0 },
+          { variant: 'blue', angle: base + 0.58, spinVel: -0.021, active: false, prog: 0 },
+          { variant: 'blue', angle: base + Math.PI + 0.58, spinVel: -0.021, active: false, prog: 0 },
+        ];
+      }
+      if (boss.stateTick === 6) {
         spawnTwinStormWave(boss, target, ctx);
       }
-      if (boss.stateTick >= 28) {
+      stepStormLightningBeams(boss, 15, 38, ctx);
+      if (boss.stateTick >= 38) {
+        boss.stormBeams = undefined;
         boss.state = 'patrol';
         boss.stateTick = 0;
-        boss.actionCdTicks = boss.phase === 2 ? 24 : 34;
+        boss.actionCdTicks = boss.phase === 2 ? 20 : 26;
       }
       break;
     }
@@ -665,8 +812,30 @@ function rebuildStormHeraldTelegraphs(boss: StormHeraldBossState): void {
       y1: Math.round(s.y),
       r: s.r,
       danger: 1,
-      label: s.label,
       sourceKind: 'boss_storm_herald',
+    });
+  }
+  if (boss.stormBeams && boss.stormBeams.length > 0) {
+    boss.stormBeams.forEach((ray, idx) => {
+      const x2 = boss.x + Math.cos(ray.angle) * STORM_BEAM_LENGTH;
+      const y2 = boss.y + Math.sin(ray.angle) * STORM_BEAM_LENGTH;
+      outTel.push({
+        id: boss.id * 100 + 70 + idx,
+        kind: 0,
+        shape: 'line',
+        phase: ray.active || ray.prog >= 180 ? 1 : 0,
+        color: STORM_VARIANT_STYLE[ray.variant].telegraphColor,
+        prog: ray.prog,
+        x0: Math.round(boss.x),
+        y0: Math.round(boss.y),
+        x1: Math.round(x2),
+        y1: Math.round(y2),
+        r: STORM_BEAM_HALF_W,
+        halfW: STORM_BEAM_HALF_W,
+        active: ray.active,
+        danger: 1,
+        sourceKind: 'boss_storm_herald',
+      });
     });
   }
   boss.telegraphs = outTel;

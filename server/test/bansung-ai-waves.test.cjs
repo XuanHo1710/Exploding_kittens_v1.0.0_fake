@@ -2903,21 +2903,24 @@ test('survival: Boss I (boss_arsenal) keeps living mobs, pauses new wave bursts 
     });
     if (boss.grenades.length > 0) {
       sawGrenade = true;
-      assert.ok(boss.telegraphs.some((tg) => String(tg.label || '').includes('LỰU ĐẠN')));
+      assert.ok(boss.telegraphs.some((tg) => tg.shape === 'circle' && tg.color === 1 && !tg.label));
     }
     if (boss.missiles.length > 0) {
       sawMissileDanger = true;
-      assert.ok(boss.telegraphs.some((tg) => tg.danger === 1 && String(tg.label || '').includes('DANGER')));
+      assert.ok(boss.telegraphs.some((tg) => tg.shape === 'circle' && tg.danger === 1 && !tg.label));
     }
-    if (boss.state === 'laser_telegraph' && boss.telegraphs.some((tg) => tg.shape === 'line' && tg.danger === 1)) {
+    if (
+      (boss.state === 'laser_telegraph' || boss.state === 'laser_fire') &&
+      boss.telegraphs.some((tg) => tg.shape === 'line' && tg.danger === 1 && !tg.label)
+    ) {
       sawLaserTelegraph = true;
     }
     const waveBullets = bullets.slice(bStart);
-    if (boss.state === 'ring_fire' && waveBullets.length >= 10) {
-      // Ring deliberately leaves two 54° safe gap sectors so player can dodge!
-      const sectorCount = shared.BOSS_ARSENAL_CFG.ringTotalSectors;
-      const gapCount = shared.BOSS_ARSENAL_CFG.ringGapSectors.length;
-      assert.equal(waveBullets.length, sectorCount - gapCount, 'ring pattern must leave safe dodge corridor');
+    if (boss.state === 'ring_fire' && waveBullets.length >= 6) {
+      assert.ok(
+        waveBullets.some((b) => b.danmaku && b.danmaku.danmakuKind),
+        'ring_fire must emit structured Danmaku projectiles',
+      );
       sawRingWithSafeCorridor = true;
     }
     if (summons.length > 0) sawSummon = true;

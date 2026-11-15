@@ -9,6 +9,7 @@
  *  - `cataclysm_vortex`: deep-sea gravitational pull vortex + collapse nova
  */
 import {
+  BANSUNG_DANMAKU_PALETTE,
   BANSUNG_ENEMIES,
   BANSUNG_FX_BEAM_LASER_MAP,
   BANSUNG_FX_BLAST_ABYSS_NOVA,
@@ -30,6 +31,11 @@ import {
   type BansungUnitState,
 } from '../../../../shared/src';
 import { applyBansungDamage, type BansungCombatTarget, type BansungDamageContext } from './damage';
+import {
+  emitDnaHelixPair,
+  type BossDanmakuSpawnInput,
+  type DanmakuMotionSpec,
+} from './danmaku';
 
 function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;
@@ -94,6 +100,7 @@ export interface LeviathanBulletSpawn {
   dmgKind: 'energy' | 'explosive';
   ttlTicks: number;
   ownerId: number;
+  danmaku?: DanmakuMotionSpec;
 }
 
 export interface LeviathanBossState {
@@ -120,6 +127,7 @@ export interface LeviathanBossState {
   ringWave: number;
   ringBaseAng: number;
   beamAngles: number[];
+  beamSpinDir?: 1 | -1;
   beamFiredDamage: boolean;
   unlockedSkills: Set<string>;
   unlockedSkillList: string[];
@@ -326,6 +334,7 @@ function enterLeviathanSkill(
     boss.state = 'tentacle_telegraph';
     boss.stateTick = 0;
     boss.beamFiredDamage = false;
+    boss.beamSpinDir = boss.beamSpinDir === 1 ? -1 : 1;
     boss.beamAngles = [base, base + Math.PI * 0.5, base + Math.PI, base + Math.PI * 1.5];
     return;
   }
@@ -343,6 +352,26 @@ function enterLeviathanSkill(
   }
   boss.state = 'meteor_windup';
   boss.stateTick = 0;
+}
+
+function emitLeviathanDanmaku(
+  boss: LeviathanBossState,
+  ctx: LeviathanStepContext,
+  b: BossDanmakuSpawnInput,
+): void {
+  ctx.onSpawnBullet({
+    kind: b.danmakuKind === 'danmaku_lance' ? 'zap' : 'plasma',
+    x: b.x,
+    y: b.y,
+    vx: b.vx,
+    vy: b.vy,
+    r: b.radius,
+    dmg: b.damage,
+    dmgKind: b.dmgKind === 'explosive' ? 'explosive' : 'energy',
+    ttlTicks: b.ttlTicks,
+    ownerId: boss.id,
+    danmaku: b,
+  });
 }
 
 export function stepLeviathanBoss(boss: LeviathanBossState, ctx: LeviathanStepContext): void {
@@ -385,13 +414,32 @@ export function stepLeviathanBoss(boss: LeviathanBossState, ctx: LeviathanStepCo
       if (dist > 14 && dist <= vx.pullR) {
         const pullStep =
           (BOSS_LEVIATHAN_CFG.vortexPullForce / BANSUNG_TICK_HZ) * (1 - dist / (vx.pullR * 1.25));
-        const pdx = (dx / dist) * pullStep;
-        const pdy = (dy / dist) * pullStep;
+        const swirlStep = pullStep * 0.62;
+        const pdx = (dx / dist) * pullStep + (-dy / dist) * swirlStep;
+        const pdy = (dy / dist) * pullStep + (dx / dist) * swirlStep;
         ctx.onPullPlayer?.(p.id, pdx, pdy);
       }
     }
     if (vx.ticksLeft <= 0) {
       explodeLeviathanCircle(boss, vx.x, vx.y, vx.burstR, vx.dmg, BANSUNG_FX_BLAST_ABYSS_NOVA, ctx);
+      const tidalDmg = Math.max(1, Math.round(BOSS_LEVIATHAN_CFG.ringDmg * 0.88 * ctx.dmgMult));
+      for (let k = 0; k < 12; k++) {
+        const ang = (k / 12) * TWO_PI;
+        emitLeviathanDanmaku(boss, ctx, {
+          danmakuKind: 'danmaku_crescent',
+          palette: k % 2 === 0 ? BANSUNG_DANMAKU_PALETTE.CYAN : BANSUNG_DANMAKU_PALETTE.VIOLET,
+          scaleTier: 1,
+          x: vx.x + Math.cos(ang) * 18,
+          y: vx.y + Math.sin(ang) * 18,
+          vx: Math.cos(ang) * 260,
+          vy: Math.sin(ang) * 260,
+          radius: 7,
+          damage: tidalDmg,
+          dmgKind: 'energy',
+          ttlTicks: 76,
+          angVel: k % 2 === 0 ? 0.92 : -0.92,
+        });
+      }
       boss.vortices.splice(i, 1);
     }
   }
@@ -473,10 +521,12 @@ export function stepLeviathanBoss(boss: LeviathanBossState, ctx: LeviathanStepCo
       } else if (nextPattern === 1) {
         boss.state = 'tentacle_telegraph';
         boss.beamFiredDamage = false;
+        boss.beamSpinDir = boss.beamSpinDir === 1 ? -1 : 1;
         const base = boss.aimRad;
-        boss.beamAngles = boss.unlockedSkills.has('abyss_tentacle_cross')
-          ? [base, base + Math.PI * 0.5, base + Math.PI, base + Math.PI * 1.5]
-          : [base - 0.36, base + 0.36];
+        boss.beamAngles =
+          boss.unlockedSkills.has('abyss_tentacle_cross') || boss.phase === 2
+            ? [base, base + Math.PI * 0.5, base + Math.PI, base + Math.PI * 1.5]
+            : [base - 0.42, base + 0.42];
       } else if (nextPattern === 2) {
         boss.state = boss.unlockedSkills.has('leviathan_devour_wave') ? 'devour_barrage' : 'ring_windup';
         boss.ringWave = 0;
@@ -496,8 +546,10 @@ export function stepLeviathanBoss(boss: LeviathanBossState, ctx: LeviathanStepCo
         const pick = alivePlayers.length > 0 ? alivePlayers[idx % alivePlayers.length] : target;
         const px = pick ? pick.x : boss.x + 210;
         const py = pick ? pick.y : boss.y;
-        const ang = boss.aimRad + idx * 1.05;
-        const dist = idx === 0 ? 15 : 95 + (idx % 3) * 50;
+        const ringCount = Math.max(1, count - 1);
+        const ringR = Math.max(166, BOSS_LEVIATHAN_CFG.meteorRadius * 2.42);
+        const ang = boss.aimRad + ((idx - 1) / ringCount) * TWO_PI;
+        const dist = idx === 0 ? 0 : ringR;
         boss.meteors.push({
           id: nextId(boss),
           x: clamp(px + Math.cos(ang) * dist, boss.arenaBounds.minX + 75, boss.arenaBounds.maxX - 75),
@@ -506,7 +558,7 @@ export function stepLeviathanBoss(boss: LeviathanBossState, ctx: LeviathanStepCo
           ticksLeft: BOSS_LEVIATHAN_CFG.meteorWarningTicks,
           maxTicks: BOSS_LEVIATHAN_CFG.meteorWarningTicks,
           dmg: BOSS_LEVIATHAN_CFG.meteorDmg,
-          label: 'DANGER · SÓNG THẦN VỰC THẲM',
+          label: '',
         });
         ctx.onSfx?.('sfx_bazooka_fire', boss.x, boss.y);
       }
@@ -519,12 +571,13 @@ export function stepLeviathanBoss(boss: LeviathanBossState, ctx: LeviathanStepCo
     }
 
     case 'tentacle_telegraph': {
-      if (boss.stateTick <= 14 && target) {
+      if (boss.stateTick <= 12 && target) {
         const base = Math.atan2(target.y - boss.y, target.x - boss.x);
         boss.aimRad = base;
-        boss.beamAngles = boss.unlockedSkills.has('abyss_tentacle_cross')
-          ? [base, base + Math.PI * 0.5, base + Math.PI, base + Math.PI * 1.5]
-          : [base - 0.36, base + 0.36];
+        boss.beamAngles =
+          boss.unlockedSkills.has('abyss_tentacle_cross') || boss.phase === 2
+            ? [base, base + Math.PI * 0.5, base + Math.PI, base + Math.PI * 1.5]
+            : [base - 0.42, base + 0.42];
       }
       if (boss.stateTick >= BOSS_LEVIATHAN_CFG.tentacleCrossTelegraphTicks) {
         boss.state = 'tentacle_fire';
@@ -535,13 +588,51 @@ export function stepLeviathanBoss(boss: LeviathanBossState, ctx: LeviathanStepCo
     }
 
     case 'tentacle_fire': {
-      if (!boss.beamFiredDamage) {
+      const spinDir = boss.beamSpinDir ?? 1;
+      const fireDur = 44;
+      if (boss.stateTick === 1) {
         boss.beamFiredDamage = true;
         ctx.onSfx?.('sfx_wpn_laser', boss.x, boss.y);
-        for (const ang of boss.beamAngles) {
-          const x2 = boss.x + Math.cos(ang) * BOSS_LEVIATHAN_CFG.tentacleCrossLength;
-          const y2 = boss.y + Math.sin(ang) * BOSS_LEVIATHAN_CFG.tentacleCrossLength;
+      }
+      let angStep = 0;
+      if (boss.stateTick <= 20) {
+        angStep = spinDir * 0.022;
+      } else if (boss.stateTick >= 25) {
+        angStep = -spinDir * 0.025;
+      } else if (boss.stateTick === 22) {
+        ctx.onSfx?.('sfx_wpn_void_cannon', boss.x, boss.y);
+        const burstDmg = Math.max(1, Math.round(BOSS_LEVIATHAN_CFG.ringDmg * 0.85 * ctx.dmgMult));
+        for (let k = 0; k < 10; k++) {
+          const sa = boss.beamAngles[0] + (k / 10) * TWO_PI;
+          emitLeviathanDanmaku(boss, ctx, {
+            danmakuKind: 'danmaku_crescent',
+            palette: BANSUNG_DANMAKU_PALETTE.CYAN,
+            scaleTier: 0,
+            x: boss.x + Math.cos(sa) * (boss.radius + 10),
+            y: boss.y + Math.sin(sa) * (boss.radius + 10),
+            vx: Math.cos(sa) * 255,
+            vy: Math.sin(sa) * 255,
+            radius: 6,
+            damage: burstDmg,
+            dmgKind: 'energy',
+            ttlTicks: 58,
+          });
+        }
+      }
+      for (let i = 0; i < boss.beamAngles.length; i++) {
+        boss.beamAngles[i] += angStep;
+      }
+
+      const emitFx = boss.stateTick === 1 || boss.stateTick % 2 === 0;
+      const dealTickDmg = boss.stateTick === 1 || boss.stateTick % 5 === 0;
+      const tickDmg = Math.max(1, Math.round(BOSS_LEVIATHAN_CFG.tentacleCrossDmg * 0.35 * ctx.dmgMult));
+      for (const ang of boss.beamAngles) {
+        const x2 = boss.x + Math.cos(ang) * BOSS_LEVIATHAN_CFG.tentacleCrossLength;
+        const y2 = boss.y + Math.sin(ang) * BOSS_LEVIATHAN_CFG.tentacleCrossLength;
+        if (emitFx) {
           ctx.fx?.push(FX_BEAM, Math.round(boss.x), Math.round(boss.y), Math.round(x2), Math.round(y2), BANSUNG_FX_BEAM_LASER_MAP);
+        }
+        if (dealTickDmg) {
           for (const p of ctx.players) {
             if (!p.alive || p.downed || p.hp <= 0) continue;
             const hitR = BOSS_LEVIATHAN_CFG.tentacleCrossHalfW + (p.radius ?? 13);
@@ -549,7 +640,7 @@ export function stepLeviathanBoss(boss: LeviathanBossState, ctx: LeviathanStepCo
               applyBansungDamage(
                 p,
                 {
-                  baseDmg: Math.round(BOSS_LEVIATHAN_CFG.tentacleCrossDmg * ctx.dmgMult),
+                  baseDmg: tickDmg,
                   dmgKind: 'energy',
                   attackerId: boss.idStr,
                 },
@@ -559,7 +650,7 @@ export function stepLeviathanBoss(boss: LeviathanBossState, ctx: LeviathanStepCo
           }
         }
       }
-      if (boss.stateTick >= 16) {
+      if (boss.stateTick >= fireDur) {
         boss.state = 'patrol';
         boss.stateTick = 0;
         boss.actionCdTicks = boss.phase === 2 ? 22 : 30;
@@ -577,33 +668,57 @@ export function stepLeviathanBoss(boss: LeviathanBossState, ctx: LeviathanStepCo
 
     case 'ring_fire':
     case 'devour_barrage': {
+      // Touhou Suwako Moriya 6-Stream DNA Twin-Helix Sea-Serpents + Mishaguji Twisting Rings
       const isDevour = boss.state === 'devour_barrage';
       const hasVoidRing = boss.unlockedSkills.has('void_surge_ring');
-      const maxWaves = (boss.phase === 2 ? 3 : 2) + (isDevour || hasVoidRing ? 1 : 0);
-      if (boss.stateTick === 1 || (boss.stateTick % 12 === 1 && boss.ringWave < maxWaves)) {
-        const sectors = BOSS_LEVIATHAN_CFG.ringBolts;
-        const stepAng = TWO_PI / sectors;
-        const waveOffset = boss.ringWave * 0.22;
-        for (let s = 0; s < sectors; s++) {
-          if (GAP_SECTOR_SET.has(s)) continue;
-          const ang = boss.ringBaseAng + waveOffset + s * stepAng;
-          ctx.onSpawnBullet({
-            kind: isDevour && s % 3 === 0 ? 'zap' : 'plasma',
-            x: boss.x + Math.cos(ang) * (boss.radius + 10),
-            y: boss.y + Math.sin(ang) * (boss.radius + 10),
-            vx: Math.cos(ang) * BOSS_LEVIATHAN_CFG.ringSpeed,
-            vy: Math.sin(ang) * BOSS_LEVIATHAN_CFG.ringSpeed,
-            r: 8,
-            dmg: Math.round(BOSS_LEVIATHAN_CFG.ringDmg * ctx.dmgMult),
-            dmgKind: 'energy',
-            ttlTicks: 95,
-            ownerId: boss.id,
+      const streams = isDevour || boss.phase === 2 ? 6 : 5;
+      const baseDmg = Math.max(1, Math.round(BOSS_LEVIATHAN_CFG.ringDmg * 0.88 * ctx.dmgMult));
+
+      if (boss.stateTick <= 31 && boss.stateTick % 5 === 1) {
+        for (let s = 0; s < streams; s++) {
+          const aim = boss.ringBaseAng + (s / streams) * TWO_PI + boss.stateTick * 0.012;
+          emitDnaHelixPair((b) => emitLeviathanDanmaku(boss, ctx, b), {
+            x: boss.x,
+            y: boss.y,
+            aimRad: aim,
+            speed: BOSS_LEVIATHAN_CFG.ringSpeed * 0.92,
+            waveAmp: 32,
+            waveFreq: 8.8,
+            phaseOffset: boss.stateTick * 0.58,
+            damage: baseDmg,
+            kindA: 'danmaku_orb',
+            kindB: 'danmaku_crescent',
+            paletteA: BANSUNG_DANMAKU_PALETTE.CYAN,
+            paletteB: BANSUNG_DANMAKU_PALETTE.VIOLET,
           });
         }
         ctx.onSfx?.('sfx_wpn_void_cannon', boss.x, boss.y);
         boss.ringWave += 1;
       }
-      if (boss.ringWave >= maxWaves && boss.stateTick >= maxWaves * 12 + 8) {
+
+      if (boss.stateTick === 12 || (boss.stateTick === 28 && (isDevour || hasVoidRing || boss.phase === 2))) {
+        const ringN = 16;
+        const dir = boss.stateTick === 12 ? 1 : -1;
+        for (let k = 0; k < ringN; k++) {
+          const ang = boss.ringBaseAng + (k / ringN) * TWO_PI;
+          emitLeviathanDanmaku(boss, ctx, {
+            danmakuKind: 'danmaku_ring',
+            palette: k % 2 === 0 ? BANSUNG_DANMAKU_PALETTE.CYAN : BANSUNG_DANMAKU_PALETTE.EMERALD,
+            scaleTier: 1,
+            x: boss.x + Math.cos(ang) * (boss.radius + 10),
+            y: boss.y + Math.sin(ang) * (boss.radius + 10),
+            vx: Math.cos(ang) * 215,
+            vy: Math.sin(ang) * 215,
+            radius: 8,
+            damage: baseDmg,
+            dmgKind: 'energy',
+            ttlTicks: 88,
+            angVel: (k % 2 === 0 ? 1 : -1) * dir * 1.02,
+          });
+        }
+      }
+
+      if (boss.stateTick >= 44) {
         boss.state = 'patrol';
         boss.stateTick = 0;
         boss.actionCdTicks = boss.phase === 2 ? 22 : 30;
@@ -679,19 +794,17 @@ function rebuildLeviathanTelegraphs(boss: LeviathanBossState): void {
       y1: Math.round(m.y),
       r: m.r,
       danger: 1,
-      label: m.label,
       sourceKind: 'boss_abyssal_leviathan',
     });
   }
   for (const vx of boss.vortices) {
     const prog = clamp(Math.round(((vx.maxTicks - vx.ticksLeft) / Math.max(1, vx.maxTicks)) * 255), 0, 255);
-    const secStr = Math.max(0.1, (vx.ticksLeft * BANSUNG_TICK_EXACT_MS) / 1000).toFixed(1);
     outTel.push({
       id: vx.id,
       kind: 1,
       shape: 'circle',
       phase: vx.ticksLeft <= 15 ? 1 : 0,
-      color: 1,
+      color: 3,
       prog,
       x0: Math.round(vx.x),
       y0: Math.round(vx.y),
@@ -699,14 +812,15 @@ function rebuildLeviathanTelegraphs(boss: LeviathanBossState): void {
       y1: Math.round(vx.y),
       r: vx.burstR,
       danger: 1,
-      label: `XOÁY VỰC THẲM ${secStr}s`,
       sourceKind: 'boss_abyssal_leviathan',
     });
   }
   if (boss.state === 'tentacle_telegraph' || boss.state === 'tentacle_fire') {
     const active = boss.state === 'tentacle_fire';
     const prog = active
-      ? 255
+      ? boss.stateTick > 38
+        ? clamp(Math.round(((44 - boss.stateTick) / 6) * 255), 45, 255)
+        : 255
       : clamp(Math.round((boss.stateTick / Math.max(1, BOSS_LEVIATHAN_CFG.tentacleCrossTelegraphTicks)) * 255), 0, 255);
     boss.beamAngles.forEach((ang, idx) => {
       const x2 = boss.x + Math.cos(ang) * BOSS_LEVIATHAN_CFG.tentacleCrossLength;
@@ -716,7 +830,7 @@ function rebuildLeviathanTelegraphs(boss: LeviathanBossState): void {
         kind: 0,
         shape: 'line',
         phase: active || boss.stateTick > 18 ? 1 : 0,
-        color: 2,
+        color: 1,
         prog,
         x0: Math.round(boss.x),
         y0: Math.round(boss.y),
@@ -726,7 +840,6 @@ function rebuildLeviathanTelegraphs(boss: LeviathanBossState): void {
         halfW: BOSS_LEVIATHAN_CFG.tentacleCrossHalfW,
         active,
         danger: 1,
-        label: active ? 'XÚC TU HỦY DIỆT!' : 'DANGER · TỨ XÚC TU',
         sourceKind: 'boss_abyssal_leviathan',
       });
     });

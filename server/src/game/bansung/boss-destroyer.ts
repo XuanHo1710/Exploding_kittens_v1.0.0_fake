@@ -9,6 +9,7 @@
  *  - `blackhole_collapse` (singularity pull + collapse burst)
  */
 import {
+  BANSUNG_DANMAKU_PALETTE,
   BANSUNG_ENEMIES,
   BANSUNG_FX_BEAM_LASER_MAP,
   BANSUNG_FX_BLAST_DESTROYER_METEOR,
@@ -30,6 +31,12 @@ import {
   type BansungUnitState,
 } from '../../../../shared/src';
 import { applyBansungDamage, type BansungCombatTarget, type BansungDamageContext } from './damage';
+import {
+  emitClusterSplitOrb,
+  emitNierAlternatingCurtain,
+  type BossDanmakuSpawnInput,
+  type DanmakuMotionSpec,
+} from './danmaku';
 
 function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;
@@ -94,6 +101,7 @@ export interface DestroyerBulletSpawn {
   dmgKind: 'energy' | 'explosive';
   ttlTicks: number;
   ownerId: number;
+  danmaku?: DanmakuMotionSpec;
 }
 
 export interface DestroyerBossState {
@@ -120,6 +128,7 @@ export interface DestroyerBossState {
   ringWave: number;
   ringBaseAng: number;
   laserAngles: number[];
+  laserSpinDir?: 1 | -1;
   laserFiredDamage: boolean;
   unlockedSkills: Set<string>;
   unlockedSkillList: string[];
@@ -322,6 +331,7 @@ function enterDestroyerSkill(boss: DestroyerBossState, skillId: string, target: 
     boss.state = 'laser_telegraph';
     boss.stateTick = 0;
     boss.laserFiredDamage = false;
+    boss.laserSpinDir = boss.laserSpinDir === 1 ? -1 : 1;
     boss.laserAngles = [base, base + Math.PI * 0.5, base + Math.PI, base + Math.PI * 1.5];
     return;
   }
@@ -337,6 +347,26 @@ function enterDestroyerSkill(boss: DestroyerBossState, skillId: string, target: 
   }
   boss.state = 'meteor_windup';
   boss.stateTick = 0;
+}
+
+function emitDestroyerDanmaku(
+  boss: DestroyerBossState,
+  ctx: DestroyerStepContext,
+  b: BossDanmakuSpawnInput,
+): void {
+  ctx.onSpawnBullet({
+    kind: b.danmakuKind === 'danmaku_lance' ? 'zap' : 'plasma',
+    x: b.x,
+    y: b.y,
+    vx: b.vx,
+    vy: b.vy,
+    r: b.radius,
+    dmg: b.damage,
+    dmgKind: b.dmgKind === 'explosive' ? 'explosive' : 'energy',
+    ttlTicks: b.ttlTicks,
+    ownerId: boss.id,
+    danmaku: b,
+  });
 }
 
 export function stepDestroyerBoss(boss: DestroyerBossState, ctx: DestroyerStepContext): void {
@@ -378,8 +408,9 @@ export function stepDestroyerBoss(boss: DestroyerBossState, ctx: DestroyerStepCo
       const dist = Math.hypot(dx, dy);
       if (dist > 14 && dist <= bh.pullR) {
         const pullStep = (BOSS_DESTROYER_CFG.blackholePullForce / BANSUNG_TICK_HZ) * (1 - dist / (bh.pullR * 1.25));
-        const pdx = (dx / dist) * pullStep;
-        const pdy = (dy / dist) * pullStep;
+        const swirlStep = pullStep * 0.58;
+        const pdx = (dx / dist) * pullStep + (-dy / dist) * swirlStep;
+        const pdy = (dy / dist) * pullStep + (dx / dist) * swirlStep;
         if (ctx.onPullPlayer) {
           ctx.onPullPlayer(p.id, pdx, pdy);
         }
@@ -387,6 +418,24 @@ export function stepDestroyerBoss(boss: DestroyerBossState, ctx: DestroyerStepCo
     }
     if (bh.ticksLeft <= 0) {
       explodeDestroyerCircle(boss, bh.x, bh.y, bh.burstR, bh.dmg, BANSUNG_FX_BLAST_HE, ctx);
+      const shardDmg = Math.max(1, Math.round(BOSS_DESTROYER_CFG.ringDmg * 0.9 * ctx.dmgMult));
+      for (let k = 0; k < 14; k++) {
+        const ang = (k / 14) * TWO_PI;
+        emitDestroyerDanmaku(boss, ctx, {
+          danmakuKind: 'danmaku_crescent',
+          palette: k % 2 === 0 ? BANSUNG_DANMAKU_PALETTE.VIOLET : BANSUNG_DANMAKU_PALETTE.CRIMSON,
+          scaleTier: 1,
+          x: bh.x + Math.cos(ang) * 18,
+          y: bh.y + Math.sin(ang) * 18,
+          vx: Math.cos(ang) * 265,
+          vy: Math.sin(ang) * 265,
+          radius: 7,
+          damage: shardDmg,
+          dmgKind: 'energy',
+          ttlTicks: 76,
+          angVel: k % 2 === 0 ? 0.85 : -0.85,
+        });
+      }
       boss.blackholes.splice(i, 1);
     }
   }
@@ -468,10 +517,12 @@ export function stepDestroyerBoss(boss: DestroyerBossState, ctx: DestroyerStepCo
       } else if (nextPattern === 1) {
         boss.state = 'laser_telegraph';
         boss.laserFiredDamage = false;
+        boss.laserSpinDir = boss.laserSpinDir === 1 ? -1 : 1;
         const base = boss.aimRad;
-        boss.laserAngles = boss.unlockedSkills.has('laser_cross')
-          ? [base, base + Math.PI * 0.5, base + Math.PI, base + Math.PI * 1.5]
-          : [base - 0.35, base + 0.35];
+        boss.laserAngles =
+          boss.unlockedSkills.has('laser_cross') || boss.phase === 2
+            ? [base, base + Math.PI * 0.5, base + Math.PI, base + Math.PI * 1.5]
+            : [base - 0.42, base + 0.42];
       } else if (nextPattern === 2) {
         boss.state = boss.unlockedSkills.has('doomsday_barrage') ? 'doomsday_barrage' : 'ring_windup';
         boss.ringWave = 0;
@@ -492,8 +543,10 @@ export function stepDestroyerBoss(boss: DestroyerBossState, ctx: DestroyerStepCo
         const pick = alivePlayers.length > 0 ? alivePlayers[idx % alivePlayers.length] : target;
         const px = pick ? pick.x : boss.x + 210;
         const py = pick ? pick.y : boss.y;
-        const ang = boss.aimRad + idx * 1.05;
-        const dist = idx === 0 ? 15 : 95 + (idx % 3) * 50;
+        const ringCount = Math.max(1, count - 1);
+        const ringR = Math.max(166, BOSS_DESTROYER_CFG.meteorRadius * 2.42);
+        const ang = boss.aimRad + ((idx - 1) / ringCount) * TWO_PI;
+        const dist = idx === 0 ? 0 : ringR;
         boss.meteors.push({
           id: nextId(boss),
           x: clamp(px + Math.cos(ang) * dist, boss.arenaBounds.minX + 75, boss.arenaBounds.maxX - 75),
@@ -502,7 +555,7 @@ export function stepDestroyerBoss(boss: DestroyerBossState, ctx: DestroyerStepCo
           ticksLeft: BOSS_DESTROYER_CFG.meteorWarningTicks,
           maxTicks: BOSS_DESTROYER_CFG.meteorWarningTicks,
           dmg: BOSS_DESTROYER_CFG.meteorDmg,
-          label: hasApoc ? 'THIÊN THẠCH TẬN THẾ!' : 'DANGER · THIÊN THẠCH',
+          label: '',
         });
         ctx.onSfx?.('sfx_bazooka_fire', boss.x, boss.y);
       }
@@ -515,12 +568,13 @@ export function stepDestroyerBoss(boss: DestroyerBossState, ctx: DestroyerStepCo
     }
 
     case 'laser_telegraph': {
-      if (boss.stateTick <= 14 && target) {
+      if (boss.stateTick <= 12 && target) {
         const base = Math.atan2(target.y - boss.y, target.x - boss.x);
         boss.aimRad = base;
-        boss.laserAngles = boss.unlockedSkills.has('laser_cross')
-          ? [base, base + Math.PI * 0.5, base + Math.PI, base + Math.PI * 1.5]
-          : [base - 0.35, base + 0.35];
+        boss.laserAngles =
+          boss.unlockedSkills.has('laser_cross') || boss.phase === 2
+            ? [base, base + Math.PI * 0.5, base + Math.PI, base + Math.PI * 1.5]
+            : [base - 0.42, base + 0.42];
       }
       if (boss.stateTick >= BOSS_DESTROYER_CFG.laserCrossTelegraphTicks) {
         boss.state = 'laser_fire';
@@ -531,13 +585,53 @@ export function stepDestroyerBoss(boss: DestroyerBossState, ctx: DestroyerStepCo
     }
 
     case 'laser_fire': {
-      if (!boss.laserFiredDamage) {
+      // Enter the Gungeon Lich 4-Spoke Accelerating + Mid-Cast Reversing Annihilation Wheel
+      const spinDir = boss.laserSpinDir ?? 1;
+      const fireDur = 48;
+      if (boss.stateTick === 1) {
         boss.laserFiredDamage = true;
         ctx.onSfx?.('sfx_wpn_laser', boss.x, boss.y);
-        for (const ang of boss.laserAngles) {
-          const x2 = boss.x + Math.cos(ang) * BOSS_DESTROYER_CFG.laserCrossLength;
-          const y2 = boss.y + Math.sin(ang) * BOSS_DESTROYER_CFG.laserCrossLength;
+      }
+      let angStep = 0;
+      if (boss.stateTick <= 22) {
+        angStep = spinDir * (0.012 + (boss.stateTick / 22) * 0.021);
+      } else if (boss.stateTick >= 28) {
+        angStep = -spinDir * 0.027;
+      } else if (boss.stateTick === 24) {
+        // Reversal warning shockwave: 12-way star burst
+        ctx.onSfx?.('sfx_wpn_void_cannon', boss.x, boss.y);
+        const starDmg = Math.max(1, Math.round(BOSS_DESTROYER_CFG.ringDmg * 0.85 * ctx.dmgMult));
+        for (let k = 0; k < 12; k++) {
+          const sa = boss.laserAngles[0] + (k / 12) * TWO_PI;
+          emitDestroyerDanmaku(boss, ctx, {
+            danmakuKind: 'danmaku_star',
+            palette: k % 2 === 0 ? BANSUNG_DANMAKU_PALETTE.CRIMSON : BANSUNG_DANMAKU_PALETTE.VIOLET,
+            scaleTier: 0,
+            x: boss.x + Math.cos(sa) * (boss.radius + 10),
+            y: boss.y + Math.sin(sa) * (boss.radius + 10),
+            vx: Math.cos(sa) * 260,
+            vy: Math.sin(sa) * 260,
+            radius: 6,
+            damage: starDmg,
+            dmgKind: 'energy',
+            ttlTicks: 58,
+          });
+        }
+      }
+      for (let i = 0; i < boss.laserAngles.length; i++) {
+        boss.laserAngles[i] += angStep;
+      }
+
+      const emitFx = boss.stateTick === 1 || boss.stateTick % 2 === 0;
+      const dealTickDmg = boss.stateTick === 1 || boss.stateTick % 5 === 0;
+      const tickDmg = Math.max(1, Math.round(BOSS_DESTROYER_CFG.laserCrossDmg * 0.34 * ctx.dmgMult));
+      for (const ang of boss.laserAngles) {
+        const x2 = boss.x + Math.cos(ang) * BOSS_DESTROYER_CFG.laserCrossLength;
+        const y2 = boss.y + Math.sin(ang) * BOSS_DESTROYER_CFG.laserCrossLength;
+        if (emitFx) {
           ctx.fx?.push(FX_BEAM, Math.round(boss.x), Math.round(boss.y), Math.round(x2), Math.round(y2), BANSUNG_FX_BEAM_LASER_MAP);
+        }
+        if (dealTickDmg) {
           for (const p of ctx.players) {
             if (!p.alive || p.downed || p.hp <= 0) continue;
             const hitR = BOSS_DESTROYER_CFG.laserCrossHalfW + (p.radius ?? 13);
@@ -545,7 +639,7 @@ export function stepDestroyerBoss(boss: DestroyerBossState, ctx: DestroyerStepCo
               applyBansungDamage(
                 p,
                 {
-                  baseDmg: Math.round(BOSS_DESTROYER_CFG.laserCrossDmg * ctx.dmgMult),
+                  baseDmg: tickDmg,
                   dmgKind: 'energy',
                   attackerId: boss.idStr,
                 },
@@ -555,7 +649,7 @@ export function stepDestroyerBoss(boss: DestroyerBossState, ctx: DestroyerStepCo
           }
         }
       }
-      if (boss.stateTick >= 16) {
+      if (boss.stateTick >= fireDur) {
         boss.state = 'patrol';
         boss.stateTick = 0;
         boss.actionCdTicks = boss.phase === 2 ? 22 : 32;
@@ -576,24 +670,44 @@ export function stepDestroyerBoss(boss: DestroyerBossState, ctx: DestroyerStepCo
       const isDoom = boss.state === 'doomsday_barrage';
       const maxWaves = (boss.phase === 2 ? 3 : 2) + (isDoom ? 1 : 0);
       if (boss.stateTick === 1 || (boss.stateTick % 12 === 1 && boss.ringWave < maxWaves)) {
-        const sectors = BOSS_DESTROYER_CFG.ringBolts;
-        const stepAng = TWO_PI / sectors;
-        const waveOffset = boss.ringWave * 0.22;
-        for (let s = 0; s < sectors; s++) {
-          if (GAP_SECTOR_SET.has(s)) continue;
-          const ang = boss.ringBaseAng + waveOffset + s * stepAng;
-          ctx.onSpawnBullet({
-            kind: isDoom && s % 3 === 0 ? 'zap' : 'plasma',
-            x: boss.x + Math.cos(ang) * (boss.radius + 10),
-            y: boss.y + Math.sin(ang) * (boss.radius + 10),
-            vx: Math.cos(ang) * BOSS_DESTROYER_CFG.ringSpeed,
-            vy: Math.sin(ang) * BOSS_DESTROYER_CFG.ringSpeed,
-            r: isDoom ? 10 : 8,
-            dmg: Math.round((isDoom ? BOSS_DESTROYER_CFG.ringDmg * 1.15 : BOSS_DESTROYER_CFG.ringDmg) * ctx.dmgMult),
-            dmgKind: isDoom && s % 2 === 0 ? 'explosive' : 'energy',
-            ttlTicks: 90,
-            ownerId: boss.id,
-          });
+        const baseDmg = Math.max(
+          1,
+          Math.round((isDoom ? BOSS_DESTROYER_CFG.ringDmg * 1.12 : BOSS_DESTROYER_CFG.ringDmg) * ctx.dmgMult),
+        );
+        emitNierAlternatingCurtain((b) => emitDestroyerDanmaku(boss, ctx, b), {
+          x: boss.x,
+          y: boss.y,
+          arms: isDoom ? 12 : 10,
+          rotRad: boss.ringBaseAng + boss.ringWave * 0.27,
+          ringSpeed: BOSS_DESTROYER_CFG.ringSpeed * 0.78,
+          lanceSpeed: BOSS_DESTROYER_CFG.ringSpeed * 1.24,
+          angVel: boss.ringWave % 2 === 0 ? 0.46 : -0.46,
+          damage: baseDmg,
+          ringPalette: BANSUNG_DANMAKU_PALETTE.CRIMSON,
+          lancePalette: isDoom ? BANSUNG_DANMAKU_PALETTE.VIOLET : BANSUNG_DANMAKU_PALETTE.GOLD,
+        });
+
+        if (boss.ringWave === 0 || (isDoom && boss.ringWave === 2)) {
+          const orbCount = isDoom ? 4 : 3;
+          const aimBase = target ? Math.atan2(target.y - boss.y, target.x - boss.x) : boss.aimRad;
+          for (let k = 0; k < orbCount; k++) {
+            const oa = aimBase + (k / orbCount) * TWO_PI;
+            emitClusterSplitOrb((b) => emitDestroyerDanmaku(boss, ctx, b), {
+              x: boss.x,
+              y: boss.y,
+              aimRad: oa,
+              speed: 205,
+              splitAfterTicks: 22,
+              splitMode: 'rose_flower',
+              splitCount: 10,
+              splitSpeed: 295,
+              damage: baseDmg,
+              dmgKind: 'explosive',
+              parentPalette: BANSUNG_DANMAKU_PALETTE.VIOLET,
+              childKind: 'danmaku_star',
+              childPalette: BANSUNG_DANMAKU_PALETTE.CRIMSON,
+            });
+          }
         }
         ctx.onSfx?.('sfx_wpn_void_cannon', boss.x, boss.y);
         boss.ringWave += 1;
@@ -673,19 +787,17 @@ function rebuildDestroyerTelegraphs(boss: DestroyerBossState): void {
       y1: Math.round(m.y),
       r: m.r,
       danger: 1,
-      label: m.label,
       sourceKind: 'boss_destroyer',
     });
   }
   for (const bh of boss.blackholes) {
     const prog = clamp(Math.round(((bh.maxTicks - bh.ticksLeft) / Math.max(1, bh.maxTicks)) * 255), 0, 255);
-    const secStr = Math.max(0.1, (bh.ticksLeft * BANSUNG_TICK_EXACT_MS) / 1000).toFixed(1);
     outTel.push({
       id: bh.id,
       kind: 1,
       shape: 'circle',
       phase: bh.ticksLeft <= 15 ? 1 : 0,
-      color: 2,
+      color: 3,
       prog,
       x0: Math.round(bh.x),
       y0: Math.round(bh.y),
@@ -693,14 +805,15 @@ function rebuildDestroyerTelegraphs(boss: DestroyerBossState): void {
       y1: Math.round(bh.y),
       r: bh.burstR,
       danger: 1,
-      label: `HỐ ĐEN ${secStr}s`,
       sourceKind: 'boss_destroyer',
     });
   }
   if (boss.state === 'laser_telegraph' || boss.state === 'laser_fire') {
     const active = boss.state === 'laser_fire';
     const prog = active
-      ? 255
+      ? boss.stateTick > 42
+        ? clamp(Math.round(((48 - boss.stateTick) / 6) * 255), 45, 255)
+        : 255
       : clamp(Math.round((boss.stateTick / Math.max(1, BOSS_DESTROYER_CFG.laserCrossTelegraphTicks)) * 255), 0, 255);
     boss.laserAngles.forEach((ang, idx) => {
       const x2 = boss.x + Math.cos(ang) * BOSS_DESTROYER_CFG.laserCrossLength;
@@ -720,7 +833,6 @@ function rebuildDestroyerTelegraphs(boss: DestroyerBossState): void {
         halfW: BOSS_DESTROYER_CFG.laserCrossHalfW,
         active,
         danger: 1,
-        label: active ? 'LAZE HỦY DIỆT!' : 'DANGER · CHỮ THẬP',
         sourceKind: 'boss_destroyer',
       });
     });

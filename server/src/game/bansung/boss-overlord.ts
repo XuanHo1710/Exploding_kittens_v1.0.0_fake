@@ -12,6 +12,7 @@
 import {
   BANSUNG_ARENA_CX,
   BANSUNG_ARENA_CY,
+  BANSUNG_DANMAKU_PALETTE,
   BANSUNG_DIFFICULTY_SCALE,
   BANSUNG_ENEMIES,
   BANSUNG_FX_BEAM_BOSS_LASER,
@@ -68,6 +69,7 @@ import {
   raycastObstacles,
   type SpatialActor,
 } from './spatial';
+import type { DanmakuMotionSpec } from './danmaku';
 
 // ============================================================================
 // 1. Constants & Config
@@ -239,6 +241,7 @@ export interface OverlordProjectileSpawn {
   ttlTicks: number;
   team: 1;
   armored: boolean;
+  danmaku?: DanmakuMotionSpec;
 }
 
 export interface OverlordEnergyOrbDrop {
@@ -1217,6 +1220,55 @@ function tickPylons(
       });
     }
   }
+
+  // Zulan / Ikaruga Destructible EMP Pylon Laser Tethers:
+  // When >= 2 landed pylons are alive and charged >= 56t, project active plasma walls between pairs!
+  // Shooting down a pylon immediately collapses its laser wall.
+  if (!pauseCharge && boss.pylons.length >= 2) {
+    const landed: OverlordPylon[] = [];
+    for (let i = 0; i < boss.pylons.length; i++) {
+      const py = boss.pylons[i];
+      if (py.alive && py.hp > 0 && py.landingTicksLeft <= 0) landed.push(py);
+    }
+    if (landed.length >= 2) {
+      const pairLimit = landed.length === 2 ? 1 : landed.length;
+      for (let k = 0; k < pairLimit; k++) {
+        const pA = landed[k];
+        const pB = landed[(k + 1) % landed.length];
+        const maxChg = Math.max(pA.chargeTicks, pB.chargeTicks);
+        if (maxChg < 56) continue;
+        // Skip tether if blocked by solid cover pillar
+        if (raycastObstacles(ctx.obsGrid, pA.x, pA.y, pB.x, pB.y, 0, 'los') !== null) continue;
+        if (maxChg % 4 === 0) {
+          emitFx(
+            ctx,
+            FX_BEAM,
+            Math.round(pA.x),
+            Math.round(pA.y),
+            Math.round(pB.x),
+            Math.round(pB.y),
+            BANSUNG_FX_BEAM_BOSS_LASER,
+          );
+        }
+        if (maxChg % 6 === 2) {
+          for (let j = 0; j < ctx.players.length; j++) {
+            const hero = ctx.players[j];
+            if (!hero.alive || hero.downed || hero.hp <= 0) continue;
+            if ((hero.dashIframesMs ?? 0) > 0 || (hero.shieldBuffMs ?? 0) > 0) continue;
+            const hitR = 13 + hero.radius;
+            if (distPointToSegmentSq(hero.x, hero.y, pA.x, pA.y, pB.x, pB.y) <= hitR * hitR) {
+              const tetherHit: BansungDamageHit = { baseDmg: 9, dmgKind: 'energy' };
+              if (ctx.onDamagePlayer) {
+                ctx.onDamagePlayer(hero, tetherHit);
+              } else {
+                applyBansungDamage(hero, tetherHit, { rng: ctx.rng, popups: ctx.popups, fx: ctx.fx });
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 function selectPlayerClusterTarget(
@@ -1405,7 +1457,33 @@ function emitSpiralRing(
     }
 
     const isHeavy = (boss.spiralShotSeq & 3) === 3;
+    const isLance = !isHeavy && (boss.spiralShotSeq & 1) === 1;
+    const curveSign = arms === OVERLORD_CFG.spiralP2InnerArms ? -1 : 1;
     boss.spiralShotSeq += 1;
+
+    const danmaku: DanmakuMotionSpec = isHeavy
+      ? {
+          // NieR: Automata Slow Hollow Crimson Ring
+          danmakuKind: 'danmaku_ring',
+          palette: BANSUNG_DANMAKU_PALETTE.CRIMSON,
+          scaleTier: 2,
+          angVel: 0.44 * curveSign,
+        }
+      : isLance
+        ? {
+            // NieR Fast Accelerated Golden Lance
+            danmakuKind: 'danmaku_lance',
+            palette: BANSUNG_DANMAKU_PALETTE.GOLD,
+            scaleTier: 1,
+            accel: 72,
+            maxSpeed: 385,
+          }
+        : {
+            danmakuKind: (i & 1) === 0 ? 'danmaku_orb' : 'danmaku_crescent',
+            palette: BANSUNG_DANMAKU_PALETTE.VIOLET,
+            scaleTier: 1,
+            angVel: 0.3 * curveSign,
+          };
 
     const proj: OverlordProjectileSpawn = {
       bossId: boss.id,
@@ -1422,6 +1500,7 @@ function emitSpiralRing(
       ttlTicks: OVERLORD_CFG.spiralProjTtlTicks,
       team: 1,
       armored: isHeavy,
+      danmaku,
     };
     ctx.spawnProjectile?.(proj);
     res.projectiles.push(proj);
@@ -2337,15 +2416,16 @@ export function getOverlordTelegraphs(boss: OverlordBossState): BansungTelegraph
       halfW: lane.halfW,
       active: lane.phase === 'active',
       danger: 1,
-      label: lane.phase === 'active' ? 'LAZE!' : 'DANGER',
       sourceKind: 'boss_overlord',
     });
   }
 
+  const landedPylons: OverlordPylon[] = [];
   for (let i = 0; i < boss.pylons.length; i++) {
     const p = boss.pylons[i];
     if (!p.alive || p.hp <= 0) continue;
     const isLanding = p.landingTicksLeft > 0;
+    if (!isLanding) landedPylons.push(p);
     const prog = isLanding
       ? Math.round(((OVERLORD_CFG.empLandingTicks - p.landingTicksLeft) / OVERLORD_CFG.empLandingTicks) * 255)
       : Math.round((p.chargeTicks / OVERLORD_CFG.empChargeTicks) * 255);
@@ -2362,9 +2442,38 @@ export function getOverlordTelegraphs(boss: OverlordBossState): BansungTelegraph
       y1: Math.round(p.y),
       r: isLanding ? OVERLORD_CFG.empPylonRadius : OVERLORD_CFG.empPulseRadius,
       danger: 1,
-      label: isLanding ? 'EMP DROP' : 'DANGER EMP',
       sourceKind: 'boss_overlord',
     });
+  }
+
+  // Zulan / Ikaruga EMP Pylon Laser Tether Sightlines & Active Plasma Walls
+  if (landedPylons.length >= 2) {
+    const pairLimit = landedPylons.length === 2 ? 1 : landedPylons.length;
+    for (let k = 0; k < pairLimit; k++) {
+      const pA = landedPylons[k];
+      const pB = landedPylons[(k + 1) % landedPylons.length];
+      const maxChg = Math.max(pA.chargeTicks, pB.chargeTicks);
+      if (maxChg < 28) continue;
+      const active = maxChg >= 56;
+      const prog = active ? 255 : Math.round(((maxChg - 28) / 28) * 235);
+      out.push({
+        id: boss.id * 1000 + 600 + k,
+        kind: 0,
+        shape: 'line',
+        phase: active || maxChg >= 46 ? 1 : 0,
+        color: 3,
+        prog: clamp(prog, 0, 255),
+        x0: Math.round(pA.x),
+        y0: Math.round(pA.y),
+        x1: Math.round(pB.x),
+        y1: Math.round(pB.y),
+        r: 13,
+        halfW: 13,
+        active,
+        danger: 1,
+        sourceKind: 'boss_overlord',
+      });
+    }
   }
 
   return out;

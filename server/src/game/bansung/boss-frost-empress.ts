@@ -10,6 +10,7 @@
  *  - `blizzard_ring`, `glacier_nova`, `ice_shard_barrage`, `permafrost_summon`
  */
 import {
+  BANSUNG_DANMAKU_PALETTE,
   BANSUNG_ENEMIES,
   BANSUNG_FX_BEAM_LASER_MAP,
   BANSUNG_FX_BLAST_FROST_SHATTER,
@@ -30,6 +31,13 @@ import {
   type BansungUnitState,
 } from '../../../../shared/src';
 import { applyBansungDamage, type BansungCombatTarget, type BansungDamageContext } from './damage';
+import {
+  emitClusterSplitOrb,
+  emitRosePetalRing,
+  emitSakuyaPauseLanceRing,
+  type BossDanmakuSpawnInput,
+  type DanmakuMotionSpec,
+} from './danmaku';
 
 function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;
@@ -83,6 +91,7 @@ export interface FrostEmpressBulletSpawn {
   dmgKind: 'energy';
   ttlTicks: number;
   ownerId: number;
+  danmaku?: DanmakuMotionSpec;
 }
 
 export interface FrostEmpressBossState {
@@ -109,6 +118,7 @@ export interface FrostEmpressBossState {
   ringWave: number;
   ringBaseAng: number;
   beamAngles: number[];
+  beamSweepDir?: 1 | -1;
   beamFiredDamage: boolean;
   unlockedSkills: Set<string>;
   unlockedSkillList: string[];
@@ -308,8 +318,12 @@ function enterFrostSkill(
     boss.state = 'glacier_telegraph';
     boss.stateTick = 0;
     boss.beamFiredDamage = false;
+    boss.beamSweepDir = boss.beamSweepDir === 1 ? -1 : 1;
     const base = target ? Math.atan2(target.y - boss.y, target.x - boss.x) : boss.aimRad;
-    boss.beamAngles = [base - 0.38, base, base + 0.38];
+    boss.beamAngles =
+      boss.phase === 2
+        ? [base, base + TWO_PI / 3, base + (2 * TWO_PI) / 3]
+        : [base - 0.5, base, base + 0.5];
     return;
   }
   if (skillId === 'permafrost_summon') {
@@ -319,6 +333,26 @@ function enterFrostSkill(
   }
   boss.state = 'icicle_windup';
   boss.stateTick = 0;
+}
+
+function emitFrostDanmaku(
+  boss: FrostEmpressBossState,
+  ctx: FrostEmpressStepContext,
+  b: BossDanmakuSpawnInput,
+): void {
+  ctx.onSpawnBullet({
+    kind: b.danmakuKind === 'danmaku_lance' ? 'zap' : 'plasma',
+    x: b.x,
+    y: b.y,
+    vx: b.vx,
+    vy: b.vy,
+    r: b.radius,
+    dmg: b.damage,
+    dmgKind: 'energy',
+    ttlTicks: b.ttlTicks,
+    ownerId: boss.id,
+    danmaku: b,
+  });
 }
 
 export function stepFrostEmpressBoss(boss: FrostEmpressBossState, ctx: FrostEmpressStepContext): void {
@@ -429,13 +463,14 @@ export function stepFrostEmpressBoss(boss: FrostEmpressBossState, ctx: FrostEmpr
         boss.ringWave = 0;
         boss.ringBaseAng = boss.aimRad;
       } else {
-        if (boss.unlockedSkills.has('glacier_nova')) {
+        if (boss.unlockedSkills.has('glacier_nova') || boss.phase === 2) {
           enterFrostSkill(boss, 'glacier_nova', target);
           break;
         }
         boss.state = 'cryo_telegraph';
         boss.beamFiredDamage = false;
-        boss.beamAngles = [boss.aimRad];
+        boss.beamSweepDir = boss.beamSweepDir === 1 ? -1 : 1;
+        boss.beamAngles = [boss.aimRad - 0.4, boss.aimRad + 0.4];
       }
       boss.stateTick = 0;
       break;
@@ -451,8 +486,10 @@ export function stepFrostEmpressBoss(boss: FrostEmpressBossState, ctx: FrostEmpr
         const pick = alivePlayers.length > 0 ? alivePlayers[idx % alivePlayers.length] : target;
         const px = pick ? pick.x : boss.x + 190;
         const py = pick ? pick.y : boss.y;
-        const ang = boss.aimRad + idx * 1.1;
-        const offR = idx === 0 ? 12 : 88 + (idx % 3) * 44;
+        const ringCount = Math.max(1, totalIcicles - 1);
+        const ringR = Math.max(154, BOSS_FROST_EMPRESS_CFG.icicleRadius * 2.38);
+        const ang = boss.aimRad + ((idx - 1) / ringCount) * TWO_PI;
+        const offR = idx === 0 ? 0 : ringR;
         boss.icicles.push({
           id: nextId(boss),
           x: clamp(px + Math.cos(ang) * offR, boss.arenaBounds.minX + 70, boss.arenaBounds.maxX - 70),
@@ -461,7 +498,7 @@ export function stepFrostEmpressBoss(boss: FrostEmpressBossState, ctx: FrostEmpr
           ticksLeft: BOSS_FROST_EMPRESS_CFG.icicleWarningTicks,
           maxTicks: BOSS_FROST_EMPRESS_CFG.icicleWarningTicks,
           dmg: BOSS_FROST_EMPRESS_CFG.icicleDmg,
-          label: hasBarrage ? 'MƯA MẢNH BĂNG!' : 'DANGER · BĂNG GIÁ!',
+          label: '',
         });
         ctx.onSfx?.('wpn_plasma_fire', boss.x, boss.y);
       }
@@ -485,23 +522,96 @@ export function stepFrostEmpressBoss(boss: FrostEmpressBossState, ctx: FrostEmpr
       const hasBlizz = boss.unlockedSkills.has('blizzard_ring');
       const maxWaves = (boss.phase === 2 ? 3 : 2) + (hasBlizz ? 1 : 0);
       if (boss.stateTick === 1 || (boss.stateTick % 12 === 1 && boss.ringWave < maxWaves)) {
-        const sectors = BOSS_FROST_EMPRESS_CFG.cycloneBolts;
-        const stepAng = TWO_PI / sectors;
-        const waveOffset = boss.ringWave * 0.25;
-        for (let s = 0; s < sectors; s++) {
-          if (CYCLONE_GAP_SET.has(s)) continue;
-          const ang = boss.ringBaseAng + waveOffset + s * stepAng;
-          ctx.onSpawnBullet({
-            kind: s % 2 === 0 ? 'plasma' : 'zap',
-            x: boss.x + Math.cos(ang) * (boss.radius + 8),
-            y: boss.y + Math.sin(ang) * (boss.radius + 8),
-            vx: Math.cos(ang) * BOSS_FROST_EMPRESS_CFG.cycloneSpeed,
-            vy: Math.sin(ang) * BOSS_FROST_EMPRESS_CFG.cycloneSpeed,
-            r: 8,
-            dmg: Math.round(BOSS_FROST_EMPRESS_CFG.cycloneDmg * ctx.dmgMult),
-            dmgKind: 'energy',
-            ttlTicks: 88,
-            ownerId: boss.id,
+        const scaledDmg = Math.max(1, Math.round(BOSS_FROST_EMPRESS_CFG.cycloneDmg * ctx.dmgMult));
+        if (boss.ringWave === 0) {
+          // Touhou Cirno "Perfect Freeze": swirling multi-hue orbs freeze into SILVER crystals & shatter!
+          const count = boss.phase === 2 ? 24 : 20;
+          const pals = [
+            BANSUNG_DANMAKU_PALETTE.CYAN,
+            BANSUNG_DANMAKU_PALETTE.VIOLET,
+            BANSUNG_DANMAKU_PALETTE.ROSE,
+          ];
+          for (let s = 0; s < count; s++) {
+            const ang = boss.ringBaseAng + (s / count) * TWO_PI;
+            emitFrostDanmaku(boss, ctx, {
+              danmakuKind: 'danmaku_orb',
+              palette: pals[s % pals.length],
+              pausePalette: BANSUNG_DANMAKU_PALETTE.SILVER,
+              snapPalette: BANSUNG_DANMAKU_PALETTE.CYAN,
+              snapKind: 'danmaku_lance',
+              scaleTier: 1,
+              x: boss.x + Math.cos(ang) * (boss.radius + 8),
+              y: boss.y + Math.sin(ang) * (boss.radius + 8),
+              vx: Math.cos(ang) * 205,
+              vy: Math.sin(ang) * 205,
+              radius: 7,
+              damage: scaledDmg,
+              dmgKind: 'energy',
+              ttlTicks: 96,
+              angVel: s % 2 === 0 ? 0.86 : -0.86,
+              pauseAfterTicks: 15,
+              pauseDurationTicks: 15,
+              snapMode: 'starburst',
+              snapAngleOffset: ((s % 5) - 2) * 0.36,
+              snapSpeed: 360,
+              slowPct: 0.28,
+              slowMs: 950,
+            });
+          }
+        } else if (boss.ringWave === 1) {
+          // Sakuya Diamond-Dust Lances + Cryogen Shattering Ice Bombs
+          emitSakuyaPauseLanceRing((b) => emitFrostDanmaku(boss, ctx, b), {
+            x: boss.x,
+            y: boss.y,
+            count: boss.phase === 2 ? 14 : 10,
+            expandSpeed: 180,
+            pauseAfterTicks: 13,
+            pauseDurationTicks: 14,
+            snapSpeed: 435,
+            fanSpreadRad: 0.32,
+            rotRad: boss.ringBaseAng + 0.3,
+            damage: scaledDmg,
+            expandPalette: BANSUNG_DANMAKU_PALETTE.SILVER,
+            snapPalette: BANSUNG_DANMAKU_PALETTE.CYAN,
+            slowPct: 0.25,
+            slowMs: 900,
+          });
+          const aimBase = target ? Math.atan2(target.y - boss.y, target.x - boss.x) : boss.aimRad;
+          for (let k = 0; k < 3; k++) {
+            emitClusterSplitOrb((b) => emitFrostDanmaku(boss, ctx, b), {
+              x: boss.x,
+              y: boss.y,
+              aimRad: aimBase + (k - 1) * 0.52,
+              speed: 205,
+              splitAfterTicks: 22,
+              splitMode: 'ring',
+              splitCount: 8,
+              splitSpeed: 295,
+              damage: scaledDmg,
+              dmgKind: 'energy',
+              parentPalette: BANSUNG_DANMAKU_PALETTE.CYAN,
+              childKind: 'danmaku_lance',
+              childPalette: BANSUNG_DANMAKU_PALETTE.SILVER,
+              slowPct: 0.3,
+              slowMs: 1100,
+            });
+          }
+        } else {
+          // 6-Petal Blooming Frost Lotus
+          emitRosePetalRing((b) => emitFrostDanmaku(boss, ctx, b), {
+            x: boss.x,
+            y: boss.y,
+            count: 24,
+            petals: 6,
+            baseSpeed: BOSS_FROST_EMPRESS_CFG.cycloneSpeed * 0.92,
+            petalAmp: 78,
+            rotRad: boss.ringBaseAng + boss.ringWave * 0.35,
+            damage: scaledDmg,
+            tipKind: 'danmaku_lance',
+            valleyKind: 'danmaku_star',
+            tipPalette: BANSUNG_DANMAKU_PALETTE.CYAN,
+            valleyPalette: BANSUNG_DANMAKU_PALETTE.SILVER,
+            angVel: -0.48,
           });
         }
         ctx.onSfx?.('wpn_plasma_fire', boss.x, boss.y);
@@ -518,10 +628,14 @@ export function stepFrostEmpressBoss(boss: FrostEmpressBossState, ctx: FrostEmpr
     case 'cryo_telegraph':
     case 'glacier_telegraph': {
       const isGlacier = boss.state === 'glacier_telegraph';
-      if (boss.stateTick <= 14 && target) {
+      if (boss.stateTick <= 12 && target) {
         const base = Math.atan2(target.y - boss.y, target.x - boss.x);
         boss.aimRad = base;
-        boss.beamAngles = isGlacier ? [base - 0.38, base, base + 0.38] : [base];
+        boss.beamAngles = isGlacier
+          ? boss.phase === 2
+            ? [base, base + TWO_PI / 3, base + (2 * TWO_PI) / 3]
+            : [base - 0.5, base, base + 0.5]
+          : [base - 0.4, base + 0.4];
       }
       if (boss.stateTick >= BOSS_FROST_EMPRESS_CFG.cryoBeamTelegraphTicks) {
         boss.state = isGlacier ? 'glacier_fire' : 'cryo_fire';
@@ -533,13 +647,45 @@ export function stepFrostEmpressBoss(boss: FrostEmpressBossState, ctx: FrostEmpr
 
     case 'cryo_fire':
     case 'glacier_fire': {
-      if (!boss.beamFiredDamage) {
+      const sweepDir = boss.beamSweepDir ?? 1;
+      const fireDur = 36;
+      if (boss.stateTick === 1) {
         boss.beamFiredDamage = true;
         ctx.onSfx?.('sfx_wpn_laser', boss.x, boss.y);
-        for (const ang of boss.beamAngles) {
-          const x2 = boss.x + Math.cos(ang) * BOSS_FROST_EMPRESS_CFG.cryoBeamLength;
-          const y2 = boss.y + Math.sin(ang) * BOSS_FROST_EMPRESS_CFG.cryoBeamLength;
+        const shardDmg = Math.max(1, Math.round(BOSS_FROST_EMPRESS_CFG.cycloneDmg * 0.85 * ctx.dmgMult));
+        for (let k = 0; k < 8; k++) {
+          const sa = boss.aimRad + (k / 8) * TWO_PI;
+          emitFrostDanmaku(boss, ctx, {
+            danmakuKind: 'danmaku_star',
+            palette: k % 2 === 0 ? BANSUNG_DANMAKU_PALETTE.SILVER : BANSUNG_DANMAKU_PALETTE.CYAN,
+            scaleTier: 0,
+            x: boss.x + Math.cos(sa) * (boss.radius + 8),
+            y: boss.y + Math.sin(sa) * (boss.radius + 8),
+            vx: Math.cos(sa) * 240,
+            vy: Math.sin(sa) * 240,
+            radius: 6,
+            damage: shardDmg,
+            dmgKind: 'energy',
+            ttlTicks: 54,
+            slowPct: 0.25,
+            slowMs: 900,
+          });
+        }
+      }
+      for (let i = 0; i < boss.beamAngles.length; i++) {
+        boss.beamAngles[i] += sweepDir * 0.022;
+      }
+
+      const emitFx = boss.stateTick === 1 || boss.stateTick % 2 === 0;
+      const dealTickDmg = boss.stateTick === 1 || boss.stateTick % 6 === 0;
+      const tickDmg = Math.max(1, Math.round(BOSS_FROST_EMPRESS_CFG.cryoBeamDmg * 0.36 * ctx.dmgMult));
+      for (const ang of boss.beamAngles) {
+        const x2 = boss.x + Math.cos(ang) * BOSS_FROST_EMPRESS_CFG.cryoBeamLength;
+        const y2 = boss.y + Math.sin(ang) * BOSS_FROST_EMPRESS_CFG.cryoBeamLength;
+        if (emitFx) {
           ctx.fx?.push(FX_BEAM, Math.round(boss.x), Math.round(boss.y), Math.round(x2), Math.round(y2), BANSUNG_FX_BEAM_LASER_MAP);
+        }
+        if (dealTickDmg) {
           for (const p of ctx.players) {
             if (!p.alive || p.downed || p.hp <= 0) continue;
             const hitR = BOSS_FROST_EMPRESS_CFG.cryoBeamHalfW + (p.radius ?? 13);
@@ -547,7 +693,7 @@ export function stepFrostEmpressBoss(boss: FrostEmpressBossState, ctx: FrostEmpr
               applyBansungDamage(
                 p,
                 {
-                  baseDmg: Math.round(BOSS_FROST_EMPRESS_CFG.cryoBeamDmg * ctx.dmgMult),
+                  baseDmg: tickDmg,
                   dmgKind: 'energy',
                   attackerId: boss.idStr,
                 },
@@ -561,7 +707,7 @@ export function stepFrostEmpressBoss(boss: FrostEmpressBossState, ctx: FrostEmpr
           }
         }
       }
-      if (boss.stateTick >= 16) {
+      if (boss.stateTick >= fireDur) {
         boss.state = 'patrol';
         boss.stateTick = 0;
         boss.actionCdTicks = boss.phase === 2 ? 24 : 34;
@@ -611,7 +757,6 @@ function rebuildFrostTelegraphs(boss: FrostEmpressBossState): void {
       y1: Math.round(s.y),
       r: s.r,
       danger: 1,
-      label: s.label,
       sourceKind: 'boss_frost_empress',
     });
   }
@@ -623,7 +768,9 @@ function rebuildFrostTelegraphs(boss: FrostEmpressBossState): void {
   ) {
     const active = boss.state === 'cryo_fire' || boss.state === 'glacier_fire';
     const prog = active
-      ? 255
+      ? boss.stateTick > 30
+        ? clamp(Math.round(((36 - boss.stateTick) / 6) * 255), 45, 255)
+        : 255
       : clamp(Math.round((boss.stateTick / Math.max(1, BOSS_FROST_EMPRESS_CFG.cryoBeamTelegraphTicks)) * 255), 0, 255);
     boss.beamAngles.forEach((ang, idx) => {
       const x2 = boss.x + Math.cos(ang) * BOSS_FROST_EMPRESS_CFG.cryoBeamLength;
@@ -643,7 +790,6 @@ function rebuildFrostTelegraphs(boss: FrostEmpressBossState): void {
         halfW: BOSS_FROST_EMPRESS_CFG.cryoBeamHalfW,
         active,
         danger: 1,
-        label: active ? 'TIA BĂNG CỰC HÀN!' : 'DANGER · TIA BĂNG!',
         sourceKind: 'boss_frost_empress',
       });
     });

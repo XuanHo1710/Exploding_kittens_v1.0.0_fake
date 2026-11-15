@@ -9,6 +9,7 @@
  * 5. Squad Summon: calls tactical escorts while regular wave spawns are paused.
  */
 import {
+  BANSUNG_DANMAKU_PALETTE,
   BOSS_ARSENAL_CFG,
   BANSUNG_ENEMIES,
   BANSUNG_FX_BEAM_LASER_MAP,
@@ -27,7 +28,18 @@ import {
   type BansungTelegraph,
   type BansungUnitState,
 } from '../../../../shared/src';
-import { applyBansungDamage, type BansungCombatTarget, type BansungDamageContext } from './damage';
+import {
+  applyBansungDamage,
+  type BansungCombatTarget,
+  type BansungDamageContext,
+  type BansungDamageKind,
+} from './damage';
+import {
+  emitClusterSplitOrb,
+  emitSakuyaPauseLanceRing,
+  type BossDanmakuSpawnInput,
+  type DanmakuMotionSpec,
+} from './danmaku';
 
 function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;
@@ -85,8 +97,10 @@ export interface ArsenalBulletSpawn {
   vy: number;
   radius: number;
   dmg: number;
+  dmgKind?: BansungDamageKind;
   ttlTicks: number;
   kind: number;
+  danmaku?: DanmakuMotionSpec;
 }
 
 export interface ArsenalBossState {
@@ -114,6 +128,7 @@ export interface ArsenalBossState {
   ringBaseAng: number;
   laserX2: number;
   laserY2: number;
+  laserSweepDir?: 1 | -1;
   laserFiredDamage: boolean;
   seq: number;
   arenaBounds: { minX: number; minY: number; maxX: number; maxY: number };
@@ -437,23 +452,24 @@ export function stepArsenalBoss(boss: ArsenalBossState, ctx: ArsenalStepContext)
     }
 
     case 'grenade_windup': {
-      // Throw 3 grenades with 2.0s (60-tick) fuse spaced so player can dodge out
+      // Non-overlapping Sacred Pentagon / Triangle Ring around target with guaranteed >= 72px escape lanes
       if (boss.stateTick === 12) {
-        const count = boss.phase === 2 ? BOSS_ARSENAL_CFG.grenadeCount + 1 : BOSS_ARSENAL_CFG.grenadeCount;
+        const count = boss.phase === 2 ? BOSS_ARSENAL_CFG.grenadeCount + 2 : BOSS_ARSENAL_CFG.grenadeCount;
         const baseX = target ? target.x : boss.x + Math.cos(boss.aimRad) * 220;
         const baseY = target ? target.y : boss.y + Math.sin(boss.aimRad) * 220;
+        const ringR = Math.max(142, Math.round(BOSS_ARSENAL_CFG.grenadeBlastR * 2.4));
+        const rot = boss.aimRad + (boss.patternIdx % 2) * (Math.PI / count);
         for (let i = 0; i < count; i++) {
-          const ang = boss.aimRad + ((i - (count - 1) * 0.5) * 0.95);
-          const offset = i === 0 ? 18 : 115 + i * 24;
+          const ang = rot + (i / count) * TWO_PI;
           const gx = clamp(
-            baseX + Math.cos(ang) * offset,
-            boss.arenaBounds.minX + 70,
-            boss.arenaBounds.maxX - 70,
+            baseX + Math.cos(ang) * ringR,
+            boss.arenaBounds.minX + 75,
+            boss.arenaBounds.maxX - 75,
           );
           const gy = clamp(
-            baseY + Math.sin(ang) * offset,
-            boss.arenaBounds.minY + 70,
-            boss.arenaBounds.maxY - 70,
+            baseY + Math.sin(ang) * ringR,
+            boss.arenaBounds.minY + 75,
+            boss.arenaBounds.maxY - 75,
           );
           boss.grenades.push({
             id: nextId(boss),
@@ -476,24 +492,39 @@ export function stepArsenalBoss(boss: ArsenalBossState, ctx: ArsenalStepContext)
     }
 
     case 'missile_windup': {
-      // Drop staggered DANGER red missile target zones around players with escape gaps
-      const salvoCount = boss.phase === 2 ? BOSS_ARSENAL_CFG.missileCount + 2 : BOSS_ARSENAL_CFG.missileCount;
-      if (boss.stateTick >= 8 && boss.stateTick % 7 === 1 && boss.missiles.length < salvoCount) {
+      // Soul Knight C6H8O6 Alternating Cardinal (+) / Diagonal (x) Tactical Cross Lock-On
+      const salvoCount = boss.phase === 2 ? 5 : 4;
+      if (boss.stateTick >= 8 && boss.stateTick % 6 === 1 && boss.missiles.length < salvoCount) {
         const idx = boss.missiles.length;
         const px = target ? target.x : boss.x + 200;
         const py = target ? target.y : boss.y;
-        const ringAng = boss.aimRad + idx * ((Math.PI * 2) / salvoCount);
-        const dist = idx === 0 ? 0 : 125 + (idx % 2) * 55;
-        const mx = clamp(
-          px + Math.cos(ringAng) * dist,
-          boss.arenaBounds.minX + 70,
-          boss.arenaBounds.maxX - 70,
-        );
-        const my = clamp(
-          py + Math.sin(ringAng) * dist,
-          boss.arenaBounds.minY + 70,
-          boss.arenaBounds.maxY - 70,
-        );
+        const crossBase = (boss.patternIdx & 1) === 0 ? 0 : Math.PI * 0.25;
+        const outerCount = Math.max(1, salvoCount - 1);
+        const ringR = Math.max(156, Math.round(BOSS_ARSENAL_CFG.missileRadius * 2.45));
+        const mx =
+          idx === 0 && boss.phase === 2
+            ? clamp(px, boss.arenaBounds.minX + 75, boss.arenaBounds.maxX - 75)
+            : clamp(
+                px +
+                  Math.cos(
+                    crossBase + ((boss.phase === 2 ? idx - 1 : idx) / (boss.phase === 2 ? outerCount : salvoCount)) * TWO_PI,
+                  ) *
+                    ringR,
+                boss.arenaBounds.minX + 75,
+                boss.arenaBounds.maxX - 75,
+              );
+        const my =
+          idx === 0 && boss.phase === 2
+            ? clamp(py, boss.arenaBounds.minY + 75, boss.arenaBounds.maxY - 75)
+            : clamp(
+                py +
+                  Math.sin(
+                    crossBase + ((boss.phase === 2 ? idx - 1 : idx) / (boss.phase === 2 ? outerCount : salvoCount)) * TWO_PI,
+                  ) *
+                    ringR,
+                boss.arenaBounds.minY + 75,
+                boss.arenaBounds.maxY - 75,
+              );
         boss.missiles.push({
           id: nextId(boss),
           x: mx,
@@ -505,7 +536,7 @@ export function stepArsenalBoss(boss: ArsenalBossState, ctx: ArsenalStepContext)
         });
         ctx.onSfx?.('sfx_bazooka_fire', boss.x, boss.y);
       }
-      if (boss.stateTick >= 8 + salvoCount * 7 + 12) {
+      if (boss.stateTick >= 8 + salvoCount * 6 + 12) {
         boss.state = 'patrol';
         boss.stateTick = 0;
         boss.actionCdTicks = boss.phase === 2 ? 30 : 42;
@@ -514,9 +545,11 @@ export function stepArsenalBoss(boss: ArsenalBossState, ctx: ArsenalStepContext)
     }
 
     case 'laser_telegraph': {
-      // Track player during early charge (first 18t), then lock red aim line for remaining 20t so player can dodge!
-      if (boss.stateTick <= 18 && target) {
-        boss.aimRad = Math.atan2(target.y - boss.y, target.x - boss.x);
+      // Track player during early charge (first 16t), offset for sweep arc, then lock sightline for remaining 22t!
+      if (boss.stateTick <= 16 && target) {
+        const sweepDir: 1 | -1 = (boss.patternIdx & 1) === 0 ? 1 : -1;
+        boss.laserSweepDir = sweepDir;
+        boss.aimRad = Math.atan2(target.y - boss.y, target.x - boss.x) - sweepDir * 0.34;
       }
       boss.laserX2 = boss.x + Math.cos(boss.aimRad) * BOSS_ARSENAL_CFG.laserLength;
       boss.laserY2 = boss.y + Math.sin(boss.aimRad) * BOSS_ARSENAL_CFG.laserLength;
@@ -529,35 +562,88 @@ export function stepArsenalBoss(boss: ArsenalBossState, ctx: ArsenalStepContext)
     }
 
     case 'laser_fire': {
-      if (!boss.laserFiredDamage) {
+      // Soul Knight C6H8O6 Continuous Sweeping -> Brief Pause -> Reverse Mega-Laser (36 ticks)
+      const fireDuration = 36;
+      const sweepDir = boss.laserSweepDir ?? 1;
+      if (boss.stateTick === 1) {
         boss.laserFiredDamage = true;
-        ctx.fx?.push(
-          FX_BEAM,
-          Math.round(boss.x),
-          Math.round(boss.y),
-          Math.round(boss.laserX2),
-          Math.round(boss.laserY2),
-          BANSUNG_FX_BEAM_LASER_MAP,
-        );
         ctx.onSfx?.('sfx_wpn_laser', boss.x, boss.y);
+      }
+      if (boss.stateTick <= 18) {
+        boss.aimRad += sweepDir * 0.042;
+      } else if (boss.stateTick === 20) {
+        // Muzzle overload starburst during mid-cast reversal pause
+        for (let k = 0; k < 8; k++) {
+          const sAng = boss.aimRad + (k / 8) * TWO_PI;
+          ctx.onSpawnBullet({
+            x: boss.x + Math.cos(sAng) * (boss.radius + 8),
+            y: boss.y + Math.sin(sAng) * (boss.radius + 8),
+            vx: Math.cos(sAng) * 235,
+            vy: Math.sin(sAng) * 235,
+            radius: 6,
+            dmg: Math.max(4, Math.round(BOSS_ARSENAL_CFG.ringDmg * 0.85 * ctx.dmgMult)),
+            dmgKind: 'energy',
+            ttlTicks: 72,
+            kind: 1,
+            danmaku: {
+              danmakuKind: 'danmaku_star',
+              palette: BANSUNG_DANMAKU_PALETTE.GOLD,
+              scaleTier: 1,
+            },
+          });
+        }
+      } else if (boss.stateTick >= 24) {
+        boss.aimRad -= sweepDir * 0.048;
+      }
+
+      boss.laserX2 = boss.x + Math.cos(boss.aimRad) * BOSS_ARSENAL_CFG.laserLength;
+      boss.laserY2 = boss.y + Math.sin(boss.aimRad) * BOSS_ARSENAL_CFG.laserLength;
+
+      const beamAngles =
+        boss.phase === 2 ? [boss.aimRad - 0.36, boss.aimRad, boss.aimRad + 0.36] : [boss.aimRad];
+
+      if (boss.stateTick % 2 === 1) {
+        for (const bAng of beamAngles) {
+          const bx2 = boss.x + Math.cos(bAng) * BOSS_ARSENAL_CFG.laserLength;
+          const by2 = boss.y + Math.sin(bAng) * BOSS_ARSENAL_CFG.laserLength;
+          ctx.fx?.push(
+            FX_BEAM,
+            Math.round(boss.x),
+            Math.round(boss.y),
+            Math.round(bx2),
+            Math.round(by2),
+            BANSUNG_FX_BEAM_LASER_MAP,
+          );
+        }
+      }
+
+      if (boss.stateTick === 1 || boss.stateTick % 5 === 1) {
+        const tickDmg = Math.max(4, Math.round(BOSS_ARSENAL_CFG.laserDmg * 0.32 * ctx.dmgMult));
         for (const p of ctx.players) {
           if (!p.alive || p.downed || p.hp <= 0) continue;
-          const hitR = BOSS_ARSENAL_CFG.laserHalfW + (p.radius ?? 13);
-          const d2 = distSqPointSegment(p.x, p.y, boss.x, boss.y, boss.laserX2, boss.laserY2);
-          if (d2 <= hitR * hitR) {
-            applyBansungDamage(
-              p,
-              {
-                baseDmg: Math.round(BOSS_ARSENAL_CFG.laserDmg * ctx.dmgMult),
-                dmgKind: 'energy',
-                attackerId: boss.idStr,
-              },
-              ctx.damageCtx,
-            );
+          for (let bi = 0; bi < beamAngles.length; bi++) {
+            const bAng = beamAngles[bi];
+            const halfW = bi === 1 || beamAngles.length === 1 ? BOSS_ARSENAL_CFG.laserHalfW : Math.round(BOSS_ARSENAL_CFG.laserHalfW * 0.72);
+            const bx2 = boss.x + Math.cos(bAng) * BOSS_ARSENAL_CFG.laserLength;
+            const by2 = boss.y + Math.sin(bAng) * BOSS_ARSENAL_CFG.laserLength;
+            const hitR = halfW + (p.radius ?? 13);
+            if (distSqPointSegment(p.x, p.y, boss.x, boss.y, bx2, by2) <= hitR * hitR) {
+              applyBansungDamage(
+                p,
+                {
+                  baseDmg: tickDmg,
+                  dmgKind: 'energy',
+                  attackerId: boss.idStr,
+                },
+                ctx.damageCtx,
+              );
+              break;
+            }
           }
         }
       }
-      if (boss.stateTick >= BOSS_ARSENAL_CFG.laserFireTicks) {
+
+      if (boss.stateTick >= fireDuration) {
         boss.state = 'patrol';
         boss.stateTick = 0;
         boss.actionCdTicks = boss.phase === 2 ? 28 : 40;
@@ -575,28 +661,112 @@ export function stepArsenalBoss(boss: ArsenalBossState, ctx: ArsenalStepContext)
 
     case 'ring_fire': {
       const maxWaves = boss.phase === 2 ? 3 : 2;
-      if (boss.stateTick === 1 || (boss.stateTick % 14 === 1 && boss.ringWave < maxWaves)) {
-        const sectors = BOSS_ARSENAL_CFG.ringTotalSectors;
-        const waveOffset = boss.ringBaseAng + boss.ringWave * 0.42;
-        for (let s = 0; s < sectors; s++) {
-          // Deliberately leave wide opposite safe escape corridors so player can dodge cleanly!
-          if (GAP_SECTOR_SET.has(s)) continue;
-          const ang = waveOffset + (s * TWO_PI) / sectors;
+      if (boss.stateTick === 1 || (boss.stateTick % 15 === 1 && boss.ringWave < maxWaves)) {
+        const emitViaBoss = (spec: BossDanmakuSpawnInput): void => {
           ctx.onSpawnBullet({
-            x: boss.x + Math.cos(ang) * (boss.radius * 0.65),
-            y: boss.y + Math.sin(ang) * (boss.radius * 0.65),
-            vx: Math.cos(ang) * BOSS_ARSENAL_CFG.ringSpeed,
-            vy: Math.sin(ang) * BOSS_ARSENAL_CFG.ringSpeed,
-            radius: 6,
-            dmg: Math.round(BOSS_ARSENAL_CFG.ringDmg * ctx.dmgMult),
-            ttlTicks: 95,
+            x: spec.x,
+            y: spec.y,
+            vx: spec.vx,
+            vy: spec.vy,
+            radius: spec.radius,
+            dmg: spec.damage,
+            dmgKind: spec.dmgKind,
+            ttlTicks: spec.ttlTicks,
             kind: 1,
+            danmaku: spec,
           });
+        };
+
+        if (boss.ringWave === 0) {
+          // Sakuya / Zulan Pause-and-Snap Aimed Lance Ring
+          emitSakuyaPauseLanceRing(emitViaBoss, {
+            x: boss.x,
+            y: boss.y,
+            count: boss.phase === 2 ? 16 : 12,
+            expandSpeed: 185,
+            pauseAfterTicks: 14,
+            pauseDurationTicks: 15,
+            snapSpeed: 445,
+            fanSpreadRad: 0.34,
+            rotRad: boss.ringBaseAng,
+            damage: Math.round(BOSS_ARSENAL_CFG.ringDmg * ctx.dmgMult),
+            dmgKind: 'energy',
+            expandPalette: BANSUNG_DANMAKU_PALETTE.GOLD,
+            snapPalette: BANSUNG_DANMAKU_PALETTE.CRIMSON,
+          });
+        } else if (boss.ringWave === 1) {
+          // Gapped Curved Flame Curtain + Varkolyn Mid-Air Splitting Cluster Orbs
+          const sectors = BOSS_ARSENAL_CFG.ringTotalSectors;
+          const waveOffset = boss.ringBaseAng + 0.42;
+          for (let s = 0; s < sectors; s++) {
+            if (GAP_SECTOR_SET.has(s)) continue;
+            const ang = waveOffset + (s * TWO_PI) / sectors;
+            ctx.onSpawnBullet({
+              x: boss.x + Math.cos(ang) * (boss.radius * 0.72),
+              y: boss.y + Math.sin(ang) * (boss.radius * 0.72),
+              vx: Math.cos(ang) * BOSS_ARSENAL_CFG.ringSpeed,
+              vy: Math.sin(ang) * BOSS_ARSENAL_CFG.ringSpeed,
+              radius: 6,
+              dmg: Math.round(BOSS_ARSENAL_CFG.ringDmg * ctx.dmgMult),
+              dmgKind: 'kinetic',
+              ttlTicks: 95,
+              kind: 1,
+              danmaku: {
+                danmakuKind: 'danmaku_orb',
+                palette: BANSUNG_DANMAKU_PALETTE.FLAME,
+                scaleTier: 1,
+                angVel: 0.68,
+              },
+            });
+          }
+          const baseAim = target ? Math.atan2(target.y - boss.y, target.x - boss.x) : boss.aimRad;
+          for (let k = -1; k <= 1; k++) {
+            emitClusterSplitOrb(emitViaBoss, {
+              x: boss.x,
+              y: boss.y,
+              aimRad: baseAim + k * 0.48,
+              speed: 205,
+              splitAfterTicks: 22,
+              splitMode: 'ring',
+              splitCount: 8,
+              splitSpeed: 285,
+              damage: Math.round(BOSS_ARSENAL_CFG.ringDmg * ctx.dmgMult),
+              dmgKind: 'explosive',
+              parentPalette: BANSUNG_DANMAKU_PALETTE.FLAME,
+              childKind: 'danmaku_star',
+              childPalette: BANSUNG_DANMAKU_PALETTE.GOLD,
+            });
+          }
+        } else {
+          // Phase 2 Wave 3: Counter-curving Crimson Crescent Curtain
+          const sectors = BOSS_ARSENAL_CFG.ringTotalSectors;
+          const waveOffset = boss.ringBaseAng + 0.84;
+          for (let s = 0; s < sectors; s++) {
+            if (GAP_SECTOR_SET.has(s)) continue;
+            const ang = waveOffset + (s * TWO_PI) / sectors;
+            ctx.onSpawnBullet({
+              x: boss.x + Math.cos(ang) * (boss.radius * 0.72),
+              y: boss.y + Math.sin(ang) * (boss.radius * 0.72),
+              vx: Math.cos(ang) * (BOSS_ARSENAL_CFG.ringSpeed * 1.08),
+              vy: Math.sin(ang) * (BOSS_ARSENAL_CFG.ringSpeed * 1.08),
+              radius: 6,
+              dmg: Math.round(BOSS_ARSENAL_CFG.ringDmg * ctx.dmgMult),
+              dmgKind: 'energy',
+              ttlTicks: 95,
+              kind: 1,
+              danmaku: {
+                danmakuKind: 'danmaku_crescent',
+                palette: BANSUNG_DANMAKU_PALETTE.CRIMSON,
+                scaleTier: 1,
+                angVel: -0.82,
+              },
+            });
+          }
         }
         ctx.onSfx?.('sfx_rifle_fire', boss.x, boss.y);
         boss.ringWave += 1;
       }
-      if (boss.ringWave >= maxWaves && boss.stateTick >= maxWaves * 14 + 8) {
+      if (boss.ringWave >= maxWaves && boss.stateTick >= maxWaves * 15 + 8) {
         boss.state = 'patrol';
         boss.stateTick = 0;
         boss.actionCdTicks = boss.phase === 2 ? 28 : 38;
@@ -626,11 +796,10 @@ export function stepArsenalBoss(boss: ArsenalBossState, ctx: ArsenalStepContext)
       break;
   }
 
-  // Rebuild active telegraphs for wire frame.tg
+  // Rebuild active telegraphs for wire frame.tg (clean sacred/cyber geometry — zero text-box spam)
   const outTel: BansungTelegraph[] = [];
   for (const g of boss.grenades) {
     const prog = clamp(Math.round(((g.maxTicks - g.ticksLeft) / Math.max(1, g.maxTicks)) * 255), 0, 255);
-    const secStr = Math.max(0.1, (g.ticksLeft * BANSUNG_TICK_EXACT_MS) / 1000).toFixed(1);
     outTel.push({
       id: g.id,
       kind: 1,
@@ -644,7 +813,6 @@ export function stepArsenalBoss(boss: ArsenalBossState, ctx: ArsenalStepContext)
       y1: Math.round(g.y),
       r: g.r,
       danger: g.ticksLeft <= 24 ? 1 : 0,
-      label: `LỰU ĐẠN ${secStr}s`,
       sourceKind: 'boss_arsenal',
     });
   }
@@ -663,7 +831,6 @@ export function stepArsenalBoss(boss: ArsenalBossState, ctx: ArsenalStepContext)
       y1: Math.round(m.y),
       r: m.r,
       danger: 1,
-      label: 'DANGER',
       sourceKind: 'boss_arsenal',
     });
   }
@@ -672,23 +839,32 @@ export function stepArsenalBoss(boss: ArsenalBossState, ctx: ArsenalStepContext)
     const prog = active
       ? 255
       : clamp(Math.round((boss.stateTick / Math.max(1, BOSS_ARSENAL_CFG.laserTelegraphTicks)) * 255), 0, 255);
-    outTel.push({
-      id: boss.id * 100 + 77,
-      kind: 0,
-      shape: 'line',
-      phase: active || boss.stateTick > 18 ? 1 : 0,
-      color: 0,
-      prog,
-      x0: Math.round(boss.x),
-      y0: Math.round(boss.y),
-      x1: Math.round(boss.laserX2),
-      y1: Math.round(boss.laserY2),
-      r: BOSS_ARSENAL_CFG.laserHalfW,
-      halfW: BOSS_ARSENAL_CFG.laserHalfW,
-      active,
-      danger: 1,
-      label: active ? 'LASER!' : 'DANGER',
-      sourceKind: 'boss_arsenal',
+    const beamAngles =
+      boss.phase === 2 ? [boss.aimRad - 0.36, boss.aimRad, boss.aimRad + 0.36] : [boss.aimRad];
+    beamAngles.forEach((bAng, bi) => {
+      const halfW =
+        bi === 1 || beamAngles.length === 1
+          ? BOSS_ARSENAL_CFG.laserHalfW
+          : Math.round(BOSS_ARSENAL_CFG.laserHalfW * 0.72);
+      const bx2 = boss.x + Math.cos(bAng) * BOSS_ARSENAL_CFG.laserLength;
+      const by2 = boss.y + Math.sin(bAng) * BOSS_ARSENAL_CFG.laserLength;
+      outTel.push({
+        id: boss.id * 100 + 77 + bi,
+        kind: 0,
+        shape: 'line',
+        phase: active || boss.stateTick > 16 ? 1 : 0,
+        color: bi === 1 || beamAngles.length === 1 ? 0 : 1,
+        prog,
+        x0: Math.round(boss.x),
+        y0: Math.round(boss.y),
+        x1: Math.round(bx2),
+        y1: Math.round(by2),
+        r: halfW,
+        halfW,
+        active,
+        danger: 1,
+        sourceKind: 'boss_arsenal',
+      });
     });
   }
   boss.telegraphs = outTel;

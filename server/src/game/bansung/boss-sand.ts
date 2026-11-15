@@ -5,6 +5,7 @@
  * and Phase-2 Scarab/Spitter add requests (`d37`).
  */
 import {
+  BANSUNG_DANMAKU_PALETTE,
   BANSUNG_ENEMIES,
   BANSUNG_EFLAG_ARMORED,
   BANSUNG_EFLAG_BURNING,
@@ -71,6 +72,7 @@ import {
   type ArenaObstacle,
   type CircleBody,
 } from './spatial';
+import type { DanmakuMotionSpec } from './danmaku';
 
 // ============================================================================
 // 1. Constants & Tuning (d37)
@@ -225,6 +227,7 @@ export interface SandBeholderProjectileSpawn {
   damage: number;
   dmgKind: BansungDamageKind;
   ttlTicks: number;
+  danmaku?: DanmakuMotionSpec;
 }
 
 export interface SandBeholderAddSpawn {
@@ -722,6 +725,7 @@ export class SandBeholderBoss {
       state: BEHOLDER_TO_UNIT_STATE[this.state.state],
       aimQ: quantizeAim(this.state.aimAngle),
       ...(telegraph > 0 ? { telegraph } : {}),
+      telegraphs: this.toTelegraphs(),
       stagger: Math.round(this.state.stagger),
       maxStagger: BOSS_BEHOLDER_CFG.staggerMax,
     };
@@ -758,8 +762,8 @@ export class SandBeholderBoss {
       out.push({
         id: this.numId * 10 + 1,
         kind: 1,
-        phase: 0,
-        color: this.activeTelegraph.kind === 'slam' ? 1 : 0,
+        phase: prog >= 190 ? 1 : 0,
+        color: this.activeTelegraph.kind === 'slam' ? 1 : 4,
         prog,
         x0: tx,
         y0: ty,
@@ -769,7 +773,6 @@ export class SandBeholderBoss {
         shape: 'circle',
         active: false,
         danger: 1,
-        label: this.activeTelegraph.kind === 'slam' ? 'DANGER' : undefined,
         sourceKind: 'boss_beholder',
       });
     }
@@ -792,7 +795,6 @@ export class SandBeholderBoss {
         halfW: Math.round(this.activeBeam.width * 0.5),
         active: this.activeBeam.active,
         danger: 1,
-        label: this.activeBeam.active ? 'EYE BEAM' : 'DANGER',
         sourceKind: 'boss_beholder',
       });
     }
@@ -1334,6 +1336,7 @@ export class SandBeholderBoss {
           this.state.aimAngle,
           VOLLEY_SPEED_P1,
           VOLLEY_DMG_P1,
+          0,
           out,
         );
       } else if (t === VOLLEY_RING_B_TICK_P1) {
@@ -1343,6 +1346,7 @@ export class SandBeholderBoss {
           this.state.aimAngle + VOLLEY_OFFSET_P1_RAD,
           VOLLEY_SPEED_P1,
           VOLLEY_DMG_P1,
+          1,
           out,
         );
       }
@@ -1354,7 +1358,7 @@ export class SandBeholderBoss {
       return;
     }
 
-    // Phase 2: 3 rapid 14-thorn spiral rings (+12 deg twist per ring)
+    // Phase 2: 3 rapid 14-thorn counter-rotating crescent/star spiral rings (Gorgun style)
     const ringIdx = VOLLEY_RING_TICKS_P2.indexOf(t);
     if (ringIdx !== -1) {
       if (ringIdx === 0) this.activeTelegraph = null;
@@ -1364,6 +1368,7 @@ export class SandBeholderBoss {
         this.state.aimAngle + ringIdx * VOLLEY_TWIST_P2_RAD,
         VOLLEY_SPEED_P2,
         VOLLEY_DMG_P2,
+        ringIdx,
         out,
       );
     }
@@ -1380,11 +1385,35 @@ export class SandBeholderBoss {
     baseAngle: number,
     speed: number,
     damage: number,
+    ringIdx: number,
     out: SandBeholderStepResult,
   ): void {
     out.sfx.push('boss_volley_fire');
     const step = (Math.PI * 2) / count;
     const spawnR = BOSS_BEHOLDER_CFG.radius + 4;
+    const danmakuSpec: DanmakuMotionSpec =
+      ringIdx === 0
+        ? {
+            danmakuKind: 'danmaku_crescent',
+            palette: BANSUNG_DANMAKU_PALETTE.EMERALD,
+            scaleTier: 1,
+            angVel: 0.92,
+          }
+        : ringIdx === 1
+          ? {
+              danmakuKind: 'danmaku_crescent',
+              palette: BANSUNG_DANMAKU_PALETTE.GOLD,
+              scaleTier: 1,
+              angVel: -0.92,
+            }
+          : {
+              danmakuKind: 'danmaku_star',
+              palette: BANSUNG_DANMAKU_PALETTE.CRIMSON,
+              scaleTier: 1,
+              angVel: 1.15,
+              accel: 42,
+              maxSpeed: 375,
+            };
     for (let i = 0; i < count; i++) {
       this.spawnBossProjectile(
         obsGrid,
@@ -1397,6 +1426,7 @@ export class SandBeholderBoss {
         'kinetic',
         THORN_TTL_TICKS,
         out,
+        danmakuSpec,
       );
     }
   }
@@ -1697,6 +1727,12 @@ export class SandBeholderBoss {
         'kinetic',
         SLAM_DEBRIS_TTL_TICKS,
         out,
+        {
+          danmakuKind: isP2 ? 'danmaku_lance' : 'danmaku_orb',
+          palette: isP2 ? BANSUNG_DANMAKU_PALETTE.EMERALD : BANSUNG_DANMAKU_PALETTE.GOLD,
+          scaleTier: 1,
+          angVel: isP2 ? 0.55 : 0,
+        },
       );
     }
   }
@@ -1915,6 +1951,25 @@ export class SandBeholderBoss {
     const spawnR = BOSS_BEHOLDER_CFG.radius + 4;
 
     for (let s = -1; s <= 1; s++) {
+      const dmSpec: DanmakuMotionSpec =
+        s === 0
+          ? {
+              danmakuKind: 'danmaku_ring',
+              palette: BANSUNG_DANMAKU_PALETTE.GOLD,
+              scaleTier: 2,
+              splitAfterTicks: 22,
+              splitMode: 'ring',
+              splitCount: 6,
+              splitSpeed: 245,
+              splitChildKind: 'danmaku_star',
+              splitChildPalette: BANSUNG_DANMAKU_PALETTE.FLAME,
+            }
+          : {
+              danmakuKind: 'danmaku_star',
+              palette: BANSUNG_DANMAKU_PALETTE.FLAME,
+              scaleTier: 1,
+              angVel: s * 0.85,
+            };
       this.spawnBossProjectile(
         obsGrid,
         'sand_spark',
@@ -1926,6 +1981,7 @@ export class SandBeholderBoss {
         'fire',
         BEAM_ORB_TTL_TICKS,
         out,
+        dmSpec,
       );
       this.spawnBossProjectile(
         obsGrid,
@@ -1938,6 +1994,7 @@ export class SandBeholderBoss {
         'fire',
         BEAM_ORB_TTL_TICKS,
         out,
+        dmSpec,
       );
     }
   }
@@ -2052,6 +2109,7 @@ export class SandBeholderBoss {
     dmgKind: BansungDamageKind,
     ttlTicks: number,
     out: SandBeholderStepResult,
+    danmaku?: DanmakuMotionSpec,
   ): void {
     const angle = wrapPi(rawAngle);
     const cos = Math.cos(angle);
@@ -2076,6 +2134,7 @@ export class SandBeholderBoss {
       damage,
       dmgKind,
       ttlTicks,
+      ...(danmaku ? { danmaku } : {}),
     });
   }
 
