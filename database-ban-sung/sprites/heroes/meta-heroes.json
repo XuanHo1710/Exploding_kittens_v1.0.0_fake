@@ -1,0 +1,2172 @@
+{
+  "version": 1,
+  "slice": "w11",
+  "generatedAt": "2026-11-14T10:14:45.404Z",
+  "normStandard": {
+    "heroGrid": "48x48",
+    "heroPivot": {
+      "offX": -24,
+      "offY": -44,
+      "nativeFacing": "right"
+    },
+    "petGrid": "32x32",
+    "petPivot": {
+      "offX": -16,
+      "offY": -28,
+      "nativeFacing": "left"
+    },
+    "outlineHex": "#181425",
+    "palette": "BANSUNG_PALETTE_48",
+    "alphaCutoff": 128
+  },
+  "cc0References": [
+    {
+      "id": "kenney_desert_bunny_idle",
+      "sourceId": "kenney_desert_shooter",
+      "license": "CC0-1.0",
+      "url": "https://raw.githubusercontent.com/shorepine/kenney/main/2d/Desert%20Shooter%20Pack/Players/Tiles/tile_0012.png",
+      "status": "cached-cc0",
+      "bytes": 235,
+      "sha256": "a619072883978811ee04a1b95277fb08e6c662eb572c97f1a88db13400e627d2",
+      "dims": "24x24"
+    },
+    {
+      "id": "kenney_desert_bunny_walk",
+      "sourceId": "kenney_desert_shooter",
+      "license": "CC0-1.0",
+      "url": "https://raw.githubusercontent.com/shorepine/kenney/main/2d/Desert%20Shooter%20Pack/Players/Tiles/tile_0013.png",
+      "status": "cached-cc0",
+      "bytes": 243,
+      "sha256": "f26a68e593295e73773edabd6d288fa542ef171170dcf71f623be0cd75ec960f",
+      "dims": "24x24"
+    },
+    {
+      "id": "sp_ninja_mascot_base",
+      "sourceId": "superpowers_asset_packs",
+      "license": "CC0-1.0",
+      "url": "https://raw.githubusercontent.com/sparklinlabs/superpowers-asset-packs/master/ninja-adventure/characters/19.png",
+      "status": "cached-cc0",
+      "bytes": 5446,
+      "sha256": "7d8fd847e3f9655e5e36783abf1d91230d29d9bd60d03d9ae96700bf748c8d5f",
+      "dims": "64x112"
+    },
+    {
+      "id": "sp_ninja_ranger_base",
+      "sourceId": "superpowers_asset_packs",
+      "license": "CC0-1.0",
+      "url": "https://raw.githubusercontent.com/sparklinlabs/superpowers-asset-packs/master/ninja-adventure/characters/7.png",
+      "status": "cached-cc0",
+      "bytes": 4995,
+      "sha256": "81708c825b7b6ab9e9aa59e8e49915f682f2e3f4757fc0a3450d2355628c377f",
+      "dims": "64x112"
+    },
+    {
+      "id": "sp_ninja_pyro_base",
+      "sourceId": "superpowers_asset_packs",
+      "license": "CC0-1.0",
+      "url": "https://raw.githubusercontent.com/sparklinlabs/superpowers-asset-packs/master/ninja-adventure/characters/24.png",
+      "status": "cached-cc0",
+      "bytes": 4714,
+      "sha256": "26a0903467121a133ca48efe345d71ab625824a77e68374702a4ff47abf9fd73",
+      "dims": "64x112"
+    },
+    {
+      "id": "sp_ninja_knight_base",
+      "sourceId": "superpowers_asset_packs",
+      "license": "CC0-1.0",
+      "url": "https://raw.githubusercontent.com/sparklinlabs/superpowers-asset-packs/master/ninja-adventure/characters/21.png",
+      "status": "cached-cc0",
+      "bytes": 5904,
+      "sha256": "dc5198ceb4433958aca0bffb89e587316bb8a98af14aca0895c9ab62cb0503f1",
+      "dims": "64x112"
+    },
+    {
+      "id": "sp_ninja_pet_dog",
+      "sourceId": "superpowers_asset_packs",
+      "license": "CC0-1.0",
+      "url": "https://raw.githubusercontent.com/sparklinlabs/superpowers-asset-packs/master/ninja-adventure/characters/dog.png",
+      "status": "cached-cc0",
+      "bytes": 3116,
+      "sha256": "b1c87f5b4cf88acd7afadcd41bc84a846ea2bfc9c33bbeefc27f2ca7eb240631",
+      "dims": "32x16"
+    }
+  ],
+  "heroes": {
+    "mascot": {
+      "id": "mascot",
+      "name": "Mascot Gunner",
+      "shoulderOffset": {
+        "x": 4,
+        "y": -17
+      },
+      "headTopY": -40,
+      "starterWeapon": "rifle",
+      "nativeFacing": "right",
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "states": {
+        "idle": {
+          "file": "mascot_idle.png",
+          "assetId": "hero_mascot_idle",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "run": {
+          "file": "mascot_run.png",
+          "assetId": "hero_mascot_run",
+          "meta": [
+            6,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 14,
+          "loop": true
+        },
+        "shoot": {
+          "file": "mascot_shoot.png",
+          "assetId": "hero_mascot_shoot",
+          "meta": [
+            3,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 24,
+          "loop": false
+        },
+        "dash": {
+          "file": "mascot_dash.png",
+          "assetId": "hero_mascot_dash",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 14.3,
+          "loop": false
+        },
+        "stunned": {
+          "file": "mascot_stunned.png",
+          "assetId": "hero_mascot_stunned",
+          "meta": [
+            2,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 10,
+          "loop": true
+        },
+        "dead": {
+          "file": "mascot_dead.png",
+          "assetId": "hero_mascot_dead",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 10,
+          "loop": false
+        }
+      }
+    },
+    "ranger": {
+      "id": "ranger",
+      "name": "Cyber Ranger",
+      "shoulderOffset": {
+        "x": 5,
+        "y": -18
+      },
+      "headTopY": -41,
+      "starterWeapon": "smg",
+      "nativeFacing": "right",
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "states": {
+        "idle": {
+          "file": "ranger_idle.png",
+          "assetId": "hero_ranger_idle",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "run": {
+          "file": "ranger_run.png",
+          "assetId": "hero_ranger_run",
+          "meta": [
+            6,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 14,
+          "loop": true
+        },
+        "shoot": {
+          "file": "ranger_shoot.png",
+          "assetId": "hero_ranger_shoot",
+          "meta": [
+            3,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 24,
+          "loop": false
+        },
+        "dash": {
+          "file": "ranger_dash.png",
+          "assetId": "hero_ranger_dash",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 14.3,
+          "loop": false
+        },
+        "stunned": {
+          "file": "ranger_stunned.png",
+          "assetId": "hero_ranger_stunned",
+          "meta": [
+            2,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 10,
+          "loop": true
+        },
+        "dead": {
+          "file": "ranger_dead.png",
+          "assetId": "hero_ranger_dead",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 10,
+          "loop": false
+        }
+      }
+    },
+    "pyro": {
+      "id": "pyro",
+      "name": "Pyromancer",
+      "shoulderOffset": {
+        "x": 4,
+        "y": -17
+      },
+      "headTopY": -41,
+      "starterWeapon": "plasma_rifle",
+      "nativeFacing": "right",
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "states": {
+        "idle": {
+          "file": "pyro_idle.png",
+          "assetId": "hero_pyro_idle",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "run": {
+          "file": "pyro_run.png",
+          "assetId": "hero_pyro_run",
+          "meta": [
+            6,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 14,
+          "loop": true
+        },
+        "shoot": {
+          "file": "pyro_shoot.png",
+          "assetId": "hero_pyro_shoot",
+          "meta": [
+            3,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 24,
+          "loop": false
+        },
+        "dash": {
+          "file": "pyro_dash.png",
+          "assetId": "hero_pyro_dash",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 14.3,
+          "loop": false
+        },
+        "stunned": {
+          "file": "pyro_stunned.png",
+          "assetId": "hero_pyro_stunned",
+          "meta": [
+            2,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 10,
+          "loop": true
+        },
+        "dead": {
+          "file": "pyro_dead.png",
+          "assetId": "hero_pyro_dead",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 10,
+          "loop": false
+        }
+      }
+    },
+    "knight": {
+      "id": "knight",
+      "name": "Knight",
+      "shoulderOffset": {
+        "x": 5,
+        "y": -19
+      },
+      "headTopY": -43,
+      "starterWeapon": "shotgun",
+      "nativeFacing": "right",
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "states": {
+        "idle": {
+          "file": "knight_idle.png",
+          "assetId": "hero_knight_idle",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "run": {
+          "file": "knight_run.png",
+          "assetId": "hero_knight_run",
+          "meta": [
+            6,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 14,
+          "loop": true
+        },
+        "shoot": {
+          "file": "knight_shoot.png",
+          "assetId": "hero_knight_shoot",
+          "meta": [
+            3,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 24,
+          "loop": false
+        },
+        "dash": {
+          "file": "knight_dash.png",
+          "assetId": "hero_knight_dash",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 14.3,
+          "loop": false
+        },
+        "stunned": {
+          "file": "knight_stunned.png",
+          "assetId": "hero_knight_stunned",
+          "meta": [
+            2,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 10,
+          "loop": true
+        },
+        "dead": {
+          "file": "knight_dead.png",
+          "assetId": "hero_knight_dead",
+          "meta": [
+            4,
+            48,
+            48,
+            -24,
+            -44
+          ],
+          "fps": 10,
+          "loop": false
+        }
+      }
+    }
+  },
+  "pets": {
+    "tiger": {
+      "id": "tiger",
+      "name": "Tiger Cub",
+      "nativeFacing": "left",
+      "cellW": 32,
+      "cellH": 32,
+      "offX": -16,
+      "offY": -28,
+      "anims": {
+        "idle": {
+          "file": "pet_tiger_idle.png",
+          "assetId": "pet_tiger_idle",
+          "meta": [
+            4,
+            32,
+            32,
+            -16,
+            -28
+          ],
+          "fps": 5,
+          "loop": true
+        },
+        "trot": {
+          "file": "pet_tiger_trot.png",
+          "assetId": "pet_tiger_trot",
+          "meta": [
+            6,
+            32,
+            32,
+            -16,
+            -28
+          ],
+          "fps": 12,
+          "loop": true
+        },
+        "pounce": {
+          "file": "pet_tiger_pounce.png",
+          "assetId": "pet_tiger_pounce",
+          "meta": [
+            4,
+            32,
+            32,
+            -16,
+            -28
+          ],
+          "fps": 14,
+          "loop": false
+        },
+        "fire": {
+          "file": "pet_tiger_fire.png",
+          "assetId": "pet_tiger_fire",
+          "meta": [
+            3,
+            32,
+            32,
+            -16,
+            -28
+          ],
+          "fps": 12,
+          "loop": false
+        }
+      }
+    },
+    "cat": {
+      "id": "cat",
+      "name": "Calico Cat",
+      "nativeFacing": "left",
+      "cellW": 32,
+      "cellH": 32,
+      "offX": -16,
+      "offY": -28,
+      "anims": {
+        "idle": {
+          "file": "pet_cat_idle.png",
+          "assetId": "pet_cat_idle",
+          "meta": [
+            4,
+            32,
+            32,
+            -16,
+            -28
+          ],
+          "fps": 5,
+          "loop": true
+        },
+        "trot": {
+          "file": "pet_cat_trot.png",
+          "assetId": "pet_cat_trot",
+          "meta": [
+            6,
+            32,
+            32,
+            -16,
+            -28
+          ],
+          "fps": 12,
+          "loop": true
+        },
+        "pounce": {
+          "file": "pet_cat_pounce.png",
+          "assetId": "pet_cat_pounce",
+          "meta": [
+            4,
+            32,
+            32,
+            -16,
+            -28
+          ],
+          "fps": 14,
+          "loop": false
+        },
+        "fire": {
+          "file": "pet_cat_fire.png",
+          "assetId": "pet_cat_fire",
+          "meta": [
+            3,
+            32,
+            32,
+            -16,
+            -28
+          ],
+          "fps": 12,
+          "loop": false
+        }
+      }
+    }
+  },
+  "sprites": {
+    "hero_mascot_idle": {
+      "id": "hero_mascot_idle",
+      "path": "sprites/heroes/mascot_idle.png",
+      "normalizedPath": "normalized/heroes/hero_mascot_idle.png",
+      "category": "hero",
+      "heroId": "mascot",
+      "state": "idle",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 6,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 821,
+      "sha256": "6b1accb1a427fd01297a5489ef113a4a94dbf623fa49ed063ed80b0451a66ca6",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -17
+        },
+        "headTopY": -40
+      },
+      "aliases": [
+        "hero_gunner_idle",
+        "hero_mascot_gunner_idle"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_mascot_run": {
+      "id": "hero_mascot_run",
+      "path": "sprites/heroes/mascot_run.png",
+      "normalizedPath": "normalized/heroes/hero_mascot_run.png",
+      "category": "hero",
+      "heroId": "mascot",
+      "state": "run",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        6,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 288,
+      "height": 48,
+      "bytes": 1089,
+      "sha256": "eab2873fa92b93dc364a76ef4cf4126f0238347ad7853bc71dfecdea94845aa7",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -17
+        },
+        "headTopY": -40
+      },
+      "aliases": [
+        "hero_gunner_run",
+        "hero_mascot_gunner_run"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_mascot_shoot": {
+      "id": "hero_mascot_shoot",
+      "path": "sprites/heroes/mascot_shoot.png",
+      "normalizedPath": "normalized/heroes/hero_mascot_shoot.png",
+      "category": "hero",
+      "heroId": "mascot",
+      "state": "shoot",
+      "frames": 3,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 24,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        3,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 144,
+      "height": 48,
+      "bytes": 746,
+      "sha256": "c7607ea93072c17ec4c174b44effa75001bb6a53ba64afa88af34adf03dd5d83",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -17
+        },
+        "headTopY": -40
+      },
+      "aliases": [
+        "hero_gunner_shoot",
+        "hero_mascot_gunner_shoot"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_mascot_dash": {
+      "id": "hero_mascot_dash",
+      "path": "sprites/heroes/mascot_dash.png",
+      "normalizedPath": "normalized/heroes/hero_mascot_dash.png",
+      "category": "hero",
+      "heroId": "mascot",
+      "state": "dash",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14.3,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 979,
+      "sha256": "1028bf3bd17c4bcf86efc6a6953deb94f3c53f91e34058f4f4a09ca1e7efa9db",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -17
+        },
+        "headTopY": -40
+      },
+      "aliases": [
+        "hero_gunner_dash",
+        "hero_mascot_gunner_dash"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_mascot_stunned": {
+      "id": "hero_mascot_stunned",
+      "path": "sprites/heroes/mascot_stunned.png",
+      "normalizedPath": "normalized/heroes/hero_mascot_stunned.png",
+      "category": "hero",
+      "heroId": "mascot",
+      "state": "stunned",
+      "frames": 2,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        2,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 96,
+      "height": 48,
+      "bytes": 633,
+      "sha256": "5bd4138320b8f34c7426abd735b4aedb82fda7fdb386b046a3c75135100ac517",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -17
+        },
+        "headTopY": -40
+      },
+      "aliases": [
+        "hero_gunner_stunned",
+        "hero_mascot_gunner_stunned"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_mascot_dead": {
+      "id": "hero_mascot_dead",
+      "path": "sprites/heroes/mascot_dead.png",
+      "normalizedPath": "normalized/heroes/hero_mascot_dead.png",
+      "category": "hero",
+      "heroId": "mascot",
+      "state": "dead",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 942,
+      "sha256": "a9c973c17a990c4dcb8b199f22f3417c5adb6fd779611e3aed073b4e6d1ff70d",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -17
+        },
+        "headTopY": -40
+      },
+      "aliases": [
+        "hero_gunner_dead",
+        "hero_mascot_gunner_dead"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_ranger_idle": {
+      "id": "hero_ranger_idle",
+      "path": "sprites/heroes/ranger_idle.png",
+      "normalizedPath": "normalized/heroes/hero_ranger_idle.png",
+      "category": "hero",
+      "heroId": "ranger",
+      "state": "idle",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 6,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 708,
+      "sha256": "93a672dda5a79ea7d3c891a06aac53d124fee316f41eb1f76bc8ddc7fc663411",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 5,
+          "y": -18
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_cyber_ranger_idle"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_ranger_run": {
+      "id": "hero_ranger_run",
+      "path": "sprites/heroes/ranger_run.png",
+      "normalizedPath": "normalized/heroes/hero_ranger_run.png",
+      "category": "hero",
+      "heroId": "ranger",
+      "state": "run",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        6,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 288,
+      "height": 48,
+      "bytes": 934,
+      "sha256": "84807c7dc4599786f6bbdebacdb7a4360866dbc8fc60414dc84ebaa9fcb3fadf",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 5,
+          "y": -18
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_cyber_ranger_run"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_ranger_shoot": {
+      "id": "hero_ranger_shoot",
+      "path": "sprites/heroes/ranger_shoot.png",
+      "normalizedPath": "normalized/heroes/hero_ranger_shoot.png",
+      "category": "hero",
+      "heroId": "ranger",
+      "state": "shoot",
+      "frames": 3,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 24,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        3,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 144,
+      "height": 48,
+      "bytes": 621,
+      "sha256": "2b0d32cb60393322fb618fcc4c1e372cf4bf871c9d16bf33e2a832ec6365ff13",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 5,
+          "y": -18
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_cyber_ranger_shoot"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_ranger_dash": {
+      "id": "hero_ranger_dash",
+      "path": "sprites/heroes/ranger_dash.png",
+      "normalizedPath": "normalized/heroes/hero_ranger_dash.png",
+      "category": "hero",
+      "heroId": "ranger",
+      "state": "dash",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14.3,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 818,
+      "sha256": "0378d6069f41265ac0d6ad9f128b358f5c950989be8ab7efc10869ff0719d2de",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 5,
+          "y": -18
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_cyber_ranger_dash"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_ranger_stunned": {
+      "id": "hero_ranger_stunned",
+      "path": "sprites/heroes/ranger_stunned.png",
+      "normalizedPath": "normalized/heroes/hero_ranger_stunned.png",
+      "category": "hero",
+      "heroId": "ranger",
+      "state": "stunned",
+      "frames": 2,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        2,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 96,
+      "height": 48,
+      "bytes": 494,
+      "sha256": "18323bd046eec6e49edf11cf82cf1e960c6ca1f1c2edfce98f0d90a85dea466e",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 5,
+          "y": -18
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_cyber_ranger_stunned"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_ranger_dead": {
+      "id": "hero_ranger_dead",
+      "path": "sprites/heroes/ranger_dead.png",
+      "normalizedPath": "normalized/heroes/hero_ranger_dead.png",
+      "category": "hero",
+      "heroId": "ranger",
+      "state": "dead",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 751,
+      "sha256": "0a1af38e39d19707d7d2a9261525e08e3652fd243beee06b61fc793653d1796a",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 5,
+          "y": -18
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_cyber_ranger_dead"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_pyro_idle": {
+      "id": "hero_pyro_idle",
+      "path": "sprites/heroes/pyro_idle.png",
+      "normalizedPath": "normalized/heroes/hero_pyro_idle.png",
+      "category": "hero",
+      "heroId": "pyro",
+      "state": "idle",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 6,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 722,
+      "sha256": "a916af8fde52957fe3a807940434530ed93d78be56bb5ee424bc734d9398c7d5",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -17
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_pyromancer_idle"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_pyro_run": {
+      "id": "hero_pyro_run",
+      "path": "sprites/heroes/pyro_run.png",
+      "normalizedPath": "normalized/heroes/hero_pyro_run.png",
+      "category": "hero",
+      "heroId": "pyro",
+      "state": "run",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        6,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 288,
+      "height": 48,
+      "bytes": 964,
+      "sha256": "eae60e88b6ff7fafc7e90e4043d60c4603ebe03a7fc00b5506d88eaa6545c6e0",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -17
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_pyromancer_run"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_pyro_shoot": {
+      "id": "hero_pyro_shoot",
+      "path": "sprites/heroes/pyro_shoot.png",
+      "normalizedPath": "normalized/heroes/hero_pyro_shoot.png",
+      "category": "hero",
+      "heroId": "pyro",
+      "state": "shoot",
+      "frames": 3,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 24,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        3,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 144,
+      "height": 48,
+      "bytes": 650,
+      "sha256": "d00181d95113510943ebb0b616fdf1c7577f081d50b853dd75883248c3158cff",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -17
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_pyromancer_shoot"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_pyro_dash": {
+      "id": "hero_pyro_dash",
+      "path": "sprites/heroes/pyro_dash.png",
+      "normalizedPath": "normalized/heroes/hero_pyro_dash.png",
+      "category": "hero",
+      "heroId": "pyro",
+      "state": "dash",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14.3,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 865,
+      "sha256": "8e8185bd8ac6bbc84122c59b5bd20e103e6d6cde8ce92e0c555b37a89fc7b963",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -17
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_pyromancer_dash"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_pyro_stunned": {
+      "id": "hero_pyro_stunned",
+      "path": "sprites/heroes/pyro_stunned.png",
+      "normalizedPath": "normalized/heroes/hero_pyro_stunned.png",
+      "category": "hero",
+      "heroId": "pyro",
+      "state": "stunned",
+      "frames": 2,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        2,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 96,
+      "height": 48,
+      "bytes": 524,
+      "sha256": "063b441550f6cad773b812089cbeeca8440e7007cce8f610083b07b9b9ce1c27",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -17
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_pyromancer_stunned"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_pyro_dead": {
+      "id": "hero_pyro_dead",
+      "path": "sprites/heroes/pyro_dead.png",
+      "normalizedPath": "normalized/heroes/hero_pyro_dead.png",
+      "category": "hero",
+      "heroId": "pyro",
+      "state": "dead",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 778,
+      "sha256": "90497959b91f13eec81f0fc547f9004a5c849b2e71310587e9ffeb6d93ee6a8f",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 4,
+          "y": -17
+        },
+        "headTopY": -41
+      },
+      "aliases": [
+        "hero_pyromancer_dead"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_knight_idle": {
+      "id": "hero_knight_idle",
+      "path": "sprites/heroes/knight_idle.png",
+      "normalizedPath": "normalized/heroes/hero_knight_idle.png",
+      "category": "hero",
+      "heroId": "knight",
+      "state": "idle",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 6,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 758,
+      "sha256": "5b3c806f7a1b0120e2abdf4d367148c621af9163a38f833e3fe66b83ea7426eb",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 5,
+          "y": -19
+        },
+        "headTopY": -43
+      },
+      "aliases": [],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_knight_run": {
+      "id": "hero_knight_run",
+      "path": "sprites/heroes/knight_run.png",
+      "normalizedPath": "normalized/heroes/hero_knight_run.png",
+      "category": "hero",
+      "heroId": "knight",
+      "state": "run",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        6,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 288,
+      "height": 48,
+      "bytes": 1039,
+      "sha256": "6dcd7a582a6cd8c7c3a5b5f314023ff72800f397c802767f8e483de0659cb7af",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 5,
+          "y": -19
+        },
+        "headTopY": -43
+      },
+      "aliases": [],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_knight_shoot": {
+      "id": "hero_knight_shoot",
+      "path": "sprites/heroes/knight_shoot.png",
+      "normalizedPath": "normalized/heroes/hero_knight_shoot.png",
+      "category": "hero",
+      "heroId": "knight",
+      "state": "shoot",
+      "frames": 3,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 24,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        3,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 144,
+      "height": 48,
+      "bytes": 711,
+      "sha256": "e37e2e9e97214b73cbfa7d627d4b742e7000f56da3945a34e70d890259722c03",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 5,
+          "y": -19
+        },
+        "headTopY": -43
+      },
+      "aliases": [],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_knight_dash": {
+      "id": "hero_knight_dash",
+      "path": "sprites/heroes/knight_dash.png",
+      "normalizedPath": "normalized/heroes/hero_knight_dash.png",
+      "category": "hero",
+      "heroId": "knight",
+      "state": "dash",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 14.3,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 932,
+      "sha256": "0b37871f0473f57e284d768dc79a407e1823346046c87582eb952b570d116fcc",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 5,
+          "y": -19
+        },
+        "headTopY": -43
+      },
+      "aliases": [],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_knight_stunned": {
+      "id": "hero_knight_stunned",
+      "path": "sprites/heroes/knight_stunned.png",
+      "normalizedPath": "normalized/heroes/hero_knight_stunned.png",
+      "category": "hero",
+      "heroId": "knight",
+      "state": "stunned",
+      "frames": 2,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": true,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        2,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 96,
+      "height": 48,
+      "bytes": 583,
+      "sha256": "164c6e4bc6ba9e16a7e8b4a3b13e776d4fa113cadbf878b5f5f2a71ee66cda60",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 5,
+          "y": -19
+        },
+        "headTopY": -43
+      },
+      "aliases": [],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "hero_knight_dead": {
+      "id": "hero_knight_dead",
+      "path": "sprites/heroes/knight_dead.png",
+      "normalizedPath": "normalized/heroes/hero_knight_dead.png",
+      "category": "hero",
+      "heroId": "knight",
+      "state": "dead",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 10,
+      "loop": false,
+      "nativeFacing": "right",
+      "tier": 48,
+      "meta": [
+        4,
+        48,
+        48,
+        -24,
+        -44
+      ],
+      "width": 192,
+      "height": 48,
+      "bytes": 870,
+      "sha256": "7c7ffbe1c34079583ebe54eca18278dc24d8991ac4c242db68bdf2e97a7b51e0",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44,
+        "shoulderOffset": {
+          "x": 5,
+          "y": -19
+        },
+        "headTopY": -43
+      },
+      "aliases": [],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "kenney_desert_shooter",
+        "superpowers_asset_packs"
+      ]
+    },
+    "pet_tiger_idle": {
+      "id": "pet_tiger_idle",
+      "path": "sprites/pet/pet_tiger_idle.png",
+      "normalizedPath": "normalized/pets/pet_tiger_idle.png",
+      "category": "pet",
+      "petId": "tiger",
+      "state": "idle",
+      "frames": 4,
+      "cellW": 32,
+      "cellH": 32,
+      "offX": -16,
+      "offY": -28,
+      "fps": 5,
+      "loop": true,
+      "nativeFacing": "left",
+      "tier": 32,
+      "meta": [
+        4,
+        32,
+        32,
+        -16,
+        -28
+      ],
+      "width": 128,
+      "height": 32,
+      "bytes": 539,
+      "sha256": "d2fef6355df1b10087efd20b7f893e0db4937ee9825109586ae1b33b7adbb71d",
+      "pivot": {
+        "anchorX": 16,
+        "anchorY": 28
+      },
+      "aliases": [],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#ff7a3d",
+        "accent": "#45242e"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "superpowers_asset_packs"
+      ]
+    },
+    "pet_tiger_trot": {
+      "id": "pet_tiger_trot",
+      "path": "sprites/pet/pet_tiger_trot.png",
+      "normalizedPath": "normalized/pets/pet_tiger_trot.png",
+      "category": "pet",
+      "petId": "tiger",
+      "state": "trot",
+      "frames": 6,
+      "cellW": 32,
+      "cellH": 32,
+      "offX": -16,
+      "offY": -28,
+      "fps": 12,
+      "loop": true,
+      "nativeFacing": "left",
+      "tier": 32,
+      "meta": [
+        6,
+        32,
+        32,
+        -16,
+        -28
+      ],
+      "width": 192,
+      "height": 32,
+      "bytes": 744,
+      "sha256": "4af3fa810a8f78c76cd0e0ae106b42e6fb60f356975f1ffdaf67b8f8d1aa8047",
+      "pivot": {
+        "anchorX": 16,
+        "anchorY": 28
+      },
+      "aliases": [
+        "pet_tiger_run"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#ff7a3d",
+        "accent": "#45242e"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "superpowers_asset_packs"
+      ]
+    },
+    "pet_tiger_pounce": {
+      "id": "pet_tiger_pounce",
+      "path": "sprites/pet/pet_tiger_pounce.png",
+      "normalizedPath": "normalized/pets/pet_tiger_pounce.png",
+      "category": "pet",
+      "petId": "tiger",
+      "state": "pounce",
+      "frames": 4,
+      "cellW": 32,
+      "cellH": 32,
+      "offX": -16,
+      "offY": -28,
+      "fps": 14,
+      "loop": false,
+      "nativeFacing": "left",
+      "tier": 32,
+      "meta": [
+        4,
+        32,
+        32,
+        -16,
+        -28
+      ],
+      "width": 128,
+      "height": 32,
+      "bytes": 646,
+      "sha256": "4e368ad392e792f059762d24a6034f789d07b5a5733f544b9a246e4c591d61ab",
+      "pivot": {
+        "anchorX": 16,
+        "anchorY": 28
+      },
+      "aliases": [],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#ff7a3d",
+        "accent": "#45242e"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "superpowers_asset_packs"
+      ]
+    },
+    "pet_tiger_fire": {
+      "id": "pet_tiger_fire",
+      "path": "sprites/pet/pet_tiger_fire.png",
+      "normalizedPath": "normalized/pets/pet_tiger_fire.png",
+      "category": "pet",
+      "petId": "tiger",
+      "state": "fire",
+      "frames": 3,
+      "cellW": 32,
+      "cellH": 32,
+      "offX": -16,
+      "offY": -28,
+      "fps": 12,
+      "loop": false,
+      "nativeFacing": "left",
+      "tier": 32,
+      "meta": [
+        3,
+        32,
+        32,
+        -16,
+        -28
+      ],
+      "width": 96,
+      "height": 32,
+      "bytes": 480,
+      "sha256": "0c56a39fe085e59a49a57c713d04f0a8ee859a20b40c3f9a4da6195d09d12c28",
+      "pivot": {
+        "anchorX": 16,
+        "anchorY": 28
+      },
+      "aliases": [],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#ff7a3d",
+        "accent": "#45242e"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "superpowers_asset_packs"
+      ]
+    },
+    "pet_cat_idle": {
+      "id": "pet_cat_idle",
+      "path": "sprites/pet/pet_cat_idle.png",
+      "normalizedPath": "normalized/pets/pet_cat_idle.png",
+      "category": "pet",
+      "petId": "cat",
+      "state": "idle",
+      "frames": 4,
+      "cellW": 32,
+      "cellH": 32,
+      "offX": -16,
+      "offY": -28,
+      "fps": 5,
+      "loop": true,
+      "nativeFacing": "left",
+      "tier": 32,
+      "meta": [
+        4,
+        32,
+        32,
+        -16,
+        -28
+      ],
+      "width": 128,
+      "height": 32,
+      "bytes": 540,
+      "sha256": "78559f9115112af38b16e6900c2597a40d5328c2fae48399ae8157cfc95f8267",
+      "pivot": {
+        "anchorX": 16,
+        "anchorY": 28
+      },
+      "aliases": [],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "superpowers_asset_packs"
+      ]
+    },
+    "pet_cat_trot": {
+      "id": "pet_cat_trot",
+      "path": "sprites/pet/pet_cat_trot.png",
+      "normalizedPath": "normalized/pets/pet_cat_trot.png",
+      "category": "pet",
+      "petId": "cat",
+      "state": "trot",
+      "frames": 6,
+      "cellW": 32,
+      "cellH": 32,
+      "offX": -16,
+      "offY": -28,
+      "fps": 12,
+      "loop": true,
+      "nativeFacing": "left",
+      "tier": 32,
+      "meta": [
+        6,
+        32,
+        32,
+        -16,
+        -28
+      ],
+      "width": 192,
+      "height": 32,
+      "bytes": 738,
+      "sha256": "9753ce66e8a5c149f2157360c61871842e6cb0ad893de108a2d8a39e169eb497",
+      "pivot": {
+        "anchorX": 16,
+        "anchorY": 28
+      },
+      "aliases": [
+        "pet_cat_run"
+      ],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "superpowers_asset_packs"
+      ]
+    },
+    "pet_cat_pounce": {
+      "id": "pet_cat_pounce",
+      "path": "sprites/pet/pet_cat_pounce.png",
+      "normalizedPath": "normalized/pets/pet_cat_pounce.png",
+      "category": "pet",
+      "petId": "cat",
+      "state": "pounce",
+      "frames": 4,
+      "cellW": 32,
+      "cellH": 32,
+      "offX": -16,
+      "offY": -28,
+      "fps": 14,
+      "loop": false,
+      "nativeFacing": "left",
+      "tier": 32,
+      "meta": [
+        4,
+        32,
+        32,
+        -16,
+        -28
+      ],
+      "width": 128,
+      "height": 32,
+      "bytes": 640,
+      "sha256": "b1335392ade4af263430025b57de727c7ea97d4d9b8d06ece09adbad6a8e2bc4",
+      "pivot": {
+        "anchorX": 16,
+        "anchorY": 28
+      },
+      "aliases": [],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "superpowers_asset_packs"
+      ]
+    },
+    "pet_cat_fire": {
+      "id": "pet_cat_fire",
+      "path": "sprites/pet/pet_cat_fire.png",
+      "normalizedPath": "normalized/pets/pet_cat_fire.png",
+      "category": "pet",
+      "petId": "cat",
+      "state": "fire",
+      "frames": 3,
+      "cellW": 32,
+      "cellH": 32,
+      "offX": -16,
+      "offY": -28,
+      "fps": 12,
+      "loop": false,
+      "nativeFacing": "left",
+      "tier": 32,
+      "meta": [
+        3,
+        32,
+        32,
+        -16,
+        -28
+      ],
+      "width": 96,
+      "height": 32,
+      "bytes": 484,
+      "sha256": "72a87ed15ebbf91e2b26390a22158ff3735f19fbdfb11ea5a8e928543dabaabb",
+      "pivot": {
+        "anchorX": 16,
+        "anchorY": 28
+      },
+      "aliases": [],
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#ff7a3d"
+      },
+      "sourceId": "generated_synth",
+      "license": "GENERATED-SYNTH",
+      "cc0InspirationIds": [
+        "superpowers_asset_packs"
+      ]
+    }
+  }
+}
