@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
-import { cpSync, createReadStream, existsSync, statSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { cpSync, createReadStream, existsSync, realpathSync, statSync } from 'node:fs';
+import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // Domain public trỏ qua cloudflared tunnel; thêm domain khác qua ALLOWED_HOSTS=a.com,b.com
@@ -19,63 +19,192 @@ const PIKACHU_DIR = fileURLToPath(new URL('../database-pikachu', import.meta.url
 const DIST_PIKACHU_DIR = fileURLToPath(new URL('./dist/database-pikachu', import.meta.url));
 const MIRAGINE_DIR = fileURLToPath(new URL('../database-miraginewar', import.meta.url));
 const DIST_MIRAGINE_DIR = fileURLToPath(new URL('./dist/database-miraginewar', import.meta.url));
+const BANSUNG_DIR = fileURLToPath(new URL('../database-ban-sung', import.meta.url));
+const DIST_BANSUNG_DIR = fileURLToPath(new URL('./dist/database-ban-sung', import.meta.url));
 
-function databasePikachuPlugin(): Plugin {
-  const servePikachu = (middlewares: { use: (route: string, fn: (req: any, res: any, next: () => void) => void) => void }) => {
-    middlewares.use('/database-pikachu', (req, res, next) => {
-      const rel = decodeURIComponent((req.url || '').split('?')[0]).replace(/^\/+/, '');
-      const file = resolve(PIKACHU_DIR, rel);
-      if (!file.startsWith(PIKACHU_DIR) || !existsSync(file) || !statSync(file).isFile()) return next();
-      if (file.endsWith('.png')) res.setHeader('Content-Type', 'image/png');
-      else if (file.endsWith('.json')) res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      res.setHeader('Cache-Control', 'public, max-age=604800');
-      createReadStream(file).pipe(res);
+const STATIC_MIME_BY_EXT: Readonly<Record<string, string>> = {
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.ogg': 'audio/ogg',
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.json': 'application/json; charset=utf-8',
+};
+
+interface StaticMountOptions {
+  name: string;
+  route: string;
+  srcDir: string;
+  distDir: string;
+  allowedExts: ReadonlySet<string>;
+  /** When true, rejects invalid/missing paths directly instead of falling through to SPA HTML. */
+  failClosed?: boolean;
+  isAllowedJson?: (relPath: string) => boolean;
+}
+
+type MiddlewareApp = {
+  use: (route: string, fn: (req: any, res: any, next: () => void) => void) => void;
+};
+
+function databaseStaticPlugin(opts: StaticMountOptions): Plugin {
+  const rootResolved = resolve(opts.srcDir);
+  const rootPrefix = rootResolved.endsWith(sep) ? rootResolved : `${rootResolved}${sep}`;
+  let cachedRealRoot: string | undefined;
+
+  const resolveRealRoot = (): string => {
+    if (!cachedRealRoot) cachedRealRoot = realpathSync(rootResolved);
+    return cachedRealRoot;
+  };
+
+  const serveStatic = (middlewares: MiddlewareApp) => {
+    middlewares.use(opts.route, (req, res, next) => {
+      const reject = (status: number, msg: string) => {
+        if (!opts.failClosed) return next();
+        res.statusCode = status;
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.end(msg);
+      };
+
+      const method = String(req.method ?? '').toUpperCase();
+      if (method !== 'GET' && method !== 'HEAD') {
+        return reject(405, 'Method Not Allowed');
+      }
+
+      const rawUrl = String(req.originalUrl ?? req.url ?? '');
+      if (!rawUrl || /[\x00-\x1f\x7f\\]|%00|%5c|%25/i.test(rawUrl)) {
+        return reject(400, 'Bad Request');
+      }
+
+      const qIdx = rawUrl.indexOf('?');
+      const rawPath = qIdx >= 0 ? rawUrl.slice(0, qIdx) : rawUrl;
+      const hasPrefix = rawPath === opts.route || rawPath.startsWith(`${opts.route}/`);
+      if (req.originalUrl && !hasPrefix) {
+        return reject(403, 'Forbidden');
+      }
+      const rawRel = hasPrefix
+        ? (rawPath.length > opts.route.length ? rawPath.slice(opts.route.length + 1) : '')
+        : rawPath.replace(/^\/+/, '');
+
+      let relPath: string;
+      try {
+        relPath = decodeURIComponent(rawRel);
+      } catch {
+        return reject(400, 'Bad Request');
+      }
+
+      if (/[\x00-\x1f\x7f\\]/.test(relPath)) {
+        return reject(400, 'Bad Request');
+      }
+      if (!relPath) {
+        return reject(403, 'Forbidden');
+      }
+
+      const segments = relPath.split('/');
+      for (const seg of segments) {
+        if (
+          !seg ||
+          seg === '.' ||
+          seg === '..' ||
+          seg.startsWith('.') ||
+          seg.includes(':') ||
+          seg.endsWith('.') ||
+          seg.endsWith(' ')
+        ) {
+          return reject(403, 'Forbidden');
+        }
+      }
+
+      const ext = extname(relPath).toLowerCase();
+      const mime = STATIC_MIME_BY_EXT[ext];
+      if (!opts.allowedExts.has(ext) || !mime) {
+        return reject(403, 'Forbidden');
+      }
+      if (ext === '.json' && opts.isAllowedJson && !opts.isAllowedJson(relPath)) {
+        return reject(403, 'Forbidden');
+      }
+
+      const candidate = resolve(rootResolved, relPath);
+      if (!candidate.startsWith(rootPrefix)) {
+        return reject(403, 'Forbidden');
+      }
+
+      let realRoot: string;
+      let realFile: string;
+      try {
+        realRoot = resolveRealRoot();
+        realFile = realpathSync(candidate);
+      } catch (err) {
+        const code = (err as NodeJS.ErrnoException | undefined)?.code;
+        if (code === 'ENOENT' || code === 'ENOTDIR') {
+          return reject(404, 'Not Found');
+        }
+        return reject(403, 'Forbidden');
+      }
+
+      const realPrefix = realRoot.endsWith(sep) ? realRoot : `${realRoot}${sep}`;
+      if (!realFile.startsWith(realPrefix) || !statSync(realFile).isFile()) {
+        return reject(403, 'Forbidden');
+      }
+
+      res.statusCode = 200;
+      res.setHeader('Content-Type', mime);
+      res.setHeader('Cache-Control', opts.route === '/database-ban-sung' ? 'no-cache' : 'public, max-age=604800');
+      if (method === 'HEAD') {
+        res.end();
+        return;
+      }
+      createReadStream(realFile).pipe(res);
     });
   };
+
   return {
-    name: 'database-pikachu-static',
+    name: opts.name,
     configureServer(server) {
-      servePikachu(server.middlewares);
+      serveStatic(server.middlewares);
     },
     configurePreviewServer(server) {
-      servePikachu(server.middlewares);
+      serveStatic(server.middlewares);
     },
     closeBundle() {
-      if (existsSync(PIKACHU_DIR)) {
-        cpSync(PIKACHU_DIR, join(DIST_PIKACHU_DIR), { recursive: true });
+      if (existsSync(opts.srcDir)) {
+        cpSync(opts.srcDir, opts.distDir, { recursive: true });
       }
     },
   };
 }
 
+function databasePikachuPlugin(): Plugin {
+  return databaseStaticPlugin({
+    name: 'database-pikachu-static',
+    route: '/database-pikachu',
+    srcDir: PIKACHU_DIR,
+    distDir: DIST_PIKACHU_DIR,
+    allowedExts: new Set(['.png', '.json']),
+  });
+}
+
 function databaseMiragineWarPlugin(): Plugin {
-  const serveMiragine = (middlewares: { use: (route: string, fn: (req: any, res: any, next: () => void) => void) => void }) => {
-    middlewares.use('/database-miraginewar', (req, res, next) => {
-      const rel = decodeURIComponent((req.url || '').split('?')[0]).replace(/^\/+/, '');
-      const file = resolve(MIRAGINE_DIR, rel);
-      if (!file.startsWith(MIRAGINE_DIR) || !existsSync(file) || !statSync(file).isFile()) return next();
-      if (file.endsWith('.png')) res.setHeader('Content-Type', 'image/png');
-      else if (file.endsWith('.jpg') || file.endsWith('.jpeg')) res.setHeader('Content-Type', 'image/jpeg');
-      else if (file.endsWith('.mp3')) res.setHeader('Content-Type', 'audio/mpeg');
-      else if (file.endsWith('.json')) res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      res.setHeader('Cache-Control', 'public, max-age=604800');
-      createReadStream(file).pipe(res);
-    });
-  };
-  return {
+  return databaseStaticPlugin({
     name: 'database-miraginewar-static',
-    configureServer(server) {
-      serveMiragine(server.middlewares);
-    },
-    configurePreviewServer(server) {
-      serveMiragine(server.middlewares);
-    },
-    closeBundle() {
-      if (existsSync(MIRAGINE_DIR)) {
-        cpSync(MIRAGINE_DIR, join(DIST_MIRAGINE_DIR), { recursive: true });
-      }
-    },
-  };
+    route: '/database-miraginewar',
+    srcDir: MIRAGINE_DIR,
+    distDir: DIST_MIRAGINE_DIR,
+    allowedExts: new Set(['.png', '.jpg', '.jpeg', '.mp3', '.json']),
+  });
+}
+
+function databaseBanSungPlugin(): Plugin {
+  return databaseStaticPlugin({
+    name: 'database-ban-sung-static',
+    route: '/database-ban-sung',
+    srcDir: BANSUNG_DIR,
+    distDir: DIST_BANSUNG_DIR,
+    allowedExts: new Set(['.png', '.webp', '.jpg', '.jpeg', '.ogg', '.mp3', '.wav', '.json']),
+    failClosed: true,
+    isAllowedJson: (relPath) => relPath === 'manifest.json' || relPath.startsWith('normalized/'),
+  });
 }
 
 export default defineConfig(({ mode }) => {
@@ -95,7 +224,7 @@ export default defineConfig(({ mode }) => {
   };
 
   return {
-    plugins: [react(), databasePikachuPlugin(), databaseMiragineWarPlugin()],
+    plugins: [react(), databasePikachuPlugin(), databaseMiragineWarPlugin(), databaseBanSungPlugin()],
     // Ảnh lá bài lấy thẳng từ thư mục database/ ở gốc project
     publicDir: fileURLToPath(new URL('../database', import.meta.url)),
     server: {
