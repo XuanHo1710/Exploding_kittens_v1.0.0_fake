@@ -1762,47 +1762,48 @@ test('T08.4 survival Gacha skill cards: all 6 skills stack cleanly, update hero 
   assert.equal(hero.gachaDmgMult, 1);
   assert.equal(hero.extraMultishot, 0);
 
-  // 1. skill_damage
+  // 1. skill_damage (^ +7% DMG on epic)
   const dmgCard = S.BANSUNG_GACHA_SKILL_MAP.skill_damage.epic;
   assert.equal(P.applySurvivalGachaSkillToHero(hero, dmgCard).ok, true);
-  assert.ok(Math.abs(hero.gachaDmgMult - 1.32) < 1e-9);
-  assert.ok(Math.abs(hero.gachaMods.dmgMult - 1.32) < 1e-9);
+  assert.ok(Math.abs(hero.gachaDmgMult - (1 + dmgCard.value)) < 1e-9);
+  assert.ok(Math.abs(hero.gachaMods.dmgMult - (1 + dmgCard.value)) < 1e-9);
   assert.equal(hero.skillStacks.skill_damage, 1);
 
-  // 2. skill_hp (+45 maxHp, +20 shield, instant heal while preserving 12-perk bonus)
+  // 2. skill_hp (light heal +10 HP on rare, ZERO maxHp/maxShield increase)
   hero.hp = 10;
   const hpCard = S.BANSUNG_GACHA_SKILL_MAP.skill_hp.rare;
   const hpRes = P.applySurvivalGachaSkillToHero(hero, hpCard);
   assert.equal(hpRes.ok, true);
-  assert.equal(hpRes.maxHpAdded, 45);
-  assert.equal(hero.maxHp, 105, 'perk +40 maxHp (60 baseline) and gacha +45 maxHp combine cleanly to 105');
-  assert.equal(hero.maxShield, 26);
-  assert.equal(hero.shield, 24);
-  assert.ok(hpRes.healed > 0 && hero.hp > 10);
+  assert.equal(hpRes.maxHpAdded, 0, 'rebalanced skill_hp must NEVER add maxHp');
+  assert.equal(hero.maxHp, 60, 'maxHp remains at perk baseline 60');
+  assert.equal(hero.maxShield, 6, 'skill_hp must NEVER add maxShield');
+  assert.equal(hero.shield, 4, 'skill_hp must NEVER grant free shield refill');
+  assert.equal(hpRes.healed, hpCard.value);
+  assert.equal(hero.hp, 10 + hpCard.value);
   P.recomputeHeroStats(hero);
-  assert.equal(hero.maxHp, 105, 'repeated recomputeHeroStats stays idempotent');
+  assert.equal(hero.maxHp, 60, 'repeated recomputeHeroStats preserves maxHp without gacha bloat');
 
-  // 3. skill_firerate (+30% fire rate, +32% reload speed)
+  // 3. skill_firerate (^ +7% fire rate, +8% reload speed)
   const rofCard = S.BANSUNG_GACHA_SKILL_MAP.skill_firerate.epic;
   assert.equal(P.applySurvivalGachaSkillToHero(hero, rofCard).ok, true);
-  assert.ok(Math.abs(hero.gachaFireRateMult - 1.3) < 1e-9);
-  assert.ok(Math.abs(hero.gachaReloadSpeedMult - 1.32) < 1e-9);
+  assert.ok(Math.abs(hero.gachaFireRateMult - (1 + rofCard.value)) < 1e-9);
+  assert.ok(Math.abs(hero.gachaReloadSpeedMult - (1 + rofCard.secondaryValue)) < 1e-9);
 
-  // 4. skill_multishot (+1 extra projectile, -8% energy cost)
+  // 4. skill_multishot (^ +1 extra projectile on epic, -6% energy cost)
   const multiCard = S.BANSUNG_GACHA_SKILL_MAP.skill_multishot.epic;
   assert.equal(P.applySurvivalGachaSkillToHero(hero, multiCard).ok, true);
   assert.equal(hero.extraMultishot, 1);
   assert.equal(hero.gachaMods.extraMultishot, 1);
   assert.ok(hero.gachaEnergyCostMult < 1);
 
-  // 5. skill_crit (+32% crit chance, +60% crit dmg, +2 pierce)
+  // 5. skill_crit (^^ +8% crit chance, +16% crit dmg, +1 pierce)
   const critCard = S.BANSUNG_GACHA_SKILL_MAP.skill_crit.legendary;
   assert.equal(P.applySurvivalGachaSkillToHero(hero, critCard).ok, true);
-  assert.ok(Math.abs(hero.gachaCritAdd - 0.32) < 1e-9);
-  assert.ok(Math.abs(hero.gachaCritDmgMult - 1.6) < 1e-9);
-  assert.equal(hero.gachaExtraPierce, 2);
+  assert.ok(Math.abs(hero.gachaCritAdd - critCard.value) < 1e-9);
+  assert.ok(Math.abs(hero.gachaCritDmgMult - (1 + critCard.secondaryValue)) < 1e-9);
+  assert.equal(hero.gachaExtraPierce, critCard.tertiaryValue);
 
-  // 6. skill_mobility (+22% speed, +130px magnet, -15% dash CD, +30 max energy + refill)
+  // 6. skill_mobility (^ +6% speed, -6% dash CD, NO maxEnergy or magnet change)
   const prevSpeed = hero.moveSpeed;
   const prevMag = P.computePickupMagnetRadius(hero);
   const prevMaxEnergy = hero.maxEnergy;
@@ -1810,13 +1811,9 @@ test('T08.4 survival Gacha skill cards: all 6 skills stack cleanly, update hero 
   const mobCard = S.BANSUNG_GACHA_SKILL_MAP.skill_mobility.epic;
   assert.equal(P.applySurvivalGachaSkillToHero(hero, mobCard).ok, true);
   assert.ok(hero.moveSpeed > prevSpeed, 'skill_mobility boosts hero moveSpeed');
-  assert.ok(
-    Math.abs(P.computePickupMagnetRadius(hero) - (prevMag + 130)) < 1e-6,
-    'skill_mobility increases pickup magnet radius by +130px',
-  );
-  assert.ok(Math.abs(hero.gachaDashCdMult - 0.85) < 1e-9);
-  assert.equal(hero.maxEnergy, prevMaxEnergy + 30);
-  assert.ok(hero.energy > 20, 'skill_mobility restores energy alongside maxEnergy boost');
+  assert.equal(P.computePickupMagnetRadius(hero), prevMag, 'magnet radius belongs to skill_magnet now');
+  assert.ok(Math.abs(hero.gachaDashCdMult - (1 - mobCard.tertiaryValue)) < 1e-9);
+  assert.equal(hero.maxEnergy, prevMaxEnergy, 'rebalanced skill_mobility does not inflate maxEnergy');
 
   // Verify Gacha skill modifiers integrate cleanly into 30Hz weapon firing & reload
   const wCombat = makeWorld();
@@ -1829,16 +1826,22 @@ test('T08.4 survival Gacha skill cards: all 6 skills stack cleanly, update hero 
   });
   stepWeaponAndBullets(wCombat, hCombat, { fireHeld: true, ctxExtra: { rng: () => 0.99 } }, 1, 1);
   assert.equal(wCombat.bullets.count, 2, 'skill_multishot (+1) makes 1-pellet pistol fire 2 bullets');
-  assert.ok(Math.abs(wCombat.bullets.active[0].dmgMult - 1.32) < 1e-9);
+  assert.ok(Math.abs(wCombat.bullets.active[0].dmgMult - (1 + dmgCard.value)) < 1e-9);
   assert.ok(
     Math.abs(
-      wCombat.bullets.active[0].critMult - S.BANSUNG_WEAPONS.pistol.critMult * 1.6,
+      wCombat.bullets.active[0].critMult - S.BANSUNG_WEAPONS.pistol.critMult * (1 + critCard.secondaryValue),
     ) < 1e-9,
-    'skill_crit critDmgMult (1.6x) must scale bullet critMult',
+    'skill_crit critDmgMult must scale bullet critMult',
   );
-  assert.equal(wCombat.bullets.active[0].pierceLeft, 3, 'skill_crit (+2 pierce) increases pierceLeft');
+  assert.equal(wCombat.bullets.active[0].pierceLeft, 1 + critCard.tertiaryValue, 'skill_crit pierce bonus increases pierceLeft');
+  const wRofShot = makeWorld();
+  const hRofShot = makeWeaponHero('shotgun', {
+    activeSlot: 0,
+    gachaMods: { ...hero.gachaMods, reloadSpeedMul: hero.gachaReloadSpeedMult },
+  });
+  stepWeaponAndBullets(wRofShot, hRofShot, { fireHeld: true, ctxExtra: { rng: () => 0.99 } }, 1, 1);
   assert.ok(
-    hCombat.slotCdTicks[0] < S.BANSUNG_WEAPONS.pistol.cooldownTicks,
+    hRofShot.slotCdTicks[0] < S.BANSUNG_WEAPONS.shotgun.cooldownTicks,
     'skill_firerate reduces weapon cooldown ticks',
   );
 
@@ -1855,7 +1858,7 @@ test('T08.4 survival Gacha skill cards: all 6 skills stack cleanly, update hero 
     x: 200,
     y: 300,
     aimRad: 0,
-    gachaMods: { dmgMult: 1, critChanceAdd: 0.32, critDmgMult: hero.gachaCritDmgMult },
+    gachaMods: { dmgMult: 1, critChanceAdd: critCard.value, critDmgMult: hero.gachaCritDmgMult },
   });
   stepWeaponAndBullets(wCritBuffed, hCritBuffed, { fireHeld: true, ctxExtra: { rng: () => 0 } }, 1, 4);
   const dmgBuffedCrit = 500 - tCritBuffed.hp;
@@ -1864,11 +1867,11 @@ test('T08.4 survival Gacha skill cards: all 6 skills stack cleanly, update hero 
   // Verify Gacha energyCostMult (skill_multishot) reduces weapon energy expenditure on energy weapons
   const bazookaCost = S.BANSUNG_WEAPONS.bazooka.energyCost;
   assert.ok(bazookaCost >= 8);
-  assert.equal(
-    P.applySurvivalGachaSkillToHero(hero, S.BANSUNG_GACHA_SKILL_MAP.skill_multishot.legendary).ok,
-    true,
-  );
-  assert.ok(Math.abs(hero.gachaEnergyCostMult - 0.8) < 1e-9);
+  const multiLeg = S.BANSUNG_GACHA_SKILL_MAP.skill_multishot.legendary;
+  assert.equal(P.applySurvivalGachaSkillToHero(hero, multiLeg).ok, true);
+  assert.equal(hero.extraMultishot, 3, 'epic (+1) + legendary (^^ +2) yields +3 spread');
+  const expectedCostMult = Math.max(0.55, 1 - multiCard.secondaryValue - multiLeg.secondaryValue);
+  assert.ok(Math.abs(hero.gachaEnergyCostMult - expectedCostMult) < 1e-9);
   const wEnBase = makeWorld();
   const hEnBase = makeWeaponHero('bazooka', { energy: 100, maxEnergy: 100 });
   stepWeaponAndBullets(wEnBase, hEnBase, { fireHeld: true, ctxExtra: { rng: () => 0.5 } }, 1, 1);
@@ -1883,7 +1886,7 @@ test('T08.4 survival Gacha skill cards: all 6 skills stack cleanly, update hero 
   stepWeaponAndBullets(wEnSave, hEnSave, { fireHeld: true, ctxExtra: { rng: () => 0.5 } }, 1, 1);
   const spentSaved = 100 - hEnSave.energy;
   assert.equal(spentBase, bazookaCost);
-  assert.equal(spentSaved, Math.ceil(bazookaCost * 0.8));
+  assert.equal(spentSaved, Math.ceil(bazookaCost * expectedCostMult));
   assert.ok(spentSaved < spentBase, 'gacha energyCostMult must strictly reduce weapon energy spent');
 
   hCombat.slots[0].ammoInMag = 2;
@@ -1948,7 +1951,7 @@ test('T09.1 sniper_rifle, laser_cannon (full-map slow beam) & electric_gun (4-ho
   assert.ok(wElec.stunEvents.length > 0, 'electric_gun inflicts stun events');
 });
 
-test('T09.2 gacha skill_stamina (x1/x2) & skill_shield storage/DR/regen upgrades', () => {
+test('T09.2 gacha skill_stamina (light ^/^^) & skill_shield light charge/DR/regen (no max stat bloat)', () => {
   const hero = {
     idx: 0,
     id: 'p1',
@@ -1958,7 +1961,7 @@ test('T09.2 gacha skill_stamina (x1/x2) & skill_shield storage/DR/regen upgrades
     hp: 60,
     maxHp: 60,
     baseMaxHp: 60,
-    shield: 40,
+    shield: 5,
     maxShield: 40,
     baseMaxShield: 40,
     energy: 200,
@@ -1966,7 +1969,7 @@ test('T09.2 gacha skill_stamina (x1/x2) & skill_shield storage/DR/regen upgrades
     baseMaxEnergy: 200,
     moveSpeed: 200,
     baseMoveSpeed: 200,
-    stamina: 100,
+    stamina: 40,
     maxStamina: 100,
     baseMaxStamina: 100,
     regenDelayMs: BANSUNG_SHIELD.REGEN_DELAY_MS,
@@ -1980,13 +1983,15 @@ test('T09.2 gacha skill_stamina (x1/x2) & skill_shield storage/DR/regen upgrades
 
   const staGold = S.BANSUNG_GACHA_SKILL_MAP.skill_stamina.legendary;
   assert.equal(P.applySurvivalGachaSkillToHero(hero, staGold).ok, true);
-  assert.equal(hero.maxStamina, 200, 'legendary x2 skill_stamina adds +100 maxStamina');
-  assert.ok(hero.gachaDashCostReduce >= 5, 'skill_stamina lowers dash stamina cost');
+  assert.equal(hero.maxStamina, 100, 'rebalanced skill_stamina must NOT add maxStamina');
+  assert.equal(hero.stamina, 40 + staGold.value, 'skill_stamina restores only a light stamina increment');
+  assert.ok(hero.gachaDashCostReduce >= staGold.tertiaryValue, 'skill_stamina lowers dash stamina cost');
   assert.ok(hero.gachaStaminaRegenMult > 1, 'skill_stamina boosts stamina regen rate');
 
   const shGold = S.BANSUNG_GACHA_SKILL_MAP.skill_shield.legendary;
   assert.equal(P.applySurvivalGachaSkillToHero(hero, shGold).ok, true);
-  assert.equal(hero.maxShield, 140, 'legendary x2 skill_shield adds +100 maxShield storage');
+  assert.equal(hero.maxShield, 40, 'rebalanced skill_shield must NOT add maxShield');
+  assert.equal(hero.shield, 5 + shGold.value, 'skill_shield grants only a small sliver, never full 100% shield');
   assert.ok(hero.shieldDamageReduction > 0.25, 'skill_shield increases bullet DR above 25%');
   assert.ok(hero.regenDelayMs < BANSUNG_SHIELD.REGEN_DELAY_MS, 'skill_shield trims 5s shield regen delay');
 });
@@ -2225,4 +2230,192 @@ test('T09.4 icon sprite sheet parity, Armory Shop [B] commands & reaper/blizzard
   stepWeaponAndBullets(bw, blizHero, { fireHeld: false }, 2, 20);
   assert.ok(bzTarget.hp < 400, 'blizzard_bolt must hit target');
   assert.ok((bzTarget.slowMs || 0) > 0, 'blizzard_bolt hit must inflict chill slow status');
+});
+
+test('T09.4 gacha skill catalog: ^ / ^^ light scaling, zero Max stat inflation & +1 orb/sword badges', () => {
+  assert.equal(S.BANSUNG_GACHA_SKILL_CATEGORIES.length, 12);
+  assert.equal(S.BANSUNG_GACHA_SKILLS.length, 84);
+
+  const dummy = {
+    idx: 0,
+    id: 'p_check',
+    heroId: 'mascot',
+    x: 200,
+    y: 200,
+    hp: 10,
+    maxHp: 50,
+    baseMaxHp: 50,
+    shield: 5,
+    maxShield: 40,
+    baseMaxShield: 40,
+    energy: 40,
+    maxEnergy: 200,
+    baseMaxEnergy: 200,
+    moveSpeed: 200,
+    baseMoveSpeed: 200,
+    stamina: 30,
+    maxStamina: 100,
+    baseMaxStamina: 100,
+    regenDelayMs: BANSUNG_SHIELD.REGEN_DELAY_MS,
+    alive: true,
+    downed: false,
+    perks: [],
+    mods: P.aggregatePerkMods([]),
+  };
+
+  for (const spec of S.BANSUNG_GACHA_SKILLS) {
+    dummy.hp = 10;
+    dummy.shield = 5;
+    dummy.stamina = 30;
+    dummy.energy = 40;
+    dummy.skillStacks = {};
+    P.ensureSurvivalHeroGachaState(dummy);
+    P.applySurvivalGachaSkillToHero(dummy, spec);
+    assert.equal(dummy.maxHp, 50, `${spec.id} must not increase maxHp`);
+    assert.equal(dummy.maxShield, 40, `${spec.id} must not increase maxShield`);
+    assert.equal(dummy.maxStamina, 100, `${spec.id} must not increase maxStamina`);
+    assert.equal(dummy.maxEnergy, 200, `${spec.id} must not increase maxEnergy`);
+    assert.ok(dummy.shield < dummy.maxShield, `${spec.id} must never refill shield to 100%`);
+  }
+
+  for (const rar of ['common', 'rare', 'epic']) {
+    assert.equal(S.BANSUNG_GACHA_SKILL_MAP.skill_multishot[rar].value, 1, `skill_multishot ${rar} is ^ (+1)`);
+    assert.ok(S.BANSUNG_GACHA_SKILL_MAP.skill_damage[rar].badge.startsWith('^ '));
+  }
+  for (const rar of ['legendary', 'celestial', 'mythic', 'prismatic']) {
+    assert.equal(S.BANSUNG_GACHA_SKILL_MAP.skill_multishot[rar].value, 2, `skill_multishot ${rar} is ^^ (+2)`);
+    assert.ok(S.BANSUNG_GACHA_SKILL_MAP.skill_damage[rar].badge.startsWith('^^ '));
+  }
+  for (const cat of ['skill_lightning_orb', 'skill_fire_orb', 'skill_spirit_sword']) {
+    const card = S.buildSkillCard(S.BANSUNG_GACHA_SKILL_MAP[cat].epic);
+    assert.equal(card.multLabel, '+1', `${cat} must advertise +1 per selection`);
+  }
+});
+
+test('T09.5 new Gacha skills: lightning orbs, fire orbs burn, 5s homing pull spirit swords & beneficial magnet', (t) => {
+  const { BansungWorld } = require('../dist/server/src/game/bansung/world.js');
+  const { spawnMob } = require('../dist/server/src/game/bansung/mobs.js');
+  const noopHooks = { tick() {}, changed() {}, roomMeta() {}, frame() {}, log() {}, end() {} };
+  const world = new BansungWorld(
+    [{ id: 'p0', name: 'Tester', heroId: 'mascot' }],
+    { bots: 0, biome: 'desert', difficulty: 'normal', gameMode: 'survival' },
+    noopHooks,
+    { seed: 4242, skipWarmup: true },
+  );
+  t.after(() => world.stop());
+  world.step();
+
+  const p = world.players[0];
+  p.invulnMs = 30_000;
+  world.mobMgr.mobs.length = 0;
+  world.mobMgr.mobByNumId.clear();
+
+  // Apply 1 stack each of the 4 new skills + verify snapshot orbs encoding
+  for (const [idx, cat] of ['skill_lightning_orb', 'skill_fire_orb', 'skill_spirit_sword', 'skill_magnet'].entries()) {
+    p.gachaPending = 1;
+    p.gachaTimerMs = 14_000;
+    p.gachaChoices = [
+      S.buildSkillCard(S.BANSUNG_GACHA_SKILL_MAP[cat].rare),
+      S.buildSkillCard(S.BANSUNG_GACHA_SKILL_MAP.skill_damage.common),
+      S.buildSkillCard(S.BANSUNG_GACHA_SKILL_MAP.skill_crit.common),
+    ];
+    assert.equal(world.enqueueCommand('p0', { t: 'gacha', pick: 0 }, { nowMs: 1000 + idx * 100 }).ok, true);
+    world.step();
+  }
+  assert.equal(p.skillStacks.skill_lightning_orb, 1);
+  assert.equal(p.skillStacks.skill_fire_orb, 1);
+  assert.equal(p.skillStacks.skill_spirit_sword, 1);
+  assert.equal(p.skillStacks.skill_magnet, 1);
+  const initFrame = world.frameFor('p0', true);
+  assert.ok(Array.isArray(initFrame.orbs) && initFrame.orbs[1] === 1 && initFrame.orbs[2] === 1 && initFrame.orbs[3] === 1 && initFrame.orbs[4] === 1, 'snapshot orbs must pack [pIdx, lightning, fire, swords, magnet]');
+
+  // 1) Orbiting Lightning + Fire orbs shock/scorch & burn stationary mobs in orbit path
+  const lightningMob = spawnMob(world.mobMgr, {
+    kind: 'cactus_brute',
+    x: p.x - 74,
+    y: p.y,
+    playerCount: 1,
+    wave: 1,
+    difficulty: 'normal',
+  });
+  lightningMob.hp = 800;
+  lightningMob.maxHp = 800;
+  lightningMob.stunMs = 8000;
+
+  const fireMob = spawnMob(world.mobMgr, {
+    kind: 'cactus_brute',
+    x: p.x + 92,
+    y: p.y,
+    playerCount: 1,
+    wave: 1,
+    difficulty: 'normal',
+  });
+  fireMob.hp = 800;
+  fireMob.maxHp = 800;
+  fireMob.stunMs = 8000;
+
+  let sawFireBurn = false;
+  for (let i = 0; i < 95; i++) {
+    lightningMob.vx = 0;
+    lightningMob.vy = 0;
+    fireMob.vx = 0;
+    fireMob.vy = 0;
+    world.step();
+    if ((fireMob.dots?.burn?.leftMs || 0) > 0) {
+      sawFireBurn = true;
+    }
+  }
+  assert.ok(lightningMob.hp < 800, 'orbiting lightning sphere must sweep and shock enemies at r=74');
+  assert.ok(fireMob.hp < 800, 'orbiting fireball sphere must sweep and scorch enemies at r=92');
+  assert.equal(sawFireBurn, true, 'fireball orbit sphere must inflict burn DoT');
+
+  // Remove orbit test mob so spirit sword deterministically targets distant swordMob
+  world.mobMgr.mobs.length = 0;
+  world.mobMgr.mobByNumId.clear();
+
+  // 2) Farther stunned mob at ~240px for 5s Spirit Sword auto-aim dash & inward pull
+  const swordMob = spawnMob(world.mobMgr, {
+    kind: 'cactus_brute',
+    x: p.x + 240,
+    y: p.y + 40,
+    playerCount: 1,
+    wave: 1,
+    difficulty: 'normal',
+  });
+  swordMob.hp = 800;
+  swordMob.maxHp = 800;
+  swordMob.stunMs = 15_000;
+  swordMob.vx = 0;
+  swordMob.vy = 0;
+  const initSwordDist = Math.hypot(swordMob.x - p.x, swordMob.y - p.y);
+
+  // 3) Pickups at ~210px: beneficial hp_orb/coin + excluded weapon_pedestal
+  const hpDrop = world.pickupMgr.spawnPickup('hp_orb', p.x - 210, p.y);
+  const coinDrop = world.pickupMgr.spawnPickup('coin', p.x - 210, p.y + 30);
+  const pedestal = world.pickupMgr.spawnPickup('weapon_pedestal', p.x - 210, p.y - 40, { weaponId: 'rifle' });
+  const hpStartX = hpDrop.x;
+  const pedStartX = pedestal.x;
+  const pedStartY = pedestal.y;
+
+  let sawSpiritSwordFrame = false;
+  let minSwordMobDist = initSwordDist;
+  for (let i = 0; i < 180; i++) {
+    swordMob.vx = 0;
+    swordMob.vy = 0;
+    world.step();
+    minSwordMobDist = Math.min(minSwordMobDist, Math.hypot(swordMob.x - p.x, swordMob.y - p.y));
+    const f = world.frameFor('p0', true);
+    if (Array.isArray(f.sw) && f.sw.length >= 4) {
+      sawSpiritSwordFrame = true;
+    }
+  }
+
+  assert.equal(sawSpiritSwordFrame, true, '5s spirit sword summon must appear in snapshot sw array');
+  assert.ok(swordMob.hp < 800, 'homing spirit sword must auto-aim & slash distant enemy');
+  assert.ok(minSwordMobDist < initSwordDist - 15, `spirit sword must pull non-boss stunned enemy closer (${initSwordDist.toFixed(1)} -> ${minSwordMobDist.toFixed(1)})`);
+  assert.ok(minSwordMobDist >= 56 + swordMob.radius, `spirit sword pull must respect player safety buffer (>= ${56 + swordMob.radius}, got ${minSwordMobDist.toFixed(1)})`);
+  assert.ok(!hpDrop.alive || hpDrop.x > hpStartX + 10, 'skill_magnet must pull/collect beneficial hp_orb drop');
+  assert.ok(!coinDrop.alive || coinDrop.x > hpStartX + 10, 'skill_magnet must pull/collect beneficial coin drop');
+  assert.equal(pedestal.x, pedStartX, 'skill_magnet must NEVER pull weapon_pedestal');
+  assert.equal(pedestal.y, pedStartY, 'skill_magnet must NEVER move weapon_pedestal');
 });

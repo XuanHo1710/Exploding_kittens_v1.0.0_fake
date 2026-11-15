@@ -1949,11 +1949,11 @@ test('6c. Survival Gacha combat modifiers (critDmgMult & energyCostMult) & bot w
   );
   assert.ok(costGadgetSpend < baseGadgetSpend);
 
-  // Stack 2nd epic skill_multishot (0.84x) and verify bazooka (energyCost 8 -> 7)
+  // Stack 2nd legendary skill_multishot (-0.08 -> 0.86x cumulative with epic -0.06) and verify bazooka (8 -> 7)
   costPlayer.gachaPending = 1;
   costPlayer.gachaTimerMs = 14_000;
   costPlayer.gachaChoices = [
-    mkGachaSkillCard('skill_multishot', 'epic'),
+    mkGachaSkillCard('skill_multishot', 'legendary'),
     mkGachaSkillCard('skill_hp', 'common'),
     mkGachaSkillCard('skill_mobility', 'common'),
   ];
@@ -1974,9 +1974,13 @@ test('6c. Survival Gacha combat modifiers (critDmgMult & energyCostMult) & bot w
   wCost.step();
   wCost.enqueueCommand('p0', { t: 'in', seq: 3, mx: 0, my: 0, aim: 0, fire: 0 }, { nowMs: 2450 });
   const bazookaSpend = preBazookaE - costPlayer.energy;
+  const expectedBazookaMult =
+    1 -
+    BANSUNG_GACHA_SKILL_MAP.skill_multishot.epic.secondaryValue -
+    BANSUNG_GACHA_SKILL_MAP.skill_multishot.legendary.secondaryValue;
   assert.equal(
     bazookaSpend,
-    Math.max(1, Math.round(BANSUNG_WEAPONS.bazooka.energyCost * (1 - 2 * BANSUNG_GACHA_SKILL_MAP.skill_multishot.epic.secondaryValue))),
+    Math.max(1, Math.ceil(BANSUNG_WEAPONS.bazooka.energyCost * expectedBazookaMult)),
     `2-stack skill_multishot must reduce bazooka energyCost (${BANSUNG_WEAPONS.bazooka.energyCost} -> ${bazookaSpend})`,
   );
   assert.ok(bazookaSpend < BANSUNG_WEAPONS.bazooka.energyCost);

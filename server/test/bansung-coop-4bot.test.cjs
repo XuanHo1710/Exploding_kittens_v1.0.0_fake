@@ -41,10 +41,10 @@ function assertFinitePlayerState(player, label) {
 // 1. Registry Counts & New Content Smoke Check
 // ===========================================================================
 
-test('4-bot coop expansion: 36 weapons, 37 projectiles, 37 enemies, boss bar table (x2..x12)', () => {
+test('4-bot coop expansion: 36 weapons, 37 projectiles, 38 enemies, boss bar table (x2..x12)', () => {
   assert.equal(BANSUNG_WEAPON_IDS.length, 36);
   assert.equal(BANSUNG_PROJECTILE_KINDS.length, 37);
-  assert.equal(BANSUNG_ENEMY_IDS.length, 37);
+  assert.equal(BANSUNG_ENEMY_IDS.length, 38);
 
   for (const wId of [
     'plasma_shotgun',
@@ -84,9 +84,11 @@ test('4-bot coop expansion: 36 weapons, 37 projectiles, 37 enemies, boss bar tab
   assert.equal(BANSUNG_BOSS_HP_BARS.boss_beholder, 5);
   assert.equal(BANSUNG_BOSS_HP_BARS.boss_tempest, 6);
   assert.equal(BANSUNG_BOSS_HP_BARS.boss_frost_empress, 7);
+  assert.equal(BANSUNG_BOSS_HP_BARS.boss_storm_herald, 8);
   assert.equal(BANSUNG_BOSS_HP_BARS.boss_destroyer, 10);
   assert.equal(BANSUNG_BOSS_HP_BARS.boss_abyssal_leviathan, 12);
   assert.equal(getBossHpBars('boss_destroyer', false), 10);
+  assert.equal(getBossHpBars('boss_storm_herald', false), 8);
   assert.equal(getBossHpBars('boss_frost_empress', false), 7);
   assert.equal(getBossHpBars('boss_abyssal_leviathan', false), 12);
   assert.equal(getBossHpBars('boss_tempest', true), 3);
@@ -543,4 +545,73 @@ test('4-bot coop V2 expansion: Frost Empress (x7), Abyssal Leviathan (x12), 6 ne
   for (const p of world.players) {
     assertFinitePlayerState(p, `V2 ${p.id}`);
   }
+});
+
+test('boss_storm_herald (Lôi Thần Bão Sét x8): strictly casts ONLY Yellow & Blue Lightning Storms', (t) => {
+  const world = new BansungWorld(
+    [
+      { id: 'bot:0', name: 'B0', hero: 'ranger', bot: true },
+      { id: 'bot:1', name: 'B1', hero: 'heavy', bot: true },
+    ],
+    { bots: 2, biome: 'desert', difficulty: 'normal', gameMode: 'survival' },
+    { tick() {}, changed() {}, roomMeta() {}, frame() {}, log() {}, end() {} },
+    { seed: 7777, skipWarmup: true },
+  );
+  t.after(() => world.stop());
+  world.step();
+  // Clear ambient mobs so we verify Storm Herald never spawns escort mobs or bullets
+  world.mobMgr.mobs.length = 0;
+  world.mobMgr.mobByNumId.clear();
+
+  const cx = world.arena.playable.x0 + (world.arena.playable.x1 - world.arena.playable.x0) * 0.5;
+  const cy = world.arena.playable.y0 + (world.arena.playable.y1 - world.arena.playable.y0) * 0.5;
+  world.spawnWaveBoss({ id: 'boss_storm_herald', x: cx + 220, y: cy, hpMult: 1, mini: false, count: 1 });
+  const entry = world.activeBosses.find((b) => b.kind === 'boss_storm_herald');
+  assert.ok(entry, 'boss_storm_herald must spawn in activeBosses');
+  assert.equal(entry.partGroup.parts.length, 3, 'Storm Herald must have 3 destructible parts');
+
+  const seenTelegraphColors = new Set();
+  const seenHazardKinds = new Set();
+  let enemyBulletCount = 0;
+
+  for (let tickNo = 0; tickNo < 240; tickNo++) {
+    world.step();
+    const f = world.frameFor('bot:0', true);
+    const bf = [...(f.bs ? [f.bs] : []), ...(f.bs2 || [])].find((b) => b.kind === 'boss_storm_herald');
+    if (bf && Array.isArray(bf.telegraphs)) {
+      for (const tg of bf.telegraphs) {
+        seenTelegraphColors.add(tg.color);
+      }
+    }
+    for (const hz of f.hz || []) {
+      seenHazardKinds.add(hz.kind);
+    }
+    for (const b of world.bulletPool.active) {
+      if (b.alive && b.ownerId === entry.boss.id) {
+        enemyBulletCount++;
+      }
+    }
+  }
+
+  assert.equal(enemyBulletCount, 0, 'Storm Herald must fire 0 projectiles (pure storms only)');
+  assert.equal(world.mobMgr.mobs.length, 0, 'Storm Herald must summon 0 escort mobs');
+  assert.ok(seenTelegraphColors.has(5), 'Storm Herald must telegraph Yellow Lightning Storms (color 5)');
+  assert.ok(seenTelegraphColors.has(2), 'Storm Herald must telegraph Blue Lightning Storms (color 2)');
+  for (const col of seenTelegraphColors) {
+    assert.ok(col === 5 || col === 2, `Unexpected telegraph color ${col}; expected strictly 5 (yellow) or 2 (blue)`);
+  }
+  assert.ok(seenHazardKinds.has('storm_yellow'), 'Storm Herald must leave yellow lightning storm pools');
+  assert.ok(seenHazardKinds.has('storm_blue'), 'Storm Herald must leave blue lightning storm pools');
+
+  // Verify part break stuns boss cleanly & advertises 8 HP bars
+  const hpBefore = entry.boss.hp;
+  entry.partGroup.parts[0].combatTarget.hp = 0;
+  entry.partGroup.parts[0].combatTarget.alive = false;
+  world.step();
+  assert.equal(entry.partGroup.parts[0].broken, true);
+  assert.equal(entry.boss.state, 'stunned');
+  assert.ok(entry.boss.stunTicks > 0 && entry.boss.hp < hpBefore);
+  const fAfter = world.frameFor('bot:0', true);
+  const stormFrame = [...(fAfter.bs ? [fAfter.bs] : []), ...(fAfter.bs2 || [])].find((b) => b.kind === 'boss_storm_herald');
+  assert.ok(stormFrame && stormFrame.hpBars === 8, 'Storm Herald must advertise 8 HP bars');
 });
