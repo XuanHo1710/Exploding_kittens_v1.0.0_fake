@@ -164,6 +164,7 @@ export interface SurvivalHeroGachaState {
   gachaEnergyCostMult: number;
   gachaMoveSpeedMult: number;
   gachaMagnetBonusPx: number;
+  gachaMagnetSpeedMult: number;
   gachaDashCdMult: number;
   gachaMaxHpAdd: number;
   gachaMaxShieldAdd: number;
@@ -827,6 +828,7 @@ export function ensureSurvivalHeroGachaState(
   if (typeof hero.gachaEnergyCostMult !== 'number') hero.gachaEnergyCostMult = 1;
   if (typeof hero.gachaMoveSpeedMult !== 'number') hero.gachaMoveSpeedMult = 1;
   if (typeof hero.gachaMagnetBonusPx !== 'number') hero.gachaMagnetBonusPx = 0;
+  if (typeof hero.gachaMagnetSpeedMult !== 'number') hero.gachaMagnetSpeedMult = 1;
   if (typeof hero.gachaDashCdMult !== 'number') hero.gachaDashCdMult = 1;
   if (typeof hero.gachaMaxHpAdd !== 'number') hero.gachaMaxHpAdd = 0;
   if (typeof hero.gachaMaxShieldAdd !== 'number') hero.gachaMaxShieldAdd = 0;
@@ -889,32 +891,20 @@ export function applySurvivalGachaSkillToHero(
   const primary = card.value ?? spec?.value ?? 0;
 
   let healed = 0;
-  let maxHpAdded = 0;
+  const maxHpAdded = 0;
 
   switch (card.category) {
     case 'skill_damage': {
-      const dmgAdd = primary > 0 ? primary : 0.12;
-      g.gachaDmgMult = Math.min(3.5, g.gachaDmgMult + dmgAdd);
+      const dmgAdd = primary > 0 ? primary : 0.05;
+      g.gachaDmgMult = Math.min(2.4, g.gachaDmgMult + dmgAdd);
       break;
     }
     case 'skill_hp': {
-      const prevMaxHp = hero.maxHp;
+      // Never increase Max HP / Max Shield from Gacha; apply only a light direct mend capped at existing Max HP.
       const prevHp = hero.hp;
-      const hpBonus = Math.max(1, Math.round(primary > 0 ? primary : 25));
-      const shieldBonus = Math.max(2, Math.round(spec?.secondaryValue ?? 10));
-      g.gachaMaxHpAdd += hpBonus;
-      g.gachaMaxShieldAdd += shieldBonus;
-      recomputeHeroStats(hero);
-      maxHpAdded = Math.max(0, hero.maxHp - prevMaxHp);
-      addHeroShield(hero, shieldBonus);
-
+      const healAmount = clamp(Math.round(primary > 0 ? primary : 8), 4, 30);
       if (hero.alive && !hero.downed && hero.hp > 0) {
-        const targetHeal = Math.max(
-          maxHpAdded,
-          Math.round(hero.maxHp * 0.6),
-          spec?.tertiaryValue ?? 0,
-        );
-        const desiredHp = Math.min(hero.maxHp, prevHp + targetHeal);
+        const desiredHp = Math.min(hero.maxHp, prevHp + healAmount);
         if (desiredHp > hero.hp) {
           hero.hp = desiredHp;
         }
@@ -923,81 +913,72 @@ export function applySurvivalGachaSkillToHero(
       break;
     }
     case 'skill_firerate': {
-      const rofAdd = primary > 0 ? primary : 0.12;
+      const rofAdd = primary > 0 ? primary : 0.05;
       const reloadAdd = spec?.secondaryValue ?? rofAdd;
-      g.gachaFireRateMult = Math.min(2.6, g.gachaFireRateMult + rofAdd);
-      g.gachaReloadSpeedMult = Math.min(2.6, g.gachaReloadSpeedMult + reloadAdd);
+      g.gachaFireRateMult = Math.min(2.2, g.gachaFireRateMult + rofAdd);
+      g.gachaReloadSpeedMult = Math.min(2.2, g.gachaReloadSpeedMult + reloadAdd);
       break;
     }
     case 'skill_multishot': {
-      const extraProj = Math.max(1, Math.min(1, Math.round(primary > 0 ? primary : 1)));
-      const enSave = Math.max(0, spec?.secondaryValue ?? 0);
-      g.extraMultishot = Math.min(3, g.extraMultishot + extraProj);
+      const extraProj = clamp(Math.round(primary > 0 ? primary : 1), 1, 2);
+      const enSave = Math.max(0, spec?.secondaryValue ?? card.secondaryValue ?? 0);
+      g.extraMultishot = Math.min(4, g.extraMultishot + extraProj);
       if (enSave > 0) {
-        g.gachaEnergyCostMult = Math.max(0.55, g.gachaEnergyCostMult - enSave);
+        g.gachaEnergyCostMult = Math.max(0.6, g.gachaEnergyCostMult - enSave);
       }
       break;
     }
     case 'skill_crit': {
-      const critAdd = primary > 0 ? primary : 0.08;
-      const critDmgAdd = spec?.secondaryValue ?? 0.15;
-      const pierceAdd =
-        spec?.tertiaryValue ??
-        (card.rarity === 'legendary' ? 2 : card.rarity === 'epic' ? 1 : 0);
-      g.gachaCritAdd += critAdd;
+      const critAdd = primary > 0 ? primary : 0.04;
+      const critDmgAdd = spec?.secondaryValue ?? 0.08;
+      const pierceAdd = spec?.tertiaryValue ?? 0;
+      g.gachaCritAdd = Math.min(0.85, g.gachaCritAdd + critAdd);
       g.gachaCritDmgMult += critDmgAdd;
-      g.gachaExtraPierce += Math.max(0, Math.round(pierceAdd));
+      g.gachaExtraPierce = Math.min(6, g.gachaExtraPierce + Math.max(0, Math.round(pierceAdd)));
       break;
     }
     case 'skill_mobility': {
-      const spdAdd = primary > 0 ? primary : 0.08;
-      const magBonus =
-        spec?.secondaryValue ??
-        (card.rarity === 'legendary'
-          ? 200
-          : card.rarity === 'epic'
-            ? 130
-            : card.rarity === 'rare'
-              ? 80
-              : 45);
-      const dashRed = spec?.tertiaryValue ?? 0;
-      const maxEnergyBonus =
-        card.rarity === 'legendary'
-          ? 40
-          : card.rarity === 'epic'
-            ? 30
-            : card.rarity === 'rare'
-              ? 20
-              : 15;
-      g.gachaMoveSpeedMult += spdAdd;
-      g.gachaMagnetBonusPx += Math.max(0, magBonus);
-      g.gachaDashCdMult = Math.max(0.45, g.gachaDashCdMult - Math.max(0, dashRed));
-      g.gachaMaxEnergyAdd += maxEnergyBonus;
-      recomputeHeroStats(hero);
-      if (hero.alive && !hero.downed) {
-        const energyGain = Math.round(hero.maxEnergy * 0.45) + maxEnergyBonus;
-        hero.energy = Math.min(hero.maxEnergy, hero.energy + energyGain);
-      }
+      const spdAdd = primary > 0 ? primary : 0.04;
+      const dashRed = spec?.tertiaryValue ?? spdAdd;
+      g.gachaMoveSpeedMult = Math.min(1.85, g.gachaMoveSpeedMult + spdAdd);
+      g.gachaDashCdMult = Math.max(0.55, g.gachaDashCdMult - Math.max(0, dashRed));
       break;
     }
     case 'skill_stamina': {
-      const staAdd = Math.max(10, Math.round(primary > 0 ? primary : 20));
-      const regenAdd = Math.max(0, spec?.secondaryValue ?? 0.15);
-      const costRed = Math.max(0, Math.round(spec?.tertiaryValue ?? 0));
-      g.gachaMaxStaminaAdd += staAdd;
-      g.gachaStaminaRegenMult += regenAdd;
-      g.gachaDashCostReduce = Math.min(18, g.gachaDashCostReduce + costRed);
+      // Never increase Max Stamina from Gacha; restore a light sliver of current stamina & boost regen gently.
+      const staRecover = clamp(Math.round(primary > 0 ? primary : 10), 6, 30);
+      const regenAdd = Math.max(0, spec?.secondaryValue ?? 0.05);
+      const costRed = Math.max(0, spec?.tertiaryValue ?? 0.5);
+      const cap = hero.maxStamina ?? BANSUNG_STAMINA.BASE_MAX;
+      if (hero.stamina !== undefined) {
+        hero.stamina = Math.min(cap, hero.stamina + staRecover);
+      }
+      g.gachaStaminaRegenMult = Math.min(1.9, g.gachaStaminaRegenMult + regenAdd);
+      g.gachaDashCostReduce = Math.min(10, g.gachaDashCostReduce + costRed);
       break;
     }
     case 'skill_shield': {
-      const shieldBonus = Math.max(10, Math.round(primary > 0 ? primary : 20));
-      const drAdd = Math.max(0, spec?.secondaryValue ?? 0.04);
-      const delayRed = Math.max(0, Math.round(spec?.tertiaryValue ?? 0));
-      g.gachaMaxShieldAdd += shieldBonus;
-      g.gachaShieldDmgReduceAdd = Math.min(0.45, g.gachaShieldDmgReduceAdd + drAdd);
-      g.gachaShieldDelayReduceMs = Math.min(2500, g.gachaShieldDelayReduceMs + delayRed);
+      // Never increase Max Shield or fill 100%; grant only a small shield trickle capped at existing Max Shield.
+      const shieldSliver = clamp(Math.round(primary > 0 ? primary : 3), 2, 12);
+      const drAdd = Math.max(0, spec?.secondaryValue ?? 0.02);
+      const delayRed = Math.max(0, Math.round(spec?.tertiaryValue ?? 120));
+      g.gachaShieldDmgReduceAdd = Math.min(0.32, g.gachaShieldDmgReduceAdd + drAdd);
+      g.gachaShieldDelayReduceMs = Math.min(1800, g.gachaShieldDelayReduceMs + delayRed);
       recomputeHeroStats(hero);
-      addHeroShield(hero, shieldBonus);
+      addHeroShield(hero, shieldSliver);
+      break;
+    }
+    case 'skill_lightning_orb':
+    case 'skill_fire_orb':
+    case 'skill_spirit_sword': {
+      // Stack-driven active orbital / summon skills stepped inside world combat tick.
+      break;
+    }
+    case 'skill_magnet': {
+      const magBonus = Math.max(40, Math.round(primary > 0 ? primary : 90));
+      const spdBonus = Math.max(0.08, spec?.secondaryValue ?? card.secondaryValue ?? 0.18);
+      g.gachaMagnetBonusPx = Math.min(900, g.gachaMagnetBonusPx + magBonus);
+      g.gachaMagnetSpeedMult = Math.min(3.5, g.gachaMagnetSpeedMult + spdBonus);
       break;
     }
     default:
@@ -1006,7 +987,7 @@ export function applySurvivalGachaSkillToHero(
 
   g.skillStacks[card.category] = (g.skillStacks[card.category] ?? 0) + 1;
   syncSurvivalWeaponGachaMods(hero);
-  if (card.category !== 'skill_hp' && card.category !== 'skill_mobility' && card.category !== 'skill_shield') {
+  if (card.category !== 'skill_shield') {
     recomputeHeroStats(hero);
   }
 
@@ -2093,10 +2074,11 @@ export class PickupManager {
         const dy = magnetTarget.y - p.y;
         const dist = Math.hypot(dx, dy);
         if (dist > 1e-4) {
+          const pullMul = Math.max(1, magnetTarget.gachaMagnetSpeedMult ?? 1);
           const curSpeed = Math.hypot(p.vx, p.vy);
           const nextSpeed = Math.min(
-            BANSUNG_PICKUP_CONSTS.MAGNET_MAX_SPEED,
-            curSpeed + BANSUNG_PICKUP_CONSTS.MAGNET_ACCEL * dt,
+            BANSUNG_PICKUP_CONSTS.MAGNET_MAX_SPEED * pullMul,
+            curSpeed + BANSUNG_PICKUP_CONSTS.MAGNET_ACCEL * pullMul * dt,
           );
           p.vx = (dx / dist) * nextSpeed;
           p.vy = (dy / dist) * nextSpeed;

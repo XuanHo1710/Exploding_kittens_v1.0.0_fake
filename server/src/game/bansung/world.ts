@@ -211,6 +211,24 @@ import {
   type LeviathanPlayerTarget,
 } from './boss-leviathan';
 import {
+  createStormHeraldBoss,
+  getStormHeraldHazards,
+  stepStormHeraldBoss,
+  stunStormHeraldBoss,
+  toStormHeraldBossFrame,
+  type StormHeraldBossState,
+  type StormHeraldPlayerTarget,
+} from './boss-storm-herald';
+import {
+  createGachaSkillsState,
+  packPlayerGachaOrbs,
+  packSpiritSwords,
+  stepGachaSkills,
+  type GachaSkillEnemyRef,
+  type GachaSkillHeroRef,
+  type GachaSkillsWorldState,
+} from './gacha-skills';
+import {
   createBossPartGroup,
   evaluateBossPartBreaks,
   syncBossPartsPositions,
@@ -579,6 +597,13 @@ type ActiveBossEntry = ActiveBossMeta & {
       lastPhaseBurstPctIdx: number;
       deadEmitted: boolean;
     }
+  | {
+      kind: 'boss_storm_herald';
+      numId: number;
+      boss: StormHeraldBossState;
+      lastPhaseBurstPctIdx: number;
+      deadEmitted: boolean;
+    }
 );
 
 type AuxTargetBinding =
@@ -653,17 +678,24 @@ const BOT_GACHA_AUTO_PICK_MS = 800;
 
 const BOT_GACHA_CATEGORY_PRIORITY: Readonly<Record<string, number>> = {
   weapon_upgrade: 0,
-  skill_damage: 1,
-  skill_hp: 2,
-  skill_stamina: 2,
-  skill_shield: 2,
-  skill_firerate: 3,
+  skill_lightning_orb: 1,
+  skill_fire_orb: 1,
+  skill_spirit_sword: 1,
+  skill_damage: 2,
+  skill_firerate: 2,
+  skill_hp: 3,
+  skill_stamina: 3,
+  skill_shield: 3,
   skill_multishot: 4,
+  skill_magnet: 4,
   skill_crit: 5,
   skill_mobility: 6,
 };
 
 const GACHA_RARITY_RANK: Readonly<Record<string, number>> = {
+  prismatic: 7,
+  mythic: 6,
+  celestial: 5,
   legendary: 4,
   epic: 3,
   rare: 2,
@@ -947,6 +979,7 @@ export class BansungWorld implements BotWorldView {
 
   private activeBosses: ActiveBossEntry[] = [];
   private bossProjectiles: BossProjectile[] = [];
+  private readonly gachaSkillsState: GachaSkillsWorldState = createGachaSkillsState();
   fx: number[] = [];
   private logs: string[] = [];
   private colossusTargets: ColossusPlayerTarget[] = [];
@@ -1376,6 +1409,8 @@ export class BansungWorld implements BotWorldView {
         for (const t of getOverlordTelegraphs(entry.boss)) out.push(t);
       } else if (entry.kind === 'boss_arsenal' && entry.boss.alive) {
         for (const t of entry.boss.telegraphs) out.push(t);
+      } else if (entry.kind === 'boss_storm_herald' && entry.boss.alive) {
+        for (const t of entry.boss.telegraphs) out.push(t);
       }
     }
 
@@ -1413,7 +1448,17 @@ export class BansungWorld implements BotWorldView {
   }
 
   viewHazards(): BansungHazard[] {
-    return getMobHazards(this.mobMgr);
+    const out = getMobHazards(this.mobMgr).slice();
+    for (let i = 0; i < this.activeBosses.length; i++) {
+      const entry = this.activeBosses[i];
+      if (entry.kind === 'boss_storm_herald' && entry.boss.alive) {
+        const stormHz = getStormHeraldHazards(entry.boss);
+        for (let j = 0; j < stormHz.length; j++) {
+          out.push(stormHz[j]);
+        }
+      }
+    }
+    return out;
   }
 
   viewSiegeStatus(): {
@@ -2236,7 +2281,8 @@ export class BansungWorld implements BotWorldView {
         entry.kind === 'boss_tempest' ||
         entry.kind === 'boss_destroyer' ||
         entry.kind === 'boss_frost_empress' ||
-        entry.kind === 'boss_abyssal_leviathan'
+        entry.kind === 'boss_abyssal_leviathan' ||
+        entry.kind === 'boss_storm_herald'
       ) {
         const b = entry.boss;
         if (!b.alive || b.hp <= 0) continue;
@@ -2574,8 +2620,9 @@ export class BansungWorld implements BotWorldView {
     }
     pruneDeadMobs(this.mobMgr);
 
-    // Step Active Bosses
+    // Step Active Bosses & Active Gacha Skills (Orbs / 5s Homing Pull Swords)
     this.stepActiveBosses();
+    this.stepHeroGachaSkills();
 
     // Sync Pet & Bot world views then step pets
     this.refreshBotWorldViews();
@@ -2626,7 +2673,8 @@ export class BansungWorld implements BotWorldView {
             (entry.kind === 'boss_tempest' ||
               entry.kind === 'boss_destroyer' ||
               entry.kind === 'boss_frost_empress' ||
-              entry.kind === 'boss_abyssal_leviathan') &&
+              entry.kind === 'boss_abyssal_leviathan' ||
+              entry.kind === 'boss_storm_herald') &&
             entry.boss.alive
           ) {
             hitRes = applyBansungDamage(entry.boss.combatTarget, hit, this.buildDamageContext());
@@ -3303,7 +3351,155 @@ export class BansungWorld implements BotWorldView {
           this.handleBossDeath(entry, b.x, b.y);
           this.activeBosses.splice(i, 1);
         }
+      } else if (entry.kind === 'boss_storm_herald') {
+        const b = entry.boss;
+        const diffKey = (
+          this.config.difficulty in BANSUNG_DIFFICULTY_SCALE ? this.config.difficulty : 'normal'
+        ) as keyof typeof BANSUNG_DIFFICULTY_SCALE;
+        const dmgMult = BANSUNG_DIFFICULTY_SCALE[diffKey].dmg * (entry.dmgScale ?? 1);
+        const damageCtx = this.buildDamageContext();
+        const stormTargets: StormHeraldPlayerTarget[] = this.players.filter(
+          (p) => !p.left && p.life === 'alive',
+        );
+        stepStormHeraldBoss(b, {
+          tickNo: this.tickNo,
+          players: stormTargets,
+          dmgMult,
+          damageCtx,
+          fx: this.fx,
+        });
+        for (const p of stormTargets) {
+          const rp = this.playerById.get(p.id);
+          if (rp && rp.life === 'alive') {
+            rp.armor = rp.shield;
+            if (rp.hp <= 0) this.transitionHeroToDownedOrDead(rp);
+          }
+        }
+        this.checkBossPhaseBurst(entry, b.hp, b.maxHp, b.x, b.y);
+        if (!b.alive || b.hp <= 0) {
+          this.handleBossDeath(entry, b.x, b.y);
+          this.activeBosses.splice(i, 1);
+        }
       }
+    }
+  }
+
+  private collectGachaSkillHeroes(): GachaSkillHeroRef[] {
+    const heroes: GachaSkillHeroRef[] = [];
+    for (let i = 0; i < this.players.length; i++) {
+      const p = this.players[i];
+      if (p.left || p.life !== 'alive') continue;
+      heroes.push({
+        id: p.id,
+        idx: p.idx,
+        x: p.x,
+        y: p.y,
+        alive: p.alive,
+        downed: p.downed,
+        dmgMul: p.mods.dmgMul * (p.gachaMods?.dmgMult ?? 1),
+        skillStacks: p.skillStacks,
+      });
+    }
+    return heroes;
+  }
+
+  private stepHeroGachaSkills(): void {
+    const heroes = this.collectGachaSkillHeroes();
+    if (heroes.length === 0) return;
+
+    const enemies: GachaSkillEnemyRef[] = [];
+    for (let i = 0; i < this.mobMgr.mobs.length; i++) {
+      const m = this.mobMgr.mobs[i];
+      if (!m.alive || m.hp <= 0) continue;
+      enemies.push({ id: m.numId, x: m.x, y: m.y, radius: m.radius, isBoss: false, alive: true });
+    }
+    for (let i = 0; i < this.activeBosses.length; i++) {
+      const entry = this.activeBosses[i];
+      const pos = this.getBossPosAndAim(entry);
+      if (!pos || !pos.alive) continue;
+      const radius =
+        entry.kind === 'boss_beholder'
+          ? BANSUNG_ENEMIES.boss_beholder.radius
+          : entry.boss.radius;
+      enemies.push({ id: entry.numId, x: pos.x, y: pos.y, radius, isBoss: true, alive: true });
+    }
+
+    const dmgCtx = this.buildDamageContext();
+    let hitAnyBoss = false;
+    stepGachaSkills(this.gachaSkillsState, heroes, enemies, this.elapsedMs, DT_MS, (ev) => {
+      const owner = this.playerById.get(ev.ownerId);
+      const mob = this.mobMgr.mobByNumId.get(ev.targetId);
+      if (mob && mob.alive) {
+        if ((ev.pullDx || ev.pullDy) && mob.tier !== 'boss') {
+          const [nx, ny] = clampPointToPlayable(
+            this.arena,
+            mob.x + (ev.pullDx ?? 0),
+            mob.y + (ev.pullDy ?? 0),
+            mob.radius,
+          );
+          mob.x = nx;
+          mob.y = ny;
+        }
+        if (ev.damage > 0) {
+          const hitRes = applyBansungDamage(
+            mob,
+            { baseDmg: ev.damage, dmgKind: ev.dmgKind, attackerId: ev.ownerId },
+            dmgCtx,
+          );
+          if (owner && !hitRes.blocked && hitRes.totalDmg > 0) {
+            owner.stats.damageDealt += hitRes.totalDmg;
+          }
+          if (ev.applyBurn && mob.alive) {
+            applyDot(mob, 'burn', ev.ownerId, { rng: this.rng, fx: this.fx });
+          }
+          if (!mob.alive || mob.hp <= 0) {
+            this.recordMobDeath(mob, ev.ownerId);
+          }
+        }
+        return;
+      }
+
+      if (ev.damage <= 0) return;
+      for (const entry of this.activeBosses) {
+        if (entry.numId !== ev.targetId) continue;
+        const hit = { baseDmg: ev.damage, dmgKind: ev.dmgKind, attackerId: ev.ownerId };
+        let hitRes: BansungDamageResult | undefined;
+        let dotTarget: BansungCombatTarget | undefined;
+        if (entry.kind === 'boss_beholder' && !entry.boss.isDead()) {
+          hitRes = entry.boss.applyHit(hit, dmgCtx);
+        } else if (entry.kind === 'boss_colossus' && entry.boss.alive) {
+          hitRes = damageDreadColossus(entry.boss, hit, dmgCtx);
+          dotTarget = entry.boss;
+        } else if (entry.kind === 'boss_overlord' && entry.boss.alive) {
+          hitRes = damageOverlordBoss(entry.boss, hit, dmgCtx);
+          dotTarget = entry.boss;
+        } else if (
+          (entry.kind === 'boss_arsenal' ||
+            entry.kind === 'boss_tempest' ||
+            entry.kind === 'boss_destroyer' ||
+            entry.kind === 'boss_frost_empress' ||
+            entry.kind === 'boss_abyssal_leviathan' ||
+            entry.kind === 'boss_storm_herald') &&
+          entry.boss.alive
+        ) {
+          hitRes = applyBansungDamage(entry.boss.combatTarget, hit, dmgCtx);
+          dotTarget = entry.boss.combatTarget;
+        }
+        if (hitRes && !hitRes.blocked && hitRes.totalDmg > 0) {
+          hitAnyBoss = true;
+          if (owner) {
+            owner.stats.damageDealt += hitRes.totalDmg;
+            owner.stats.bossDamage += hitRes.totalDmg;
+          }
+        }
+        if (ev.applyBurn && dotTarget && dotTarget.alive) {
+          applyDot(dotTarget, 'burn', ev.ownerId, { rng: this.rng, fx: this.fx });
+        }
+        break;
+      }
+    });
+    if (hitAnyBoss) {
+      this.reconcileAuxAndBossTargets();
     }
   }
 
@@ -3717,6 +3913,37 @@ export class BansungWorld implements BotWorldView {
           bossY: leviathan.y,
           scale: opts.scale,
           armor: leviathan.armor,
+        }),
+        lastPhaseBurstPctIdx: 0,
+        deadEmitted: false,
+      });
+    } else if (opts.kind === 'boss_storm_herald') {
+      const stormHerald = createStormHeraldBoss({
+        id: numId,
+        x: opts.x,
+        y: opts.y,
+        hpMult: opts.hpMult,
+        radiusScale: opts.scale,
+        arenaBounds: {
+          minX: this.arena.playable.x0,
+          minY: this.arena.playable.y0,
+          maxX: this.arena.playable.x1,
+          maxY: this.arena.playable.y1,
+        },
+      });
+      this.activeBosses.push({
+        ...meta,
+        kind: 'boss_storm_herald',
+        numId,
+        boss: stormHerald,
+        partGroup: createBossPartGroup({
+          bossId: numId,
+          kind: 'boss_storm_herald',
+          bossMaxHp: stormHerald.maxHp,
+          bossX: stormHerald.x,
+          bossY: stormHerald.y,
+          scale: opts.scale,
+          armor: stormHerald.armor,
         }),
         lastPhaseBurstPctIdx: 0,
         deadEmitted: false,
@@ -4350,7 +4577,8 @@ export class BansungWorld implements BotWorldView {
         entry.kind === 'boss_tempest' ||
         entry.kind === 'boss_destroyer' ||
         entry.kind === 'boss_frost_empress' ||
-        entry.kind === 'boss_abyssal_leviathan'
+        entry.kind === 'boss_abyssal_leviathan' ||
+        entry.kind === 'boss_storm_herald'
       ) {
         if (entry.boss.id === actorId) return entry.boss.combatTarget;
       }
@@ -4489,7 +4717,8 @@ export class BansungWorld implements BotWorldView {
         entry.kind === 'boss_tempest' ||
         entry.kind === 'boss_destroyer' ||
         entry.kind === 'boss_frost_empress' ||
-        entry.kind === 'boss_abyssal_leviathan'
+        entry.kind === 'boss_abyssal_leviathan' ||
+        entry.kind === 'boss_storm_herald'
       ) {
         entry.boss.hp = Math.max(0, entry.boss.combatTarget.hp);
         if (entry.boss.hp <= 0 && entry.boss.alive) {
@@ -4581,6 +4810,9 @@ export class BansungWorld implements BotWorldView {
         } else if (entry.kind === 'boss_abyssal_leviathan') {
           entry.boss.hp = Math.max(1, bossTarget.hp);
           stunLeviathanBoss(entry.boss, ev.stunMs, ev.unlockedSkill);
+        } else if (entry.kind === 'boss_storm_herald') {
+          entry.boss.hp = Math.max(1, bossTarget.hp);
+          stunStormHeraldBoss(entry.boss, ev.stunMs, ev.unlockedSkill);
         }
 
         this.fx.push(
@@ -5185,7 +5417,8 @@ export class BansungWorld implements BotWorldView {
           entry.kind === 'boss_tempest' ||
           entry.kind === 'boss_destroyer' ||
           entry.kind === 'boss_frost_empress' ||
-          entry.kind === 'boss_abyssal_leviathan') &&
+          entry.kind === 'boss_abyssal_leviathan' ||
+          entry.kind === 'boss_storm_herald') &&
         entry.boss.alive
       ) {
         const b = entry.boss;
@@ -5491,6 +5724,28 @@ export class BansungWorld implements BotWorldView {
             flags,
           ],
         });
+      } else if (entry.kind === 'boss_storm_herald' && entry.boss.alive) {
+        const b = entry.boss;
+        const hpPct = b.maxHp > 0 ? Math.max(1, Math.min(100, Math.round((b.hp / b.maxHp) * 100))) : 0;
+        const unitState = toStormHeraldBossFrame(b, Boolean(entry.miniBoss)).state;
+        const flags =
+          (Math.cos(b.aimRad) < 0 ? BANSUNG_EFLAG_LEFT : 0) |
+          BANSUNG_EFLAG_ARMORED |
+          (b.stunTicks > 0 ? BANSUNG_EFLAG_STUNNED : 0);
+        this.enemyBuckets.insert({
+          x: b.x,
+          y: b.y,
+          tuple: [
+            b.id,
+            BANSUNG_ENEMY_INDEX.boss_storm_herald,
+            Math.round(b.x),
+            Math.round(b.y),
+            hpPct,
+            quantizeAim(b.aimRad),
+            unitState,
+            flags,
+          ],
+        });
       }
     }
 
@@ -5635,6 +5890,8 @@ export class BansungWorld implements BotWorldView {
         frame = toFrostEmpressBossFrame(entry.boss, Boolean(entry.miniBoss));
       } else if (entry.kind === 'boss_abyssal_leviathan' && entry.boss.alive) {
         frame = toLeviathanBossFrame(entry.boss, Boolean(entry.miniBoss));
+      } else if (entry.kind === 'boss_storm_herald' && entry.boss.alive) {
+        frame = toStormHeraldBossFrame(entry.boss, Boolean(entry.miniBoss));
       }
       if (!frame) continue;
       frame.hpBars = frame.hpBars ?? getBossHpBars(entry.kind, Boolean(entry.miniBoss));
@@ -5808,7 +6065,8 @@ export class BansungWorld implements BotWorldView {
           ka === BANSUNG_ENEMY_INDEX.boss_tempest ||
           ka === BANSUNG_ENEMY_INDEX.boss_destroyer ||
           ka === BANSUNG_ENEMY_INDEX.boss_frost_empress ||
-          ka === BANSUNG_ENEMY_INDEX.boss_abyssal_leviathan
+          ka === BANSUNG_ENEMY_INDEX.boss_abyssal_leviathan ||
+          ka === BANSUNG_ENEMY_INDEX.boss_storm_herald
             ? 1
             : 0;
         const bBoss =
@@ -5819,7 +6077,8 @@ export class BansungWorld implements BotWorldView {
           kb === BANSUNG_ENEMY_INDEX.boss_tempest ||
           kb === BANSUNG_ENEMY_INDEX.boss_destroyer ||
           kb === BANSUNG_ENEMY_INDEX.boss_frost_empress ||
-          kb === BANSUNG_ENEMY_INDEX.boss_abyssal_leviathan
+          kb === BANSUNG_ENEMY_INDEX.boss_abyssal_leviathan ||
+          kb === BANSUNG_ENEMY_INDEX.boss_storm_herald
             ? 1
             : 0;
         if (aBoss !== bBoss) return bBoss - aBoss;
@@ -5982,6 +6241,8 @@ export class BansungWorld implements BotWorldView {
       }
     }
 
+    const orbs = packPlayerGachaOrbs(this.collectGachaSkillHeroes());
+    const sw = packSpiritSwords(this.gachaSkillsState, x0, y0, x1, y1);
     const frame: BansungFrame = {
       t: this.tickNo,
       ms: Math.round(this.elapsedMs),
@@ -5999,6 +6260,8 @@ export class BansungWorld implements BotWorldView {
       ...(pets.length > 0 ? { pets } : {}),
       ...(hz.length > 0 ? { hz } : {}),
       ...(tg.length > 0 ? { tg } : {}),
+      ...(orbs.length > 0 ? { orbs } : {}),
+      ...(sw.length > 0 ? { sw } : {}),
       ...(srv !== undefined ? { srv } : {}),
       ...(viewer ? { me: this.buildPrivateFor(viewer, isInitial) } : {}),
       ...(isInitial ? { full: true } : {}),
