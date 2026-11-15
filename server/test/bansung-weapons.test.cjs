@@ -2419,3 +2419,168 @@ test('T09.5 new Gacha skills: lightning orbs, fire orbs burn, 5s homing pull spi
   assert.equal(pedestal.x, pedStartX, 'skill_magnet must NEVER pull weapon_pedestal');
   assert.equal(pedestal.y, pedStartY, 'skill_magnet must NEVER move weapon_pedestal');
 });
+
+test('T10 Laser Vanguard hero: slow fire rate + high damage passive, laser_cannon starter & [F] prism_overcharge mega-beam', (t) => {
+  assert.ok(S.BANSUNG_HERO_IDS.includes('laser'), 'laser must be registered in BANSUNG_HERO_IDS');
+  assert.equal(S.BANSUNG_HERO_IDS.length, 5);
+  const laserHero = S.getBansungHero('laser');
+  assert.equal(laserHero.name, 'Laser Vanguard');
+  assert.equal(laserHero.starterWeapon, 'laser_cannon');
+  assert.equal(laserHero.hp, 5);
+  assert.equal(laserHero.shield, 6);
+  assert.equal(laserHero.energy, 280);
+  assert.equal(laserHero.activeSkill.id, 'prism_overcharge');
+
+  // Passive trade-off: -25% fire rate, +32% damage
+  const statTarget = {
+    heroId: 'laser',
+    hp: 50,
+    maxHp: 50,
+    baseMaxHp: 50,
+    shield: 60,
+    maxShield: 60,
+    baseMaxShield: 60,
+    energy: 280,
+    maxEnergy: 280,
+    baseMaxEnergy: 280,
+    energyRegenPerS: 18,
+    baseMoveSpeed: 185,
+    moveSpeed: 185,
+    alive: true,
+    downed: false,
+    perks: [],
+    mods: P.aggregatePerkMods([]),
+  };
+  P.recomputeHeroStats(statTarget);
+  assert.ok(Math.abs(statTarget.mods.dmgMul - 1.32) < 1e-6, `expected dmgMul=1.32, got ${statTarget.mods.dmgMul}`);
+  assert.ok(Math.abs(statTarget.mods.fireRateMul - 0.75) < 1e-6, `expected fireRateMul=0.75, got ${statTarget.mods.fireRateMul}`);
+
+  const { BansungWorld } = require('../dist/server/src/game/bansung/world.js');
+  const { spawnMob } = require('../dist/server/src/game/bansung/mobs.js');
+  const noopHooks = { tick() {}, changed() {}, roomMeta() {}, frame() {}, log() {}, end() {} };
+  const world = new BansungWorld(
+    [{ id: 'p0', name: 'LaserAce', hero: 'laser' }],
+    { bots: 0, biome: 'cyber', difficulty: 'normal', gameMode: 'survival' },
+    noopHooks,
+    { seed: 7777, skipWarmup: true },
+  );
+  t.after(() => world.stop());
+  world.step();
+
+  const p = world.players[0];
+  assert.equal(p.heroId, 'laser');
+  assert.equal(p.weaponState.activeSlot, 1);
+  assert.equal(p.weaponState.slots[1].weaponId, 'laser_cannon');
+  p.invulnMs = 30_000;
+  world.mobMgr.mobs.length = 0;
+  world.mobMgr.mobByNumId.clear();
+
+  // Drain clip partially, align a distant mob + an active boss along +X aim, then cast [F] prism_overcharge
+  p.weaponState.slots[1].ammoInMag = 1;
+  const farMob = spawnMob(world.mobMgr, {
+    kind: 'cactus_brute',
+    x: p.x + 950,
+    y: p.y - 8,
+    playerCount: 1,
+    wave: 1,
+    difficulty: 'normal',
+  });
+  farMob.hp = 900;
+  farMob.maxHp = 900;
+  farMob.stunMs = 10_000;
+
+  world.spawnWaveBoss({ id: 'boss_storm_herald', x: p.x + 1450, y: p.y - 6, hpMult: 1, mini: false, count: 1 });
+  const bossEntry = world.activeBosses[0];
+  assert.ok(bossEntry, 'boss_storm_herald should be active');
+  bossEntry.boss.x = p.x + 1450;
+  bossEntry.boss.y = p.y - 6;
+  bossEntry.boss.combatTarget.x = bossEntry.boss.x;
+  bossEntry.boss.combatTarget.y = bossEntry.boss.y;
+  const bossInitHp = bossEntry.boss.combatTarget.hp + bossEntry.boss.combatTarget.shield;
+
+  assert.equal(
+    world.enqueueCommand('p0', { t: 'skill', x: p.x + 1000, y: p.y }, { nowMs: 2000 }).ok,
+    true,
+  );
+  world.step();
+  const snap = world.frameFor('p0', true);
+
+  assert.equal(
+    p.weaponState.slots[1].ammoInMag,
+    S.BANSUNG_WEAPONS.laser_cannon.magSize,
+    'prism_overcharge must refill laser_cannon clip',
+  );
+  assert.ok(p.mods.dmgMul > 1.7, `prism_overcharge active buff must stack onto 1.32x passive (got ${p.mods.dmgMul})`);
+  assert.ok(farMob.hp < 900, `2200px piercing mega-beam must hit distant mob at +950px (hp=${farMob.hp})`);
+  const bossAfterHp = bossEntry.boss.combatTarget.hp + bossEntry.boss.combatTarget.shield;
+  assert.ok(bossAfterHp < bossInitHp, `prism_overcharge must pierce & damage active boss (${bossInitHp} -> ${bossAfterHp})`);
+  assert.ok(
+    Array.isArray(snap.fx) && snap.fx.includes(S.BANSUNG_FX_BEAM_LASER_MAP),
+    'snapshot fx must emit BANSUNG_FX_BEAM_LASER_MAP for prism_overcharge',
+  );
+});
+
+test('T10.2 softened mob scaling, boosted special/laser drops across all 3 biomes & CC0 OSS VFX/boss sprites', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+
+  // 1) Softened mob tankiness & damage scaling
+  const lv3 = S.computeMobLevelScaling(3);
+  assert.ok(lv3.hpMult <= 1.5, `Lv3 mob hpMult should stay moderate (<=1.5, got ${lv3.hpMult})`);
+  assert.ok(lv3.dmgMult <= 1.25, `Lv3 mob dmgMult should stay moderate (<=1.25, got ${lv3.dmgMult})`);
+  assert.ok(lv3.armorBonus <= 4, `Lv3 mob flat armorBonus should stay <=4 (got ${lv3.armorBonus})`);
+  assert.ok(S.computeMobHpMult(5, 1, 'normal') <= 1.6, 'Wave 5 solo mob HP mult must stay tuned down');
+  assert.ok(S.computeMobDmgMult(5, 'normal') <= 1.25, 'Wave 5 mob DMG mult must stay tuned down');
+
+  // 2) Every biome pool includes laser/special weapons & rollPedestalWeapon favors special/laser guns
+  const basicSet = new Set(['pistol', 'rifle', 'smg', 'shotgun', 'dual_pistols', 'twin_smg', 'sniper_rifle']);
+  const laserSet = new Set(['laser_cannon', 'railgun', 'ion_beam', 'orbital_cannon', 'plasma_rifle', 'void_cannon', 'tesla_coil']);
+  for (const biome of ['desert', 'crypt', 'cyber']) {
+    const pool = S.buildArenaMap(biome, 1234).pedestals[0].weaponPool;
+    assert.ok(pool.includes('laser_cannon'), `${biome} pedestal pool must include laser_cannon`);
+    assert.ok(pool.some((w) => S.BANSUNG_WEAPONS[w]?.rarity === 'celestial' || S.BANSUNG_WEAPONS[w]?.rarity === 'mythic'), `${biome} pool must include mythic/celestial guns`);
+
+    const rng = makeRng(20261115 + biome.length);
+    let specialHits = 0;
+    let laserHits = 0;
+    const trials = 300;
+    for (let i = 0; i < trials; i++) {
+      const wave = (i % 8) + 1;
+      const wid = P.rollPedestalWeapon(wave, [], { rng, allowedWeapons: pool });
+      if (!basicSet.has(wid)) specialHits++;
+      if (laserSet.has(wid)) laserHits++;
+    }
+    assert.ok(specialHits / trials >= 0.72, `${biome} pedestals across waves 1-8 must strongly favor special guns (got ${specialHits}/${trials})`);
+    assert.ok(laserHits >= 45, `${biome} pedestals must frequently roll laser/beam/plasma weapons (got ${laserHits}/${trials})`);
+  }
+
+  // 3) Verified CC0 OSS sprites for Light Sword, Fireball, Lightning & all 9 Bosses exist in manifest.json
+  const manifest = JSON.parse(
+    fs.readFileSync(path.resolve(__dirname, '../../database-ban-sung/manifest.json'), 'utf8'),
+  );
+  for (const key of [
+    'fx_light_sword',
+    'fx_light_slash',
+    'fx_fire_orb',
+    'fx_lightning_orb',
+    'fx_lightning_bolt_blue',
+    'fx_lightning_bolt_yellow',
+    'hero_laser_idle',
+    'ui_portrait_laser',
+    'boss_arsenal_idle',
+    'boss_beholder_idle',
+    'boss_colossus_idle',
+    'boss_overlord_idle',
+    'boss_tempest_idle',
+    'boss_destroyer_idle',
+    'boss_frost_empress_idle',
+    'boss_abyssal_leviathan_idle',
+    'boss_storm_herald_idle',
+  ]) {
+    assert.ok(manifest.sprites[key], `manifest.json missing sprite key: ${key}`);
+  }
+  assert.equal(manifest.sprites.fx_light_sword.sourceId, 'crawl_tiles_cc0');
+  assert.equal(manifest.sprites.fx_fire_orb.sourceId, 'crawl_tiles_cc0');
+  assert.equal(manifest.sprites.fx_lightning_bolt_yellow.sourceId, 'crawl_tiles_cc0');
+  assert.equal(manifest.sprites.boss_storm_herald_idle.sourceId, 'crawl_tiles_cc0');
+});
