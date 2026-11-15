@@ -531,8 +531,26 @@ function matchesPedestalTier(
     // Include uncommon firearms/launchers in early-wave pedestals so common isn't only crescent_blade.
     return rarity === 'common' || rarity === 'uncommon';
   }
+  if (tier === 'legendary') {
+    return rarity === 'legendary' || rarity === 'celestial' || rarity === 'mythic';
+  }
   return rarity === tier;
 }
+
+const FEATURED_LASER_AND_SPECIAL_WEAPONS = new Set<BansungWeaponId>([
+  'laser_cannon',
+  'ion_beam',
+  'railgun',
+  'plasma_rifle',
+  'electric_gun',
+  'tesla_coil',
+  'void_cannon',
+  'orbital_cannon',
+  'chronos_rifle',
+  'plasma_shotgun',
+  'lightning_staff',
+  'arcane_book',
+]);
 
 /**
  * Rolls a weapon ID for a `[E]` pedestal using wave tier weights (`d32`),
@@ -606,8 +624,18 @@ export function rollPedestalWeapon(
             ? fallbackAll
             : BANSUNG_WEAPON_IDS;
 
-  const pickIdx = Math.floor(clamp(rng(), 0, 0.9999999) * pool.length);
-  return pool[pickIdx];
+  let totalWeight = 0;
+  for (let i = 0; i < pool.length; i++) {
+    const id = pool[i];
+    totalWeight += FEATURED_LASER_AND_SPECIAL_WEAPONS.has(id) ? 2.4 : 1.0;
+  }
+  let r = clamp(rng(), 0, 0.9999999) * totalWeight;
+  for (let i = 0; i < pool.length; i++) {
+    const id = pool[i];
+    r -= FEATURED_LASER_AND_SPECIAL_WEAPONS.has(id) ? 2.4 : 1.0;
+    if (r <= 0) return id;
+  }
+  return pool[pool.length - 1];
 }
 
 // ============================================================================
@@ -710,6 +738,11 @@ export function recomputeHeroStats(
   registry: Record<string, PerkDef> = BANSUNG_PERKS,
 ): AggregatedPerkMods {
   const mods = aggregatePerkMods(hero.perks, registry);
+  // Laser Vanguard signature passive: slow fire rate (-25% ROF), massive burst damage (+32% DMG)
+  if (hero.heroId === 'laser') {
+    mods.dmgMul *= 1.32;
+    mods.fireRateMul *= 0.75;
+  }
   hero.mods = mods;
 
   const heroSpec = hero.heroId ? getBansungHero(hero.heroId) : undefined;

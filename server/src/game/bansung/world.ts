@@ -22,6 +22,7 @@ import {
   BANSUNG_EFLAG_STUNNED,
   BANSUNG_ENEMIES,
   BANSUNG_ENEMY_INDEX,
+  BANSUNG_FX_BEAM_LASER_MAP,
   BANSUNG_FX_BEAM_RAIL,
   BANSUNG_FX_BLAST_HE,
   BANSUNG_FX_BLAST_HERO_NOVA,
@@ -668,6 +669,7 @@ const HERO_DEFAULT_GADGET: Readonly<Record<BansungHeroId, BansungGadgetId>> = {
   ranger: 'stun_bomb',
   pyro: 'heal_drone',
   knight: 'auto_turret',
+  laser: 'stun_bomb',
 };
 
 const BOSS_PHASE_BURST_THRESHOLDS = [0.75, 0.5, 0.25] as const;
@@ -1848,11 +1850,16 @@ export class BansungWorld implements BotWorldView {
       p.mods = aggregatePerkMods(p.perks);
       p.skillCdMs = Math.max(0, p.skillCdMs - DT_MS);
       p.skillActiveMs = Math.max(0, p.skillActiveMs - DT_MS);
+      recomputeHeroStats(p);
       if (p.heroId === 'mascot' && p.skillActiveMs > 0) {
         p.mods.fireRateMul *= 1.38;
         p.mods.moveSpeedMul *= 1.22;
+        p.speed = Math.round(p.speed * 1.22);
+        p.moveSpeed = p.speed;
+      } else if (p.heroId === 'laser' && p.skillActiveMs > 0) {
+        p.mods.dmgMul *= 1.35;
       }
-      recomputeHeroStats(p);
+      p.weaponState.mods = p.mods;
       p.reviveSpeedMul = p.mods.reviveSpeedMul;
       const auraMult = computeCoopAuraDamageMult(p, this.players);
       p.mods.coopAuraDmg = Math.max(0, auraMult - 1);
@@ -4937,6 +4944,131 @@ export class BansungWorld implements BotWorldView {
         if (binding.kind !== 'boss_part') continue;
         if (Math.hypot((binding.target.x ?? 0) - p.x, (binding.target.y ?? 0) - p.y) <= novaR + binding.radius) {
           applyBansungDamage(binding.target, { baseDmg: fireDmg, dmgKind: 'fire', attackerId: p.id }, dmgCtx);
+        }
+      }
+    } else if (p.heroId === 'laser') {
+      const snaps = buildWeaponSlotsSnapshot(p.weaponState);
+      for (const slot of p.weaponState.slots) {
+        if (!slot) continue;
+        const snap = snaps.find((s) => s?.id === slot.weaponId);
+        if (snap && snap.maxClip > 0) slot.ammoInMag = snap.maxClip;
+      }
+      p.weaponState.reload = null;
+      const beamLen = 2200;
+      const cosA = Math.cos(aimRad);
+      const sinA = Math.sin(aimRad);
+      const startX = p.x + cosA * 22;
+      const startY = p.y - 12 + sinA * 22;
+      const endX = startX + cosA * beamLen;
+      const endY = startY + sinA * beamLen;
+      this.fx.push(
+        FX_BEAM,
+        Math.round(startX),
+        Math.round(startY),
+        Math.round(endX),
+        Math.round(endY),
+        BANSUNG_FX_BEAM_LASER_MAP,
+      );
+      const beamDmg = Math.round(280 * (p.mods.dmgMul ?? 1) * (p.gachaMods?.dmgMult ?? 1));
+      const dmgCtx = this.buildDamageContext();
+      const hitLine = (tx: number, ty: number, r: number): boolean => {
+        const vx = tx - startX;
+        const vy = ty - startY;
+        const proj = vx * cosA + vy * sinA;
+        if (proj < -r || proj > beamLen + r) return false;
+        const perp = Math.abs(vx * sinA - vy * cosA);
+        return perp <= 36 + r;
+      };
+      for (const m of this.mobMgr.mobs) {
+        if (!m.alive || m.hp <= 0) continue;
+        if (hitLine(m.x, m.y, m.radius)) {
+          const res = applyBansungDamage(
+            m,
+            { baseDmg: beamDmg, dmgKind: 'energy', armorPiercePct: 0.65, attackerId: p.id },
+            dmgCtx,
+          );
+          if (!res.blocked && res.totalDmg > 0) p.stats.damageDealt += res.totalDmg;
+          if (!m.alive || m.hp <= 0) this.recordMobDeath(m, p.id);
+        }
+      }
+      for (const entry of this.activeBosses) {
+        if (entry.kind === 'boss_beholder') {
+          const s = entry.boss.state;
+          if (!entry.boss.isDead() && !entry.boss.isInvulnerable() && hitLine(s.x, s.y, entry.boss.radius)) {
+            const prevHp = s.hp;
+            entry.boss.applyHit(
+              { baseDmg: beamDmg, dmgKind: 'energy', armorPiercePct: 0.65, attackerId: p.id },
+              { rng: this.rng },
+            );
+            const dealt = Math.max(0, prevHp - entry.boss.state.hp);
+            p.stats.damageDealt += dealt;
+            p.stats.bossDamage += dealt;
+          }
+        } else if (entry.kind === 'boss_colossus') {
+          const b = entry.boss;
+          if (b.alive && b.hp > 0 && hitLine(b.x, b.y, b.radius)) {
+            const res = applyBansungDamage(
+              b,
+              { baseDmg: beamDmg, dmgKind: 'energy', armorPiercePct: 0.65, attackerId: p.id },
+              dmgCtx,
+            );
+            if (!res.blocked && res.totalDmg > 0) {
+              p.stats.damageDealt += res.totalDmg;
+              p.stats.bossDamage += res.totalDmg;
+            }
+          }
+          for (const d of b.drones) {
+            if (d.alive && d.hp > 0 && hitLine(d.x, d.y, d.radius)) {
+              const res = applyBansungDamage(
+                d,
+                { baseDmg: beamDmg, dmgKind: 'energy', armorPiercePct: 0.65, attackerId: p.id },
+                dmgCtx,
+              );
+              if (!res.blocked && res.totalDmg > 0) p.stats.damageDealt += res.totalDmg;
+            }
+          }
+        } else if (entry.kind === 'boss_overlord') {
+          const b = entry.boss;
+          if (b.alive && b.hp > 0 && hitLine(b.x, b.y, b.radius)) {
+            const res = applyBansungDamage(
+              b,
+              { baseDmg: beamDmg, dmgKind: 'energy', armorPiercePct: 0.65, attackerId: p.id },
+              dmgCtx,
+            );
+            if (!res.blocked && res.totalDmg > 0) {
+              p.stats.damageDealt += res.totalDmg;
+              p.stats.bossDamage += res.totalDmg;
+            }
+          }
+        } else {
+          const b = entry.boss;
+          if (b.alive && b.hp > 0 && hitLine(b.x, b.y, b.radius)) {
+            const res = applyBansungDamage(
+              b.combatTarget,
+              { baseDmg: beamDmg, dmgKind: 'energy', armorPiercePct: 0.65, attackerId: p.id },
+              dmgCtx,
+            );
+            if (!res.blocked && res.totalDmg > 0) {
+              p.stats.damageDealt += res.totalDmg;
+              p.stats.bossDamage += res.totalDmg;
+            }
+          }
+        }
+        const bPos = this.getBossPosAndAim(entry);
+        if (bPos && bPos.alive) {
+          syncBossPartsPositions(entry.partGroup, bPos.x, bPos.y, bPos.aimRad);
+          for (const part of entry.partGroup.parts) {
+            if (part.broken || !part.combatTarget.alive || part.combatTarget.hp <= 0) continue;
+            if (hitLine(part.x, part.y, part.radius)) {
+              const res = applyBansungDamage(
+                part.combatTarget,
+                { baseDmg: beamDmg, dmgKind: 'energy', armorPiercePct: 0.65, attackerId: p.id },
+                dmgCtx,
+              );
+              part.hp = Math.max(0, Math.round(part.combatTarget.hp));
+              if (!res.blocked && res.totalDmg > 0) p.stats.damageDealt += res.totalDmg;
+            }
+          }
         }
       }
     } else {
