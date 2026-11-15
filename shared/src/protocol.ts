@@ -5,10 +5,11 @@ import type { AntsRoomView } from './ants';
 import type { LinkRoomView } from './link';
 import type { LotoRoomView } from './loto';
 import type { ThapRoomView } from './thap';
+import type { BansungRoomView } from './bansung';
 
 export type Phase = 'lobby' | 'playing' | 'ended';
 
-export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire' | 'link_duel' | 'loto' | 'thap_hung';
+export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire' | 'link_duel' | 'loto' | 'thap_hung' | 'bansung';
 
 export const GAME_MODES: Record<
   GameMode,
@@ -69,6 +70,14 @@ export const GAME_MODES: Record<
     minPlayers: 1,
     maxPlayers: 10,
     desc: 'Miragine War 10 người realtime trên map rộng: 16 binh chủng nguyên bản (Giáp Nhẹ / Giáp Nặng), nhận lương mỗi 30 giây, Hành Quân Tấn Công Chỉ Định & Phòng Thủ, Solo 10 người hỗn chiến hoặc Co-op!',
+  },
+  bansung: {
+    name: 'Bắn Súng Co-op (Soul & Steel)',
+    shortName: 'Bắn Súng',
+    emoji: '🔫💥',
+    minPlayers: 1,
+    maxPlayers: 4,
+    desc: 'Co-op bắn súng sinh tồn 2.5D kiểu Soul Knight × Miragine War: 4 lớp nhân vật, nâng cấp kỹ năng & tiến hóa vũ khí, Boss săn mồi liên hoàn, lướt né, choáng & hồi sinh đồng đội.',
   },
 };
 
@@ -261,6 +270,8 @@ export interface RoomView {
   loto?: LotoRoomView;
   /** Thập Hùng Tranh Bá (từng nhịp gửi riêng qua 'thap:frame') */
   thap?: ThapRoomView;
+  /** Bắn Súng Co-op (từng nhịp gửi riêng qua 'bansung:frame') */
+  bansung?: BansungRoomView;
   /** Thưởng xu từng người sau ván */
   payouts?: Record<string, number>;
 }
