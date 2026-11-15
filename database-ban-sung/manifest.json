@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-15T02:09:57.524Z",
+  "generatedAt": "2026-11-15T07:27:40.947Z",
   "defaults": {
     "baseTilePx": 32,
     "nativeFacing": "right",
@@ -1269,6 +1269,91 @@
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
+      },
+      "sourceId": "generated_synth"
+    },
+    "boss_storm_herald": {
+      "path": "normalized/bosses/boss_storm_herald_idle.png",
+      "category": "boss",
+      "frames": 3,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 6,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_synth"
+    },
+    "boss_storm_herald_attack": {
+      "path": "normalized/bosses/boss_storm_herald_attack.png",
+      "category": "boss",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 14,
+      "loop": false,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_synth"
+    },
+    "boss_storm_herald_dead": {
+      "path": "normalized/bosses/boss_storm_herald_dead.png",
+      "category": "boss",
+      "frames": 4,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 10,
+      "loop": false,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_synth"
+    },
+    "boss_storm_herald_idle": {
+      "path": "normalized/bosses/boss_storm_herald_idle.png",
+      "category": "boss",
+      "frames": 3,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 6,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_synth"
+    },
+    "boss_storm_herald_run": {
+      "path": "normalized/bosses/boss_storm_herald_run.png",
+      "category": "boss",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 12,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
       },
       "sourceId": "generated_synth"
     },

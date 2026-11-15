@@ -2212,6 +2212,49 @@ function buildAbyssalLeviathanBoss() {
   );
 }
 
+function buildStormHeraldBoss() {
+  return makeStandardMobSpec(
+    'boss_storm_herald',
+    96,
+    ({ bob = 0, stride = 0, atk = 0, phase = 0, deadStage = -1 }) => {
+      const f = createImage(96, 96);
+      const cx = 48;
+      const footY = 90;
+      if (deadStage >= 0) {
+        fillShadedEllipse(f, cx - 8, footY - 7, 16, 7, { dark: C.ORANGE, mid: C.GOLD, light: C.YELLOW });
+        fillShadedEllipse(f, cx + 8, footY - 7, 16, 7, { dark: C.BLUE_DARK, mid: C.CYAN_MID, light: C.CYAN });
+        return f;
+      }
+      const by = footY - 30 + bob;
+      // Twin floating storm ground ring + armored storm robe
+      fillShadedEllipse(f, cx - 10, by + 18, 14, 6, { dark: C.ORANGE, mid: C.GOLD, light: C.YELLOW });
+      fillShadedEllipse(f, cx + 10, by + 18, 14, 6, { dark: C.BLUE_DARK, mid: C.CYAN_MID, light: C.CYAN });
+      fillShadedEllipse(f, cx, by - 5, 22, 22, { dark: C.NAVY_DEEP, mid: C.SLATE_DARK, light: C.SLATE_MID });
+      // Left Yellow Tesla Pylon & Right Blue Tempest Pylon
+      const coilShift = Math.round(stride * 0.5);
+      fillShadedEllipse(f, cx - 26, by - 8 + coilShift, 9, 15, { dark: C.ORANGE, mid: C.GOLD, light: C.YELLOW });
+      fillShadedEllipse(f, cx + 26, by - 8 - coilShift, 9, 15, { dark: C.BLUE_DARK, mid: C.CYAN_MID, light: C.CYAN });
+      // Crackling lightning conduits
+      drawThickLine(f, cx - 22, by - 12 + coilShift, cx - 9, by - 6, 2, C.YELLOW);
+      drawThickLine(f, cx + 22, by - 12 - coilShift, cx + 9, by - 6, 2, C.CYAN);
+      if (atk > 0 || phase) {
+        drawThickLine(f, cx - 26, by - 22 + coilShift, cx - 14, by - 36, 2, C.YELLOW);
+        drawThickLine(f, cx + 26, by - 22 - coilShift, cx + 14, by - 36, 2, C.CYAN);
+      }
+      // Dual yellow & blue reactor core + storm crown
+      fillEllipse(f, cx - 4, by - 6, 8 + atk, 9 + atk, C.YELLOW);
+      fillEllipse(f, cx + 4, by - 6, 8 + atk, 9 + atk, C.CYAN);
+      fillEllipse(f, cx, by - 6, 5, 5, C.BONE_LIGHT);
+      fillRect(f, cx - 12, by - 34, 24, 7, C.SLATE_MID);
+      fillRect(f, cx - 11, by - 32, 10, 3, C.YELLOW);
+      fillRect(f, cx + 1, by - 32, 10, 3, C.CYAN);
+      drawSpike(f, cx - 8, by - 34, cx - 14, by - 48, 3.5, C.GOLD, C.YELLOW);
+      drawSpike(f, cx + 8, by - 34, cx + 14, by - 48, 3.5, C.CYAN_MID, C.CYAN);
+      return f;
+    },
+  );
+}
+
 // ============================================================================
 // 3 BOSSES + SUB-UNITS (sprites/bosses/)
 // ============================================================================
@@ -3815,6 +3858,44 @@ async function main() {
     fs.mkdir(TILES_DIR, { recursive: true }),
   ]);
 
+  if (ARGS.has('--only-boss-storm')) {
+    const spec = buildStormHeraldBoss();
+    const added = [];
+    for (const [stateName, anim] of Object.entries(spec.anims)) {
+      const entry = await emitStrip({
+        id: `boss_storm_herald_${stateName}`,
+        dir: BOSSES_DIR,
+        rawFrames: anim.frames,
+        cellW: spec.cellW,
+        cellH: spec.cellH,
+        fps: anim.fps,
+        loop: anim.loop,
+        category: 'boss',
+        tier: spec.tier,
+        pivotMode: 'feet',
+        outlineMode: '4conn',
+        stripExistingOutline: true,
+        lockFirstFrameFoot: true,
+        footPadBottom: spec.footPadBottom ?? 2,
+        lutStrength: 1.0,
+        sourceId: spec.sourceId,
+        license: spec.license,
+        url: spec.url,
+        fallback: spec.fallback,
+      });
+      added.push(entry);
+    }
+    const existingMeta = JSON.parse(await fs.readFile(META_PATH, 'utf8'));
+    for (const e of added) {
+      existingMeta.sprites[e.id] = e;
+    }
+    existingMeta.summary.totalSprites = Object.keys(existingMeta.sprites).length;
+    existingMeta.summary.bosses = Object.values(existingMeta.sprites).filter((e) => e.category === 'boss').length;
+    await fs.writeFile(META_PATH, JSON.stringify(existingMeta, null, 2) + '\n', 'utf8');
+    console.log(`[w13] Added ${added.length} boss_storm_herald strips -> ${META_PATH}`);
+    return;
+  }
+
   console.log(`[w13] Loading OSS CC0 packs (${OFFLINE_MODE ? 'offline fallback' : 'live fetch + temp cache'})...`);
   const oss = await loadOssAssets();
   const okCount = oss.fetchLog.filter((l) => l.ok).length;
@@ -3891,6 +3972,7 @@ async function main() {
     ['boss_destroyer', buildDestroyerBoss()],
     ['boss_frost_empress', buildFrostEmpressBoss()],
     ['boss_abyssal_leviathan', buildAbyssalLeviathanBoss()],
+    ['boss_storm_herald', buildStormHeraldBoss()],
   ];
   for (const [bossId, spec] of bosses) {
     for (const [stateName, anim] of Object.entries(spec.anims)) {
