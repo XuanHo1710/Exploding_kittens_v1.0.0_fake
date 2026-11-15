@@ -54,7 +54,8 @@ export type BansungBossKind =
   | 'boss_tempest'
   | 'boss_destroyer'
   | 'boss_frost_empress'
-  | 'boss_abyssal_leviathan';
+  | 'boss_abyssal_leviathan'
+  | 'boss_storm_herald';
 
 export type BansungEnemyState =
   | 'idle'
@@ -177,6 +178,7 @@ export const BANSUNG_ENEMY_ORDER: readonly BansungEnemyId[] = [
   'volt_stalker',
   'solar_priest',
   'magma_brute',
+  'boss_storm_herald',
 ] as const;
 
 export const BANSUNG_MOB_IDS: readonly BansungEnemyId[] = [
@@ -201,6 +203,7 @@ export const BANSUNG_MOB_IDS: readonly BansungEnemyId[] = [
   'volt_stalker',
   'solar_priest',
   'magma_brute',
+  'boss_storm_herald',
 ] as const;
 export const BANSUNG_BOSS_IDS: readonly BansungEnemyId[] = [
   'boss_arsenal',
@@ -211,6 +214,7 @@ export const BANSUNG_BOSS_IDS: readonly BansungEnemyId[] = [
   'boss_destroyer',
   'boss_frost_empress',
   'boss_abyssal_leviathan',
+  'boss_storm_herald',
 ] as const;
 export const BANSUNG_SUMMON_IDS: readonly BansungEnemyId[] = ['iron_drone'] as const;
 
@@ -1467,6 +1471,40 @@ export const BANSUNG_ENEMIES: Record<BansungEnemyId, BansungEnemyStats> = {
       dead: [3, 48, 48, -24, -44, 9],
     },
   },
+  boss_storm_herald: {
+    kindId: 37,
+    id: 'boss_storm_herald',
+    name: 'Twin-Volt Storm Herald',
+    vnName: 'Lôi Thần Bão Sét',
+    isBoss: true,
+    role: 'boss',
+    unlockWave: 9,
+    cost: 0,
+    hp: 38000,
+    armorTypeID: 1,
+    armorType: 'armored',
+    armor: 28,
+    speed: 96,
+    radius: 52,
+    mass: 999,
+    kbResist: 1.0,
+    stunMult: 0.48,
+    damage: 30,
+    attackRange: 720,
+    preferredRange: [230, 380],
+    backoffDist: 150,
+    windupTicks: 28,
+    cooldownTicks: 42,
+    score: 8400,
+    shadowScale: 3.5,
+    nativeFacing: 'right',
+    anims: {
+      idle: [4, 160, 160, -80, -112, 8],
+      run: [4, 160, 160, -80, -112, 10],
+      attack: [4, 160, 160, -80, -112, 12, 1],
+      dead: [4, 160, 160, -80, -112, 8],
+    },
+  },
 };
 
 const ENEMY_ID_ALIASES: Record<string, BansungEnemyId> = {
@@ -1481,6 +1519,7 @@ const ENEMY_ID_ALIASES: Record<string, BansungEnemyId> = {
   frost_empress: 'boss_frost_empress',
   abyssal_leviathan: 'boss_abyssal_leviathan',
   leviathan: 'boss_abyssal_leviathan',
+  storm_herald: 'boss_storm_herald',
 };
 
 /** Resolves either a canonical `BansungEnemyId` or a design-doc alias to canonical ID. */
@@ -1551,6 +1590,7 @@ export const BANSUNG_BOSS_HP_BARS: Readonly<Record<BansungBossKind, number>> = {
   boss_beholder: 5,
   boss_tempest: 6,
   boss_frost_empress: 7,
+  boss_storm_herald: 8,
   boss_destroyer: 10,
   boss_abyssal_leviathan: 12,
 } as const;
@@ -2047,6 +2087,47 @@ export const BANSUNG_BOSS_BODY_PARTS: Readonly<Record<string, readonly BansungBo
       shatterBossHpRatio: 0.10,
       unlocksSkill: 'cataclysm_vortex',
       unlocksSkillVn: 'Đại Hồng Thủy Hố Đen',
+    },
+  ],
+  boss_storm_herald: [
+    {
+      id: 'yellow_condenser',
+      name: 'Gold Storm Condenser',
+      vnName: 'Lõi Tụ Sét Vàng',
+      hpRatio: 0.14,
+      offsetR: 44,
+      angleOffsetDeg: -90,
+      radius: 19,
+      stunMs: 2600,
+      shatterBossHpRatio: 0.08,
+      unlocksSkill: 'golden_tempest_overload',
+      unlocksSkillVn: 'Đại Bão Sét Vàng',
+    },
+    {
+      id: 'blue_condenser',
+      name: 'Azure Storm Condenser',
+      vnName: 'Lõi Tụ Sét Xanh',
+      hpRatio: 0.14,
+      offsetR: 44,
+      angleOffsetDeg: 90,
+      radius: 19,
+      stunMs: 2600,
+      shatterBossHpRatio: 0.08,
+      unlocksSkill: 'azure_storm_vortex',
+      unlocksSkillVn: 'Xoáy Bão Sét Xanh',
+    },
+    {
+      id: 'twin_storm_crown',
+      name: 'Twin-Storm Crown',
+      vnName: 'Vương Miện Song Lôi',
+      hpRatio: 0.16,
+      offsetR: 26,
+      angleOffsetDeg: 0,
+      radius: 21,
+      stunMs: 3000,
+      shatterBossHpRatio: 0.09,
+      unlocksSkill: 'dual_storm_cataclysm',
+      unlocksSkillVn: 'Cộng Hưởng Song Bão Sét',
     },
   ],
 } as const;
@@ -2682,6 +2763,30 @@ export const BOSS_LEVIATHAN_CFG = {
   summonCooldownTicks: 215,
 } as const;
 
+export const BOSS_STORM_HERALD_CFG = {
+  baseHp: 38000,
+  hpBars: 8,
+  radius: 52,
+  armor: 28,
+  baseDr: 0.36,
+  speedP1: 96,
+  speedP2: 122,
+  phase2Ratio: 0.55,
+  stunMult: 0.48,
+  yellowStormCount: 5,
+  yellowWarningTicks: 34,
+  yellowRadius: 68,
+  yellowBurstDmg: 32,
+  yellowHazardTtlMs: 3800,
+  yellowHazardDps: 22,
+  blueStormCount: 5,
+  blueWarningTicks: 32,
+  blueRadius: 64,
+  blueBurstDmg: 26,
+  blueHazardTtlMs: 4200,
+  blueHazardDps: 18,
+} as const;
+
 // --- Boss 3: Overlord Gunship Core (d39) ---
 
 export type OverlordState =
@@ -3158,6 +3263,7 @@ export const BANSUNG_ENDLESS_BOSS_ROTATION: readonly BansungEnemyId[] = [
   'boss_beholder',
   'boss_tempest',
   'boss_frost_empress',
+  'boss_storm_herald',
   'boss_destroyer',
   'boss_abyssal_leviathan',
 ];
@@ -3435,6 +3541,7 @@ export const BANSUNG_SURVIVAL_BOSS_ORDER: readonly BansungEnemyId[] = [
   'boss_beholder',
   'boss_frost_empress',
   'boss_tempest',
+  'boss_storm_herald',
   'boss_destroyer',
   'boss_abyssal_leviathan',
   'boss_destroyer',
@@ -3863,6 +3970,7 @@ const ENEMY_BASE_XP_ORB: Record<
   boss_tempest: { kind: 'xp_orb_l', count: 8 },
   boss_destroyer: { kind: 'xp_orb_l', count: 14 },
   boss_frost_empress: { kind: 'xp_orb_l', count: 10 },
+  boss_storm_herald: { kind: 'xp_orb_l', count: 12 },
   boss_abyssal_leviathan: { kind: 'xp_orb_l', count: 18 },
 };
 

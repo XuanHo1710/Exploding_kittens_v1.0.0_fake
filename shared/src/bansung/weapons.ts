@@ -4138,6 +4138,10 @@ export const BANSUNG_GACHA_SKILL_CATEGORIES: readonly BansungGachaSkillCategory[
   'skill_multishot',
   'skill_crit',
   'skill_mobility',
+  'skill_lightning_orb',
+  'skill_fire_orb',
+  'skill_spirit_sword',
+  'skill_magnet',
 ] as const;
 
 export interface BansungGachaSkillSpec {
@@ -4159,8 +4163,21 @@ export interface BansungGachaSkillSpec {
   maxStacks: number;
 }
 
-type BaseGachaRarity = 'common' | 'rare' | 'epic' | 'legendary';
-type ExtendedGachaRarity = 'celestial' | 'mythic' | 'prismatic';
+type TierTuple = readonly [
+  value: number,
+  secondaryValue: number,
+  tertiaryValue: number,
+  badge: string,
+  desc: string,
+  vnDesc: string,
+];
+
+interface SkillCategoryConfig {
+  title: string;
+  vnTitle: string;
+  maxStacks: number;
+  tiers: Readonly<Record<BansungGachaRarity, TierTuple>>;
+}
 
 const GACHA_RARITIES: readonly BansungGachaRarity[] = [
   'common',
@@ -4172,798 +4189,231 @@ const GACHA_RARITIES: readonly BansungGachaRarity[] = [
   'prismatic',
 ] as const;
 
-interface ExtendedTierSpec {
-  suffixEn: string;
-  suffixVn: string;
-  badge: string;
-  desc: string;
-  vnDesc: string;
-  value: number;
-  secondaryValue: number;
-  tertiaryValue?: number;
-}
+const RARITY_SUFFIX: Readonly<Record<BansungGachaRarity, { en: string; vn: string }>> = {
+  common: { en: '^', vn: '^' },
+  rare: { en: '^ II', vn: '^ II' },
+  epic: { en: '^ III', vn: '^ III' },
+  legendary: { en: '^^', vn: '^^' },
+  celestial: { en: '^^ IV', vn: '^^ IV' },
+  mythic: { en: '^^ V', vn: '^^ V' },
+  prismatic: { en: '^^ 777', vn: '^^ 777' },
+};
 
-const EXTENDED_SKILL_TIERS: Readonly<
-  Record<BansungGachaSkillCategory, Readonly<Record<ExtendedGachaRarity, ExtendedTierSpec>>>
-> = {
+const SKILL_CATEGORY_CONFIGS: Readonly<Record<BansungGachaSkillCategory, SkillCategoryConfig>> = {
   skill_damage: {
-    celestial: {
-      suffixEn: 'Celestial IV',
-      suffixVn: 'Thiên Thanh IV',
-      badge: '+36% DMG',
-      desc: '+36% all weapon & gadget damage',
-      vnDesc: '+36% Sát thương súng & kỹ năng',
-      value: 0.36,
-      secondaryValue: 0,
-    },
-    mythic: {
-      suffixEn: 'Mythic V',
-      suffixVn: 'Huyết Thần V',
-      badge: '+44% DMG',
-      desc: '+44% all weapon & gadget damage',
-      vnDesc: '+44% Sát thương súng & kỹ năng',
-      value: 0.44,
-      secondaryValue: 0,
-    },
-    prismatic: {
-      suffixEn: 'Prismatic 777',
-      suffixVn: 'Cầu Vồng 777',
-      badge: '+54% DMG',
-      desc: '+54% all weapon & gadget damage',
-      vnDesc: '+54% Sát thương súng & kỹ năng',
-      value: 0.54,
-      secondaryValue: 0,
+    title: 'Light Ordinance',
+    vnTitle: 'Tăng Nhẹ Sát Thương',
+    maxStacks: 10,
+    tiers: {
+      common: [0.05, 0, 0, '^ +5% DMG', '^ +5% weapon & skill damage', '^ +5% Sát thương súng & kỹ năng'],
+      rare: [0.06, 0, 0, '^ +6% DMG', '^ +6% weapon & skill damage', '^ +6% Sát thương súng & kỹ năng'],
+      epic: [0.07, 0, 0, '^ +7% DMG', '^ +7% weapon & skill damage', '^ +7% Sát thương súng & kỹ năng'],
+      legendary: [0.10, 0, 0, '^^ +10% DMG', '^^ +10% weapon & skill damage', '^^ +10% Sát thương súng & kỹ năng'],
+      celestial: [0.12, 0, 0, '^^ +12% DMG', '^^ +12% weapon & skill damage', '^^ +12% Sát thương súng & kỹ năng'],
+      mythic: [0.14, 0, 0, '^^ +14% DMG', '^^ +14% weapon & skill damage', '^^ +14% Sát thương súng & kỹ năng'],
+      prismatic: [0.16, 0, 0, '^^ +16% DMG', '^^ +16% weapon & skill damage', '^^ +16% Sát thương súng & kỹ năng'],
     },
   },
   skill_hp: {
-    celestial: {
-      suffixEn: 'Celestial IV',
-      suffixVn: 'Thiên Thanh IV',
-      badge: '+165 HP',
-      desc: '+165 Max HP, +85 Shield & Full Heal',
-      vnDesc: '+165 Máu tối đa, +85 Giáp & Hồi Đầy Máu',
-      value: 165,
-      secondaryValue: 85,
-      tertiaryValue: 999,
-    },
-    mythic: {
-      suffixEn: 'Mythic V',
-      suffixVn: 'Huyết Thần V',
-      badge: '+220 HP',
-      desc: '+220 Max HP, +115 Shield & Full Heal',
-      vnDesc: '+220 Máu tối đa, +115 Giáp & Hồi Đầy Máu',
-      value: 220,
-      secondaryValue: 115,
-      tertiaryValue: 999,
-    },
-    prismatic: {
-      suffixEn: 'Prismatic 777',
-      suffixVn: 'Cầu Vồng 777',
-      badge: '+300 HP',
-      desc: '+300 Max HP, +160 Shield & Full Heal',
-      vnDesc: '+300 Máu tối đa, +160 Giáp & Hồi Đầy Máu',
-      value: 300,
-      secondaryValue: 160,
-      tertiaryValue: 999,
-    },
-  },
-  skill_firerate: {
-    celestial: {
-      suffixEn: 'Celestial IV',
-      suffixVn: 'Thiên Thanh IV',
-      badge: '+34% ROF',
-      desc: '+34% Fire Rate, +34% Reload Speed',
-      vnDesc: '+34% Tốc độ bắn & +34% Tốc độ nạp đạn',
-      value: 0.34,
-      secondaryValue: 0.34,
-    },
-    mythic: {
-      suffixEn: 'Mythic V',
-      suffixVn: 'Huyết Thần V',
-      badge: '+40% ROF',
-      desc: '+40% Fire Rate, +40% Reload Speed',
-      vnDesc: '+40% Tốc độ bắn & +40% Tốc độ nạp đạn',
-      value: 0.40,
-      secondaryValue: 0.40,
-    },
-    prismatic: {
-      suffixEn: 'Prismatic 777',
-      suffixVn: 'Cầu Vồng 777',
-      badge: '+48% ROF',
-      desc: '+48% Fire Rate, +48% Reload Speed',
-      vnDesc: '+48% Tốc độ bắn & +48% Tốc độ nạp đạn',
-      value: 0.48,
-      secondaryValue: 0.48,
-    },
-  },
-  skill_multishot: {
-    celestial: {
-      suffixEn: 'Celestial IV',
-      suffixVn: 'Thiên Thanh IV',
-      badge: '+1 TIA',
-      desc: '+1 Extra Projectile & -14% Energy Cost',
-      vnDesc: '+1 Tia đạn & -14% Năng Lượng',
-      value: 1,
-      secondaryValue: 0.14,
-    },
-    mythic: {
-      suffixEn: 'Mythic V',
-      suffixVn: 'Huyết Thần V',
-      badge: '+1 TIA',
-      desc: '+1 Extra Projectile & -18% Energy Cost',
-      vnDesc: '+1 Tia đạn & -18% Năng Lượng',
-      value: 1,
-      secondaryValue: 0.18,
-    },
-    prismatic: {
-      suffixEn: 'Prismatic 777',
-      suffixVn: 'Cầu Vồng 777',
-      badge: '+1 TIA',
-      desc: '+1 Extra Projectile & -22% Energy Cost',
-      vnDesc: '+1 Tia đạn & -22% Năng Lượng',
-      value: 1,
-      secondaryValue: 0.22,
-    },
-  },
-  skill_crit: {
-    celestial: {
-      suffixEn: 'Celestial IV',
-      suffixVn: 'Thiên Thanh IV',
-      badge: '+24% CRIT',
-      desc: '+24% Crit Chance, +48% Crit Dmg, +2 Pierce',
-      vnDesc: '+24% Chí mạng, +48% ST chí mạng & +2 Xuyên thấu',
-      value: 0.24,
-      secondaryValue: 0.48,
-      tertiaryValue: 2,
-    },
-    mythic: {
-      suffixEn: 'Mythic V',
-      suffixVn: 'Huyết Thần V',
-      badge: '+30% CRIT',
-      desc: '+30% Crit Chance, +62% Crit Dmg, +2 Pierce',
-      vnDesc: '+30% Chí mạng, +62% ST chí mạng & +2 Xuyên thấu',
-      value: 0.30,
-      secondaryValue: 0.62,
-      tertiaryValue: 2,
-    },
-    prismatic: {
-      suffixEn: 'Prismatic 777',
-      suffixVn: 'Cầu Vồng 777',
-      badge: '+36% CRIT',
-      desc: '+36% Crit Chance, +78% Crit Dmg, +3 Pierce',
-      vnDesc: '+36% Chí mạng, +78% ST chí mạng & +3 Xuyên thấu',
-      value: 0.36,
-      secondaryValue: 0.78,
-      tertiaryValue: 3,
-    },
-  },
-  skill_mobility: {
-    celestial: {
-      suffixEn: 'Celestial IV',
-      suffixVn: 'Thiên Thanh IV',
-      badge: '+40% SPD',
-      desc: '+40% Speed, +250px Magnet, -30% Dash CD',
-      vnDesc: '+40% Tốc chạy, +250px hút XP & -30% hồi Lướt',
-      value: 0.40,
-      secondaryValue: 250,
-      tertiaryValue: 0.30,
-    },
-    mythic: {
-      suffixEn: 'Mythic V',
-      suffixVn: 'Huyết Thần V',
-      badge: '+50% SPD',
-      desc: '+50% Speed, +310px Magnet, -35% Dash CD',
-      vnDesc: '+50% Tốc chạy, +310px hút XP & -35% hồi Lướt',
-      value: 0.50,
-      secondaryValue: 310,
-      tertiaryValue: 0.35,
-    },
-    prismatic: {
-      suffixEn: 'Prismatic 777',
-      suffixVn: 'Cầu Vồng 777',
-      badge: '+65% SPD',
-      desc: '+65% Speed, +400px Magnet, -42% Dash CD',
-      vnDesc: '+65% Tốc chạy, +400px hút XP & -42% hồi Lướt',
-      value: 0.65,
-      secondaryValue: 400,
-      tertiaryValue: 0.42,
-    },
-  },
-  skill_stamina: {
-    celestial: {
-      suffixEn: 'Celestial IV (x3)',
-      suffixVn: 'Thể Lực Thiên Thanh (x3)',
-      badge: 'x3 +140 STA',
-      desc: '+140 Max Stamina, +85% Regen, -6 Dash Cost',
-      vnDesc: '+140 Thể lực tối đa, +85% hồi & -6 tốn Dash',
-      value: 140,
-      secondaryValue: 0.85,
-      tertiaryValue: 6,
-    },
-    mythic: {
-      suffixEn: 'Mythic V (x4)',
-      suffixVn: 'Thể Lực Huyết Thần (x4)',
-      badge: 'x4 +185 STA',
-      desc: '+185 Max Stamina, +110% Regen, -8 Dash Cost',
-      vnDesc: '+185 Thể lực tối đa, +110% hồi & -8 tốn Dash',
-      value: 185,
-      secondaryValue: 1.10,
-      tertiaryValue: 8,
-    },
-    prismatic: {
-      suffixEn: 'Prismatic 777 (x5)',
-      suffixVn: 'Thể Lực Cầu Vồng (x5)',
-      badge: 'x5 +250 STA',
-      desc: '+250 Max Stamina, +145% Regen, -10 Dash Cost',
-      vnDesc: '+250 Thể lực tối đa, +145% hồi & -10 tốn Dash',
-      value: 250,
-      secondaryValue: 1.45,
-      tertiaryValue: 10,
+    title: 'Vitality Mend',
+    vnTitle: 'Hồi Nhẹ Máu',
+    maxStacks: 12,
+    tiers: {
+      common: [8, 0, 0, '^ +8 HP', '^ Heal +8 HP (no Max HP boost)', '^ Hồi nhẹ +8 Máu (không tăng Máu tối đa)'],
+      rare: [10, 0, 0, '^ +10 HP', '^ Heal +10 HP (no Max HP boost)', '^ Hồi nhẹ +10 Máu (không tăng Máu tối đa)'],
+      epic: [12, 0, 0, '^ +12 HP', '^ Heal +12 HP (no Max HP boost)', '^ Hồi nhẹ +12 Máu (không tăng Máu tối đa)'],
+      legendary: [18, 0, 0, '^^ +18 HP', '^^ Heal +18 HP (no Max HP boost)', '^^ Hồi +18 Máu (không tăng Máu tối đa)'],
+      celestial: [20, 0, 0, '^^ +20 HP', '^^ Heal +20 HP (no Max HP boost)', '^^ Hồi +20 Máu (không tăng Máu tối đa)'],
+      mythic: [22, 0, 0, '^^ +22 HP', '^^ Heal +22 HP (no Max HP boost)', '^^ Hồi +22 Máu (không tăng Máu tối đa)'],
+      prismatic: [24, 0, 0, '^^ +24 HP', '^^ Heal +24 HP (no Max HP boost)', '^^ Hồi +24 Máu (không tăng Máu tối đa)'],
     },
   },
   skill_shield: {
-    celestial: {
-      suffixEn: 'Celestial Aegis (x3)',
-      suffixVn: 'Khiên Thiên Thanh (x3)',
-      badge: 'x3 +145 SH',
-      desc: '+145 Max Shield, +21% DR, -1.6s Regen Delay',
-      vnDesc: '+145 Lưu trữ Khiên, +21% Giảm dame & -1.6s chờ hồi',
-      value: 145,
-      secondaryValue: 0.21,
-      tertiaryValue: 1600,
-    },
-    mythic: {
-      suffixEn: 'Mythic Aegis (x4)',
-      suffixVn: 'Khiên Huyết Thần (x4)',
-      badge: 'x4 +200 SH',
-      desc: '+200 Max Shield, +26% DR, -2.0s Regen Delay',
-      vnDesc: '+200 Lưu trữ Khiên, +26% Giảm dame & -2.0s chờ hồi',
-      value: 200,
-      secondaryValue: 0.26,
-      tertiaryValue: 2000,
-    },
-    prismatic: {
-      suffixEn: 'Prismatic 777 (x5)',
-      suffixVn: 'Khiên Cầu Vồng (x5)',
-      badge: 'x5 +280 SH',
-      desc: '+280 Max Shield, +32% DR, -2.6s Regen Delay',
-      vnDesc: '+280 Lưu trữ Khiên, +32% Giảm dame & -2.6s chờ hồi',
-      value: 280,
-      secondaryValue: 0.32,
-      tertiaryValue: 2600,
-    },
-  },
-} as const;
-
-const BASE_GACHA_SKILL_MAP: Readonly<
-  Record<BansungGachaSkillCategory, Readonly<Record<BaseGachaRarity, BansungGachaSkillSpec>>>
-> = {
-  skill_damage: {
-    common: {
-      id: 'skill_damage:common',
-      category: 'skill_damage',
-      rarity: 'common',
-      title: 'Overcharged Rounds',
-      vnTitle: 'Hỏa Lực Cường Hóa',
-      desc: '+12% all weapon & gadget damage',
-      vnDesc: '+12% Sát thương súng & kỹ năng',
-      icon: 'skill_damage',
-      badge: '+12% DMG',
-      value: 0.12,
-      secondaryValue: 0,
-      maxStacks: 12,
-    },
-    rare: {
-      id: 'skill_damage:rare',
-      category: 'skill_damage',
-      rarity: 'rare',
-      title: 'Overcharged Rounds II',
-      vnTitle: 'Hỏa Lực Cường Hóa II',
-      desc: '+20% all weapon & gadget damage',
-      vnDesc: '+20% Sát thương súng & kỹ năng',
-      icon: 'skill_damage',
-      badge: '+20% DMG',
-      value: 0.20,
-      secondaryValue: 0,
-      maxStacks: 12,
-    },
-    epic: {
-      id: 'skill_damage:epic',
-      category: 'skill_damage',
-      rarity: 'epic',
-      title: 'Overcharged Rounds III',
-      vnTitle: 'Hỏa Lực Cường Hóa III',
-      desc: '+32% all weapon & gadget damage',
-      vnDesc: '+32% Sát thương súng & kỹ năng',
-      icon: 'skill_damage',
-      badge: '+32% DMG',
-      value: 0.32,
-      secondaryValue: 0,
-      maxStacks: 12,
-    },
-    legendary: {
-      id: 'skill_damage:legendary',
-      category: 'skill_damage',
-      rarity: 'legendary',
-      title: 'Apex Ordinance',
-      vnTitle: 'Hỏa Lực Tối Thượng',
-      desc: '+50% all weapon & gadget damage',
-      vnDesc: '+50% Sát thương súng & kỹ năng',
-      icon: 'skill_damage',
-      badge: '+50% DMG',
-      value: 0.50,
-      secondaryValue: 0,
-      maxStacks: 12,
-    },
-  },
-  skill_hp: {
-    common: {
-      id: 'skill_hp:common',
-      category: 'skill_hp',
-      rarity: 'common',
-      title: 'Vitality & Aegis',
-      vnTitle: 'Sinh Lực & Giáp Năng Lượng',
-      desc: '+25 Max HP, +10 Shield, Heal 40 HP',
-      vnDesc: '+25 Máu tối đa, +10 Giáp & Hồi 40 Máu',
-      icon: 'skill_hp',
-      badge: '+25 HP',
-      value: 25,
-      secondaryValue: 10,
-      tertiaryValue: 40,
-      maxStacks: 12,
-    },
-    rare: {
-      id: 'skill_hp:rare',
-      category: 'skill_hp',
-      rarity: 'rare',
-      title: 'Vitality & Aegis II',
-      vnTitle: 'Sinh Lực & Giáp Năng Lượng II',
-      desc: '+45 Max HP, +20 Shield, Heal 65 HP',
-      vnDesc: '+45 Máu tối đa, +20 Giáp & Hồi 65 Máu',
-      icon: 'skill_hp',
-      badge: '+45 HP',
-      value: 45,
-      secondaryValue: 20,
-      tertiaryValue: 65,
-      maxStacks: 12,
-    },
-    epic: {
-      id: 'skill_hp:epic',
-      category: 'skill_hp',
-      rarity: 'epic',
-      title: 'Vitality & Aegis III',
-      vnTitle: 'Sinh Lực & Giáp Năng Lượng III',
-      desc: '+75 Max HP, +35 Shield, Heal 100 HP',
-      vnDesc: '+75 Máu tối đa, +35 Giáp & Hồi 100 Máu',
-      icon: 'skill_hp',
-      badge: '+75 HP',
-      value: 75,
-      secondaryValue: 35,
-      tertiaryValue: 100,
-      maxStacks: 12,
-    },
-    legendary: {
-      id: 'skill_hp:legendary',
-      category: 'skill_hp',
-      rarity: 'legendary',
-      title: 'Immortal Bastion',
-      vnTitle: 'Pháo Đài Bất Tử',
-      desc: '+120 Max HP, +60 Shield & Full Heal',
-      vnDesc: '+120 Máu tối đa, +60 Giáp & Hồi Đầy Máu',
-      icon: 'skill_hp',
-      badge: '+120 HP',
-      value: 120,
-      secondaryValue: 60,
-      tertiaryValue: 999,
-      maxStacks: 12,
-    },
-  },
-  skill_firerate: {
-    common: {
-      id: 'skill_firerate:common',
-      category: 'skill_firerate',
-      rarity: 'common',
-      title: 'Rapid Trigger',
-      vnTitle: 'Xạ Kích Siêu Tốc',
-      desc: '+12% Fire Rate, +15% Reload Speed',
-      vnDesc: '+12% Tốc độ bắn & +15% Tốc độ nạp đạn',
-      icon: 'skill_firerate',
-      badge: '+12% ROF',
-      value: 0.12,
-      secondaryValue: 0.15,
-      maxStacks: 8,
-    },
-    rare: {
-      id: 'skill_firerate:rare',
-      category: 'skill_firerate',
-      rarity: 'rare',
-      title: 'Rapid Trigger II',
-      vnTitle: 'Xạ Kích Siêu Tốc II',
-      desc: '+20% Fire Rate, +22% Reload Speed',
-      vnDesc: '+20% Tốc độ bắn & +22% Tốc độ nạp đạn',
-      icon: 'skill_firerate',
-      badge: '+20% ROF',
-      value: 0.20,
-      secondaryValue: 0.22,
-      maxStacks: 8,
-    },
-    epic: {
-      id: 'skill_firerate:epic',
-      category: 'skill_firerate',
-      rarity: 'epic',
-      title: 'Rapid Trigger III',
-      vnTitle: 'Xạ Kích Siêu Tốc III',
-      desc: '+30% Fire Rate, +32% Reload Speed',
-      vnDesc: '+30% Tốc độ bắn & +32% Tốc độ nạp đạn',
-      icon: 'skill_firerate',
-      badge: '+30% ROF',
-      value: 0.30,
-      secondaryValue: 0.32,
-      maxStacks: 8,
-    },
-    legendary: {
-      id: 'skill_firerate:legendary',
-      category: 'skill_firerate',
-      rarity: 'legendary',
-      title: 'Hyper Cyclotron',
-      vnTitle: 'Liên Thanh Cuồng Bạo',
-      desc: '+45% Fire Rate, +45% Reload Speed',
-      vnDesc: '+45% Tốc độ bắn & +45% Tốc độ nạp đạn',
-      icon: 'skill_firerate',
-      badge: '+45% ROF',
-      value: 0.45,
-      secondaryValue: 0.45,
-      maxStacks: 8,
-    },
-  },
-  skill_multishot: {
-    common: {
-      id: 'skill_multishot:common',
-      category: 'skill_multishot',
-      rarity: 'common',
-      title: 'Bonus Ray +1',
-      vnTitle: 'Thêm +1 Tia Đạn',
-      desc: '+1 Extra Projectile per shot',
-      vnDesc: '+1 Tia đạn mỗi phát',
-      icon: 'skill_multishot',
-      badge: '+1 TIA',
-      value: 1,
-      secondaryValue: 0,
-      maxStacks: 2,
-    },
-    rare: {
-      id: 'skill_multishot:rare',
-      category: 'skill_multishot',
-      rarity: 'rare',
-      title: 'Bonus Ray +1',
-      vnTitle: 'Thêm +1 Tia Đạn',
-      desc: '+1 Extra Projectile & -5% Energy Cost',
-      vnDesc: '+1 Tia đạn & -5% Năng Lượng',
-      icon: 'skill_multishot',
-      badge: '+1 TIA',
-      value: 1,
-      secondaryValue: 0.05,
-      maxStacks: 2,
-    },
-    epic: {
-      id: 'skill_multishot:epic',
-      category: 'skill_multishot',
-      rarity: 'epic',
-      title: 'Bonus Ray +1',
-      vnTitle: 'Thêm +1 Tia Đạn',
-      desc: '+1 Extra Projectile & -8% Energy Cost',
-      vnDesc: '+1 Tia đạn & -8% Năng Lượng',
-      icon: 'skill_multishot',
-      badge: '+1 TIA',
-      value: 1,
-      secondaryValue: 0.08,
-      maxStacks: 2,
-    },
-    legendary: {
-      id: 'skill_multishot:legendary',
-      category: 'skill_multishot',
-      rarity: 'legendary',
-      title: 'Bonus Ray +1',
-      vnTitle: 'Thêm +1 Tia Đạn',
-      desc: '+1 Extra Projectile & -12% Energy Cost',
-      vnDesc: '+1 Tia đạn & -12% Năng Lượng',
-      icon: 'skill_multishot',
-      badge: '+1 TIA',
-      value: 1,
-      secondaryValue: 0.12,
-      maxStacks: 2,
-    },
-  },
-  skill_crit: {
-    common: {
-      id: 'skill_crit:common',
-      category: 'skill_crit',
-      rarity: 'common',
-      title: 'Precision Optics',
-      vnTitle: 'Ngắm Bắn Chí Mạng',
-      desc: '+8% Crit Chance, +15% Crit Damage',
-      vnDesc: '+8% Tỉ lệ chí mạng & +15% Sát thương chí mạng',
-      icon: 'skill_crit',
-      badge: '+8% CRIT',
-      value: 0.08,
-      secondaryValue: 0.15,
-      tertiaryValue: 0,
-      maxStacks: 8,
-    },
-    rare: {
-      id: 'skill_crit:rare',
-      category: 'skill_crit',
-      rarity: 'rare',
-      title: 'Piercing Optics',
-      vnTitle: 'Xuyên Tâm Chí Mạng',
-      desc: '+14% Crit Chance, +25% Crit Dmg, +1 Pierce',
-      vnDesc: '+14% Chí mạng, +25% ST chí mạng & +1 Xuyên thấu',
-      icon: 'skill_crit',
-      badge: '+14% CRIT',
-      value: 0.14,
-      secondaryValue: 0.25,
-      tertiaryValue: 1,
-      maxStacks: 8,
-    },
-    epic: {
-      id: 'skill_crit:epic',
-      category: 'skill_crit',
-      rarity: 'epic',
-      title: 'Lethal Penetration',
-      vnTitle: 'Đoạt Mệnh Xuyên Giáp',
-      desc: '+22% Crit Chance, +40% Crit Dmg, +1 Pierce',
-      vnDesc: '+22% Chí mạng, +40% ST chí mạng & +1 Xuyên thấu',
-      icon: 'skill_crit',
-      badge: '+22% CRIT',
-      value: 0.22,
-      secondaryValue: 0.40,
-      tertiaryValue: 1,
-      maxStacks: 8,
-    },
-    legendary: {
-      id: 'skill_crit:legendary',
-      category: 'skill_crit',
-      rarity: 'legendary',
-      title: 'Executioner Eye',
-      vnTitle: 'Thần Nhãn Xuyên Phá',
-      desc: '+32% Crit Chance, +60% Crit Dmg, +2 Pierce',
-      vnDesc: '+32% Chí mạng, +60% ST chí mạng & +2 Xuyên thấu',
-      icon: 'skill_crit',
-      badge: '+32% CRIT',
-      value: 0.32,
-      secondaryValue: 0.60,
-      tertiaryValue: 2,
-      maxStacks: 8,
-    },
-  },
-  skill_mobility: {
-    common: {
-      id: 'skill_mobility:common',
-      category: 'skill_mobility',
-      rarity: 'common',
-      title: 'Swift Magnet',
-      vnTitle: 'Thân Pháp & Hút XP',
-      desc: '+8% Move Speed, +45px XP/Orb Magnet',
-      vnDesc: '+8% Tốc chạy & +45px tầm hút XP/Năng lượng',
-      icon: 'skill_mobility',
-      badge: '+8% SPD',
-      value: 0.08,
-      secondaryValue: 45,
-      tertiaryValue: 0,
-      maxStacks: 8,
-    },
-    rare: {
-      id: 'skill_mobility:rare',
-      category: 'skill_mobility',
-      rarity: 'rare',
-      title: 'Swift Magnet II',
-      vnTitle: 'Thân Pháp & Hút XP II',
-      desc: '+14% Move Speed, +80px XP/Orb Magnet',
-      vnDesc: '+14% Tốc chạy & +80px tầm hút XP/Năng lượng',
-      icon: 'skill_mobility',
-      badge: '+14% SPD',
-      value: 0.14,
-      secondaryValue: 80,
-      tertiaryValue: 0.08,
-      maxStacks: 8,
-    },
-    epic: {
-      id: 'skill_mobility:epic',
-      category: 'skill_mobility',
-      rarity: 'epic',
-      title: 'Phantom Stride',
-      vnTitle: 'Ảnh Bộ Từ Trường',
-      desc: '+22% Speed, +130px Magnet, -15% Dash CD',
-      vnDesc: '+22% Tốc chạy, +130px hút XP & -15% hồi Lướt',
-      icon: 'skill_mobility',
-      badge: '+22% SPD',
-      value: 0.22,
-      secondaryValue: 130,
-      tertiaryValue: 0.15,
-      maxStacks: 8,
-    },
-    legendary: {
-      id: 'skill_mobility:legendary',
-      category: 'skill_mobility',
-      rarity: 'legendary',
-      title: 'Warp Singularity',
-      vnTitle: 'Lực Hút Vũ Trụ',
-      desc: '+32% Speed, +200px Magnet, -25% Dash CD',
-      vnDesc: '+32% Tốc chạy, +200px hút XP & -25% hồi Lướt',
-      icon: 'skill_mobility',
-      badge: '+32% SPD',
-      value: 0.32,
-      secondaryValue: 200,
-      tertiaryValue: 0.25,
-      maxStacks: 8,
+    title: 'Light Aegis Cell',
+    vnTitle: 'Tăng Nhẹ Khiên',
+    maxStacks: 10,
+    tiers: {
+      common: [3, 0.02, 120, '^ +3 SH', '^ +3 Shield charge, +2% DR (no Max Shield boost)', '^ +3 Khiên hiện tại & +2% Giảm dame (không tăng Max Khiên)'],
+      rare: [4, 0.02, 160, '^ +4 SH', '^ +4 Shield charge, +2% DR (no Max Shield boost)', '^ +4 Khiên hiện tại & +2% Giảm dame (không tăng Max Khiên)'],
+      epic: [5, 0.03, 200, '^ +5 SH', '^ +5 Shield charge, +3% DR (no Max Shield boost)', '^ +5 Khiên hiện tại & +3% Giảm dame (không tăng Max Khiên)'],
+      legendary: [7, 0.04, 260, '^^ +7 SH', '^^ +7 Shield charge, +4% DR (no Max Shield boost)', '^^ +7 Khiên hiện tại & +4% Giảm dame (không tăng Max Khiên)'],
+      celestial: [8, 0.05, 300, '^^ +8 SH', '^^ +8 Shield charge, +5% DR (no Max Shield boost)', '^^ +8 Khiên hiện tại & +5% Giảm dame (không tăng Max Khiên)'],
+      mythic: [9, 0.05, 340, '^^ +9 SH', '^^ +9 Shield charge, +5% DR (no Max Shield boost)', '^^ +9 Khiên hiện tại & +5% Giảm dame (không tăng Max Khiên)'],
+      prismatic: [10, 0.06, 380, '^^ +10 SH', '^^ +10 Shield charge, +6% DR (no Max Shield boost)', '^^ +10 Khiên hiện tại & +6% Giảm dame (không tăng Max Khiên)'],
     },
   },
   skill_stamina: {
-    common: {
-      id: 'skill_stamina:common',
-      category: 'skill_stamina',
-      rarity: 'common',
-      title: 'Tactical Endurance',
-      vnTitle: 'Thể Lực Chiến Thuật',
-      desc: '+20 Max Stamina, +15% Stamina Regen',
-      vnDesc: '+20 Thể lực tối đa & +15% tốc hồi Dash',
-      icon: 'skill_stamina',
-      badge: '+20 STA',
-      value: 20,
-      secondaryValue: 0.15,
-      tertiaryValue: 0,
-      maxStacks: 10,
-    },
-    rare: {
-      id: 'skill_stamina:rare',
-      category: 'skill_stamina',
-      rarity: 'rare',
-      title: 'Tactical Endurance II',
-      vnTitle: 'Thể Lực Chiến Thuật II',
-      desc: '+35 Max Stamina, +25% Stamina Regen',
-      vnDesc: '+35 Thể lực tối đa & +25% tốc hồi Dash',
-      icon: 'skill_stamina',
-      badge: '+35 STA',
-      value: 35,
-      secondaryValue: 0.25,
-      tertiaryValue: 2,
-      maxStacks: 10,
-    },
-    epic: {
-      id: 'skill_stamina:epic',
-      category: 'skill_stamina',
-      rarity: 'epic',
-      title: 'Turbo Reactor (x1)',
-      vnTitle: 'Khoang Thể Lực Tím (x1)',
-      desc: '+50 Max Stamina, +35% Regen, -2 Dash Cost',
-      vnDesc: '+50 Thể lực tối đa, +35% hồi & -2 tốn Dash',
-      icon: 'skill_stamina',
-      badge: 'x1 +50 STA',
-      value: 50,
-      secondaryValue: 0.35,
-      tertiaryValue: 2,
-      maxStacks: 10,
-    },
-    legendary: {
-      id: 'skill_stamina:legendary',
-      category: 'skill_stamina',
-      rarity: 'legendary',
-      title: 'Hyper Core (x2)',
-      vnTitle: 'Siêu Thể Lực Vàng (x2)',
-      desc: '+100 Max Stamina, +65% Regen, -5 Dash Cost',
-      vnDesc: '+100 Thể lực tối đa, +65% hồi & -5 tốn Dash',
-      icon: 'skill_stamina',
-      badge: 'x2 +100 STA',
-      value: 100,
-      secondaryValue: 0.65,
-      tertiaryValue: 5,
-      maxStacks: 10,
+    title: 'Light Endurance',
+    vnTitle: 'Tăng Nhẹ Thể Lực',
+    maxStacks: 10,
+    tiers: {
+      common: [10, 0.05, 0.5, '^ +10 STA', '^ +10 Stamina, +5% Regen (no Max STA boost)', '^ Hồi +10 Thể lực & +5% Tốc hồi (không tăng Max STA)'],
+      rare: [12, 0.06, 0.8, '^ +12 STA', '^ +12 Stamina, +6% Regen (no Max STA boost)', '^ Hồi +12 Thể lực & +6% Tốc hồi (không tăng Max STA)'],
+      epic: [14, 0.08, 1.0, '^ +14 STA', '^ +14 Stamina, +8% Regen (no Max STA boost)', '^ Hồi +14 Thể lực & +8% Tốc hồi (không tăng Max STA)'],
+      legendary: [20, 0.10, 1.5, '^^ +20 STA', '^^ +20 Stamina, +10% Regen (no Max STA boost)', '^^ Hồi +20 Thể lực & +10% Tốc hồi (không tăng Max STA)'],
+      celestial: [22, 0.12, 2.0, '^^ +22 STA', '^^ +22 Stamina, +12% Regen (no Max STA boost)', '^^ Hồi +22 Thể lực & +12% Tốc hồi (không tăng Max STA)'],
+      mythic: [24, 0.14, 2.5, '^^ +24 STA', '^^ +24 Stamina, +14% Regen (no Max STA boost)', '^^ Hồi +24 Thể lực & +14% Tốc hồi (không tăng Max STA)'],
+      prismatic: [28, 0.16, 3.0, '^^ +28 STA', '^^ +28 Stamina, +16% Regen (no Max STA boost)', '^^ Hồi +28 Thể lực & +16% Tốc hồi (không tăng Max STA)'],
     },
   },
-  skill_shield: {
-    common: {
-      id: 'skill_shield:common',
-      category: 'skill_shield',
-      rarity: 'common',
-      title: 'Aegis Capacitor',
-      vnTitle: 'Khoang Khiên Dự Phòng',
-      desc: '+20 Max Shield Storage, +4% Bullet DR',
-      vnDesc: '+20 Lưu trữ Khiên & +4% Giảm sát thương đạn',
-      icon: 'skill_shield',
-      badge: '+20 SH',
-      value: 20,
-      secondaryValue: 0.04,
-      tertiaryValue: 0,
-      maxStacks: 10,
-    },
-    rare: {
-      id: 'skill_shield:rare',
-      category: 'skill_shield',
-      rarity: 'rare',
-      title: 'Aegis Capacitor II',
-      vnTitle: 'Khoang Khiên Dự Phòng II',
-      desc: '+35 Max Shield, +7% Bullet DR, -0.4s Regen Delay',
-      vnDesc: '+35 Lưu trữ Khiên, +7% Giảm dame & -0.4s chờ hồi',
-      icon: 'skill_shield',
-      badge: '+35 SH',
-      value: 35,
-      secondaryValue: 0.07,
-      tertiaryValue: 400,
-      maxStacks: 10,
-    },
-    epic: {
-      id: 'skill_shield:epic',
-      category: 'skill_shield',
-      rarity: 'epic',
-      title: 'Nanoweave Barrier (x1)',
-      vnTitle: 'Giáp Khiên Nano Tím (x1)',
-      desc: '+55 Max Shield, +10% DR, -0.7s Regen Delay',
-      vnDesc: '+55 Lưu trữ Khiên, +10% Giảm dame & -0.7s chờ hồi',
-      icon: 'skill_shield',
-      badge: 'x1 +55 SH',
-      value: 55,
-      secondaryValue: 0.10,
-      tertiaryValue: 700,
-      maxStacks: 10,
-    },
-    legendary: {
-      id: 'skill_shield:legendary',
-      category: 'skill_shield',
-      rarity: 'legendary',
-      title: 'Impervious Matrix (x2)',
-      vnTitle: 'Ma Trận Khiên Vàng (x2)',
-      desc: '+100 Max Shield, +16% DR, -1.2s Regen Delay',
-      vnDesc: '+100 Lưu trữ Khiên, +16% Giảm dame & -1.2s chờ hồi',
-      icon: 'skill_shield',
-      badge: 'x2 +100 SH',
-      value: 100,
-      secondaryValue: 0.16,
-      tertiaryValue: 1200,
-      maxStacks: 10,
+  skill_firerate: {
+    title: 'Rapid Trigger',
+    vnTitle: 'Tăng Nhẹ Tốc Đánh',
+    maxStacks: 8,
+    tiers: {
+      common: [0.05, 0.06, 0, '^ +5% ROF', '^ +5% Attack & Fire Rate, +6% Reload', '^ +5% Tốc độ đánh/bắn & +6% Nạp đạn'],
+      rare: [0.06, 0.07, 0, '^ +6% ROF', '^ +6% Attack & Fire Rate, +7% Reload', '^ +6% Tốc độ đánh/bắn & +7% Nạp đạn'],
+      epic: [0.07, 0.08, 0, '^ +7% ROF', '^ +7% Attack & Fire Rate, +8% Reload', '^ +7% Tốc độ đánh/bắn & +8% Nạp đạn'],
+      legendary: [0.11, 0.12, 0, '^^ +11% ROF', '^^ +11% Attack & Fire Rate, +12% Reload', '^^ +11% Tốc độ đánh/bắn & +12% Nạp đạn'],
+      celestial: [0.12, 0.14, 0, '^^ +12% ROF', '^^ +12% Attack & Fire Rate, +14% Reload', '^^ +12% Tốc độ đánh/bắn & +14% Nạp đạn'],
+      mythic: [0.14, 0.15, 0, '^^ +14% ROF', '^^ +14% Attack & Fire Rate, +15% Reload', '^^ +14% Tốc độ đánh/bắn & +15% Nạp đạn'],
+      prismatic: [0.15, 0.16, 0, '^^ +15% ROF', '^^ +15% Attack & Fire Rate, +16% Reload', '^^ +15% Tốc độ đánh/bắn & +16% Nạp đạn'],
     },
   },
-} as const;
+  skill_mobility: {
+    title: 'Swift Footwork',
+    vnTitle: 'Tăng Nhẹ Tốc Chạy',
+    maxStacks: 8,
+    tiers: {
+      common: [0.04, 0, 0.04, '^ +4% SPD', '^ +4% Move Speed & -4% Dash CD', '^ +4% Tốc chạy & -4% hồi Lướt'],
+      rare: [0.05, 0, 0.05, '^ +5% SPD', '^ +5% Move Speed & -5% Dash CD', '^ +5% Tốc chạy & -5% hồi Lướt'],
+      epic: [0.06, 0, 0.06, '^ +6% SPD', '^ +6% Move Speed & -6% Dash CD', '^ +6% Tốc chạy & -6% hồi Lướt'],
+      legendary: [0.08, 0, 0.08, '^^ +8% SPD', '^^ +8% Move Speed & -8% Dash CD', '^^ +8% Tốc chạy & -8% hồi Lướt'],
+      celestial: [0.09, 0, 0.09, '^^ +9% SPD', '^^ +9% Move Speed & -9% Dash CD', '^^ +9% Tốc chạy & -9% hồi Lướt'],
+      mythic: [0.10, 0, 0.10, '^^ +10% SPD', '^^ +10% Move Speed & -10% Dash CD', '^^ +10% Tốc chạy & -10% hồi Lướt'],
+      prismatic: [0.12, 0, 0.12, '^^ +12% SPD', '^^ +12% Move Speed & -12% Dash CD', '^^ +12% Tốc chạy & -12% hồi Lướt'],
+    },
+  },
+  skill_multishot: {
+    title: 'Spread Volleys',
+    vnTitle: 'Đạn Lan Tỏa',
+    maxStacks: 3,
+    tiers: {
+      common: [1, 0.03, 0, '^ +1 TIA', '^ +1 Spread Projectile per shot', '^ +1 Tia đạn lan tỏa mỗi phát'],
+      rare: [1, 0.04, 0, '^ +1 TIA', '^ +1 Spread Projectile & -4% Energy', '^ +1 Tia đạn lan tỏa & -4% Năng lượng'],
+      epic: [1, 0.06, 0, '^ +1 TIA', '^ +1 Spread Projectile & -6% Energy', '^ +1 Tia đạn lan tỏa & -6% Năng lượng'],
+      legendary: [2, 0.08, 0, '^^ +2 TIA', '^^ +2 Spread Projectiles & -8% Energy', '^^ +2 Tia đạn lan tỏa & -8% Năng lượng'],
+      celestial: [2, 0.10, 0, '^^ +2 TIA', '^^ +2 Spread Projectiles & -10% Energy', '^^ +2 Tia đạn lan tỏa & -10% Năng lượng'],
+      mythic: [2, 0.12, 0, '^^ +2 TIA', '^^ +2 Spread Projectiles & -12% Energy', '^^ +2 Tia đạn lan tỏa & -12% Năng lượng'],
+      prismatic: [2, 0.14, 0, '^^ +2 TIA', '^^ +2 Spread Projectiles & -14% Energy', '^^ +2 Tia đạn lan tỏa & -14% Năng lượng'],
+    },
+  },
+  skill_crit: {
+    title: 'Precision Eye',
+    vnTitle: 'Tăng Nhẹ Chí Mạng',
+    maxStacks: 8,
+    tiers: {
+      common: [0.04, 0.08, 0, '^ +4% CRIT', '^ +4% Crit Chance & +8% Crit Dmg', '^ +4% Tỉ lệ chí mạng & +8% ST chí mạng'],
+      rare: [0.05, 0.10, 0, '^ +5% CRIT', '^ +5% Crit Chance & +10% Crit Dmg', '^ +5% Tỉ lệ chí mạng & +10% ST chí mạng'],
+      epic: [0.06, 0.12, 1, '^ +6% CRIT', '^ +6% Crit, +12% Crit Dmg, +1 Pierce', '^ +6% Chí mạng, +12% ST CM & +1 Xuyên'],
+      legendary: [0.08, 0.16, 1, '^^ +8% CRIT', '^^ +8% Crit, +16% Crit Dmg, +1 Pierce', '^^ +8% Chí mạng, +16% ST CM & +1 Xuyên'],
+      celestial: [0.10, 0.20, 1, '^^ +10% CRIT', '^^ +10% Crit, +20% Crit Dmg, +1 Pierce', '^^ +10% Chí mạng, +20% ST CM & +1 Xuyên'],
+      mythic: [0.12, 0.24, 1, '^^ +12% CRIT', '^^ +12% Crit, +24% Crit Dmg, +1 Pierce', '^^ +12% Chí mạng, +24% ST CM & +1 Xuyên'],
+      prismatic: [0.14, 0.28, 1, '^^ +14% CRIT', '^^ +14% Crit, +28% Crit Dmg, +1 Pierce', '^^ +14% Chí mạng, +28% ST CM & +1 Xuyên'],
+    },
+  },
+  skill_lightning_orb: {
+    title: 'Volt Orbit Sphere',
+    vnTitle: 'Quả Cầu Sét Xoay',
+    maxStacks: 6,
+    tiers: {
+      common: [1, 0, 0, '+1 CẦU SÉT', '+1 Orbiting Lightning Sphere shocks nearby foes', '+1 Quả cầu sét xoay quanh người giật sét kẻ địch'],
+      rare: [1, 0, 0, '+1 CẦU SÉT', '+1 Orbiting Lightning Sphere shocks nearby foes', '+1 Quả cầu sét xoay quanh người giật sét kẻ địch'],
+      epic: [1, 0, 0, '+1 CẦU SÉT', '+1 Orbiting Lightning Sphere shocks nearby foes', '+1 Quả cầu sét xoay quanh người giật sét kẻ địch'],
+      legendary: [1, 0, 0, '+1 CẦU SÉT', '+1 Orbiting Lightning Sphere shocks nearby foes', '+1 Quả cầu sét xoay quanh người giật sét kẻ địch'],
+      celestial: [1, 0, 0, '+1 CẦU SÉT', '+1 Orbiting Lightning Sphere shocks nearby foes', '+1 Quả cầu sét xoay quanh người giật sét kẻ địch'],
+      mythic: [1, 0, 0, '+1 CẦU SÉT', '+1 Orbiting Lightning Sphere shocks nearby foes', '+1 Quả cầu sét xoay quanh người giật sét kẻ địch'],
+      prismatic: [1, 0, 0, '+1 CẦU SÉT', '+1 Orbiting Lightning Sphere shocks nearby foes', '+1 Quả cầu sét xoay quanh người giật sét kẻ địch'],
+    },
+  },
+  skill_fire_orb: {
+    title: 'Flame Orbit Sphere',
+    vnTitle: 'Quả Cầu Lửa Xoay',
+    maxStacks: 6,
+    tiers: {
+      common: [1, 0, 0, '+1 CẦU LỬA', '+1 Orbiting Fireball Sphere scorches nearby foes', '+1 Quả cầu lửa xoay quanh người thiêu đốt kẻ địch'],
+      rare: [1, 0, 0, '+1 CẦU LỬA', '+1 Orbiting Fireball Sphere scorches nearby foes', '+1 Quả cầu lửa xoay quanh người thiêu đốt kẻ địch'],
+      epic: [1, 0, 0, '+1 CẦU LỬA', '+1 Orbiting Fireball Sphere scorches nearby foes', '+1 Quả cầu lửa xoay quanh người thiêu đốt kẻ địch'],
+      legendary: [1, 0, 0, '+1 CẦU LỬA', '+1 Orbiting Fireball Sphere scorches nearby foes', '+1 Quả cầu lửa xoay quanh người thiêu đốt kẻ địch'],
+      celestial: [1, 0, 0, '+1 CẦU LỬA', '+1 Orbiting Fireball Sphere scorches nearby foes', '+1 Quả cầu lửa xoay quanh người thiêu đốt kẻ địch'],
+      mythic: [1, 0, 0, '+1 CẦU LỬA', '+1 Orbiting Fireball Sphere scorches nearby foes', '+1 Quả cầu lửa xoay quanh người thiêu đốt kẻ địch'],
+      prismatic: [1, 0, 0, '+1 CẦU LỬA', '+1 Orbiting Fireball Sphere scorches nearby foes', '+1 Quả cầu lửa xoay quanh người thiêu đốt kẻ địch'],
+    },
+  },
+  skill_spirit_sword: {
+    title: 'Homing Spirit Swords',
+    vnTitle: 'Triệu Hồi Kiếm Hồn',
+    maxStacks: 6,
+    tiers: {
+      common: [1, 0, 0, '+1 KIẾM', '+1 Sword around you every 5s: auto-aim dash & pull foes', '+1 Kiếm quanh người mỗi 5s, tự aim lao tới kéo địch'],
+      rare: [1, 0, 0, '+1 KIẾM', '+1 Sword around you every 5s: auto-aim dash & pull foes', '+1 Kiếm quanh người mỗi 5s, tự aim lao tới kéo địch'],
+      epic: [1, 0, 0, '+1 KIẾM', '+1 Sword around you every 5s: auto-aim dash & pull foes', '+1 Kiếm quanh người mỗi 5s, tự aim lao tới kéo địch'],
+      legendary: [1, 0, 0, '+1 KIẾM', '+1 Sword around you every 5s: auto-aim dash & pull foes', '+1 Kiếm quanh người mỗi 5s, tự aim lao tới kéo địch'],
+      celestial: [1, 0, 0, '+1 KIẾM', '+1 Sword around you every 5s: auto-aim dash & pull foes', '+1 Kiếm quanh người mỗi 5s, tự aim lao tới kéo địch'],
+      mythic: [1, 0, 0, '+1 KIẾM', '+1 Sword around you every 5s: auto-aim dash & pull foes', '+1 Kiếm quanh người mỗi 5s, tự aim lao tới kéo địch'],
+      prismatic: [1, 0, 0, '+1 KIẾM', '+1 Sword around you every 5s: auto-aim dash & pull foes', '+1 Kiếm quanh người mỗi 5s, tự aim lao tới kéo địch'],
+    },
+  },
+  skill_magnet: {
+    title: 'Beneficial Item Magnet',
+    vnTitle: 'Nam Châm Hút Vật Phẩm',
+    maxStacks: 6,
+    tiers: {
+      common: [90, 0.18, 0, '^ +90px HÚT', '^ +90px pull radius & +18% pull speed for beneficial drops', '^ +90px tầm hút & +18% tốc độ kéo vật phẩm có lợi'],
+      rare: [110, 0.22, 0, '^ +110px HÚT', '^ +110px pull radius & +22% pull speed for beneficial drops', '^ +110px tầm hút & +22% tốc độ kéo vật phẩm có lợi'],
+      epic: [130, 0.28, 0, '^ +130px HÚT', '^ +130px pull radius & +28% pull speed for beneficial drops', '^ +130px tầm hút & +28% tốc độ kéo vật phẩm có lợi'],
+      legendary: [180, 0.38, 0, '^^ +180px HÚT', '^^ +180px pull radius & +38% pull speed for beneficial drops', '^^ +180px tầm hút & +38% tốc độ kéo vật phẩm có lợi'],
+      celestial: [210, 0.45, 0, '^^ +210px HÚT', '^^ +210px pull radius & +45% pull speed for beneficial drops', '^^ +210px tầm hút & +45% tốc độ kéo vật phẩm có lợi'],
+      mythic: [240, 0.52, 0, '^^ +240px HÚT', '^^ +240px pull radius & +52% pull speed for beneficial drops', '^^ +240px tầm hút & +52% tốc độ kéo vật phẩm có lợi'],
+      prismatic: [280, 0.60, 0, '^^ +280px HÚT', '^^ +280px pull radius & +60% pull speed for beneficial drops', '^^ +280px tầm hút & +60% tốc độ kéo vật phẩm có lợi'],
+    },
+  },
+};
 
-function buildExtendedGachaSkillMap(): Readonly<
+function buildAllGachaSkillMap(): Readonly<
   Record<BansungGachaSkillCategory, Readonly<Record<BansungGachaRarity, BansungGachaSkillSpec>>>
 > {
   const result = {} as Record<
     BansungGachaSkillCategory,
     Readonly<Record<BansungGachaRarity, BansungGachaSkillSpec>>
   >;
-  const extRarities: readonly ExtendedGachaRarity[] = ['celestial', 'mythic', 'prismatic'];
   for (const cat of BANSUNG_GACHA_SKILL_CATEGORIES) {
-    const base = BASE_GACHA_SKILL_MAP[cat];
-    const ext = EXTENDED_SKILL_TIERS[cat];
-    const merged = { ...base } as Record<BansungGachaRarity, BansungGachaSkillSpec>;
-    for (const rar of extRarities) {
-      const spec = ext[rar];
-      merged[rar] = {
+    const cfg = SKILL_CATEGORY_CONFIGS[cat];
+    const perRarity = {} as Record<BansungGachaRarity, BansungGachaSkillSpec>;
+    for (const rar of GACHA_RARITIES) {
+      const [value, secondaryValue, tertiaryValue, badge, desc, vnDesc] = cfg.tiers[rar];
+      const suf = RARITY_SUFFIX[rar];
+      const isSingleArrow = rar === 'common' || rar === 'rare' || rar === 'epic';
+      const isFlatOrbSkill =
+        cat === 'skill_lightning_orb' ||
+        cat === 'skill_fire_orb' ||
+        cat === 'skill_spirit_sword';
+      perRarity[rar] = {
         id: `${cat}:${rar}`,
         category: cat,
         rarity: rar,
-        title: `${base.common.title} · ${spec.suffixEn}`,
-        vnTitle: `${base.common.vnTitle} · ${spec.suffixVn}`,
-        desc: spec.desc,
-        vnDesc: spec.vnDesc,
-        icon: base.common.icon,
-        badge: spec.badge,
-        value: spec.value,
-        secondaryValue: spec.secondaryValue,
-        ...(spec.tertiaryValue !== undefined ? { tertiaryValue: spec.tertiaryValue } : {}),
-        maxStacks: base.common.maxStacks,
+        title: isFlatOrbSkill ? cfg.title : `${cfg.title} ${isSingleArrow ? '^' : '^^'} · ${suf.en}`,
+        vnTitle: isFlatOrbSkill ? cfg.vnTitle : `${cfg.vnTitle} ${suf.vn}`,
+        desc,
+        vnDesc,
+        icon: cat,
+        badge,
+        value,
+        secondaryValue,
+        ...(tertiaryValue !== 0 ? { tertiaryValue } : {}),
+        maxStacks: cfg.maxStacks,
       };
     }
-    result[cat] = merged;
+    result[cat] = perRarity;
   }
   return result;
 }
 
 export const BANSUNG_GACHA_SKILL_MAP: Readonly<
   Record<BansungGachaSkillCategory, Readonly<Record<BansungGachaRarity, BansungGachaSkillSpec>>>
-> = buildExtendedGachaSkillMap();
+> = buildAllGachaSkillMap();
 
-/** Flat readonly list of all 56 Survival Gacha Skill specs (8 categories x 7 rarities). */
+/** Flat readonly list of all 84 Survival Gacha Skill specs (12 categories x 7 rarities). */
 export const BANSUNG_GACHA_SKILLS: readonly BansungGachaSkillSpec[] = (() => {
   const out: BansungGachaSkillSpec[] = [];
   for (const cat of BANSUNG_GACHA_SKILL_CATEGORIES) {
@@ -5183,19 +4633,16 @@ function buildWeaponUnlockCard(
   };
 }
 
-function buildSkillCard(spec: BansungGachaSkillSpec): BansungGachaCard {
-  let multLabel: BansungGachaCard['multLabel'];
-  if (spec.category === 'skill_multishot') {
-    multLabel = '+1';
-  } else if (spec.rarity === 'prismatic') {
-    multLabel = '777';
-  } else if (spec.rarity === 'mythic') {
-    multLabel = 'x4';
-  } else if (spec.rarity === 'celestial' || spec.rarity === 'legendary') {
-    multLabel = 'x3';
-  } else if (spec.rarity === 'epic') {
-    multLabel = 'x2';
-  }
+export function buildSkillCard(spec: BansungGachaSkillSpec): BansungGachaCard {
+  const isFlatOrbSkill =
+    spec.category === 'skill_lightning_orb' ||
+    spec.category === 'skill_fire_orb' ||
+    spec.category === 'skill_spirit_sword';
+  const multLabel: BansungGachaCard['multLabel'] = isFlatOrbSkill
+    ? '+1'
+    : spec.rarity === 'common' || spec.rarity === 'rare' || spec.rarity === 'epic'
+      ? '^'
+      : '^^';
   return {
     id: spec.id,
     category: spec.category,
@@ -5341,14 +4788,18 @@ export function rollSurvivalGachaCards(opts: {
   }
 
   const skillWeights: Partial<Record<BansungGachaSkillCategory, number>> = {
-    skill_hp: 1.5,
-    skill_stamina: 1.5,
-    skill_shield: 1.5,
-    skill_damage: 1.6,
-    skill_firerate: 1.6,
-    skill_multishot: 0.55,
+    skill_hp: 1.25,
+    skill_stamina: 1.2,
+    skill_shield: 1.25,
+    skill_damage: 1.4,
+    skill_firerate: 1.4,
+    skill_multishot: 0.65,
     skill_crit: 0.9,
-    skill_mobility: 0.8,
+    skill_mobility: 1.0,
+    skill_lightning_orb: 1.35,
+    skill_fire_orb: 1.35,
+    skill_spirit_sword: 1.3,
+    skill_magnet: 1.1,
   };
 
   const pickSkillCategory = (allowCapped: boolean): BansungGachaSkillCategory | undefined => {

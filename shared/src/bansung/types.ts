@@ -146,6 +146,7 @@ export const BANSUNG_ENEMY_IDS = [
   'volt_stalker',
   'solar_priest',
   'magma_brute',
+  'boss_storm_herald',
 ] as const;
 export type BansungEnemyId = (typeof BANSUNG_ENEMY_IDS)[number];
 
@@ -527,6 +528,7 @@ export const BANSUNG_FX_BLAST_HERO_NOVA = 14;
 export const BANSUNG_FX_BLAST_FROST_SHATTER = 15;
 export const BANSUNG_FX_BLAST_ABYSS_NOVA = 16;
 export const BANSUNG_FX_BLAST_ORBITAL = 17;
+export const BANSUNG_FX_BLAST_STORM_YELLOW = 18;
 
 // FX_IMPACT impactKind
 export const BANSUNG_FX_IMPACT_WALL = 0;
@@ -542,6 +544,7 @@ export const BANSUNG_FX_BEAM_SHOCK = 2;
 export const BANSUNG_FX_BEAM_BOSS_EYE = 3;
 export const BANSUNG_FX_BEAM_BOSS_LASER = 4;
 export const BANSUNG_FX_BEAM_LASER_MAP = 5;
+export const BANSUNG_FX_BEAM_YELLOW_LIGHTNING = 6;
 
 // FX_PING pingKind
 export const BANSUNG_PING_HELP = 0;
@@ -582,7 +585,11 @@ export type BansungGachaCategory =
   | 'skill_crit'
   | 'skill_mobility'
   | 'skill_stamina'
-  | 'skill_shield';
+  | 'skill_shield'
+  | 'skill_lightning_orb'
+  | 'skill_fire_orb'
+  | 'skill_spirit_sword'
+  | 'skill_magnet';
 
 export interface BansungGachaCard {
   id: string;
@@ -600,7 +607,7 @@ export interface BansungGachaCard {
   badge?: string;
   value?: number;
   secondaryValue?: number;
-  multLabel?: 'x1' | 'x1.5' | 'x2' | 'x3' | 'x4' | 'x5' | '777' | '+1' | '+2' | '+3';
+  multLabel?: '^' | '^^' | 'x1' | 'x1.5' | 'x2' | 'x3' | 'x4' | 'x5' | '777' | '+1' | '+2' | '+3';
   dmgText?: string;
 }
 
@@ -616,7 +623,7 @@ export interface BansungSurvivalClock {
 
 export type BansungTelegraphKind = 0 | 1;
 export type BansungTelegraphPhase = 0 | 1;
-export type BansungTelegraphColor = 0 | 1 | 2 | 3 | 4;
+export type BansungTelegraphColor = 0 | 1 | 2 | 3 | 4 | 5;
 export type BansungTelegraphShape = 'line' | 'circle' | 'cone' | 'ring';
 
 /**
@@ -631,7 +638,7 @@ export interface BansungTelegraphWire {
   kind: BansungTelegraphKind;
   /** 0 = tracking/charging, 1 = locked/imminent */
   phase: BansungTelegraphPhase;
-  /** 0 = crimson, 1 = pyro orange, 2 = thunder cyan, 3 = toxic/acid green, 4 = violet/emp */
+  /** 0 = crimson, 1 = pyro orange, 2 = thunder cyan, 3 = toxic/acid green, 4 = violet/emp, 5 = thunder yellow */
   color: BansungTelegraphColor;
   /** 0..255 progress */
   prog: number;
@@ -659,6 +666,8 @@ export const BANSUNG_HAZARD_KINDS = [
   'acid_pool',
   'shock_field',
   'void_zone',
+  'storm_yellow',
+  'storm_blue',
 ] as const;
 export type BansungHazardKind = (typeof BANSUNG_HAZARD_KINDS)[number];
 export const BANSUNG_HAZARD_INDEX = buildIndexMap(BANSUNG_HAZARD_KINDS);
@@ -823,6 +832,10 @@ export interface BansungFrame {
   hz?: BansungHazardWire[];
   /** Viewport-culled mob/boss/siege/artillery telegraphs & projectile trajectories */
   tg?: BansungTelegraphWire[];
+  /** Packed orbital & magnet stacks per player: [playerIdx, lightningOrb, fireOrb, spiritSword, magnetStacks] (stride 5) */
+  orbs?: number[];
+  /** Packed summoned spirit swords: [id, x, y, aimQ, stateFlag] (stride 5; stateFlag: 0=orbit_windup, 1=dash, 2=pull) */
+  sw?: number[];
   me?: BansungPrivate;
   srv?: BansungSurvivalClock;
   full?: boolean;
