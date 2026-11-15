@@ -185,6 +185,12 @@ const TIER1_CLIP_KEYS: readonly string[] = [
   'hero_knight_dash',
   'hero_knight_stunned',
   'hero_knight_dead',
+  'hero_laser_idle',
+  'hero_laser_run',
+  'hero_laser_shoot',
+  'hero_laser_dash',
+  'hero_laser_stunned',
+  'hero_laser_dead',
   'pet_tiger_idle',
   'pet_tiger_trot',
   'pistol',
@@ -192,6 +198,7 @@ const TIER1_CLIP_KEYS: readonly string[] = [
   'smg',
   'shotgun',
   'plasma_rifle',
+  'gun_laser_cannon',
   'stun_bomb',
   'cluster_bomb',
   'auto_turret',
@@ -211,6 +218,12 @@ const TIER1_CLIP_KEYS: readonly string[] = [
   'fx_explosion_stun',
   'fx_fireball',
   'fireball',
+  'fx_light_sword',
+  'fx_light_slash',
+  'fx_fire_orb',
+  'fx_lightning_orb',
+  'fx_lightning_bolt_blue',
+  'fx_lightning_bolt_yellow',
   'prop_crate',
   'prop_wood_crate',
   'prop_iron_crate',
@@ -231,6 +244,7 @@ const TIER1_CLIP_KEYS: readonly string[] = [
   'ui_portrait_ranger',
   'ui_portrait_pyro',
   'ui_portrait_knight',
+  'ui_portrait_laser',
 ];
 
 // ============================================================================
@@ -444,6 +458,8 @@ function seedManifestFailureMiragineAliases(): void {
   bindUnitStates('hero_pyro', 'A5', 'hero', heroStates);
   bindUnitStates('hero_pyromancer', 'A5', 'hero', heroStates);
   bindUnitStates('hero_knight', 'A8', 'hero', heroStates);
+  bindUnitStates('hero_laser', 'A11', 'hero', heroStates);
+  bindUnitStates('hero_laser_vanguard', 'A11', 'hero', heroStates);
 
   const mobStates = { idle: 'idle', run: 'run', attack: 'attack', dead: 'dead' };
   bindUnitStates('pyro_shaman', 'B4', 'enemy', mobStates);
@@ -1089,6 +1105,7 @@ function resolveFallbackPalette(clipKey: string, category: SpriteCategory, h: nu
     if (clipKey.includes('ranger')) return { primary: '#262b44', accent: '#2ce8f5' };
     if (clipKey.includes('pyro')) return { primary: '#e43b44', accent: '#feae34' };
     if (clipKey.includes('knight')) return { primary: '#124e89', accent: '#fee761' };
+    if (clipKey.includes('laser')) return { primary: '#e6eef8', accent: '#ff9ee2' };
   }
   const hue = h % 360;
   return {

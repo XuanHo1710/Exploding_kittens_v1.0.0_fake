@@ -2245,7 +2245,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 }
 .bansung-hero-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 7px;
 }
 .hero-pick-btn {

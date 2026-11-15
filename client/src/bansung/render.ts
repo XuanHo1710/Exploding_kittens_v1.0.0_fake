@@ -3022,6 +3022,8 @@ function drawBossLaserLanesGround(
 }
 
 interface OrbitalVisualSpec {
+  clipKey: string;
+  isLightning: boolean;
   orbitR: number;
   omega: number;
   phaseOffset: number;
@@ -3033,6 +3035,8 @@ interface OrbitalVisualSpec {
 }
 
 const LIGHTNING_ORB_VISUAL: OrbitalVisualSpec = {
+  clipKey: 'fx_lightning_orb',
+  isLightning: true,
   orbitR: 74,
   omega: 2.7,
   phaseOffset: 0,
@@ -3044,6 +3048,8 @@ const LIGHTNING_ORB_VISUAL: OrbitalVisualSpec = {
 };
 
 const FIRE_ORB_VISUAL: OrbitalVisualSpec = {
+  clipKey: 'fx_fire_orb',
+  isLightning: false,
   orbitR: 92,
   omega: -2.2,
   phaseOffset: Math.PI / 6,
@@ -3074,21 +3080,57 @@ function drawOrbitalRing(
   ctx.setLineDash([]);
   ctx.restore();
 
+  let prevOx = 0;
+  let prevOy = 0;
+  const arcBucket = Math.floor(nowSec * 18);
   for (let k = 0; k < count; k++) {
     const ang = nowSec * spec.omega + spec.phaseOffset + (k / count) * TWO_PI;
     const ox = Math.round(cx + Math.cos(ang) * spec.orbitR);
     const oy = Math.round(cy + Math.sin(ang) * spec.orbitR);
-    drawPixelEllipse(ctx, ox, oy, 8, 8, OUTLINE_INK, 1);
-    drawPixelEllipse(ctx, ox, oy, 6, 6, spec.outerCol, 1);
-    drawPixelEllipse(ctx, ox, oy, 4, 4, spec.midCol, 1);
-    ctx.fillStyle = spec.coreCol;
-    ctx.fillRect(ox - 2, oy - 2, 4, 4);
-    const sparkA = ang + Math.PI * 0.5;
-    const sx = Math.round(ox + Math.cos(sparkA) * 7);
-    const sy = Math.round(oy + Math.sin(sparkA) * 7);
-    ctx.fillStyle = spec.sparkCol;
-    ctx.fillRect(sx - 1, sy - 1, 3, 3);
-    queueGlow(spec.glowCol, ox, oy, 18, 0.36);
+
+    if (spec.isLightning) {
+      // Crackling electric lightning forks around each orb + arc bridge between orbs
+      const j0 = ((hash2i(k, arcBucket, 0x41c9) & 15) - 7);
+      const j1 = ((hash2i(k + 3, arcBucket, 0x92b1) & 15) - 7);
+      ctx.save();
+      ctx.strokeStyle = '#e0f2fe';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(ox - 9, oy + j0 * 0.6);
+      ctx.lineTo(ox, oy + j1);
+      ctx.lineTo(ox + 9, oy - j0 * 0.6);
+      ctx.stroke();
+      if (k > 0 && count <= 6) {
+        const mx = Math.round((prevOx + ox) * 0.5 + j0);
+        const my = Math.round((prevOy + oy) * 0.5 + j1);
+        ctx.globalAlpha = 0.52;
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(prevOx, prevOy);
+        ctx.lineTo(mx, my);
+        ctx.lineTo(ox, oy);
+        ctx.stroke();
+      }
+      ctx.restore();
+    } else {
+      // Trailing molten ember tail behind each spinning CC0 fireball orb
+      const trailAng = ang - Math.sign(spec.omega) * 0.24;
+      const tx = Math.round(cx + Math.cos(trailAng) * spec.orbitR);
+      const ty = Math.round(cy + Math.sin(trailAng) * spec.orbitR);
+      drawPixelEllipse(ctx, tx, ty, 5, 5, '#ea580c', 0.58);
+      drawPixelEllipse(ctx, tx, ty, 3, 3, '#fde047', 0.72);
+    }
+
+    // Animated Open-Source CC0 Fireball / Lightning Orb sprite strip
+    drawSpriteOrFallback(ctx, spec.clipKey, ox, oy, nowSec + k * 0.17, {
+      category: 'vfx',
+      scale: 0.92,
+    });
+
+    prevOx = ox;
+    prevOy = oy;
+    queueGlow(spec.glowCol, ox, oy, 22, 0.44);
   }
   drawCallsLastFrame += count;
 }
@@ -3098,6 +3140,7 @@ function drawHeroGachaOrbsAndMagnet(
   cx: number,
   cy: number,
   orbs: SnapPlayerOrbs | undefined,
+  hasActiveFlyingSwords: boolean,
   nowSec: number,
 ): void {
   if (!orbs) return;
@@ -3117,6 +3160,24 @@ function drawHeroGachaOrbsAndMagnet(
     ctx.stroke();
     ctx.restore();
   }
+  // Hovering Radiant Light Swords (`fx_light_sword`) fanned behind hero's shoulders while charging
+  if (orbs.spiritSwords > 0 && !hasActiveFlyingSwords) {
+    const visCount = Math.min(6, orbs.spiritSwords);
+    for (let k = 0; k < visCount; k++) {
+      const frac = visCount === 1 ? 0 : k / (visCount - 1) - 0.5;
+      const fanAng = -Math.PI * 0.5 + frac * 1.15;
+      const bob = Math.sin(nowSec * 4.2 + k * 1.1) * 3;
+      const hx = Math.round(cx + Math.cos(fanAng) * 26);
+      const hy = Math.round(cy - 10 + Math.sin(fanAng) * 18 + bob);
+      drawSpriteOrFallback(ctx, 'fx_light_sword', hx, hy, nowSec + k * 0.2, {
+        category: 'vfx',
+        rotationRad: fanAng,
+        scale: 0.84,
+        alpha: 0.92,
+      });
+      queueGlow('cyan', hx, hy, 16, 0.28);
+    }
+  }
   drawOrbitalRing(ctx, cx, cy, orbs.lightningOrbs, nowSec, LIGHTNING_ORB_VISUAL);
   drawOrbitalRing(ctx, cx, cy, orbs.fireOrbs, nowSec, FIRE_ORB_VISUAL);
 }
@@ -3133,28 +3194,47 @@ function drawSpiritSwords(
     const sy = Math.round(sw.y);
     const active = sw.stateFlag > 0;
     const isPull = sw.stateFlag === 2;
-    ctx.save();
-    ctx.translate(sx, sy);
-    ctx.rotate(sw.aim);
+
     if (active) {
-      ctx.globalAlpha = 0.38;
-      ctx.fillStyle = isPull ? '#2dd4bf' : '#38bdf8';
-      ctx.fillRect(-26, -3, 18, 6);
-      ctx.globalAlpha = 1;
+      // Radiant golden-cyan light wake ribbon behind lunging Light Sword
+      const cos = Math.cos(sw.aim);
+      const sin = Math.sin(sw.aim);
+      ctx.save();
+      ctx.globalAlpha = 0.55;
+      ctx.strokeStyle = isPull ? '#fde047' : '#38bdf8';
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(sx - cos * 30, sy - sin * 30);
+      ctx.lineTo(sx - cos * 6, sy - sin * 6);
+      ctx.stroke();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(sx - cos * 24, sy - sin * 24);
+      ctx.lineTo(sx, sy);
+      ctx.stroke();
+      ctx.restore();
     }
-    // Ink blade outline + steel/spirit edge + gold crossguard
-    ctx.fillStyle = OUTLINE_INK;
-    ctx.fillRect(-10, -4, 24, 8);
-    ctx.fillStyle = isPull ? '#5eead4' : '#38bdf8';
-    ctx.fillRect(-4, -3, 16, 6);
-    ctx.fillStyle = '#e0f2fe';
-    ctx.fillRect(-2, -1, 14, 2);
-    ctx.fillStyle = '#fbbf24';
-    ctx.fillRect(-6, -5, 3, 10);
-    ctx.fillStyle = '#f87171';
-    ctx.fillRect(-9, -2, 3, 4);
-    ctx.restore();
-    queueGlow(isPull ? 'emerald' : 'cyan', sx, sy, active ? 22 : 14, 0.34 + 0.06 * Math.sin(nowSec * 9 + sw.id));
+
+    // Open-Source CC0 Radiant Light Sword (`fx_light_sword`)
+    drawSpriteOrFallback(ctx, 'fx_light_sword', sx, sy, nowSec + sw.id * 0.13, {
+      category: 'vfx',
+      rotationRad: sw.aim,
+      scale: isPull ? 1.16 : 1.06,
+    });
+
+    // When impaling & dragging an enemy (`stateFlag === 2`), play CC0 Light Slash arc!
+    if (isPull) {
+      drawSpriteOrFallback(ctx, 'fx_light_slash', sx, sy, (nowSec * 1.6 + sw.id * 0.25) % 0.29, {
+        category: 'vfx',
+        rotationRad: sw.aim,
+        scale: 0.9,
+        alpha: 0.9,
+      });
+    }
+
+    queueGlow(isPull ? 'fire' : 'cyan', sx, sy, active ? 28 : 18, 0.44 + 0.08 * Math.sin(nowSec * 9 + sw.id));
   }
   drawCallsLastFrame += swords.length;
 }
@@ -3321,6 +3401,24 @@ function drawActiveGroundHazards(
           const sy = Math.round(cy + Math.sin(ang) * r * 0.4);
           ctx.fillStyle = borderCol;
           ctx.fillRect(sx - 2, sy - 2, 4, 4);
+        }
+        // Crashing sky-to-ground Open-Source CC0 Lightning Bolts inside storm vortex!
+        const boltClip = hz.kind === 'storm_yellow' ? 'fx_lightning_bolt_yellow' : 'fx_lightning_bolt_blue';
+        const strikeCycle = (nowSec * 2.8 + hz.id * 0.37) % 1;
+        if (strikeCycle < 0.78) {
+          const strikeIdx = Math.floor(nowSec * 2.8 + hz.id * 0.37);
+          const sHash = hash2i(hz.id, strikeIdx, 0x9931);
+          const sAng = ((sHash & 0xff) / 255) * TWO_PI;
+          const sRad = (((sHash >>> 8) & 0xff) / 255) * r * 0.52;
+          const bx = Math.round(cx + Math.cos(sAng) * sRad);
+          const by = Math.round(cy + Math.sin(sAng) * sRad * 0.65);
+          const frameIdx = Math.min(5, Math.floor((strikeCycle / 0.78) * 6));
+          drawSpriteOrFallback(ctx, boltClip, bx, by, nowSec, {
+            category: 'vfx',
+            frameIdx,
+            scale: 1.05,
+            alpha: fade,
+          });
         }
       }
     } else {
@@ -5519,6 +5617,7 @@ export function renderBansungScene(
               drawX + stunJitterX,
               drawY + stunJitterY - 12,
               playerOrbs,
+              store.spiritSwords.length > 0,
               nowSec,
             );
           }

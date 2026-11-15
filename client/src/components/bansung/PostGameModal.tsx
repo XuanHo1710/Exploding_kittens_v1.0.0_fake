@@ -131,6 +131,8 @@ const HERO_ID_ALIASES: Readonly<Record<string, BansungHeroId>> = {
   pyro: 'pyro',
   pyromancer: 'pyro',
   knight: 'knight',
+  laser: 'laser',
+  laser_vanguard: 'laser',
 };
 
 /** Maps canonical or draft hero IDs to a valid `BansungHeroId`. */

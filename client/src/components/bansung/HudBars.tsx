@@ -613,7 +613,7 @@ const HUD_FALLBACK_CSS = `@layer bs-hud-default {
     top: 14px;
     left: 50%;
     transform: translateX(-50%);
-    width: min(560px, 64vw);
+    width: clamp(280px, calc(100vw - 900px), 480px);
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 8px;
@@ -622,10 +622,21 @@ const HUD_FALLBACK_CSS = `@layer bs-hud-default {
   }
 
   .bs-boss-dock--multi {
-    width: min(760px, 78vw);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 16px;
-    row-gap: 8px;
+    width: clamp(280px, calc(100vw - 900px), 460px);
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 7px;
+  }
+
+  .bs-boss-dock--multi .bs-boss-entry {
+    gap: 3px;
+  }
+
+  .bs-boss-dock--multi .bs-boss-track {
+    height: 11px;
+  }
+
+  .bs-boss-dock--multi .bs-boss-name {
+    font-size: 11px;
   }
 
   .bs-boss-entry {
@@ -1006,7 +1017,7 @@ const HUD_FALLBACK_CSS = `@layer bs-hud-default {
     .bs-hero-bars { min-width: 118px; width: fit-content; }
     .bs-squad { width: 146px; }
     .bs-boss-dock { width: min(320px, 58vw); top: 8px; }
-    .bs-boss-dock--multi { width: min(460px, 76vw); column-gap: 10px; }
+    .bs-boss-dock--multi { width: min(320px, 56vw); row-gap: 5px; }
     .bs-boss-track { height: 10px; }
     .bs-boss-name { font-size: 10px; }
     .bs-survival-strip { width: min(320px, 54vw); top: 8px; padding: 4px 6px; }

@@ -740,6 +740,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                           className={`hero-pick-btn${active ? ' on' : ''}`}
                           disabled={!me || spectating}
                           onClick={() => pickBansungHero(heroId)}
+                          title={`${hero.activeSkill.vnName}: ${hero.activeSkill.desc}`}
                           style={{ borderColor: active ? hero.accentHex : undefined }}
                         >
                           <span
@@ -749,7 +750,10 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                           />
                           <span>
                             <strong>{hero.name}</strong>
-                            <small>HP {hero.hp * BANSUNG_HERO_STAT_SCALE} · SH {hero.shield * BANSUNG_HERO_STAT_SCALE} · NL {hero.energy}</small>
+                            <small>
+                              HP {hero.hp * BANSUNG_HERO_STAT_SCALE} · SH {hero.shield * BANSUNG_HERO_STAT_SCALE} · NL {hero.energy}
+                              {heroId === 'laser' ? ' · DMG+ / Chậm' : ''}
+                            </small>
                           </span>
                         </button>
                       );

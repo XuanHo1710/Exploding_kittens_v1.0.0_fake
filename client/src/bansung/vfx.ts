@@ -2423,6 +2423,16 @@ export class BansungVfxController {
   private readonly arcs: StunArc[] = [];
   private arcHead = 0;
 
+  private readonly lightningBolts: Array<{
+    active: boolean;
+    x: number;
+    y: number;
+    yellow: boolean;
+    ageMs: number;
+    ttlMs: number;
+  }> = [];
+  private lightningBoltHead = 0;
+
   private readonly bombs: BombFxState[] = [];
   private bombHead = 0;
 
@@ -2498,6 +2508,16 @@ export class BansungVfxController {
         ttlMs: 180,
         variant: 0,
         seed: 0,
+      });
+    }
+    for (let i = 0; i < 16; i++) {
+      this.lightningBolts.push({
+        active: false,
+        x: 0,
+        y: 0,
+        yellow: false,
+        ageMs: 0,
+        ttlMs: 280,
       });
     }
     for (let i = 0; i < BOMB_FX.MAX_BOMBS; i++) {
@@ -2593,6 +2613,7 @@ export class BansungVfxController {
     for (let i = 0; i < this.beams.length; i++) this.beams[i].active = false;
     for (let i = 0; i < this.shockwaves.length; i++) this.shockwaves[i].active = false;
     for (let i = 0; i < this.arcs.length; i++) this.arcs[i].active = false;
+    for (let i = 0; i < this.lightningBolts.length; i++) this.lightningBolts[i].active = false;
     for (let i = 0; i < this.bombs.length; i++) this.bombs[i].active = false;
     for (let i = 0; i < this.explosions.length; i++) this.explosions[i].active = false;
     for (let i = 0; i < this.pets.length; i++) this.pets[i].active = false;
@@ -3476,6 +3497,17 @@ export class BansungVfxController {
           blastKind === BANSUNG_FX_BLAST_THUNDER_STORM || isYellowStorm ? 340 : 280,
           isStunGrenade || blastKind === BANSUNG_FX_BLAST_THUNDER_STORM || isYellowStorm,
         );
+        // Spawn vertical sky-to-ground CC0 Lightning Bolt sprite strike for thunder blasts!
+        if (!isStunGrenade) {
+          const bSlot = this.lightningBolts[this.lightningBoltHead];
+          this.lightningBoltHead = (this.lightningBoltHead + 1) % this.lightningBolts.length;
+          bSlot.active = true;
+          bSlot.x = x;
+          bSlot.y = y;
+          bSlot.yellow = isYellowStorm;
+          bSlot.ageMs = 0;
+          bSlot.ttlMs = 285;
+        }
         const arcCount =
           blastKind === BANSUNG_FX_BLAST_THUNDER_STORM || isYellowStorm
             ? 6
@@ -3664,6 +3696,13 @@ export class BansungVfxController {
       if (!a.active) continue;
       a.ageMs += dtMs;
       if (a.ageMs >= a.ttlMs) a.active = false;
+    }
+
+    for (let i = 0; i < this.lightningBolts.length; i++) {
+      const lb = this.lightningBolts[i];
+      if (!lb.active) continue;
+      lb.ageMs += dtMs;
+      if (lb.ageMs >= lb.ttlMs) lb.active = false;
     }
 
     if (this.flashOverlay.active) {
@@ -3959,6 +3998,22 @@ export class BansungVfxController {
         a.variant,
         nowMs,
       );
+    }
+    for (let i = 0; i < this.lightningBolts.length; i++) {
+      const lb = this.lightningBolts[i];
+      if (!lb.active) continue;
+      const t = clamp(lb.ageMs / Math.max(1, lb.ttlMs), 0, 0.999);
+      const frameIdx = Math.min(5, Math.floor(t * 6));
+      drawBansungSprite(ctx, {
+        clipKey: lb.yellow ? 'fx_lightning_bolt_yellow' : 'fx_lightning_bolt_blue',
+        x: Math.round(lb.x),
+        y: Math.round(lb.y),
+        animTimeSec: 0,
+        frameIdx,
+        scale: 1.12,
+        alpha: t > 0.75 ? (1 - t) * 4 : 1,
+        category: 'vfx',
+      });
     }
     for (let i = 0; i < this.flashes.length; i++) {
       if (this.flashes[i].active) drawMuzzleFlashAdditive(ctx, this.flashes[i]);
