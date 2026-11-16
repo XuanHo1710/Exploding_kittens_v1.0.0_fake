@@ -1,538 +1,884 @@
 'use strict';
 
-// Miragine War (Thập Hùng Tranh Bá - Chế độ Solo 10 Người / Co-op / Lập Đội):
-// Kiểm tra toàn diện 16 binh chủng nguyên bản Miragine War, hệ thống Giáp Nhẹ / Giáp Nặng,
-// lương hiệp mỗi 30 giây (+incomeBonus), chiếm mỏ vàng, Hành Quân Tấn Công Chỉ Định, Phòng Thủ, Tập Kết,
-// AI khắc chế và kết thúc trận 10 người.
+// Kiểm thử toàn diện Miragine War cổ điển (thap_hung: 1P vs AI & 1v1 PvP):
+// tài nguyên mapping.json, 16 binh chủng, đấu trường ngang 2040x800, kinh tế theo đợt 30Hz/15Hz,
+// lệnh auto/select & token bucket & surrender, Game Solo/PvP/Spectator, rời trận giữa chừng,
+// xử lý hết giờ (máu Pha Lê -> điểm -> hòa -1) và kết nối RoomsService / GameGateway.
+require('reflect-metadata');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { ThapWorld } = require('../dist/server/src/game/thap/world.js');
-const { Game } = require('../dist/server/src/game/game.js');
+const { Game, GameError } = require('../dist/server/src/game/game.js');
+const { RoomsService } = require('../dist/server/src/game/rooms.service.js');
+const { GameGateway } = require('../dist/server/src/game/game.gateway.js');
 const S = require('../dist/shared/src/index.js');
 
 const {
-  normalizeThapConfig, assignThapTeams, thapLayout, THAP_UNITS, THAP_UNIT_KINDS, THAP_START_GOLD, THAP_MAX_POP, THAP_BASE,
-  THAP_UNIT_FIELDS, THAP_MINE_FIELDS, THAP_SHOT_FIELDS, THAP_DEATH_FIELDS, THAP_DEFEND_RADIUS, thapUpgradeCost, miragineDamage,
+  GAME_MODES,
+  DEFAULT_THAP_CONFIG,
+  THAP_SIM_FPS,
+  THAP_NET_FPS,
+  THAP_NET_DIV,
+  THAP_MAX_PLAYERS,
+  THAP_FIRST_ROUND_FRAMES,
+  THAP_ROUND_FRAMES,
+  THAP_SPAWN_INTERVAL_FRAMES,
+  THAP_START_GOLD,
+  THAP_START_ROUND_INCOME,
+  THAP_INCOME_LIMIT,
+  THAP_MAX_POP,
+  THAP_CMD_BURST,
+  THAP_CMD_REFILL,
+  THAP_ARENA_W,
+  THAP_ARENA_H,
+  THAP_LANE_Y_MIN,
+  THAP_LANE_Y_MAX,
+  THAP_DOORS,
+  THAP_CRYSTALS,
+  THAP_SPAWN_X,
+  THAP_BASE,
+  THAP_COLORS,
+  THAP_UNIT_FIELDS,
+  THAP_SHOT_FIELDS,
+  THAP_DEATH_FIELDS,
+  THAP_UNITS,
+  THAP_UNIT_KINDS,
+  THAP_SHOT_CRYSTAL_FLAG,
+  normalizeThapConfig,
+  thapLayout,
+  miragineDamage,
+  miragineCrystalDamage,
+  decodeDeathCode,
 } = S;
 
 const noHooks = { tick() {}, changed() {} };
-const cfg = (over = {}) => ({ bots: 0, botLevel: 'normal', mode: 'ffa', minutes: 0, ...over });
-const sides = (n, teams) => Array.from({ length: n }, (_, i) => ({ id: `p${i}`, name: `P${i}`, color: '#123456', team: teams ? teams[i] : i, bot: false }));
-const world = (n = 2, teams, hooks = noHooks, over) => new ThapWorld(sides(n, teams), cfg({ mode: teams ? 'teams' : 'ffa', ...over }), hooks);
+const cfg = (over = {}) => ({ ...DEFAULT_THAP_CONFIG, ...over });
+const sides = (bots = 1) => [
+  { id: 'p0', name: 'Phe Đỏ', color: THAP_COLORS[0], team: 0, bot: false },
+  { id: bots ? 'bot:thap0' : 'p1', name: bots ? 'Miragine AI' : 'Phe Xanh', color: THAP_COLORS[1], team: 1, bot: !!bots },
+];
+const world = (over = {}, hooks = noHooks, bots = 1) =>
+  new ThapWorld(sides(bots), cfg({ bots, mode: bots ? 'solo' : 'pvp', ...over }), hooks);
 const steps = (w, n) => { for (let i = 0; i < n; i++) w.step(); };
-const unitsOf = (w, idx) => [...w.units.values()].filter((u) => u.owner === idx);
-const clearUnits = (w) => { for (const id of [...w.units.keys()]) w.units.delete(id); };
-/** Thành không bắn (để thử riêng đánh nhau giữa lính) */
-const muteBases = (w) => { for (const s of w.sides) s.baseCd = 1e9; };
-const dist = (a, x, y) => Math.hypot(a.x - x, a.y - y);
+const unitsOf = (w, owner) => w.sim.units.filter((u) => u.owner === owner && u.hp > 0);
+const muteCrystals = (w) => { for (const s of w.sides) s.crystalCd = 1e9; };
 
-test('database-miraginewar: đầy đủ mapping.json, 16 binh chủng, 128 sprite sheet, chân dung, công trình và âm thanh', () => {
+function thapGame(t, playerCount = 1) {
+  const frames = [];
+  const hooks = {
+    changed() {},
+    removed() {},
+    fx() {},
+    notify() {},
+    antsFrame() {},
+    linkState() {},
+    twFrame() {},
+    thapFrame(g, id, f) { frames.push([id, f]); },
+  };
+  const g = new Game('THAP', hooks, {}, 'thap_hung');
+  for (let i = 0; i < playerCount; i++) g.addPlayer(`p${i}`, `Người ${i}`);
+  if (t) t.after(() => g.dispose());
+  return { g, frames };
+}
+
+function readyAll(g) {
+  for (const p of g.players) {
+    if (p.id !== g.hostId) g.setReady(p.id, true, g.rulesVersion);
+  }
+}
+
+/** Tạo fixture RoomsService + GameGateway với AccountsService giả lập đầy đủ charge/refund/reward. */
+function gatewayFixture(t, playerIds = ['thap_red_01', 'thap_blue_02', 'thap_spec_03', 'thap_four_04']) {
+  const data = new Map(
+    playerIds.map((playerId, i) => [playerId, { playerId, name: `Player ${i + 1}`, coins: 1000, games: 0, wins: 0 }]),
+  );
+  const ops = new Set();
+  const calls = { charge: [], refund: [], rewardWinner: [], rewardPayouts: [] };
+  const events = [];
+
+  const accounts = {
+    data,
+    get: (id) => (data.has(id) ? structuredClone(data.get(id)) : undefined),
+    info: (acc) => structuredClone(acc),
+    verify: (id, token) => (token === 'valid' ? accounts.get(id) : undefined),
+    async chargeGame(ids, bet, opId) {
+      calls.charge.push({ ids: [...ids], bet, opId });
+      if (opId) {
+        if (ops.has(opId)) return;
+        ops.add(opId);
+      }
+      for (const id of ids) {
+        const acc = data.get(id);
+        if (!acc) continue;
+        acc.coins -= typeof bet === 'number' ? bet : (bet[id] ?? 0);
+        acc.games += 1;
+      }
+    },
+    async refundGame(ids, bet, opId, chargeOpId) {
+      const applied = !(chargeOpId && !ops.has(chargeOpId)) && !(opId && ops.has(opId));
+      calls.refund.push({ ids: [...ids], bet, opId, applied });
+      if (!applied) return false;
+      if (opId) ops.add(opId);
+      for (const id of ids) {
+        const acc = data.get(id);
+        if (!acc) continue;
+        acc.coins += typeof bet === 'number' ? bet : (bet[id] ?? 0);
+        acc.games = Math.max(0, acc.games - 1);
+      }
+      return true;
+    },
+    async rewardWinner(id, pot, opId) {
+      calls.rewardWinner.push({ id, pot, opId });
+      if (opId) {
+        if (ops.has(opId)) return true;
+        ops.add(opId);
+      }
+      const acc = data.get(id);
+      if (!acc) return false;
+      acc.coins += pot;
+      acc.wins += 1;
+      return true;
+    },
+    async rewardPayouts(payouts, winnerIds, opId) {
+      calls.rewardPayouts.push({ payouts: { ...payouts }, winnerIds: [...winnerIds], opId });
+      if (opId) {
+        if (ops.has(opId)) return true;
+        ops.add(opId);
+      }
+      const winSet = new Set(winnerIds);
+      for (const [id, amt] of Object.entries(payouts)) {
+        const acc = data.get(id);
+        if (!acc) continue;
+        acc.coins += amt;
+        if (winSet.has(id)) acc.wins += 1;
+      }
+      return true;
+    },
+  };
+
+  const server = {
+    to(room) {
+      return {
+        emit(event, value) { events.push({ room, event, value, volatile: false }); },
+        volatile: {
+          emit(event, value) { events.push({ room, event, value, volatile: true }); },
+        },
+      };
+    },
+    in() {
+      return { fetchSockets: async () => [] };
+    },
+  };
+
+  const rooms = new RoomsService(accounts);
+  rooms.logger.error = () => {};
+  rooms.bind(server);
+  const gateway = new GameGateway(rooms, accounts);
+  gateway.logger.error = () => {};
+  gateway.server = server;
+
+  t.after(() => {
+    for (const active of rooms.rooms.values()) active.dispose();
+    rooms.rooms.clear();
+  });
+
+  const makeSocket = (playerId, token = 'valid') => ({
+    handshake: { auth: { playerId, name: data.get(playerId)?.name ?? playerId, token } },
+    data: {},
+    events: [],
+    joins: [],
+    disconnected: false,
+    emit(event, value) { this.events.push({ event, value }); },
+    join(room) { this.joins.push(room); },
+    disconnect() { this.disconnected = true; },
+  });
+
+  return { accounts, calls, events, rooms, gateway, makeSocket };
+}
+
+// ---------------------------------------------------------------------------
+// 0. Tài nguyên gốc database-miraginewar & 16 binh chủng Method 493
+// ---------------------------------------------------------------------------
+
+test('database-miraginewar: đầy đủ mapping.json, 16 binh chủng, 128 sprite sheet, chân dung, công trình, đạn và âm thanh', () => {
   const dbDir = path.resolve(__dirname, '../../database-miraginewar');
-  assert.ok(fs.existsSync(path.join(dbDir, 'mapping.json')), 'có mapping.json');
+  assert.ok(fs.existsSync(path.join(dbDir, 'mapping.json')));
   const mapping = JSON.parse(fs.readFileSync(path.join(dbDir, 'mapping.json'), 'utf8'));
-  assert.equal(mapping.units.length, 16, 'đủ 16 binh chủng gốc trong mapping.json');
-  assert.equal(THAP_UNIT_KINDS.length, 16, 'shared có đủ 16 binh chủng');
+  assert.equal(mapping.units.length, 16);
+  assert.equal(THAP_UNIT_KINDS.length, 16);
   for (let i = 0; i < 16; i++) {
-    assert.ok(fs.existsSync(path.join(dbDir, 'portraits', `a${i}.png`)), `có chân dung a${i}.png`);
-    assert.ok(fs.existsSync(path.join(dbDir, 'portraits', `b${i}.png`)), `có chân dung b${i}.png`);
+    assert.ok(fs.existsSync(path.join(dbDir, 'portraits', `a${i}.png`)));
+    assert.ok(fs.existsSync(path.join(dbDir, 'portraits', `b${i}.png`)));
     for (const side of ['A', 'B']) {
       for (const act of ['idle', 'run', 'attack', 'dead']) {
-        assert.ok(fs.existsSync(path.join(dbDir, 'sheets', `${side}${i}_${act}.png`)), `có sheet ${side}${i}_${act}.png`);
+        assert.ok(fs.existsSync(path.join(dbDir, 'sheets', `${side}${i}_${act}.png`)));
       }
     }
   }
-  assert.ok(fs.existsSync(path.join(dbDir, 'structures', 'A_crystal.png')));
-  assert.ok(fs.existsSync(path.join(dbDir, 'structures', 'B_crystal.png')));
-  assert.ok(fs.existsSync(path.join(dbDir, 'structures', 'door.png')));
-  assert.ok(fs.existsSync(path.join(dbDir, 'projectiles', 'fireball.png')));
-  assert.ok(fs.existsSync(path.join(dbDir, 'projectiles', 'thunderball.png')));
-  assert.ok(fs.existsSync(path.join(dbDir, 'projectiles', 'storm.png')));
-  assert.ok(fs.existsSync(path.join(dbDir, 'terrains', 'terrain.jpg')));
-  assert.ok(fs.existsSync(path.join(dbDir, 'terrains', 'terrain2.jpg')));
-  assert.ok(fs.existsSync(path.join(dbDir, 'audio', 'gameLoop.mp3')));
-  assert.ok(fs.existsSync(path.join(dbDir, 'audio', 'mainLoop.mp3')));
-  assert.ok(fs.existsSync(path.join(dbDir, 'ui', 'title_bg.jpg')));
-  assert.ok(fs.existsSync(path.join(dbDir, 'ui', 'tutorial_bg.jpg')));
+  for (const rel of [
+    'structures/A_crystal.png',
+    'structures/B_crystal.png',
+    'structures/door.png',
+    'projectiles/fireball.png',
+    'projectiles/thunderball.png',
+    'projectiles/storm.png',
+    'terrains/terrain.jpg',
+    'terrains/terrain2.jpg',
+    'audio/gameLoop.mp3',
+    'audio/mainLoop.mp3',
+    'ui/title_bg.jpg',
+    'ui/tutorial_bg.jpg',
+  ]) {
+    assert.ok(fs.existsSync(path.join(dbDir, rel)), `thiếu ${rel}`);
+  }
 });
 
-test('16 binh chủng Miragine War & công thức sát thương Giáp Nhẹ / Giáp Nặng', () => {
+test('16 binh chủng Miragine War & công thức sát thương Method 493 (Giáp Nhẹ / Giáp Nặng / Pha Lê)', () => {
   assert.equal(THAP_UNITS.newbie.cost, 20);
+  assert.equal(THAP_UNITS.newbie.incomeBonus, 4);
   assert.equal(THAP_UNITS.highlord.cost, 1500);
   assert.equal(THAP_UNITS.highlord.pop, 7);
-  // Samurai (damage [17, 5]) đánh Newbie (Giáp Nhẹ armorTypeID=0, armor=0) -> 17 - 0 = 17
   assert.equal(miragineDamage('samurai', 'newbie'), 17);
-  // Samurai (damage [17, 5]) đánh Zombie (Giáp Nặng armorTypeID=1, armor=1) -> 5 - 1 = 4
   assert.equal(miragineDamage('samurai', 'zombie'), 4);
-  // Swordman (damage [10, 20]) đánh Zombie (Giáp Nặng armorTypeID=1, armor=1) -> 20 - 1 = 19
   assert.equal(miragineDamage('swordman', 'zombie'), 19);
+  assert.equal(miragineCrystalDamage('highlord'), 155);
+  assert.equal(miragineCrystalDamage('samurai'), 5);
 });
 
-test('cấu hình: số máy giới hạn theo chỗ trống, giá trị lạ về mặc định', () => {
-  assert.deepEqual(normalizeThapConfig({ bots: 99, minutes: 7, botLevel: 'x', mode: 'zzz' }, 4), { bots: 6, botLevel: 'normal', mode: 'ffa', minutes: 20 });
-  assert.equal(normalizeThapConfig({ bots: -3 }, 2).bots, 0);
-  assert.equal(normalizeThapConfig({ mode: 'teams', minutes: 0 }, 2).mode, 'teams');
-  assert.equal(normalizeThapConfig({ minutes: 0 }, 2).minutes, 0);
-});
+// ---------------------------------------------------------------------------
+// 1. Hình học đấu trường cổ điển 2 phe & chuẩn hóa cấu hình
+// ---------------------------------------------------------------------------
 
-test('chia đội: hỗn chiến / cùng đánh máy / lập đội', () => {
-  assert.deepEqual(assignThapTeams([3, 3], 2, 'ffa'), [0, 1, 2, 3]);
-  assert.deepEqual(assignThapTeams([4, 2], 3, 'coop'), [0, 0, 1, 1, 1]);
-  assert.deepEqual(assignThapTeams([2, 2], 2, 'teams'), [2, 2, 0, 0]);
-  assert.deepEqual(assignThapTeams([0, 0, 1], 1, 'teams'), [0, 0, 1, 1]);
-});
+test('đấu trường cổ điển 2 phe: 2040x800, Cổng [75,470]/[1965,470], Pha Lê [210,470]/[1830,470], làn y∈[310,630]', () => {
+  assert.equal(THAP_MAX_PLAYERS, 2);
+  assert.equal(GAME_MODES.thap_hung.minPlayers, 1);
+  assert.equal(GAME_MODES.thap_hung.maxPlayers, 2);
+  assert.equal(THAP_ARENA_W, 2040);
+  assert.equal(THAP_ARENA_H, 800);
+  assert.deepEqual(THAP_DOORS, [[75, 470], [1965, 470]]);
+  assert.deepEqual(THAP_CRYSTALS, [[210, 470], [1830, 470]]);
+  assert.deepEqual(THAP_SPAWN_X, [135, 1905]);
+  assert.equal(THAP_LANE_Y_MIN, 310);
+  assert.equal(THAP_LANE_Y_MAX, 630);
 
-test('bố cục 10 phe chuẩn Miragine War: 10 Thành nằm trên bản đồ thảo nguyên, khởi đầu 0 vàng, Lương Hiệp 100, mặc định chọn Tân Binh & Tấn Công Chỉ Định', () => {
-  const L = thapLayout(10);
-  assert.equal(L.bases.length, 10);
-  assert.equal(L.mines.length, 0, 'Miragine War gốc không có mỏ vàng');
-  for (const [x, y] of L.bases) assert.ok(x - THAP_BASE.radius > 0 && x + THAP_BASE.radius < L.W && y - THAP_BASE.radius > 0 && y + THAP_BASE.radius < L.H);
-  const w = world(10);
-  assert.equal(w.baseList().length, 20);
-  assert.equal(w.mineList().length, 0);
-  for (let i = 0; i < 10; i++) {
-    assert.equal(unitsOf(w, i).length, 0, 'chưa tới đợt 1 (6s) thì chưa xuất lính');
-    assert.equal(w.sides[i].gold, 0);
-    assert.equal(w.sides[i].roundIncome, 100);
+  const L = thapLayout();
+  assert.deepEqual(L, {
+    W: 2040,
+    H: 800,
+    bases: [[210, 470], [1830, 470]],
+    doors: [[75, 470], [1965, 470]],
+    laneYMin: 310,
+    laneYMax: 630,
+  });
+
+  const w = world();
+  assert.equal(w.W, 2040);
+  assert.equal(w.H, 800);
+  assert.deepEqual(w.baseList(), [210, 470, 1830, 470]);
+  assert.deepEqual(w.doorList(), [75, 470, 1965, 470]);
+  assert.equal(w.sides.length, 2);
+  for (let i = 0; i < 2; i++) {
+    assert.equal(w.sides[i].gold, THAP_START_GOLD);
+    assert.equal(w.sides[i].roundIncome, THAP_START_ROUND_INCOME);
     assert.equal(w.sides[i].auto, 'newbie');
-    assert.equal(w.sides[i].stance, 'attack');
-    assert.notEqual(w.sides[i].target, i);
+    assert.equal(w.sides[i].baseHp, THAP_BASE.hp);
+    assert.equal(w.sides[i].baseMaxHp, THAP_BASE.hp);
   }
 });
 
-test('triệu hồi tự động theo đợt chuẩn Miragine War: đợt đầu sau 6 giây (60 nhịp), các đợt tiếp theo mỗi 30 giây (300 nhịp)', () => {
-  const w = world(2);
-  const s0 = w.sides[0];
-  assert.equal(s0.gold, 0);
-  assert.equal(s0.roundIncome, 100);
-  assert.equal(s0.auto, 'newbie');
-  // Trước giây thứ 6 (59 nhịp): chưa phát lương hiệp
-  steps(w, 59);
-  assert.equal(s0.gold, 0);
+test('normalizeThapConfig: tự động phân solo/pvp theo số người, lọc botLevel và minutes', () => {
+  assert.deepEqual(normalizeThapConfig({ bots: 99, mode: 'pvp', botLevel: 'x', minutes: 7 }, 1), {
+    bots: 1,
+    botLevel: 'normal',
+    mode: 'solo',
+    minutes: 0,
+  });
+  assert.deepEqual(normalizeThapConfig({ bots: 0, mode: 'solo', botLevel: 'hard', minutes: '15' }, 1), {
+    bots: 1,
+    botLevel: 'hard',
+    mode: 'solo',
+    minutes: 15,
+  });
+  assert.deepEqual(normalizeThapConfig({ bots: 5, mode: 'solo', botLevel: 'easy', minutes: 20 }, 2), {
+    bots: 0,
+    botLevel: 'easy',
+    mode: 'pvp',
+    minutes: 20,
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Kinh tế 30Hz, khung hình 15Hz, trần dân số 60, chiến đấu & AI thích ứng
+// ---------------------------------------------------------------------------
+
+test('kinh tế theo đợt 30Hz (6s = 180 nhịp, 30s = 900 nhịp), xuất quân cách 4 nhịp & khung hình 15Hz', () => {
+  let ticks = 0;
+  const w = world({}, { tick() { ticks++; }, changed() {} }, 0);
+  w.start();
+  w.stop();
+  assert.equal(ticks, 1, 'start() phát ngay tick-0');
+  assert.equal(w.frameFor(0).tick, 0);
+  assert.equal(w.frameFor(0).roundLeft, 6);
+
+  steps(w, THAP_FIRST_ROUND_FRAMES - 1);
+  assert.equal(w.sim.wave, 0);
+  assert.equal(w.sides[0].gold, 0);
   assert.equal(unitsOf(w, 0).length, 0);
   assert.equal(w.frameFor(0).me.roundLeft, 1);
-  // Nhịp thứ 60 (đúng 6 giây): nhận +100 vàng và Cổng Triệu Hồi lập tức xuất con Tân Binh đầu tiên (-20 vàng, +4 Lương Hiệp)
+
+  // Nhịp thứ 180 (6 giây): phát +100 vàng, xuất ngay Tân Binh #1 tại Cổng trong làn [310, 630]
   w.step();
-  assert.equal(unitsOf(w, 0).length, 1, 'xuất Tân Binh đầu tiên ở nhịp 60');
-  assert.equal(s0.gold, 80);
-  assert.equal(s0.roundIncome, 104);
-  assert.equal(w.frameFor(0).me.roundLeft, 30, 'bắt đầu đếm ngược 30 giây cho đợt tiếp theo');
-  // Các nhịp 62, 64, 66, 68 tiếp tục xuất đủ 5 Tân Binh từ 100 vàng đợt 1
-  steps(w, 10);
-  assert.equal(unitsOf(w, 0).length, 5, '100 vàng đợt 1 triệu hồi đúng 5 Tân Binh (20 vàng/con)');
-  assert.equal(s0.gold, 0);
-  assert.equal(s0.roundIncome, 120, '5 Tân Binh tăng Lương Hiệp thêm +20 (100 -> 120)');
+  assert.equal(w.sim.wave, 1);
+  assert.equal(w.sides[0].gold, 0);
+  assert.equal(w.sides[0].roundIncome, 120);
+  assert.equal(unitsOf(w, 0).length, 1);
+  assert.equal(w.frameFor(0).me.roundLeft, 30);
+  assert.equal(w.frameFor(0).roundTotalS, 30);
+  assert.deepEqual(w.frameFor(0).lastWaveUnits, [5, 5]);
+
+  // Mỗi 4 nhịp xuất thêm 1 con cho đủ 5 Tân Binh (180, 184, 188, 192, 196)
+  steps(w, THAP_SPAWN_INTERVAL_FRAMES * 4);
+  assert.equal(unitsOf(w, 0).length, 5);
+  assert.equal(unitsOf(w, 1).length, 5);
+  for (const u of w.sim.units) {
+    assert.ok(u.y >= THAP_LANE_Y_MIN && u.y <= THAP_LANE_Y_MAX);
+  }
+
+  const f0 = w.frameFor(0);
+  assert.equal(f0.tick, Math.floor(w.sim.simTick / THAP_NET_DIV));
+  assert.equal(THAP_NET_FPS * THAP_NET_DIV, THAP_SIM_FPS);
+  assert.equal(f0.u.length % THAP_UNIT_FIELDS, 0);
+  assert.equal(f0.s.length % THAP_SHOT_FIELDS, 0);
+  assert.equal(f0.d.length % THAP_DEATH_FIELDS, 0);
+  assert.deepEqual(
+    Object.keys(f0.me).sort(),
+    ['auto', 'blocked', 'gold', 'incomeLimit', 'kills', 'lost', 'pop', 'popCap', 'roundIncome', 'roundLeft', 'spawned'].sort(),
+  );
+  assert.equal(f0.me.incomeLimit, THAP_INCOME_LIMIT);
 });
 
-test('đổi binh chủng đang chọn (auto / train) & tích vàng mua lính đắt qua nhiều đợt 30 giây', () => {
-  const w = world(2);
-  const s0 = w.sides[0];
-  // Chọn Tu Sĩ (monk: 100 vàng, +15 Lương Hiệp)
+test('tích vàng qua nhiều đợt 30s & trần dân số 60 (blocked: pop)', () => {
+  const w = world({}, noHooks, 0);
+  w.sides[0].baseHp = w.sides[0].baseMaxHp = 1e6;
+  w.sides[1].baseHp = w.sides[1].baseMaxHp = 1e6;
   assert.equal(w.command(0, { t: 'auto', kind: 'monk' }), undefined);
-  assert.equal(s0.auto, 'monk');
-  steps(w, 60); // Đợt 1 ở giây thứ 6: nhận 100 vàng -> xuất 1 Tu Sĩ
+  steps(w, THAP_FIRST_ROUND_FRAMES); // Wave 1 (6s): 100g -> 1 Monk
   assert.equal(unitsOf(w, 0).length, 1);
   assert.equal(unitsOf(w, 0)[0].kind, 'monk');
-  assert.equal(s0.gold, 0);
-  assert.equal(s0.roundIncome, 100 + THAP_UNITS.monk.incomeBonus);
-  // Đổi sang Bất Tử (immortal: 180 vàng) -> đợt 2 (nhịp 360) nhận 115 vàng chưa đủ 180 nên tự tích vàng
-  assert.equal(w.command(0, { t: 'train', kind: 'immortal' }), undefined);
-  assert.equal(s0.auto, 'immortal');
-  steps(w, 300); // Nhịp 360 (đợt 2): +115 vàng (< 180)
-  assert.equal(s0.gold, 115, 'chưa đủ 180 vàng nên giữ vàng tích lũy');
-  steps(w, 300); // Nhịp 660 (đợt 3): +115 vàng = 230 vàng (>= 180) -> tự triệu hồi 1 Immortal!
-  assert.equal(s0.gold, 50);
-  assert.equal(s0.roundIncome, 115 + THAP_UNITS.immortal.incomeBonus);
-  assert.ok(unitsOf(w, 0).some((u) => u.kind === 'immortal'), 'đủ 180 vàng tự triệu hồi Bất Tử');
-  assert.match(w.command(0, { t: 'auto', kind: 'dragon' }), /không hợp lệ/);
-});
+  assert.equal(w.sides[0].roundIncome, 100 + THAP_UNITS.monk.incomeBonus);
 
-test('đủ quân số tối đa (60) thì Cổng Triệu Hồi tạm dừng xuất quân (blocked: pop)', () => {
-  const w = world();
-  const s = w.sides[0];
-  clearUnits(w);
-  const [bx, by] = w.bases[0];
-  for (let i = 0; i < THAP_MAX_POP; i++) w.addUnit(0, 'newbie', bx + 200 + (i % 8) * 20, by + Math.floor(i / 8) * 20);
-  s.gold = 20;
-  w.command(0, { t: 'stance', stance: 'defend' });
-  w.command(0, { t: 'auto', kind: 'newbie' });
-  steps(w, 10);
-  assert.equal(unitsOf(w, 0).length, THAP_MAX_POP);
+  // Đổi sang Immortal (180g): Wave 2 (+115g) tích lũy, Wave 3 (+115g = 230g) tự xuất 1 Immortal
+  assert.equal(w.command(0, { t: 'select', kind: 'immortal' }), undefined);
+  steps(w, THAP_ROUND_FRAMES);
+  assert.equal(w.sides[0].gold, 115);
+  steps(w, THAP_ROUND_FRAMES);
+  assert.equal(w.sides[0].gold, 50);
+  assert.ok(unitsOf(w, 0).some((u) => u.kind === 'immortal'));
+
+  // Kiểm tra trần dân số 60: không trừ vàng khi đầy dân số
+  w.sim.units.length = 0;
+  for (let i = 0; i < THAP_MAX_POP; i++) w.addUnit(0, 'newbie', 400 + (i % 6) * 20, 420 + Math.floor(i / 6) * 18);
+  w.sides[0].gold = 40;
+  w.sim.roundFramesLeft = 1;
+  w.command(0, { t: 'select', kind: 'newbie' });
   assert.equal(w.frameFor(0).me.blocked, 'pop');
-  assert.equal(s.gold, 20, 'chưa trừ vàng khi đầy quân số');
-  // Bớt 2 con (còn 58/60) thì 20 vàng tự triệu hồi thêm 1 con (thành 59/60, chưa chạm trần)
-  const list = unitsOf(w, 0);
-  w.units.delete(list[0].id);
-  w.units.delete(list[1].id);
-  steps(w, 4);
-  assert.equal(unitsOf(w, 0).length, THAP_MAX_POP - 1);
-  assert.equal(s.gold, 0);
-  assert.equal(w.frameFor(0).me.blocked, undefined);
+  // Kích hoạt ranh giới đợt khi vừa đủ 60 dân số
+  w.sides[0].gold = 0;
+  w.sides[0].roundIncome = 20;
+  w.step();
+  assert.equal(w.sides[0].gold, 20, 'đầy 60 dân số nên giữ lại 20 vàng');
+  assert.equal(w.frameFor(0).me.blocked, 'pop');
 });
 
-test('khắc chế Miragine War: Trọng Kiếm Sĩ (heavysword, chuyên phá Giáp Nặng) thắng Cựu Binh (veteran) 1 đấu 1', () => {
-  const w = world();
-  clearUnits(w);
-  muteBases(w);
-  w.sides[0].auto = null;
-  w.sides[1].auto = null;
-  const x = w.W / 2, y = w.H / 2 - 300;
-  const hs = w.addUnit(0, 'heavysword', x - 35, y);
-  const vet = w.addUnit(1, 'veteran', x + 35, y);
-  for (let i = 0; i < 400 && w.units.has(hs.id) && w.units.has(vet.id); i++) w.step();
-  assert.equal(w.units.has(vet.id), false, 'Veteran bị hạ');
-  assert.equal(w.units.has(hs.id), true, 'HeavySword sống');
+test('chiến đấu, trụ Pha Lê bắn tầm 600px, vỡ Pha Lê kết thúc trận & Solo AI chạy ổn định', () => {
+  const w = world({ botLevel: 'hard' }, noHooks, 1);
+  // 1) Trọng Kiếm Sĩ thắng Cựu Binh (Method 493)
+  muteCrystals(w);
+  const hs = w.addUnit(0, 'heavysword', 980, 470);
+  const vet = w.addUnit(1, 'veteran', 1040, 470);
+  for (let i = 0; i < 400 && hs.hp > 0 && vet.hp > 0; i++) w.step();
+  assert.ok(hs.hp > 0 && vet.hp <= 0);
   assert.equal(w.sides[0].kills, 1);
-  assert.equal(w.sides[0].killsValue, THAP_UNITS.veteran.cost);
   assert.equal(w.sides[1].lost, 1);
-});
 
-test('Thành đổ: phe bị loại, lính biến mất, đạo quân đang Tấn Công tự chuyển mục tiêu sang Thành địch còn sống tiếp theo', () => {
-  let changed = 0;
-  const w = world(3, undefined, { tick() {}, changed() { changed++; } });
-  w.sides[1].baseHp = 1;
-  const [bx, by] = w.bases[1];
-  w.addUnit(0, 'highlord', bx + THAP_BASE.radius + 140, by);
-  w.sides[0].stance = 'attack';
-  w.sides[0].target = 1;
-  for (let i = 0; i < 200 && w.sides[1].alive; i++) w.step();
-  assert.equal(w.sides[1].alive, false);
-  assert.equal(unitsOf(w, 1).length, 0);
-  assert.ok(changed >= 1);
-  assert.equal(w.frameFor(1).me, undefined, 'phe đã loại không có phần riêng');
-  assert.equal(w.frameFor(0).bh[1], 0);
-  assert.equal(w.frameFor(0).al[1], 0);
-  assert.equal(w.result, undefined, 'còn 2 phe thì chưa hết trận');
-  assert.equal(w.sides[0].stance, 'attack', 'giữ nguyên thế Tấn Công Chỉ Định');
-  assert.equal(w.sides[0].target, 2, 'tự động chuyển mục tiêu sang Thành địch còn sống (#2)');
-  assert.match(w.command(0, { t: 'attack', target: 1 }), /Không thể tấn công/);
-});
+  // 2) Pha Lê Xanh tự bắn lính trong tầm 600px kèm cờ THAP_SHOT_CRYSTAL_FLAG (mô phỏng khung hình 15Hz)
+  const crystalWorld = world({}, noHooks, 0);
+  crystalWorld.addUnit(0, 'newbie', THAP_CRYSTALS[1][0] - 250, 470);
+  crystalWorld.stepFrame();
+  const crystalFrame = crystalWorld.frameFor(0);
+  assert.ok(crystalFrame.s.length >= THAP_SHOT_FIELDS);
+  assert.ok((crystalFrame.s[4] & THAP_SHOT_CRYSTAL_FLAG) !== 0);
 
-test('đồng minh: không đánh nhau, không bị chọn làm mục tiêu', () => {
-  const w = world(3, [0, 0, 1]);
-  clearUnits(w);
-  muteBases(w);
-  const x = w.W / 2, y = w.H / 2 - 300;
-  const a = w.addUnit(0, 'swordman', x - 30, y);
-  const b = w.addUnit(1, 'novice', x + 30, y);
-  const ha = a.hp, hb = b.hp;
-  steps(w, 100);
-  assert.equal(a.hp, ha);
-  assert.equal(b.hp, hb);
-  assert.match(w.command(0, { t: 'attack', target: 1 }), /Không thể tấn công/);
-  assert.match(w.command(0, { t: 'attack', target: 0 }), /Không thể tấn công/);
-  assert.equal(w.command(0, { t: 'attack', target: 2 }), undefined);
-  // Pháp Sư bắn lan không trúng đồng minh
-  clearUnits(w);
-  const mage = w.addUnit(0, 'mage', x - 140, y);
-  const ally = w.addUnit(1, 'veteran', x + 5, y + 5);
-  const foe = w.addUnit(2, 'veteran', x, y);
-  ally.hp = ally.maxHp = 1e9;
-  foe.hp = foe.maxHp = 1e9;
-  w.command(0, { t: 'stance', stance: 'advance' });
-  w.command(1, { t: 'stance', stance: 'defend' });
-  w.command(2, { t: 'stance', stance: 'defend' });
-  steps(w, 60);
-  assert.ok(foe.hp < 1e9, 'địch bị trúng');
-  assert.equal(ally.hp, 1e9, 'đồng minh không mất máu');
-  assert.ok(mage.hp > 0);
-});
-
-test('hỗn chiến: còn 1 phe có Thành là thắng', () => {
-  const w = world(3);
-  w.resign(1);
-  w.step();
-  assert.equal(w.result, undefined);
-  w.resign(2);
-  w.step();
-  assert.equal(w.result.winnerTeam, 0);
-  assert.deepEqual(w.result.winnerIdxs, [0]);
-  assert.equal(w.result.scores.length, 3);
-  assert.equal(w.running, false);
-});
-
-test('lập đội: cả đội thắng (kể cả thành viên đã đổ)', () => {
-  const w = world(4, [0, 0, 1, 1]);
-  w.resign(1);
-  w.resign(2);
-  w.step();
-  assert.equal(w.result, undefined, 'mỗi đội còn 1 Thành');
-  w.resign(3);
-  w.step();
-  assert.equal(w.result.winnerTeam, 0);
-  assert.deepEqual(w.result.winnerIdxs, [0, 1]);
-});
-
-test('hết giờ: đội điểm cao nhất thắng', () => {
-  const w = world(2, undefined, noHooks, { minutes: 10 });
-  w.sides[1].killsValue = 100000;
-  w.endsAt = Date.now() - 1;
-  w.step();
-  assert.equal(w.result.winnerTeam, 1);
-  assert.match(w.result.reason, /Hết giờ/);
-});
-
-test('Hành Quân Tấn Công Chỉ Định: cả đạo quân hành quân phá đúng Thành đã chọn, Thành khác không bị đụng', () => {
-  const w = world(3);
-  const s = w.sides[0];
-  clearUnits(w);
-  for (const side of w.sides) side.auto = null;
-  s.gold = 1e6;
-  const [bx, by] = w.bases[0];
-  for (let i = 0; i < 6; i++) w.addUnit(0, 'highlord', bx + Math.cos(s.facing) * 150, by + Math.sin(s.facing) * 150 + i * 30);
-  for (let i = 0; i < 6; i++) w.addUnit(0, 'dreadlord', bx + Math.cos(s.facing) * 120, by + Math.sin(s.facing) * 120 + i * 25);
-  assert.equal(w.command(0, { t: 'attack', target: 2 }), undefined);
-  assert.equal(w.frameFor(0).me.stance, 'attack');
-  assert.equal(w.frameFor(0).me.target, 2);
-  s.auto = 'highlord';
-  for (let i = 0; i < 10 * 60 * 5 && w.sides[2].alive; i++) {
-    w.step();
+  // 3) Solo AI chạy 1200 nhịp không lỗi, tọa độ hợp lệ trong làn đường
+  const aiWorld = world({ botLevel: 'hard' }, noHooks, 1);
+  for (let i = 0; i < 1200 && !aiWorld.result; i++) aiWorld.step();
+  assert.ok(aiWorld.sides[1].spawned > 0);
+  assert.ok(aiWorld.sides[1].ai.lastEvalWave >= 1);
+  for (const u of aiWorld.sim.units) {
+    assert.ok(Number.isFinite(u.x) && Number.isFinite(u.y));
+    assert.ok(u.x >= 0 && u.x <= THAP_ARENA_W && u.y >= THAP_LANE_Y_MIN && u.y <= THAP_LANE_Y_MAX);
   }
-  assert.equal(w.sides[2].alive, false, 'Thành mục tiêu bị phá');
-  assert.equal(w.sides[1].baseHp, THAP_BASE.hp, 'Thành không bị chọn còn nguyên');
+
+  // 4) Vỡ Pha Lê Xanh -> reason = 'crystal', frame.d mang mã Pha Lê (owner + 1 = 2)
+  aiWorld.sides[1].baseHp = 10;
+  aiWorld.addUnit(0, 'highlord', THAP_CRYSTALS[1][0] - 70, 470);
+  for (let i = 0; i < 60 && !aiWorld.result; i++) aiWorld.step();
+  assert.equal(aiWorld.result.reason, 'crystal');
+  assert.equal(aiWorld.result.winnerTeam, 0);
+  assert.deepEqual(aiWorld.result.winnerIdxs, [0]);
+  const endFrame = aiWorld.frameFor(0);
+  assert.equal(endFrame.bh[1], 0);
+  assert.equal(endFrame.al[1], 0);
+  const deaths = [];
+  for (let i = 0; i < endFrame.d.length; i += THAP_DEATH_FIELDS) deaths.push(decodeDeathCode(endFrame.d[i + 2]));
+  assert.ok(deaths.some((d) => d.isBase && d.owner === 1));
 });
 
-test('Phòng Thủ: cả đạo quân về đứng quanh Thành', () => {
-  const w = world(2);
-  muteBases(w);
-  const [bx, by] = w.bases[0];
-  w.sides[0].gold = 600;
-  w.sides[1].auto = null;
-  w.command(0, { t: 'auto', kind: 'swordman' });
-  w.command(0, { t: 'rally', x: w.W / 2, y: w.H / 2 });
-  steps(w, 300);
-  assert.ok(unitsOf(w, 0).some((u) => dist(u, bx, by) > 600), 'đã đi xa');
-  w.command(0, { t: 'stance', stance: 'defend' });
-  steps(w, 400);
-  const army = unitsOf(w, 0);
-  assert.ok(army.length >= 6);
-  assert.ok(army.every((u) => dist(u, bx, by) <= THAP_DEFEND_RADIUS + 20), 'mọi lính đều trong vòng Phòng Thủ');
-});
+// ---------------------------------------------------------------------------
+// 2. Game Solo AI flow
+// ---------------------------------------------------------------------------
 
-test('Tập Kết: lính tới điểm tập kết và đứng giữ', () => {
-  const w = world(2);
-  muteBases(w);
-  w.sides[1].auto = null;
-  w.command(1, { t: 'stance', stance: 'defend' });
-  const x = w.bases[0][0] + 520, y = w.bases[0][1] + 60;
-  w.sides[0].gold = 60; // đủ triệu hồi 3 Tân Binh
-  assert.equal(w.command(0, { t: 'rally', x, y }), undefined);
-  assert.equal(w.frameFor(0).me.stance, 'rally');
-  assert.deepEqual(w.frameFor(0).me.rally, [Math.round(x), Math.round(y)]);
-  assert.match(w.command(0, { t: 'rally', x: 'a', y: 3 }), /Vị trí/);
-  steps(w, 500);
-  assert.ok(unitsOf(w, 0).length >= 3);
-  for (const u of unitsOf(w, 0)) assert.ok(dist(u, x, y) < 140, 'đứng quanh điểm tập kết');
-  // rally ngoài bản đồ bị kẹp lại
-  w.command(0, { t: 'rally', x: -500, y: 1e9 });
-  const [rx, ry] = w.frameFor(0).me.rally;
-  assert.ok(rx >= 0 && rx <= w.W && ry >= 0 && ry <= w.H);
-});
-
-test('chống spam lệnh: hết lượt thì lệnh bị bỏ qua', () => {
-  const w = world();
-  const s = w.sides[0];
-  for (let i = 0; i < 100; i++) w.command(0, { t: 'auto', kind: 'swordman' });
-  assert.ok(s.tokens < 1);
-  w.command(0, { t: 'stance', stance: 'defend' });
-  assert.notEqual(s.stance, 'defend', 'lệnh bị bỏ qua khi hết lượt');
-  steps(w, 2);
-  w.command(0, { t: 'stance', stance: 'defend' });
-  assert.equal(s.stance, 'defend');
-});
-
-test('khung hình: đúng số trường, phần riêng chỉ của mình', () => {
-  const w = world(3);
-  steps(w, 70);
-  const f = w.frameFor(0);
-  assert.equal(f.u.length % THAP_UNIT_FIELDS, 0);
-  assert.equal(f.u.length / THAP_UNIT_FIELDS, w.units.size);
-  assert.equal(f.m.length, w.mines.length * THAP_MINE_FIELDS);
-  assert.equal(f.s.length % THAP_SHOT_FIELDS, 0);
-  assert.equal(f.d.length % THAP_DEATH_FIELDS, 0);
-  assert.equal(f.bh.length, 3);
-  assert.equal(f.al.length, 3);
-  assert.equal(f.sc.length, 3);
-  assert.equal(f.full, true);
-  assert.equal(f.tick, w.tickNo);
-  for (let i = 0; i < f.u.length; i += THAP_UNIT_FIELDS) {
-    assert.ok(f.u[i + 5] >= 1 && f.u[i + 5] <= 100);
-    assert.ok(f.u[i + 2] >= 0 && f.u[i + 2] < 16);
-  }
-  w.sides[1].gold = 7;
-  assert.equal(w.frameFor(1).me.gold, 7);
-  assert.notEqual(w.frameFor(0).me.gold, 7);
-  assert.equal(w.frameFor(undefined).me, undefined);
-  assert.deepEqual(
-    Object.keys(w.frameFor(0).me).sort(),
-    ['auto', 'blocked', 'gold', 'income', 'kills', 'lost', 'mines', 'pop', 'popCap', 'queue', 'rally', 'roundIncome', 'roundLeft', 'stance', 'target', 'upgrades'].sort(),
-  );
-});
-
-test('máy tự chơi: 1 người + 9 máy chạy 3000 nhịp không lỗi, máy chọn binh chủng khắc chế và đánh nhau', () => {
-  const inits = [
-    { id: 'p0', name: 'Người', color: '#000', team: 0, bot: false },
-    ...Array.from({ length: 9 }, (_, i) => ({ id: `bot:thap${i}`, name: `Máy ${i}`, color: '#111', team: i + 1, bot: true })),
-  ];
-  const w = new ThapWorld(inits, cfg({ bots: 9, botLevel: 'hard' }), noHooks);
-  w.sides.slice(1).forEach((s, i) => (s.brain.level = ['easy', 'normal', 'hard'][i % 3]));
-  const t0 = Date.now();
-  let maxUnits = 0;
-  for (let i = 0; i < 3000 && !w.result; i++) {
-    w.step();
-    if (i % 10 === 0) for (let k = 0; k < 10; k++) w.frameFor(k);
-    maxUnits = Math.max(maxUnits, w.units.size);
-    for (const u of w.units.values()) assert.ok(Number.isFinite(u.x) && Number.isFinite(u.y) && u.x >= 0 && u.x <= w.W && u.y >= 0 && u.y <= w.H);
-  }
-  const ms = Date.now() - t0;
-  assert.ok(maxUnits >= 30, `máy có triệu hồi lính (${maxUnits})`);
-  assert.ok(w.sides.some((s) => s.kills > 0), 'có giao tranh');
-  assert.ok(w.sides.slice(1).some((s) => s.brain.waves > 0 || s.stance === 'attack'), 'máy có tấn công chỉ định');
-  assert.ok(ms < 15000, `mô phỏng đủ nhanh (${ms}ms cho 3000 nhịp)`);
-});
-
-test('380 lính của 16 binh chủng giao tranh: mỗi nhịp vẫn nhanh', () => {
-  const w = world(10);
-  for (const s of w.sides) w.command(s.idx, { t: 'stance', stance: 'defend' });
-  clearUnits(w);
-  for (const s of w.sides) {
-    const [bx, by] = w.bases[s.idx];
-    for (let i = 0; i < 38; i++) {
-      w.addUnit(s.idx, THAP_UNIT_KINDS[i % 16], bx + Math.cos(s.facing) * 160 + (i % 6) * 22, by + Math.sin(s.facing) * 160 + Math.floor(i / 6) * 22);
-    }
-  }
-  for (const s of w.sides) w.command(s.idx, { t: 'rally', x: w.W / 2, y: w.H / 2 });
-  const t0 = Date.now();
-  steps(w, 600);
-  const ms = Date.now() - t0;
-  assert.ok(ms < 6000, `600 nhịp mất ${ms}ms`);
-  assert.ok(w.units.size < 380, 'có giao tranh ở giữa bản đồ');
-});
-
-// ---------------- Game: phòng chờ, bắt đầu, chia hũ ----------------
-
-function thapGame(n = 3) {
+test('Game Solo AI: tạo/đổi sang thap_hung, chỉnh botLevel/minutes, start() phát tick-0 ngay, không lộ mines/teams/auto địch', () => {
   const frames = [];
-  const hooks = { changed() {}, removed() {}, fx() {}, notify() {}, antsFrame() {}, linkState() {}, thapFrame(g, id, f) { frames.push([id, f]); } };
-  const g = new Game('THAP', hooks, {}, 'thap_hung');
-  for (let i = 0; i < n; i++) g.addPlayer(`p${i}`, `Người ${i}`);
-  return { g, frames };
-}
-const readyAll = (g) => { for (const p of g.players) if (p.id !== g.hostId) g.setReady(p.id, true, g.rulesVersion); };
-
-test('phòng chờ: chủ phòng chỉnh cấu hình, người chơi chọn đội, kiểm tra điều kiện bắt đầu', () => {
-  const { g } = thapGame(2);
+  const hookOrder = [];
+  const hooks = {
+    changed(g) { hookOrder.push(`changed:${g.phase}`); },
+    removed() {},
+    fx() {},
+    notify() {},
+    antsFrame() {},
+    linkState() {},
+    twFrame() {},
+    thapFrame(g, id, f) {
+      frames.push([id, f]);
+      hookOrder.push(`tick:${f.tick}`);
+    },
+  };
+  const g = new Game('SOLO', hooks);
   try {
-    assert.equal(g.seatLimit(), 10);
-    assert.throws(() => g.setThapConfig('p1', { bots: 2 }), /chủ phòng/i);
-    g.setThapConfig('p0', { mode: 'coop', bots: 0, minutes: 0 });
-    readyAll(g);
-    assert.throws(() => g.validateStart('p0'), /ít nhất 1 máy/);
-    g.setThapConfig('p0', { mode: 'teams', bots: 0, minutes: 0 });
-    readyAll(g);
-    assert.deepEqual(g.viewFor('p0').thap.teams, { p0: 0, p1: 1 });
-    g.setThapTeam('p1', 0);
-    assert.deepEqual(g.viewFor('p1').thap.teams, { p0: 0, p1: 0 });
-    assert.throws(() => g.validateStart('p0'), /2 đội/);
-    g.setThapTeam('p1', 3);
-    g.validateStart('p0');
-    g.setThapConfig('p0', { mode: 'ffa', bots: 0, minutes: 0 });
-    assert.throws(() => g.setThapTeam('p0', 1), /Lập đội/);
-    assert.equal(g.viewFor('p0').thap.teams, undefined);
-  } finally {
-    g.dispose();
-  }
-});
+    g.addPlayer('p0', 'Chiến Binh');
+    g.addPlayer('p1', 'Khách 1');
+    g.addPlayer('p2', 'Khách 2');
+    assert.throws(() => g.setGameMode('p0', 'thap_hung'), /tối đa 2 người/i);
+    g.removePlayer('p2');
+    g.removePlayer('p1');
 
-test('bắt đầu trận: tạo phe người + máy, gửi khung hình, lệnh qua Game', () => {
-  const { g, frames } = thapGame(2);
-  try {
-    g.setThapConfig('p0', { mode: 'ffa', bots: 3, minutes: 10, botLevel: 'easy' });
-    readyAll(g);
+    g.setGameMode('p0', 'thap_hung');
+    assert.equal(g.seatLimit(), THAP_MAX_PLAYERS);
+    assert.throws(() => g.setThapConfig('nobody', { botLevel: 'hard' }), /chủ phòng/i);
+
+    g.setThapConfig('p0', { botLevel: 'hard', minutes: 15 });
+    assert.deepEqual(g.viewFor('p0').thap, {
+      config: { bots: 1, botLevel: 'hard', mode: 'solo', minutes: 15 },
+    });
+
+    hookOrder.length = 0;
     g.start('p0');
     const w = g['thap'];
-    w.stop();
+    w.stop(); // dừng vòng lặp nền ngay sau khi tick-0 đã được phát
+
+    assert.deepEqual(hookOrder, ['changed:playing', 'tick:0'], 'state (playing) phát trước tick-0');
     assert.equal(g.phase, 'playing');
-    const v = g.viewFor('p0').thap;
-    assert.equal(v.players.length, 5);
-    assert.equal(v.players.filter((p) => p.bot).length, 3);
-    assert.ok(v.players.filter((p) => p.bot).every((p) => p.id.startsWith('bot:thap') && p.name.startsWith('🤖')));
-    assert.equal(v.bases.length, 10);
-    assert.equal(v.mines.length, 0);
-    assert.equal(typeof v.myIdx, 'number');
-    assert.ok(v.endsAt > v.startedAt);
     assert.equal(g.viewFor('p0').currentPlayerId, undefined);
-    w.step();
-    assert.ok(frames.some(([id, f]) => id === 'p0' && f.me), 'người chơi nhận phần riêng');
-    g.thapCommand('p0', { t: 'train', kind: 'swordman' });
-    assert.throws(() => g.thapCommand('p0', { t: 'attack', target: v.myIdx }), /Không thể tấn công/);
-    assert.throws(() => g.thapCommand('nobody', { t: 'stance', stance: 'defend' }), /xem/);
-  } finally {
-    g.dispose();
-  }
-});
+    assert.equal(frames.length, 1, 'tick-0 thapFrame được phát đồng bộ ngay lúc start()');
+    const [frameTarget, tick0] = frames[0];
+    assert.equal(frameTarget, 'p0');
+    assert.equal(tick0.tick, 0);
+    assert.deepEqual(tick0.bh, [100, 100]);
+    assert.deepEqual(tick0.al, [1, 1]);
+    assert.equal(tick0.me.gold, 0);
+    assert.equal(tick0.me.roundIncome, 100);
+    assert.equal(tick0.me.auto, 'newbie');
+    assert.equal(tick0.me.pop, 0);
+    assert.equal(tick0.me.popCap, 60);
 
-test('lập đội thắng: chia đều hũ cho người trong đội thắng', () => {
-  const { g } = thapGame(3);
-  try {
-    g.setThapConfig('p0', { mode: 'teams', bots: 0, minutes: 0 });
-    g.setThapTeam('p0', 0);
-    g.setThapTeam('p1', 0);
-    g.setThapTeam('p2', 1);
-    readyAll(g);
-    g.pot = 301;
-    g.start('p0');
-    const w = g['thap'];
-    w.stop();
-    const loser = w.sideById('p2');
-    w.resign(loser.idx);
-    w.step();
-    assert.equal(g.phase, 'ended');
-    assert.deepEqual(g.winners().sort(), ['p0', 'p1']);
-    assert.equal(g.payouts.p0 + g.payouts.p1, 301);
-    assert.ok(Math.abs(g.payouts.p0 - g.payouts.p1) <= 1);
-    assert.equal(g.payouts.p2, undefined);
-    assert.deepEqual(g.viewFor('p2').thap.result.winnerIdxs.sort(), [w.sideById('p0').idx, w.sideById('p1').idx].sort());
-  } finally {
-    g.dispose();
-  }
-});
+    const v = g.viewFor('p0').thap;
+    assert.equal(v.mapW, 2040);
+    assert.equal(v.mapH, 800);
+    assert.deepEqual(v.bases, [210, 470, 1830, 470]);
+    assert.deepEqual(v.doors, [75, 470, 1965, 470]);
+    assert.deepEqual(v.lane, { yMin: 310, yMax: 630 });
+    assert.equal(v.myIdx, 0);
+    assert.equal(v.players.length, 2);
+    assert.equal(v.players[0].id, 'p0');
+    assert.equal(v.players[0].bot, false);
+    assert.equal(v.players[1].bot, true);
+    assert.ok(v.players[1].id.startsWith('bot:thap'));
+    assert.equal(v.endsAt, v.startedAt + 15 * 60_000);
 
-test('máy thắng: hoàn cược cho người chơi; rời trận = bỏ cuộc', () => {
-  const { g } = thapGame(1);
-  try {
-    g.setThapConfig('p0', { mode: 'coop', bots: 1, minutes: 0 });
-    g.bet = 50;
-    g.pot = 50;
-    g.start('p0');
-    const w = g['thap'];
-    w.stop();
-    g.players[0].left = true;
-    g['eliminate'](g.players[0]);
-    w.step();
-    assert.equal(g.phase, 'ended');
-    assert.equal(g.winners().length, 0);
-    assert.equal(w.result.winnerTeam, 1);
-  } finally {
-    g.dispose();
-  }
-});
-
-test('lập đội: đội mặc định (xen kẽ theo ghế) giữ nguyên sau khi xáo ghế lúc bắt đầu', () => {
-  for (let round = 0; round < 8; round++) {
-    const { g } = thapGame(4);
-    try {
-      g.setThapConfig('p0', { mode: 'teams', bots: 0, minutes: 0 });
-      readyAll(g);
-      const shown = { ...g.viewFor('p0').thap.teams };
-      assert.deepEqual(shown, { p0: 0, p1: 1, p2: 0, p3: 1 });
-      g.start('p0');
-      const w = g['thap'];
-      w.stop();
-      for (const id of Object.keys(shown)) assert.equal(w.sideById(id).team, shown[id], `${id} giữ đội`);
-    } finally {
-      g.dispose();
+    // Bảo mật thông tin: không có mines, không có teams, không lộ auto/vàng của đối thủ
+    assert.equal('mines' in v, false);
+    assert.equal('teams' in v, false);
+    for (const p of v.players) {
+      assert.equal('auto' in p, false);
+      assert.equal('gold' in p, false);
     }
+    w.sides[1].auto = 'highlord';
+    const fAfter = w.frameFor(0);
+    assert.equal(fAfter.me.auto, 'newbie');
+    assert.equal('enemy' in fAfter, false);
+  } finally {
+    g.dispose();
   }
+});
+
+// ---------------------------------------------------------------------------
+// 3. Game 1v1 PvP flow + Spectator
+// ---------------------------------------------------------------------------
+
+test('Game 1v1 PvP & Khán giả: Red (0) vs Blue (1), người thứ 3 vào ghế bị lỗi max-player, khán giả chỉ xem', (t) => {
+  const { g, frames } = thapGame(t, 2);
+  assert.throws(() => g.addPlayer('p2', 'Người Thứ 3'), /đủ 2 người/);
+  g.addSpectator('spec', 'Khán Giả');
+  assert.deepEqual(g.viewFor('p0').thap.config, { bots: 0, botLevel: 'normal', mode: 'pvp', minutes: 0 });
+
+  readyAll(g);
+  g.start('p0');
+  const w = g['thap'];
+  w.stop();
+
+  const tick0ById = Object.fromEntries(frames.map(([id, f]) => [id, f]));
+  assert.ok(tick0ById.p0?.me, 'Red P1 nhận khung hình riêng');
+  assert.ok(tick0ById.p1?.me, 'Blue P2 nhận khung hình riêng');
+  assert.equal(tick0ById.spec?.me, undefined, 'Khán giả không nhận frame.me');
+
+  const vp0 = g.viewFor('p0').thap;
+  const vp1 = g.viewFor('p1').thap;
+  const vSpec = g.viewFor('spec').thap;
+  assert.equal(vp0.myIdx, 0);
+  assert.equal(vp1.myIdx, 1);
+  assert.equal(vSpec.myIdx, undefined);
+  assert.deepEqual(vSpec.bases, [210, 470, 1830, 470]);
+  assert.deepEqual(vSpec.doors, [75, 470, 1965, 470]);
+  assert.equal(vSpec.players.filter((p) => !p.bot).length, 2);
+
+  g.thapCommand('p0', { t: 'auto', kind: 'mage' });
+  g.thapCommand('p1', { t: 'select', kind: 'cavalry' });
+  assert.equal(w.frameFor(0).me.auto, 'mage');
+  assert.equal(w.frameFor(1).me.auto, 'cavalry');
+  assert.equal(w.frameFor(undefined).me, undefined);
+
+  assert.throws(() => g.thapCommand('spec', { t: 'auto', kind: 'swordman' }), /xem/);
+  assert.throws(() => g.thapCommand('spec', { t: 'surrender' }), /xem/);
+  assert.throws(() => g.addPlayer('p3', 'Người 4'), /đang chơi/);
+  g.addSpectator('spec2', 'Khán Giả 2');
+  assert.equal(g.viewFor('spec2').thap.myIdx, undefined);
+});
+
+// ---------------------------------------------------------------------------
+// 4. Lệnh auto / select, token bucket spam, surrender vượt token bucket
+// ---------------------------------------------------------------------------
+
+test('lệnh auto & select, giới hạn token bucket và surrender vượt token bucket kết thúc trận ngay', (t) => {
+  // Phần A: Kiểm tra nạp lại token sau 2 nhịp 30Hz (0.5 token/nhịp * 2 = 1 token)
+  const w = world({}, noHooks, 0);
+  for (let i = 0; i < THAP_CMD_BURST; i++) {
+    assert.equal(w.command(0, { t: i % 2 === 0 ? 'auto' : 'select', kind: i % 2 === 0 ? 'swordman' : 'newbie' }), undefined);
+  }
+  assert.equal(w.sides[0].auto, 'newbie');
+  // Hết token: lệnh bị bỏ qua không đổi auto
+  assert.equal(w.command(0, { t: 'select', kind: 'highlord' }), undefined);
+  assert.equal(w.sides[0].auto, 'newbie');
+  steps(w, Math.ceil(THAP_SIM_FPS / THAP_CMD_REFILL)); // 2 nhịp = hồi 1 token
+  assert.equal(w.command(0, { t: 'select', kind: 'highlord' }), undefined);
+  assert.equal(w.sides[0].auto, 'highlord');
+
+  // Phần B: Trong Game, spam cạn sạch token bucket rồi gửi { t: 'surrender' } vẫn kết thúc ngay!
+  const { g, frames } = thapGame(t, 2);
+  readyAll(g);
+  g.start('p0');
+  const gw = g['thap'];
+  gw.stop();
+
+  // Kiểm tra báo lỗi lệnh không hợp lệ khi còn lượt trong token bucket
+  assert.throws(() => g.thapCommand('p0', { t: 'auto', kind: 'dragon' }), /không hợp lệ/);
+  assert.throws(() => g.thapCommand('p0', { t: 'attack', target: 1 }), /không hợp lệ/i);
+
+  for (let i = 0; i < THAP_CMD_BURST + 10; i++) {
+    g.thapCommand('p0', { t: i % 2 === 0 ? 'auto' : 'select', kind: i % 2 === 0 ? 'samurai' : 'zombie' });
+  }
+  const autoBeforeSpam = gw.sides[0].auto;
+  g.thapCommand('p0', { t: 'select', kind: 'highlord' });
+  assert.equal(gw.sides[0].auto, autoBeforeSpam, 'lệnh thứ 41+ bị token bucket chặn');
+
+  frames.length = 0;
+  g.thapCommand('p0', { t: 'surrender' });
+  assert.equal(g.phase, 'ended');
+  assert.equal(gw.running, false);
+  assert.equal(gw.sides[0].alive, false);
+  assert.equal(gw.sides[0].baseHp, 0);
+  assert.equal(gw.result.reason, 'surrender');
+  assert.equal(gw.result.winnerTeam, 1);
+  assert.deepEqual(gw.result.winnerIdxs, [1]);
+  assert.equal(g.winner(), 'p1');
+  assert.ok(frames.some(([id, f]) => id === 'p1' && f.bh[0] === 0 && f.d.length >= THAP_DEATH_FIELDS));
+  assert.throws(() => g.thapCommand('p1', { t: 'select', kind: 'newbie' }), /chưa bắt đầu/i);
+});
+
+// ---------------------------------------------------------------------------
+// 5. Rời trận giữa chừng (removePlayer -> eliminate) & syncThap idempotency
+// ---------------------------------------------------------------------------
+
+test('rời trận giữa chừng (removePlayer -> eliminate): sập Pha Lê, ended đồng bộ, syncThap lũy đẳng & tính payouts', (t) => {
+  // Case 1: 1v1 PvP có cược — người rời thua, người ở lại thắng cả hũ, syncThap gọi lặp không nhân đôi hiệu ứng
+  const { g, frames } = thapGame(t, 2);
+  g.bet = 100;
+  g.pot = 200;
+  readyAll(g);
+  g.start('p0');
+  const w = g['thap'];
+  w.stop();
+  frames.length = 0;
+
+  g.removePlayer('p1');
+  assert.equal(g.phase, 'ended');
+  assert.equal(w.running, false);
+  assert.equal(w.sides[1].alive, false);
+  assert.equal(w.sides[1].baseHp, 0);
+  assert.equal(w.result.reason, 'surrender');
+  assert.equal(w.result.winnerTeam, 0);
+  assert.equal(g.winner(), 'p0');
+  assert.deepEqual(g.winners(), ['p0']);
+  assert.deepEqual(g.payouts, {});
+
+  const frameAfterElim = frames.find(([id]) => id === 'p0')?.[1];
+  assert.ok(frameAfterElim);
+  assert.equal(frameAfterElim.bh[1], 0);
+  assert.deepEqual(decodeDeathCode(frameAfterElim.d[2]), { isBase: true, owner: 1 });
+
+  // Kiểm tra syncThap() lũy đẳng
+  const snapshot = {
+    logTotal: g.viewFor('p0').logTotal,
+    log: [...g.viewFor('p0').log],
+    framesCount: frames.length,
+    winners: [...g.winners()],
+    payouts: { ...g.payouts },
+  };
+  g['syncThap']();
+  g['syncThap']();
+  assert.equal(g.viewFor('p0').logTotal, snapshot.logTotal);
+  assert.deepEqual(g.viewFor('p0').log, snapshot.log);
+  assert.equal(frames.length, snapshot.framesCount);
+  assert.deepEqual(g.winners(), snapshot.winners);
+  assert.deepEqual(g.payouts, snapshot.payouts);
+
+  // Case 2: Solo AI — ở lại đầu hàng được hoàn cược; rời phòng (left=true) không hoàn cược
+  const soloStay = thapGame(t, 1);
+  soloStay.g.bet = 50;
+  soloStay.g.pot = 50;
+  soloStay.g.start('p0');
+  soloStay.g['thap'].stop();
+  soloStay.g.thapCommand('p0', { t: 'surrender' });
+  assert.equal(soloStay.g.phase, 'ended');
+  assert.deepEqual(soloStay.g.winners(), []);
+  assert.deepEqual(soloStay.g.payouts, { p0: 50 });
+
+  const soloLeave = thapGame(t, 1);
+  soloLeave.g.bet = 50;
+  soloLeave.g.pot = 50;
+  soloLeave.g.start('p0');
+  soloLeave.g['thap'].stop();
+  soloLeave.g.removePlayer('p0');
+  assert.equal(soloLeave.g.phase, 'ended');
+  assert.equal(soloLeave.g['thap'].sides[0].baseHp, 0);
+  assert.deepEqual(soloLeave.g.winners(), []);
+  assert.deepEqual(soloLeave.g.payouts, {});
+});
+
+// ---------------------------------------------------------------------------
+// 6. Kết thúc hết giờ (minutes > 0): % máu Pha Lê -> điểm -> hòa -1
+// ---------------------------------------------------------------------------
+
+test('hết giờ (minutes > 0): hơn % máu Pha Lê thắng; bằng % máu xét điểm; hòa tuyệt đối trả -1 & hoàn cược', (t) => {
+  // 1) Hơn % máu Pha Lê thắng (dù điểm hạ gục thấp hơn)
+  const wHp = world({ minutes: 10 }, noHooks, 0);
+  wHp.sides[0].baseHp = 2800;
+  wHp.sides[0].killsValue = 99999;
+  wHp.sides[1].baseHp = 3500;
+  wHp.endsAt = wHp.startedAt + 1;
+  wHp.step();
+  assert.equal(wHp.result.reason, 'time');
+  assert.equal(wHp.result.winnerTeam, 1);
+  assert.deepEqual(wHp.result.winnerIdxs, [1]);
+
+  // 2) Bằng % máu Pha Lê -> phân thắng bại bằng điểm cao hơn
+  const wScore = world({ minutes: 10 }, noHooks, 0);
+  wScore.sides[0].baseHp = 2000;
+  wScore.sides[1].baseHp = 2000;
+  wScore.sides[1].damageToCrystal = 1500;
+  wScore.sides[1].killsValue = 600;
+  wScore.endsAt = wScore.startedAt + 1;
+  wScore.step();
+  assert.equal(wScore.result.reason, 'time');
+  assert.equal(wScore.result.winnerTeam, 1);
+  assert.deepEqual(wScore.result.winnerIdxs, [1]);
+  assert.ok(wScore.result.scores[1] > wScore.result.scores[0]);
+
+  // 3) Hòa tuyệt đối (cùng % máu & cùng điểm) -> winnerTeam = -1, Game hoàn cược đều cho cả 2 người
+  const { g } = thapGame(t, 2);
+  g.setThapConfig('p0', { minutes: 10 });
+  g.bet = 200;
+  g.pot = 400;
+  readyAll(g);
+  g.start('p0');
+  const wDraw = g['thap'];
+  wDraw.stop();
+  wDraw.endsAt = wDraw.startedAt + 1;
+  wDraw.step();
+  assert.equal(wDraw.result.reason, 'time');
+  assert.equal(wDraw.result.winnerTeam, -1);
+  assert.deepEqual(wDraw.result.winnerIdxs, []);
+  assert.equal(wDraw.result.scores[0], wDraw.result.scores[1]);
+  assert.equal(g.phase, 'ended');
+  assert.equal(g.winner(), undefined);
+  assert.deepEqual(g.winners(), []);
+  assert.deepEqual(g.payouts, { p0: 200, p1: 200 });
+});
+
+// ---------------------------------------------------------------------------
+// 7. Tích hợp RoomsService & GameGateway: thap:config / start / cmd / rematch & gỡ thap:team
+// ---------------------------------------------------------------------------
+
+test('GameGateway & RoomsService: thap:config, thap:start, thap:cmd, thap:rematch, chia thưởng & đã gỡ thap:team', async (t) => {
+  const P1 = 'thap_red_01';
+  const P2 = 'thap_blue_02';
+  const SPEC = 'thap_spec_03';
+  const P4 = 'thap_four_04';
+
+  // Kiểm tra các SubscribeMessage của gateway và xác nhận đã gỡ hoàn toàn thap:team / setThapTeam / assignThapTeams
+  const subscribed = Object.getOwnPropertyNames(GameGateway.prototype)
+    .filter((k) => typeof GameGateway.prototype[k] === 'function')
+    .map((k) => Reflect.getMetadata('message', GameGateway.prototype[k]))
+    .filter(Boolean);
+  for (const ev of ['thap:config', 'thap:start', 'thap:cmd', 'thap:rematch']) {
+    assert.ok(subscribed.includes(ev), `thiếu @SubscribeMessage('${ev}')`);
+  }
+  assert.equal(subscribed.includes('thap:team'), false, 'đã gỡ thap:team');
+  assert.equal(GameGateway.prototype.thapTeam, undefined);
+  assert.equal(RoomsService.prototype.setThapTeam, undefined);
+  assert.equal(Game.prototype.setThapTeam, undefined);
+  assert.equal(S.assignThapTeams, undefined);
+
+  const { accounts, calls, events, rooms, gateway, makeSocket } = gatewayFixture(t, [P1, P2, SPEC, P4]);
+  const s1 = makeSocket(P1);
+  const s2 = makeSocket(P2);
+  const sSpec = makeSocket(SPEC);
+  const s4 = makeSocket(P4);
+  gateway.handleConnection(s1);
+  gateway.handleConnection(s2);
+  gateway.handleConnection(sSpec);
+  gateway.handleConnection(s4);
+
+  // Kiểm tra chuyển chế độ từ phòng mặc định sang thap_hung: tối đa 2 người
+  await gateway.create(s1, {});
+  const initRoom = rooms.roomOf(P1);
+  await gateway.join(s2, { code: initRoom.code });
+  await gateway.join(sSpec, { code: initRoom.code });
+  assert.equal((await gateway.mode(s1, { gameMode: 'thap_hung' })).ok, false, '3 người không đổi sang thap_hung được');
+  await gateway.watch(sSpec, { code: initRoom.code }); // rời ghế chuyển sang làm khán giả
+  assert.equal((await gateway.mode(s1, { gameMode: 'thap_hung' })).ok, true);
+  assert.equal(initRoom.seatLimit(), 2);
+  assert.equal((await gateway.join(s4, { code: initRoom.code })).ok, false, 'khách thứ 3 không vào ghế 1v1 được');
+
+  // Cấu hình phòng + đặt cược 200 xu + xác nhận luật
+  assert.equal((await gateway.bet(s1, { amount: 200 })).ok, true);
+  assert.equal((await gateway.thapConfig(s2, { config: { botLevel: 'hard', minutes: 10 } })).ok, false);
+  assert.equal((await gateway.thapConfig(s1, { config: { botLevel: 'hard', minutes: 10 } })).ok, true);
+  assert.equal((await gateway.thapConfig(s1, { botLevel: 'easy', minutes: 10 })).ok, true);
+  assert.deepEqual(initRoom.thapConfig, { bots: 0, botLevel: 'easy', mode: 'pvp', minutes: 10 });
+  assert.equal((await gateway.ready(s2, { ready: true, rulesVersion: initRoom.rulesVersion })).ok, true);
+
+  // Bắt đầu qua thap:start (khách không được bắt đầu; chủ phòng bắt đầu thành công, phát tick-0 reliable)
+  assert.equal((await gateway.thapStart(s2)).ok, false);
+  events.length = 0;
+  assert.equal((await gateway.thapStart(s1)).ok, true);
+  initRoom['thap'].stop();
+
+  assert.equal(initRoom.phase, 'playing');
+  assert.equal(initRoom.pot, 400);
+  assert.equal(accounts.get(P1).coins, 800);
+  assert.equal(accounts.get(P2).coins, 800);
+
+  const tick0Events = events.filter((e) => e.event === 'thap:frame' && e.value.tick === 0);
+  const firstStatePlayingIdx = events.findIndex((e) => e.event === 'state' && e.value?.phase === 'playing');
+  const firstTick0Idx = events.findIndex((e) => e.event === 'thap:frame' && e.value.tick === 0);
+  assert.ok(firstStatePlayingIdx >= 0 && firstTick0Idx > firstStatePlayingIdx, 'state (playing) tới trước thap:frame tick-0');
+  assert.equal(tick0Events.length, 3);
+  assert.ok(tick0Events.every((e) => e.volatile === false), 'tick-0 gửi reliable không dùng volatile');
+  assert.ok(tick0Events.find((e) => e.room === `p:${P1}`).value.me);
+  assert.ok(tick0Events.find((e) => e.room === `p:${P2}`).value.me);
+  assert.equal(tick0Events.find((e) => e.room === `p:${SPEC}`).value.me, undefined);
+
+  // Nhịp tiếp theo (tick >= 1) gửi qua volatile; tick-0 đã gửi reliable
+  initRoom['thap'].stepFrame();
+  assert.ok(events.some((e) => e.event === 'thap:frame' && e.value.tick === 1 && e.volatile === true));
+
+  // thap:cmd hỗ trợ cả 2 dạng payload ({ t, kind } và { cmd: { t, kind } }); khán giả & rematch sớm bị từ chối
+  assert.equal((await gateway.thapCmd(s1, { t: 'auto', kind: 'samurai' })).ok, true);
+  assert.equal((await gateway.thapCmd(s2, { cmd: { t: 'select', kind: 'swordman' } })).ok, true);
+  assert.equal(initRoom['thap'].sides[0].auto, 'samurai');
+  assert.equal(initRoom['thap'].sides[1].auto, 'swordman');
+  assert.equal((await gateway.thapCmd(sSpec, { t: 'auto', kind: 'newbie' })).ok, false);
+  assert.equal((await gateway.thapCmd(s1, null)).ok, false);
+  assert.equal((await gateway.thapRematch(s1)).ok, false, 'ván chưa kết thúc chưa rematch được');
+
+  // Đầu hàng qua thap:cmd -> kết thúc trận, chia hũ, thap:rematch đưa về phòng chờ sạch sẽ
+  assert.equal((await gateway.thapCmd(s2, { t: 'surrender' })).ok, true);
+  assert.equal(initRoom.phase, 'ended');
+  assert.equal(initRoom.winner(), P1);
+  assert.equal((await gateway.thapRematch(s2)).ok, false, 'chỉ chủ phòng mới bấm rematch');
+  assert.equal((await gateway.thapRematch(s1)).ok, true);
+
+  assert.equal(initRoom.phase, 'lobby');
+  assert.equal(initRoom.pot, 0);
+  assert.equal(initRoom['thap'], undefined);
+  assert.equal(initRoom.viewFor(P1).thap.result, undefined);
+  assert.equal(accounts.get(P1).coins, 1200);
+  assert.equal(accounts.get(P1).wins, 1);
+  assert.equal(accounts.get(P2).coins, 800);
+  assert.equal(accounts.get(P2).wins, 0);
+  assert.equal(calls.rewardWinner.length, 1);
+
+  // Ván 2: hết giờ hòa tuyệt đối (-1) -> hoàn lại tiền cược qua rewardPayouts và rematch sạch về phòng chờ
+  assert.equal((await gateway.bet(s1, { amount: 100 })).ok, true);
+  assert.equal((await gateway.thapConfig(s1, { config: { minutes: 10 } })).ok, true);
+  assert.equal((await gateway.ready(s2, { ready: true, rulesVersion: initRoom.rulesVersion })).ok, true);
+  assert.equal((await gateway.thapStart(s1)).ok, true);
+  const w2 = initRoom['thap'];
+  w2.stop();
+  assert.equal(accounts.get(P1).coins, 1100);
+  assert.equal(accounts.get(P2).coins, 700);
+  w2.endsAt = w2.startedAt + 1;
+  w2.step();
+
+  assert.equal(initRoom.phase, 'ended');
+  // Khán giả vào muộn lúc ended vẫn nhận được 1 khung hình full: true sau state.
+  events.length = 0;
+  assert.equal((await gateway.watch(sSpec, { code: initRoom.code })).ok, true);
+  const lateSpecFrame = events.find((e) => e.room === `p:${SPEC}` && e.event === 'thap:frame');
+  assert.ok(lateSpecFrame?.value?.full, 'khán giả vào xem khi trận vừa ended nhận snapshot full: true');
+  assert.equal(lateSpecFrame.value.me, undefined);
+  assert.equal((await gateway.thapRematch(s1)).ok, true);
+  assert.equal(initRoom.phase, 'lobby');
+  assert.equal(accounts.get(P1).coins, 1200);
+  assert.equal(accounts.get(P2).coins, 800);
+  assert.equal(accounts.get(P1).wins, 1);
+  assert.equal(accounts.get(P2).wins, 0);
+  assert.equal(calls.rewardPayouts.length, 1);
+
+  // Ván 3: người chơi rời phòng giữa trận qua gateway.leave -> người ở lại thắng hũ, rematch dọn người rời & tự về Solo AI
+  assert.equal((await gateway.ready(s2, { ready: true, rulesVersion: initRoom.rulesVersion })).ok, true);
+  assert.equal((await gateway.thapStart(s1)).ok, true);
+  initRoom['thap'].stop();
+  assert.equal((await gateway.leave(s2)).ok, true);
+  assert.equal(initRoom.phase, 'ended');
+  assert.equal(initRoom.winner(), P1);
+  assert.equal((await gateway.thapRematch(s1)).ok, true);
+  assert.equal(initRoom.phase, 'lobby');
+  assert.equal(initRoom.players.length, 1);
+  assert.equal(initRoom.viewFor(P1).thap.config.mode, 'solo');
+  assert.equal(accounts.get(P1).coins, 1300);
+  assert.equal(accounts.get(P1).wins, 2);
 });
