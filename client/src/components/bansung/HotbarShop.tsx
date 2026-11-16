@@ -1670,7 +1670,7 @@ function WeaponHotbarSlot({
   const displayEnName = evo?.name ?? spec?.name ?? '';
   const dmgText = spec ? formatWeaponDmgText(spec, evo?.dmgMult ?? 1) : '';
   const compactDmg = dmgText.split(' · ')[0];
-  const ammoSummary = hasAmmo && slot ? ` — ${slot.clip}/${slot.maxClip}` : '';
+  const ammoSummary = hasAmmo && slot ? ` — ${slot.clip}/∞` : '';
   const title = spec
     ? `[${index + 1}] ${displayName} (${displayEnName}) · ${dmgText}${isEvolved && evo ? ` [${evo.badge}]` : ''}${ammoSummary}${effectiveEnergyCost > 0 ? ` · ⚡${effectiveEnergyCost}` : ''}`
     : `Ô vũ khí trống [${index + 1}]`;
@@ -1749,7 +1749,7 @@ function WeaponHotbarSlot({
 
           {hasAmmo && slot && (
             <span className={clipClass}>
-              {slot.clip}/{slot.maxClip}
+              {slot.clip}/∞
             </span>
           )}
 

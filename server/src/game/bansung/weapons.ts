@@ -2645,6 +2645,13 @@ export function tickHeroWeapons(
   }
   const spec = getWeaponSpec(slot.weaponId);
 
+  // Nạp đạn luôn gắn với súng đang cầm: bỏ lượt nạp còn sót của ô khác (nhặt bệ / Gacha đổi súng),
+  // và tự nạp ngay khi băng đạn súng đang cầm trống (không cần bóp cò) để thanh nạp đạn luôn hiện.
+  if (hero.reload && hero.reload.slot !== slotIdx) hero.reload = null;
+  if (!hero.reload && spec.magSize > 0 && slot.ammoInMag <= 0) {
+    startHeroReload(hero, slotIdx, ctx.tickNo, ctx.fx);
+  }
+
   // Step active melee swing unless deferred to step 6 in world tick
   if (hero.activeSwing && !ctx.deferMeleeSweep) {
     const mRes = stepHeroMeleeSwing(hero, ctx);
