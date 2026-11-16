@@ -1720,7 +1720,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                   <summary>Chi tiết chế độ &amp; phím tắt</summary>
                   <ul className="rule-summary-list">
                     {bansungMode === 'survival' ? (
-                      <li>Sinh Tồn bản đồ rộng 132×84: farm XP rớt từ quái, mở Gacha nâng cấp &amp; tiến hóa vũ khí (Mk.I → Mk.IV).</li>
+                      <li>Sinh Tồn bản đồ rộng 132×84: farm XP rớt từ quái, mở Gacha nâng cấp &amp; tiến hóa vũ khí (Mk.I → Mk.X).</li>
                     ) : (
                       <li>10 đợt &amp; Boss (Mini-Boss Đợt 4, nhiệm vụ Đợt 5–7, Boss Đợt 10); chọn Perk sau đợt 2, 4, 6, 8.</li>
                     )}

@@ -1073,7 +1073,7 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
                 Trụ vững qua các đợt quái và Boss leo thang sức mạnh theo thời gian sinh tồn.
               </p>
               <p className="muted small" style={{ margin: 0 }}>
-                Nhặt ngọc <b>XP</b> để lên cấp mở <b>Hộp Gacha 3 Thẻ</b> (nhấn <kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd>) tăng sát thương, tốc độ bắn, đa đạn, hồi máu hoặc tiến hóa vũ khí <b>Mk.I → Mk.IV</b>.
+                Nhặt ngọc <b>XP</b> để lên cấp mở <b>Hộp Gacha 3 Thẻ</b> (nhấn <kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd>) tăng sát thương, tốc độ bắn, đa đạn, hồi máu hoặc tiến hóa vũ khí <b>Mk.I → Mk.X</b>.
               </p>
             </section>
 

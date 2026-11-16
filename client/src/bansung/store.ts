@@ -28,6 +28,7 @@ import {
   BANSUNG_PICKUP_FIELDS,
   BANSUNG_PLAYABLE_BOUNDS,
   BANSUNG_PLAYER_FIELDS,
+  BANSUNG_WEAPON_MAX_TIER,
   BANSUNG_PLAYER_SPAWNS,
   BANSUNG_PROP_FIELDS,
   BANSUNG_STATE_DASH,
@@ -650,10 +651,10 @@ function normalizePrivateSlice(raw: BansungPrivate): BansungHudPrivate {
   const slots = normalizeSlots(raw.slots);
   const sweetSpot = normalizeSweetSpot(raw.sweetSpot);
   const weaponTiers = Array.isArray(raw.weaponTiers)
-    ? raw.weaponTiers.map((t) => clamp(Math.round(Number.isFinite(t) ? t : 1), 1, 4))
+    ? raw.weaponTiers.map((t) => clamp(Math.round(Number.isFinite(t) ? t : 1), 1, BANSUNG_WEAPON_MAX_TIER))
     : slots.map((s) => {
         const tier = (s as BansungWeaponSlot | null | undefined)?.tier;
-        return clamp(Math.round(Number.isFinite(tier) ? (tier ?? 1) : 1), 1, 4);
+        return clamp(Math.round(Number.isFinite(tier) ? (tier ?? 1) : 1), 1, BANSUNG_WEAPON_MAX_TIER);
       });
 
   const maxStamina =
@@ -716,7 +717,7 @@ function decodePlayers(arr: readonly number[]): Map<number, SnapPlayer> {
     const shield = arr[i + 5];
     const rawTier = arr[i + 11] ?? 1;
     const weaponTier = Number.isFinite(rawTier)
-      ? Math.max(1, Math.min(4, Math.round(rawTier)))
+      ? Math.max(1, Math.min(BANSUNG_WEAPON_MAX_TIER, Math.round(rawTier)))
       : 1;
     map.set(idx, {
       idx,

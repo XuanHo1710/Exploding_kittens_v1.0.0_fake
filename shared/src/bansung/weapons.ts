@@ -4043,8 +4043,8 @@ export function getGadgetByIdx(idx: number): BansungGadgetSpec | undefined {
 // 5. Gun Evolution Tier System (Survival Mk.I -> Mk.IV)
 // ============================================================================
 
-export const BANSUNG_WEAPON_MAX_TIER = 4 as const;
-export type BansungWeaponTier = 1 | 2 | 3 | 4;
+export const BANSUNG_WEAPON_MAX_TIER = 10 as const;
+export type BansungWeaponTier = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
 export interface BansungWeaponTierSpec {
   tier: BansungWeaponTier;
@@ -4069,8 +4069,10 @@ export interface BansungWeaponTierSpec {
 }
 
 /**
- * Four-tier Gun Evolution scaling table (Mk.I -> Mk.IV Mythic).
- * Used both by authoritative server combat and client dual-layer gun/tracer rendering.
+ * Ten-tier Gun Evolution scaling table (Mk.I -> Mk.X Prismatic).
+ * `dmgMult` already includes the global player weapon damage buff (Mk.I = x1.5 base),
+ * with big jumps at Mk.II / Mk.III. Used both by authoritative server combat and
+ * client dual-layer gun/tracer rendering.
  */
 export const BANSUNG_WEAPON_TIERS: Readonly<
   Record<BansungWeaponTier, BansungWeaponTierSpec>
@@ -4083,7 +4085,7 @@ export const BANSUNG_WEAPON_TIERS: Readonly<
     vnName: 'Cơ Bản Mk.I',
     enPrefix: 'Mk.I',
     vnPrefix: '',
-    dmgMult: 1.0,
+    dmgMult: 1.5,
     fireRateMult: 1.0,
     extraProjectiles: 0,
     extraPierce: 0,
@@ -4104,7 +4106,7 @@ export const BANSUNG_WEAPON_TIERS: Readonly<
     vnName: 'Cường Hóa Mk.II',
     enPrefix: 'Mk.II Overclocked',
     vnPrefix: 'Cường Hóa',
-    dmgMult: 1.15,
+    dmgMult: 2.25,
     fireRateMult: 1.08,
     extraProjectiles: 0,
     extraPierce: 1,
@@ -4125,7 +4127,7 @@ export const BANSUNG_WEAPON_TIERS: Readonly<
     vnName: 'Thức Tỉnh Mk.III',
     enPrefix: 'Mk.III Awakened',
     vnPrefix: 'Thức Tỉnh',
-    dmgMult: 1.32,
+    dmgMult: 3.15,
     fireRateMult: 1.16,
     extraProjectiles: 1,
     extraPierce: 1,
@@ -4146,7 +4148,7 @@ export const BANSUNG_WEAPON_TIERS: Readonly<
     vnName: 'Tối Thượng Mk.IV',
     enPrefix: 'Mk.IV Mythic',
     vnPrefix: 'Tối Thượng',
-    dmgMult: 1.55,
+    dmgMult: 3.9,
     fireRateMult: 1.25,
     extraProjectiles: 1,
     extraPierce: 2,
@@ -4159,15 +4161,140 @@ export const BANSUNG_WEAPON_TIERS: Readonly<
     barrelAccentColor: '#fbbf24',
     glowAlpha: 0.72,
   },
+  5: {
+    tier: 5,
+    rarity: 'legendary',
+    badge: 'Mk.V',
+    enName: 'Mk.V Ascendant',
+    vnName: 'Siêu Việt Mk.V',
+    enPrefix: 'Mk.V Ascendant',
+    vnPrefix: 'Siêu Việt',
+    dmgMult: 4.6,
+    fireRateMult: 1.3,
+    extraProjectiles: 1,
+    extraPierce: 2,
+    energyCostMult: 0.79,
+    blastRadiusMult: 1.28,
+    barrelCount: 3,
+    muzzleScale: 1.7,
+    auraColor: '#fb923c',
+    tracerColor: '#fb923c',
+    barrelAccentColor: '#fb923c',
+    glowAlpha: 0.75,
+  },
+  6: {
+    tier: 6,
+    rarity: 'celestial',
+    badge: 'Mk.VI',
+    enName: 'Mk.VI Celestial',
+    vnName: 'Thiên Giới Mk.VI',
+    enPrefix: 'Mk.VI Celestial',
+    vnPrefix: 'Thiên Giới',
+    dmgMult: 5.3,
+    fireRateMult: 1.35,
+    extraProjectiles: 1,
+    extraPierce: 2,
+    energyCostMult: 0.76,
+    blastRadiusMult: 1.32,
+    barrelCount: 3,
+    muzzleScale: 1.75,
+    auraColor: '#22d3ee',
+    tracerColor: '#22d3ee',
+    barrelAccentColor: '#22d3ee',
+    glowAlpha: 0.78,
+  },
+  7: {
+    tier: 7,
+    rarity: 'celestial',
+    badge: 'Mk.VII',
+    enName: 'Mk.VII Astral',
+    vnName: 'Tinh Tú Mk.VII',
+    enPrefix: 'Mk.VII Astral',
+    vnPrefix: 'Tinh Tú',
+    dmgMult: 6.0,
+    fireRateMult: 1.4,
+    extraProjectiles: 2,
+    extraPierce: 3,
+    energyCostMult: 0.73,
+    blastRadiusMult: 1.36,
+    barrelCount: 3,
+    muzzleScale: 1.8,
+    auraColor: '#2dd4bf',
+    tracerColor: '#2dd4bf',
+    barrelAccentColor: '#2dd4bf',
+    glowAlpha: 0.81,
+  },
+  8: {
+    tier: 8,
+    rarity: 'mythic',
+    badge: 'Mk.VIII',
+    enName: 'Mk.VIII Divine',
+    vnName: 'Thần Thánh Mk.VIII',
+    enPrefix: 'Mk.VIII Divine',
+    vnPrefix: 'Thần Thánh',
+    dmgMult: 6.8,
+    fireRateMult: 1.45,
+    extraProjectiles: 2,
+    extraPierce: 3,
+    energyCostMult: 0.7,
+    blastRadiusMult: 1.4,
+    barrelCount: 3,
+    muzzleScale: 1.85,
+    auraColor: '#f43f5e',
+    tracerColor: '#f43f5e',
+    barrelAccentColor: '#f43f5e',
+    glowAlpha: 0.84,
+  },
+  9: {
+    tier: 9,
+    rarity: 'mythic',
+    badge: 'Mk.IX',
+    enName: 'Mk.IX Eternal',
+    vnName: 'Vĩnh Hằng Mk.IX',
+    enPrefix: 'Mk.IX Eternal',
+    vnPrefix: 'Vĩnh Hằng',
+    dmgMult: 7.6,
+    fireRateMult: 1.5,
+    extraProjectiles: 2,
+    extraPierce: 3,
+    energyCostMult: 0.67,
+    blastRadiusMult: 1.44,
+    barrelCount: 3,
+    muzzleScale: 1.9,
+    auraColor: '#ef4444',
+    tracerColor: '#ef4444',
+    barrelAccentColor: '#ef4444',
+    glowAlpha: 0.87,
+  },
+  10: {
+    tier: 10,
+    rarity: 'prismatic',
+    badge: 'Mk.X',
+    enName: 'Mk.X Prismatic',
+    vnName: 'Huyền Thoại Mk.X',
+    enPrefix: 'Mk.X Prismatic',
+    vnPrefix: 'Huyền Thoại',
+    dmgMult: 8.5,
+    fireRateMult: 1.6,
+    extraProjectiles: 2,
+    extraPierce: 4,
+    energyCostMult: 0.64,
+    blastRadiusMult: 1.5,
+    barrelCount: 3,
+    muzzleScale: 2.0,
+    auraColor: '#e879f9',
+    tracerColor: '#e879f9',
+    barrelAccentColor: '#e879f9',
+    glowAlpha: 0.92,
+  },
 } as const;
 
 /** Clamp an arbitrary tier input into `[1, BANSUNG_WEAPON_MAX_TIER]`. */
 export function normalizeWeaponTier(tier?: number): BansungWeaponTier {
   const n = Math.floor(Number(tier) || 1);
   if (n <= 1) return 1;
-  if (n === 2) return 2;
-  if (n === 3) return 3;
-  return 4;
+  if (n >= BANSUNG_WEAPON_MAX_TIER) return BANSUNG_WEAPON_MAX_TIER;
+  return n as BansungWeaponTier;
 }
 
 export interface BansungWeaponEvolutionStats {
@@ -4198,7 +4325,7 @@ export interface BansungWeaponEvolutionStats {
 
 /**
  * Resolve evolved display names, combat multipliers, and visual rig accents
- * for a given weapon at `tier` (1..4).
+ * for a given weapon at `tier` (1..10).
  */
 export function getWeaponEvolutionStats(
   weaponId: BansungWeaponId,
@@ -4253,7 +4380,7 @@ export function getWeaponEvolutionStats(
     extraPierce: tierSpec.extraPierce,
     blastRadiusMult: tierSpec.blastRadiusMult,
     meleeReachMult: tierSpec.blastRadiusMult,
-    meleeArcBonusDeg: (t - 1) * 18,
+    meleeArcBonusDeg: Math.min(t - 1, 3) * 18 + Math.max(0, t - 4) * 6,
     barrelCount: tierSpec.barrelCount,
     barrelAccentColor: tierSpec.barrelAccentColor,
     muzzleScale: tierSpec.muzzleScale,
@@ -4726,7 +4853,14 @@ function buildWeaponUpgradeCard(
     icon: spec.hotbarIcon,
     badge: nextTier.badge,
     value: toTier,
-    multLabel: nextTier.rarity === 'legendary' ? 'x3' : nextTier.rarity === 'epic' ? 'x2' : undefined,
+    multLabel:
+      nextTier.rarity === 'prismatic' || nextTier.rarity === 'mythic'
+        ? 'x4'
+        : nextTier.rarity === 'legendary' || nextTier.rarity === 'celestial'
+          ? 'x3'
+          : nextTier.rarity === 'epic'
+            ? 'x2'
+            : undefined,
     dmgText: `${formatWeaponDmgText(spec, prevTier.dmgMult)} → ${formatWeaponDmgText(spec, nextTier.dmgMult)}`,
   };
 }
@@ -4762,8 +4896,8 @@ function buildWeaponUnlockCard(
     rarity: rar,
     title: `Unlock ${spec.name}`,
     vnTitle: `Mở Khóa ${spec.vnName}`,
-    desc: `Equip in slot ${slotIdx + 1} (${formatWeaponDmgText(spec)})`,
-    vnDesc: `Trang bị vào ô ${slotIdx + 1} · ${formatWeaponDmgText(spec)}`,
+    desc: `Equip in slot ${slotIdx + 1} (${formatWeaponDmgText(spec, BANSUNG_WEAPON_TIERS[1].dmgMult)})`,
+    vnDesc: `Trang bị vào ô ${slotIdx + 1} · ${formatWeaponDmgText(spec, BANSUNG_WEAPON_TIERS[1].dmgMult)}`,
     weaponId: spec.id,
     slotIdx,
     fromTier: 0,
@@ -4772,7 +4906,7 @@ function buildWeaponUnlockCard(
     badge,
     value: 1,
     multLabel,
-    dmgText: formatWeaponDmgText(spec),
+    dmgText: formatWeaponDmgText(spec, BANSUNG_WEAPON_TIERS[1].dmgMult),
   };
 }
 
@@ -4812,7 +4946,7 @@ export const BANSUNG_WEAPON_SHOP_PRICES: Readonly<Record<BansungWeaponRarity, nu
   mythic: 420,
 };
 
-export const BANSUNG_WEAPON_UPGRADE_COSTS: readonly number[] = [0, 110, 210, 340, 520];
+export const BANSUNG_WEAPON_UPGRADE_COSTS: readonly number[] = [0, 110, 210, 340, 480, 640, 820, 1040, 1300, 1600];
 export const BANSUNG_SUPPLY_HEAL_COST = 80;
 
 /** Returns coin cost to unlock/equip a weapon in the in-match Armory Shop. */
@@ -4821,11 +4955,11 @@ export function getWeaponShopPrice(id: BansungWeaponId): number {
   return spec ? (BANSUNG_WEAPON_SHOP_PRICES[spec.rarity] ?? 120) : 120;
 }
 
-/** Returns coin cost to upgrade a weapon from `tier` (`1..4`) to `tier + 1`. */
+/** Returns coin cost to upgrade a weapon from `tier` (`1..9`) to `tier + 1`. */
 export function getWeaponUpgradeCoinCost(tier: number): number {
   const t = Math.max(1, Math.min(BANSUNG_WEAPON_MAX_TIER, Math.floor(tier)));
   if (t >= BANSUNG_WEAPON_MAX_TIER) return 0;
-  return BANSUNG_WEAPON_UPGRADE_COSTS[t] ?? 520;
+  return BANSUNG_WEAPON_UPGRADE_COSTS[t] ?? 1600;
 }
 
 /** Full 35-weapon unlock arsenal (all non-starter weapons across guns, launchers, staves, and melee). */

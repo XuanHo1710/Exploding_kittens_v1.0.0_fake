@@ -538,7 +538,7 @@ test('magic lightning_staff: forward cone homing + 3-hop chain arc with 0.72 dec
 
 test('magic arcane_book: splash fireball + burn DOT + 3 non-resplitting arcane embers', () => {
   const world = makeWorld();
-  const primary = world.addTarget({ id: 55, x: 340, y: 300, hp: 200 });
+  const primary = world.addTarget({ id: 55, x: 340, y: 300, hp: 2000 });
   const hero = makeWeaponHero('arcane_book', { x: 200, y: 300, energy: 100 });
 
   stepWeaponAndBullets(world, hero, { fireHeld: true }, 1, 1);
@@ -551,7 +551,7 @@ test('magic arcane_book: splash fireball + burn DOT + 3 non-resplitting arcane e
   }
 
   assert.equal(emberPeak, 3, 'arcane_fireball must split into 3 arcane_ember projectiles');
-  assert.ok(primary.hp < 200, 'arcane fireball damages primary target');
+  assert.ok(primary.hp < 2000, 'arcane fireball damages primary target');
   assert.ok(Boolean(primary.dots && primary.dots.burn && primary.dots.burn.leftMs > 0), 'arcane_book applies burn DOT');
 
   // Add second enemy directly in front of surviving embers and verify embers hit WITHOUT splitting further
@@ -1553,16 +1553,16 @@ test('T08.2 survival XP curve & 3-card Gacha box rollSurvivalGachaCards', () => 
   assert.ok(seenCategories.has('weapon_upgrade'), 'Gacha rolls must offer weapon_upgrade cards');
   assert.ok(seenCategories.size >= 4, 'Gacha rolls span multiple combat/survival skill categories');
 
-  // Edge case 1: all 5 weapon slots already Mk.IV -> 0 weapon_upgrade cards, 3 distinct skill cards
+  // Edge case 1: all 5 weapon slots already Mk.X -> 0 weapon_upgrade cards, 3 distinct skill cards
   const maxedCards = S.rollSurvivalGachaCards({
     rng: makeRng(88),
     level: 10,
     slots: [
-      { id: 'pistol', tier: 4 },
-      { id: 'rifle', tier: 4 },
-      { id: 'smg', tier: 4 },
-      { id: 'sniper_rifle', tier: 4 },
-      { id: 'electric_gun', tier: 4 },
+      { id: 'pistol', tier: 10 },
+      { id: 'rifle', tier: 10 },
+      { id: 'smg', tier: 10 },
+      { id: 'sniper_rifle', tier: 10 },
+      { id: 'electric_gun', tier: 10 },
     ],
     activeSlotIdx: 1,
   });
@@ -1570,7 +1570,7 @@ test('T08.2 survival XP curve & 3-card Gacha box rollSurvivalGachaCards', () => 
   assert.equal(
     maxedCards.some((c) => c.category === 'weapon_upgrade'),
     false,
-    'maxed Mk.IV arsenal should not offer weapon_upgrade',
+    'maxed Mk.X arsenal should not offer weapon_upgrade',
   );
   assert.equal(new Set(maxedCards.map((c) => c.category)).size, 3);
 
@@ -1590,12 +1590,13 @@ test('T08.2 survival XP curve & 3-card Gacha box rollSurvivalGachaCards', () => 
   assert.equal(new Set(fallbackCards.map((c) => c.id)).size, 3);
 });
 
-test('T08.3 gun evolution tiers Mk.I -> Mk.IV: upgradeHeroWeaponTier, damage, ROF, pierce & fan spread', () => {
+test('T08.3 gun evolution tiers Mk.I -> Mk.X: upgradeHeroWeaponTier, damage, ROF, pierce & fan spread', () => {
   assert.equal(S.normalizeWeaponTier(undefined), 1);
   assert.equal(S.normalizeWeaponTier(0), 1);
   assert.equal(S.normalizeWeaponTier(2), 2);
   assert.equal(S.normalizeWeaponTier(3), 3);
-  assert.equal(S.normalizeWeaponTier(9), 4);
+  assert.equal(S.normalizeWeaponTier(9), 9);
+  assert.equal(S.normalizeWeaponTier(15), 10);
 
   const heroCheck = makeWeaponHero('rifle', { activeSlot: 1, energy: 200 });
   assert.equal(W.getHeroActiveWeaponTier(heroCheck), 1);
@@ -1617,18 +1618,36 @@ test('T08.3 gun evolution tiers Mk.I -> Mk.IV: upgradeHeroWeaponTier, damage, RO
     fromTier: 3,
     toTier: 4,
   });
+  for (let from = 4; from < 10; from++) {
+    assert.deepEqual(W.upgradeHeroWeaponTier(heroCheck, 1), {
+      ok: true,
+      weaponId: 'rifle',
+      fromTier: from,
+      toTier: from + 1,
+    });
+  }
   assert.deepEqual(W.upgradeHeroWeaponTier(heroCheck, 1), {
     ok: false,
     weaponId: 'rifle',
-    fromTier: 4,
-    toTier: 4,
+    fromTier: 10,
+    toTier: 10,
   });
   assert.equal(W.upgradeHeroWeaponTier(heroCheck, 2).ok, false, 'empty slot cannot upgrade');
   assert.equal(W.upgradeHeroWeaponTier(heroCheck, 9).ok, false, 'out-of-range slot fails cleanly');
 
   const snap = W.buildWeaponSlotsSnapshot(heroCheck).find((s) => s.id === 'rifle');
-  assert.ok(snap && snap.tier === 4);
-  assert.equal(snap.evolvedName, S.getWeaponEvolutionStats('rifle', 4).vnName);
+  assert.ok(snap && snap.tier === 10);
+  assert.equal(snap.evolvedName, S.getWeaponEvolutionStats('rifle', 10).vnName);
+
+  // Damage curve: buffed base, big jumps at Mk.II / Mk.III, strictly increasing to Mk.X
+  assert.ok(S.BANSUNG_WEAPON_TIERS[1].dmgMult > 1, 'Mk.I carries the global weapon damage buff');
+  assert.ok(S.BANSUNG_WEAPON_TIERS[2].dmgMult / S.BANSUNG_WEAPON_TIERS[1].dmgMult >= 1.4, 'Mk.II is a big damage jump');
+  assert.ok(S.BANSUNG_WEAPON_TIERS[3].dmgMult / S.BANSUNG_WEAPON_TIERS[2].dmgMult >= 1.3, 'Mk.III is a big damage jump');
+  for (let t = 2; t <= 10; t++) {
+    assert.ok(S.BANSUNG_WEAPON_TIERS[t].dmgMult > S.BANSUNG_WEAPON_TIERS[t - 1].dmgMult, `Mk tier ${t} increases damage`);
+    if (t < 10) assert.ok(S.getWeaponUpgradeCoinCost(t) > S.getWeaponUpgradeCoinCost(t - 1), `upgrade cost ${t} increases`);
+  }
+  assert.equal(S.getWeaponUpgradeCoinCost(10), 0, 'Mk.X is max tier');
 
   // Compare Mk.I -> Mk.IV pistol single-shot spawn attributes & combat performance (rng=0.5 -> 0 jitter, 0 crit)
   const tierSnapshots = [];
@@ -1826,7 +1845,7 @@ test('T08.4 survival Gacha skill cards: all 6 skills stack cleanly, update hero 
   });
   stepWeaponAndBullets(wCombat, hCombat, { fireHeld: true, ctxExtra: { rng: () => 0.99 } }, 1, 1);
   assert.equal(wCombat.bullets.count, 2, 'skill_multishot (+1) makes 1-pellet pistol fire 2 bullets');
-  assert.ok(Math.abs(wCombat.bullets.active[0].dmgMult - (1 + dmgCard.value)) < 1e-9);
+  assert.ok(Math.abs(wCombat.bullets.active[0].dmgMult - (1 + dmgCard.value) * S.BANSUNG_WEAPON_TIERS[1].dmgMult) < 1e-9);
   assert.ok(
     Math.abs(
       wCombat.bullets.active[0].critMult - S.BANSUNG_WEAPONS.pistol.critMult * (1 + critCard.secondaryValue),

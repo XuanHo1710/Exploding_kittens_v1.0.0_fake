@@ -2562,7 +2562,7 @@ function GachaDraftCard({
 
   const statPill = isWeaponUpgrade
     ? isWeaponUnlock
-      ? card.dmgText ?? formatWeaponDmgText(getWeaponSpec(weaponId), 1)
+      ? card.dmgText ?? formatWeaponDmgText(getWeaponSpec(weaponId), BANSUNG_WEAPON_TIERS[1].dmgMult)
       : `${BANSUNG_WEAPON_TIERS[fromTier].badge} → ${nextTierSpec.badge}`
     : card.badge ?? (skillSpec ? `+${Math.round(skillSpec.value * 100)}%` : undefined);
 
@@ -3051,7 +3051,7 @@ function ArmoryShopModal({
             const owned = ownedWeaponIds.has(weaponId);
             const price = getWeaponShopPrice(weaponId);
             const canBuy = !disabled && !owned && me.coins >= price;
-            const dmgText = formatWeaponDmgText(spec, 1);
+            const dmgText = formatWeaponDmgText(spec, BANSUNG_WEAPON_TIERS[1].dmgMult);
             const desc = `${spec.name} · Tầm ${Math.round(spec.range)}px · Chí mạng ${Math.round(spec.critChance * 100)}%`;
 
             return (
