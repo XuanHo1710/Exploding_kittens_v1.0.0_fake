@@ -1,394 +1,2068 @@
 /* =========================================================
-   Miragine War (Solo 10 Người) – màn chơi chiến thuật toàn màn hình
-   HUD kính xanh đêm mờ viền vàng + lưới 2×8 16 binh chủng nguyên bản
+   Miragine War Classic Solo – Fullscreen Battlefield, HUD & Modals
+   100% authentic 2x8 unit dock, wave clock, lane scrubber & 4:3 Flash modals
    ========================================================= */
-.thap-game {
-  --hud: rgba(14, 20, 34, 0.86);
+
+.thap-wrap,
+.thap-game,
+.thap-title-backdrop,
+.thap-tutorial-backdrop,
+.thap-result-backdrop {
+  --hud: rgba(12, 17, 28, 0.88);
+  --hud-panel: rgba(16, 22, 36, 0.94);
   --hud-2: rgba(255, 255, 255, 0.08);
-  --hud-line: rgba(255, 255, 255, 0.15);
+  --hud-line: rgba(255, 255, 255, 0.16);
   --hud-gold: rgba(255, 212, 59, 0.58);
-  --hud-text: #f3f1ea;
+  --hud-red: #e03131;
+  --hud-red-soft: #ff8787;
+  --hud-blue: #1c7ed6;
+  --hud-blue-soft: #74c0fc;
+  --hud-text: #f4f1ea;
   --hud-muted: #b5bccb;
-  position: fixed; inset: 0; z-index: 20; overflow: hidden;
-  background: #1f3a18; color: var(--hud-text);
-  user-select: none; -webkit-user-select: none; touch-action: none;
+  color: var(--hud-text);
 }
-.thap-game .muted { color: var(--hud-muted); }
-.thap-game .bad-text { color: #ffa8a8; }
-.thap-game .good-text { color: #8ce99a; font-weight: 700; }
-.thap-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
-.thap-game.picking .thap-canvas { cursor: crosshair !important; }
-.thap-game kbd {
-  font: 600 10px/1 ui-monospace, monospace; padding: 2px 4px; border-radius: 4px;
-  background: rgba(0, 0, 0, 0.55); color: #ffe066; border: 1px solid rgba(255, 224, 102, 0.35);
-}
-.thap-game button.ghost { color: var(--hud-muted); }
-.thap-game button.ghost:not(:disabled):hover { background: var(--hud-2); color: var(--hud-text); }
-.thap-game button.small { padding: 4px 8px; font-size: 12px; }
-.thap-game button.link { background: none; border: 0; padding: 0; color: #ffe066; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
-.thap-game .dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, 0.85); flex: none; display: inline-block; }
 
-/* ---------- thanh trên ---------- */
-.thap-top {
-  position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
-  padding: max(8px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 0 max(10px, env(safe-area-inset-left)); pointer-events: none;
+.thap-wrap,
+.thap-game {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  overflow: hidden;
+  background: #172712;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
 }
-.thap-top > * { pointer-events: auto; }
-.thap-res { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; }
-.thap-me-dot-btn {
-  padding: 2px; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center;
+
+.thap-wrap *,
+.thap-game *,
+.thap-title-backdrop *,
+.thap-tutorial-backdrop *,
+.thap-result-backdrop * {
+  box-sizing: border-box;
 }
-.thap-me-dot { width: 16px; height: 16px; border-radius: 4px; border: 2px solid #fff; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.4); transform: rotate(45deg); }
+
+.thap-wrap .muted,
+.thap-game .muted,
+.thap-title-backdrop .muted,
+.thap-tutorial-backdrop .muted,
+.thap-result-backdrop .muted {
+  color: var(--hud-muted);
+}
+
+.thap-wrap .bad-text,
+.thap-game .bad-text,
+.thap-title-backdrop .bad-text,
+.thap-tutorial-backdrop .bad-text,
+.thap-result-backdrop .bad-text {
+  color: #ffa8a8;
+}
+
+.thap-wrap .good-text,
+.thap-game .good-text,
+.thap-title-backdrop .good-text,
+.thap-tutorial-backdrop .good-text,
+.thap-result-backdrop .good-text {
+  color: #8ce99a;
+  font-weight: 700;
+}
+
+.thap-wrap kbd,
+.thap-game kbd,
+.thap-title-backdrop kbd,
+.thap-tutorial-backdrop kbd,
+.thap-result-backdrop kbd {
+  font: 700 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #ffe066;
+  border: 1px solid rgba(255, 224, 102, 0.38);
+}
+
+.thap-wrap button.ghost,
+.thap-game button.ghost,
+.thap-tutorial-backdrop button.ghost,
+.thap-result-backdrop button.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--hud-muted);
+}
+
+.thap-wrap button.ghost:not(:disabled):hover,
+.thap-game button.ghost:not(:disabled):hover,
+.thap-tutorial-backdrop button.ghost:not(:disabled):hover,
+.thap-result-backdrop button.ghost:not(:disabled):hover {
+  background: var(--hud-2);
+  color: var(--hud-text);
+}
+
+.thap-wrap button.small,
+.thap-game button.small,
+.thap-tutorial-backdrop button.small,
+.thap-result-backdrop button.small {
+  padding: 4px 9px;
+  font-size: 12px;
+}
+
+.thap-wrap button.link,
+.thap-game button.link,
+.thap-tutorial-backdrop button.link,
+.thap-result-backdrop button.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: #ffe066;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.thap-wrap .dot,
+.thap-game .dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  flex: none;
+  display: inline-block;
+}
+
+/* ---------- 1. Fullscreen Battlefield Canvas Stage ---------- */
+.thap-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: grab;
+}
+
+.thap-canvas:active,
+.thap-canvas.grabbing,
+.thap-wrap.panning .thap-canvas {
+  cursor: grabbing;
+}
+
+.thap-wrap.picking .thap-canvas,
+.thap-game.picking .thap-canvas {
+  cursor: crosshair;
+}
+
+/* ---------- 2. Top HUD (Red P1 | Wave Clock | Blue Enemy) ---------- */
+.thap-top-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  pointer-events: none;
+  padding: max(6px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 0 max(10px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.thap-top-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.thap-hud-side {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  pointer-events: none;
+}
+
+.thap-hud-side.red {
+  align-items: flex-start;
+}
+
+.thap-hud-side.blue {
+  align-items: flex-end;
+}
+
+.thap-hud-side > *,
+.thap-wave-clock,
+.thap-top-btns > * {
+  pointer-events: auto;
+}
+
+.thap-crystal-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: 10px;
+  background: var(--hud);
+  border: 1px solid var(--hud-line);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.thap-hud-side.red .thap-crystal-row {
+  border-color: rgba(255, 107, 107, 0.45);
+}
+
+.thap-hud-side.blue .thap-crystal-row {
+  border-color: rgba(77, 171, 247, 0.45);
+  flex-direction: row-reverse;
+}
+
+.thap-crystal-btn {
+  padding: 2px;
+  border: 0;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.04);
+  display: grid;
+  place-items: center;
+  flex: none;
+  cursor: pointer;
+}
+
+.thap-crystal-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.thap-crystal-ico {
+  width: 22px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
+  flex: none;
+}
+
+.thap-crystal-meter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.thap-crystal-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.thap-crystal-label > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.thap-crystal-bar {
+  position: relative;
+  width: clamp(110px, 15vw, 190px);
+  height: 14px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #090c14 0%, #141a28 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.24);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.85), 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.thap-crystal-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+  transition: width 0.2s ease;
+}
+
+.thap-hud-side.red .thap-crystal-fill {
+  background: linear-gradient(180deg, #ff8787 0%, #e03131 52%, #9c1616 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.thap-hud-side.blue .thap-crystal-fill {
+  left: auto;
+  right: 0;
+  background: linear-gradient(180deg, #74c0fc 0%, #1c7ed6 52%, #0b4f8f 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.thap-crystal-hp {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
+}
+
+.thap-res-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+}
+
 .thap-pill {
-  display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px;
-  background: var(--hud); border: 1px solid var(--hud-line); font-size: 13px; backdrop-filter: blur(6px); white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--hud);
+  border: 1px solid var(--hud-line);
+  font-size: 12.5px;
+  line-height: 1.15;
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
 }
-.thap-pill b { font-variant-numeric: tabular-nums; }
-.thap-pill.warn { border-color: #ff8787; color: #ffc9c9; }
-.thap-pill.gold { border-color: var(--hud-gold); }
-.thap-pill.gold b { color: #ffe066; font-size: 15px; }
-.thap-pill.income-pill { border-color: rgba(140, 233, 154, 0.45); }
-.thap-pill.income-pill b { color: #8ce99a; font-size: 14px; }
-.thap-pill.time-pill {
-  border-color: rgba(255, 212, 59, 0.65);
-  background: linear-gradient(180deg, rgba(40, 28, 12, 0.92), rgba(20, 14, 6, 0.92));
+
+.thap-pill b {
+  font-variant-numeric: tabular-nums;
 }
-.thap-timebg-ico { height: 20px; width: auto; object-fit: contain; display: block; }
-.thap-ui-ico { width: 18px; height: 18px; object-fit: contain; display: block; flex: none; }
-.thap-income { font-size: 11.5px; color: #c0eb75; font-weight: 700; }
-.thap-round-clock {
-  padding: 1px 7px; border-radius: 999px; background: rgba(255, 212, 59, 0.22);
-  color: #ffe066; font-size: 13px; font-weight: 900; font-variant-numeric: tabular-nums;
+
+.thap-pill.gold {
+  border-color: var(--hud-gold);
 }
-.thap-top-right { display: flex; gap: 6px; align-items: center; flex: none; }
+
+.thap-pill.gold b {
+  color: #ffe066;
+  font-size: 14px;
+}
+
+.thap-pill.income,
+.thap-pill.income-pill {
+  border-color: rgba(140, 233, 154, 0.45);
+}
+
+.thap-pill.income b,
+.thap-pill.income-pill b {
+  color: #8ce99a;
+  font-size: 13.5px;
+}
+
+.thap-pill.pop {
+  border-color: rgba(116, 192, 252, 0.35);
+}
+
+.thap-pill.warn,
+.thap-pill.pop.warn {
+  border-color: #ff8787;
+  color: #ffc9c9;
+  background: rgba(65, 16, 20, 0.88);
+}
+
+.thap-ui-ico {
+  width: 21px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
+  flex: none;
+}
+
+/* Center Wave Clock */
+.thap-wave-clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px 6px;
+  border-radius: 12px;
+  background: rgba(10, 14, 24, 0.9);
+  border: 1px solid rgba(255, 212, 59, 0.48);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.48);
+}
+
+.thap-wave-clock.urgent {
+  border-color: #ff922b;
+  box-shadow: 0 0 18px rgba(255, 146, 43, 0.35), 0 8px 24px rgba(0, 0, 0, 0.48);
+}
+
+.thap-wave-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.thap-clock-face {
+  position: relative;
+  width: 64px;
+  height: 32px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: url('/database-miraginewar/ui/timebg.png') center / 100% 100% no-repeat;
+}
+
+.thap-clock-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+  pointer-events: none;
+}
+
+.thap-clock-num {
+  position: relative;
+  z-index: 1;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #fff8dc;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+}
+
+.thap-wave-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 212, 59, 0.16);
+  border: 1px solid rgba(255, 212, 59, 0.42);
+  color: #ffe066;
+  font-size: 11.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.thap-wave-bar-track {
+  position: relative;
+  width: min(230px, 40vw);
+  max-width: 285px;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #0a0d14;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.85);
+}
+
+.thap-wave-bar-fill {
+  position: relative;
+  height: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+  transition: width 0.15s linear;
+  background:
+    url('/database-miraginewar/ui/bar_frame.png') left center / 285px 100% no-repeat,
+    linear-gradient(90deg, #ffd43b 0%, #f76707 58%, #e03131 100%);
+}
+
+.thap-wave-bar-img {
+  display: block;
+  width: 285px;
+  max-width: none;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+/* Right Blue Enemy Last Wave + Utility Icons */
+.thap-blue-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  max-width: 100%;
+}
+
+.thap-enemy-last {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(16, 26, 46, 0.9);
+  border: 1px solid rgba(77, 171, 247, 0.45);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #d0ebff;
+  white-space: nowrap;
+}
+
+.thap-enemy-last-ico {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+  flex: none;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.thap-top-btns {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  flex-wrap: nowrap;
+}
+
 .thap-icon {
-  position: relative; width: 38px; height: 38px; padding: 0; display: grid; place-items: center; border-radius: 10px;
-  background: var(--hud); color: var(--hud-text); border: 1px solid var(--hud-line); backdrop-filter: blur(6px);
+  position: relative;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--hud);
+  color: var(--hud-text);
+  border: 1px solid var(--hud-line);
+  backdrop-filter: blur(6px);
 }
-.thap-icon.on { border-color: #ffd43b; color: #ffe066; }
+
+.thap-icon:hover {
+  border-color: rgba(255, 212, 59, 0.65);
+  background: rgba(26, 34, 52, 0.95);
+}
+
+.thap-icon.on {
+  border-color: #ffd43b;
+  color: #ffe066;
+}
+
+.thap-icon.danger:hover {
+  border-color: #ff6b6b;
+  color: #ffc9c9;
+}
+
 .thap-badge {
-  position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px;
-  background: var(--bad, #e03131); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center;
-}
-.thap-badge.plain { background: #ffd43b; color: #2b1d10; }
-.thap-dock { background: var(--hud); border: 1px solid var(--hud-line); border-radius: 10px; padding: 2px 4px; color: var(--hud-text); }
-.thap-dock .dock { background: transparent; border: 0; box-shadow: none; }
-
-/* ---------- bảng điểm 10 người + nút Đánh Chỉ Định nhanh ---------- */
-.thap-scores {
-  position: absolute; top: 56px; right: max(10px, env(safe-area-inset-right)); z-index: 2; width: min(335px, calc(100vw - 20px)); max-height: 44vh; overflow-y: auto;
-  background: var(--hud); border: 1px solid var(--hud-line); border-radius: 12px; padding: 6px; backdrop-filter: blur(8px);
-  display: flex; flex-direction: column; gap: 2px;
-}
-.thap-team-sum { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 2px 6px; border-bottom: 1px solid var(--hud-line); margin-bottom: 4px; }
-.thap-team-chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; border: 1.5px solid; font-size: 12px; background: var(--hud-2); }
-.thap-team-chip i { width: 9px; height: 9px; border-radius: 50%; }
-.thap-team-chip.me { box-shadow: 0 0 0 2px rgba(255, 212, 59, 0.35); }
-.thap-team-chip.dead { opacity: 0.5; text-decoration: line-through; }
-.thap-score-row {
-  display: flex; align-items: center; gap: 5px; padding: 2px 4px; border-radius: 8px;
-}
-.thap-score-row:hover { background: var(--hud-2); }
-.thap-score-row.me { background: rgba(255, 212, 59, 0.14); }
-.thap-score-row.targeted { background: rgba(224, 49, 49, 0.22); outline: 1px solid rgba(255, 107, 107, 0.55); }
-.thap-score-row.dead { opacity: 0.5; }
-.thap-score-row.dead .name { text-decoration: line-through; }
-.thap-score-look {
-  flex: 1; min-width: 0; display: grid; grid-template-columns: 18px 12px minmax(0, 1fr) auto 40px auto; gap: 6px; align-items: center;
-  padding: 3px 4px; font-size: 12.5px; background: transparent; color: var(--hud-text); border: 0; text-align: left;
-}
-.thap-score-look:not(:has(.team)) { grid-template-columns: 18px 12px minmax(0, 1fr) 40px auto; }
-.thap-score-row .rank { color: var(--hud-muted); font-weight: 700; text-align: right; }
-.thap-score-row .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.thap-score-row .team { width: 8px; height: 14px; border-radius: 2px; }
-.thap-score-row .hp { height: 6px; border-radius: 3px; background: rgba(0, 0, 0, 0.45); overflow: hidden; display: block; font-size: 11px; line-height: 6px; text-align: center; }
-.thap-score-row.dead .hp { background: none; height: auto; line-height: 1; }
-.thap-score-row .hp i { display: block; height: 100%; background: linear-gradient(90deg, #51cf66, #94d82d); }
-.thap-score-row b { font-variant-numeric: tabular-nums; min-width: 28px; text-align: right; }
-.thap-quick-atk {
-  flex: none; padding: 3px 7px; border-radius: 6px; font-size: 11px; font-weight: 800;
-  background: rgba(224, 49, 49, 0.25); color: #ffc9c9; border: 1px solid rgba(255, 107, 107, 0.5);
-}
-.thap-quick-atk:hover, .thap-quick-atk.on {
-  background: #e03131; color: #fff; border-color: #ffd43b;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: #e03131;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
 }
 
-/* ---------- cảnh báo / gợi ý ---------- */
+.thap-badge.plain {
+  background: #ffd43b;
+  color: #2b1d10;
+}
+
+.thap-dock {
+  background: var(--hud);
+  border: 1px solid var(--hud-line);
+  border-radius: 9px;
+  padding: 1px 4px;
+  color: var(--hud-text);
+}
+
+.thap-dock .dock {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+/* ---------- Alerts / Hints / Spectator Banner ---------- */
 .thap-alert {
-  position: absolute; top: 58px; left: 50%; z-index: 3; transform: translateX(-50%); padding: 8px 14px; border-radius: 999px;
-  background: rgba(224, 49, 49, 0.92); color: #fff; font-weight: 700; border: 0; animation: thap-blink 1s ease-in-out infinite alternate; white-space: nowrap;
+  position: absolute;
+  top: 72px;
+  left: 50%;
+  z-index: 4;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(224, 49, 49, 0.92);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 224, 102, 0.5);
+  white-space: nowrap;
+  animation: thap-blink 1s ease-in-out infinite alternate;
 }
-.thap-alert .muted { color: #ffe3e3; font-weight: 500; }
-@keyframes thap-blink { from { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.6); } to { box-shadow: 0 0 0 12px rgba(255, 107, 107, 0); } }
+
+@keyframes thap-blink {
+  from { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.65); }
+  to { box-shadow: 0 0 0 12px rgba(255, 107, 107, 0); }
+}
+
 .thap-hint {
-  position: absolute; top: 104px; left: 50%; z-index: 3; transform: translateX(-50%); max-width: calc(100vw - 20px);
-  padding: 8px 14px; border-radius: 12px; background: rgba(43, 138, 62, 0.92); color: #fff; font-size: 13.5px; text-align: center;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  position: absolute;
+  top: 108px;
+  left: 50%;
+  z-index: 4;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 20px);
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: rgba(20, 44, 28, 0.92);
+  border: 1px solid rgba(105, 219, 124, 0.45);
+  color: #fff;
+  font-size: 12.5px;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
-.thap-hint .link { color: #fff3bf; text-decoration: underline; }
+
 .thap-spec-banner {
-  position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 1;
-  padding: 8px 16px; border-radius: 999px; background: var(--hud); border: 1px solid var(--hud-line); font-weight: 700; white-space: nowrap;
+  position: absolute;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  padding: 7px 15px;
+  border-radius: 999px;
+  background: var(--hud);
+  border: 1px solid var(--hud-line);
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-/* ---------- bản đồ nhỏ ---------- */
-.thap-mini {
-  position: absolute; left: max(10px, env(safe-area-inset-left)); bottom: max(10px, env(safe-area-inset-bottom)); padding: 4px; border-radius: 10px;
-  background: var(--hud); border: 1px solid var(--hud-gold); line-height: 0; z-index: 1;
-}
-.thap-mini canvas { border-radius: 6px; cursor: pointer; touch-action: none; display: block; }
-
-/* ---------- phía dưới ---------- */
+/* ---------- 3. Bottom HUD Dock (Lane Scrubber + Unit Inspect + 2x8 Slots) ---------- */
 .thap-bottom {
-  position: absolute; left: calc(max(10px, env(safe-area-inset-left)) + 258px); right: max(10px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom));
-  display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none;
+  position: absolute;
+  left: max(10px, env(safe-area-inset-left));
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(8px, env(safe-area-inset-bottom));
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+  pointer-events: none;
 }
-.thap-bottom > * { pointer-events: auto; }
 
-.thap-orders {
-  width: min(1040px, 100%); display: flex; justify-content: space-between; align-items: center; gap: 6px 10px; flex-wrap: wrap;
-  background: var(--hud); border: 1px solid var(--hud-line); border-radius: 12px; padding: 6px 10px; backdrop-filter: blur(8px);
+.thap-bottom > * {
+  pointer-events: auto;
 }
-.thap-orders-state { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; font-size: 13px; }
-.thap-stance { font-weight: 800; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
-.thap-stance.attack { background: rgba(224, 49, 49, 0.32); color: #ffc9c9; border: 1px solid rgba(255, 107, 107, 0.5); }
-.thap-stance.defend { background: rgba(28, 126, 214, 0.32); color: #a5d8ff; border: 1px solid rgba(116, 192, 252, 0.5); }
-.thap-stance.advance { background: rgba(240, 140, 0, 0.26); color: #ffd8a8; }
-.thap-stance.rally { background: rgba(47, 158, 68, 0.28); color: #b2f2bb; }
-.thap-orders-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-.thap-order {
-  display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 800;
-  color: #fff; border: 2px solid transparent; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35); white-space: nowrap;
-}
-.thap-order kbd { opacity: 0.9; }
-.thap-order.attack { background: linear-gradient(180deg, #e03131, #a51111); }
-.thap-order.defend { background: linear-gradient(180deg, #1c7ed6, #0b4f8f); }
-.thap-order.advance { background: linear-gradient(180deg, #f08c00, #b35c00); }
-.thap-order.rally { background: linear-gradient(180deg, #2f9e44, #1b6b2c); }
-.thap-order.home { background: var(--hud-2); border-color: var(--hud-line); padding: 7px 10px; }
-.thap-order.on { border-color: #ffd43b; box-shadow: 0 0 0 3px rgba(255, 212, 59, 0.32), 0 3px 0 rgba(0, 0, 0, 0.35); }
-.thap-order:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35); }
 
-.thap-targets {
-  width: min(1040px, 100%); background: rgba(20, 16, 24, 0.95); border: 1.5px solid #e03131; border-radius: 12px; padding: 10px;
-  display: flex; flex-direction: column; gap: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+/* Horizontal 2040px Battlefield Scrubber Bar */
+.thap-lane-bar {
+  position: relative;
+  width: min(980px, 100%);
+  height: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  cursor: pointer;
+  touch-action: none;
+  background: linear-gradient(
+    90deg,
+    rgba(190, 40, 40, 0.42) 0%,
+    rgba(22, 34, 22, 0.88) 10%,
+    rgba(24, 38, 22, 0.88) 90%,
+    rgba(28, 110, 200, 0.42) 100%
+  );
+  border: 1px solid rgba(255, 212, 59, 0.42);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.75), 0 4px 12px rgba(0, 0, 0, 0.35);
 }
-.thap-targets-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-.thap-targets-head .ghost { margin-left: auto; }
-.thap-targets-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 6px; max-height: 32vh; overflow-y: auto; }
-.thap-target {
-  display: grid; grid-template-columns: 12px minmax(0, 1fr); grid-template-rows: auto auto auto; column-gap: 8px; row-gap: 3px; align-items: center;
-  padding: 8px 10px; border-radius: 10px; text-align: left; background: var(--hud-2); color: var(--hud-text); border: 1px solid var(--hud-line);
-}
-.thap-target b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.thap-target .thap-target-hp, .thap-target .muted { grid-column: 2; }
-.thap-target-hp { height: 5px; border-radius: 3px; background: rgba(0, 0, 0, 0.5); overflow: hidden; }
-.thap-target-hp i { display: block; height: 100%; background: linear-gradient(90deg, #ff6b6b, #ffa94d); }
-.thap-target:hover { border-color: #ff6b6b; background: rgba(224, 49, 49, 0.18); }
-.thap-target.on { border-color: #ffd43b; background: rgba(224, 49, 49, 0.28); }
 
-/* ---------- bảng quân: thông tin đơn vị + 16 ô lính (2×8) + nâng cấp ---------- */
+.thap-lane-bar canvas,
+.thap-lane-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.thap-lane-base {
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 10px;
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.thap-lane-base.red {
+  left: 2.5%;
+  background: #ff6b6b;
+  box-shadow: 0 0 6px #e03131;
+}
+
+.thap-lane-base.blue {
+  left: 97.5%;
+  background: #74c0fc;
+  box-shadow: 0 0 6px #1c7ed6;
+}
+
+.thap-lane-dot {
+  position: absolute;
+  top: 50%;
+  width: 4px;
+  height: 6px;
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.thap-lane-dot.red {
+  background: #ff8787;
+}
+
+.thap-lane-dot.blue {
+  background: #74c0fc;
+}
+
+.thap-lane-viewport,
+.thap-lane-cam {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  border-radius: 999px;
+  border: 1.5px solid #ffd43b;
+  background: rgba(255, 212, 59, 0.16);
+  box-shadow: 0 0 8px rgba(255, 212, 59, 0.35);
+  pointer-events: none;
+}
+
+/* Main Army Panel */
 .thap-army {
-  width: min(1040px, 100%); display: flex; flex-direction: column; gap: 5px;
-  background: var(--hud); border: 1px solid var(--hud-line); border-radius: 12px; padding: 7px 8px; backdrop-filter: blur(8px);
+  width: min(980px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  background: var(--hud);
+  border: 1px solid rgba(255, 212, 59, 0.32);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
 }
-.thap-info-bar {
-  display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
-  padding-bottom: 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
+
+/* Unit Inspect Panel (NEVER hidden on mobile/landscape) */
 .thap-unit-inspect {
-  display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 420px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
+
 .thap-inspect-ico {
-  width: 38px; height: 38px; border-radius: 7px; border: 1.5px solid var(--hud-gold); flex: none; object-fit: cover; background: #141923;
+  width: 40px;
+  height: 40px;
+  padding: 2px;
+  border-radius: 7px;
+  border: 1.5px solid var(--hud-gold);
+  background: #121824;
+  object-fit: contain;
+  flex: none;
+  display: block;
 }
-.thap-inspect-meta { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.thap-inspect-title { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12.5px; }
+
+.thap-inspect-meta {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.thap-inspect-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  font-size: 12.5px;
+  line-height: 1.2;
+}
+
+.thap-inspect-name {
+  font-weight: 800;
+  color: #fff;
+}
+
+.thap-inspect-stats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
 .thap-tag {
-  padding: 1px 6px; border-radius: 5px; font-size: 11px; font-weight: 700; background: rgba(255, 255, 255, 0.1); white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+  background: rgba(255, 255, 255, 0.09);
+  color: #e9ecef;
+  white-space: nowrap;
 }
-.thap-tag.cost { color: #ffe066; background: rgba(255, 212, 59, 0.16); }
-.thap-tag.inc { color: #8ce99a; background: rgba(81, 207, 102, 0.16); }
-.thap-tag.armor.heavy { color: #74c0fc; background: rgba(28, 126, 214, 0.22); }
-.thap-tag.armor.light { color: #ffd8a8; background: rgba(240, 140, 0, 0.18); }
-.thap-tag.hp { color: #ffa8a8; }
-.thap-tag.dmg { color: #e9ecef; }
-.thap-inspect-desc { font-size: 11.5px; color: var(--hud-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.thap-counter-inline { color: #ffe066; font-weight: 600; }
 
-.thap-portal-status {
-  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 8px;
-  background: rgba(15, 23, 42, 0.72); border: 1px solid rgba(105, 219, 124, 0.45);
-  font-size: 12px; color: #f3f1ea; white-space: nowrap;
+.thap-tag.cost {
+  color: #ffe066;
+  background: rgba(255, 212, 59, 0.16);
 }
-.thap-portal-ico { width: 22px; height: 22px; border-radius: 5px; object-fit: cover; border: 1px solid #ffd43b; }
-.thap-queue-status { font-size: 12px; font-weight: 700; color: #8ce99a; margin-right: 4px; white-space: nowrap; }
-.thap-queue-status.bad { color: #ffa8a8; animation: thap-pulse 1s ease-in-out infinite alternate; }
-@keyframes thap-pulse { from { opacity: 1; } to { opacity: 0.55; } }
-.thap-q {
-  position: relative; width: 28px; height: 28px; padding: 0; border-radius: 6px; overflow: hidden;
-  background: var(--hud-2); border: 1px solid var(--hud-line); display: grid; place-items: center;
-}
-.thap-q:hover { border-color: #ff8787; background: rgba(224, 49, 49, 0.2); }
-.thap-q.head { border-color: #69db7c; width: 32px; height: 32px; }
-.thap-q.blocked { border-color: #ff8787; }
-.thap-q-ico { width: 100%; height: 100%; object-fit: cover; display: block; }
-.thap-q-prog { position: absolute; left: 0; bottom: 0; height: 3px; background: #69db7c; transition: width 0.25s linear; }
 
-/* Lưới 2 hàng × 8 cột = 16 binh chủng Miragine War */
-.thap-slots { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 5px; }
-.thap-slot-wrap { position: relative; min-width: 0; }
+.thap-tag.inc {
+  color: #8ce99a;
+  background: rgba(81, 207, 102, 0.16);
+}
+
+.thap-tag.pop {
+  color: #a5d8ff;
+  background: rgba(77, 171, 247, 0.16);
+}
+
+.thap-tag.hp {
+  color: #ffa8a8;
+  background: rgba(255, 107, 107, 0.16);
+}
+
+.thap-tag.armor.light {
+  color: #ffd8a8;
+  background: rgba(240, 140, 0, 0.18);
+}
+
+.thap-tag.armor.armored,
+.thap-tag.armor.heavy {
+  color: #74c0fc;
+  background: rgba(28, 126, 214, 0.24);
+}
+
+.thap-tag.dmg {
+  color: #ffe8cc;
+  background: rgba(255, 146, 43, 0.16);
+}
+
+.thap-tag.stat,
+.thap-tag.spd,
+.thap-tag.rng {
+  color: #ced4da;
+}
+
+.thap-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.thap-status-tag.saving {
+  background: rgba(255, 146, 43, 0.2);
+  border: 1px solid rgba(255, 169, 77, 0.45);
+  color: #ffd8a8;
+}
+
+.thap-status-tag.popcap {
+  background: rgba(224, 49, 49, 0.24);
+  border: 1px solid rgba(255, 135, 135, 0.5);
+  color: #ffc9c9;
+}
+
+.thap-status-tag.ready {
+  background: rgba(47, 158, 68, 0.22);
+  border: 1px solid rgba(105, 219, 124, 0.45);
+  color: #b2f2bb;
+}
+
+.thap-inspect-desc {
+  font-size: 11.5px;
+  line-height: 1.25;
+  color: var(--hud-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.thap-counter-inline {
+  color: #ffe066;
+  font-weight: 600;
+}
+
+/* Strict 2x8 Grid = 16 Units */
+.thap-slots {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.thap-slot-wrap {
+  position: relative;
+  min-width: 0;
+  overflow: visible;
+}
+
 .thap-slot {
-  position: relative; width: 100%; min-width: 0; padding: 3px 3px 4px; border-radius: 8px; overflow: hidden;
-  display: flex; flex-direction: column; align-items: center; gap: 1px; text-align: center;
-  background: var(--hud-2); color: var(--hud-text); border: 1px solid var(--hud-line);
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  padding: 4px 3px 5px;
+  border-radius: 8px;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--hud-text);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease, transform 0.08s ease;
 }
-.thap-slot:hover, .thap-slot-wrap.active .thap-slot { border-color: #ffd43b; background: rgba(255, 212, 59, 0.14); }
-.thap-slot:active { transform: scale(0.96); }
-.thap-slot.off .thap-slot-cost { color: #ff8787; }
-.thap-slot.off .thap-slot-ico { opacity: 0.45; filter: grayscale(0.65); }
-.thap-slot-wrap.auto .thap-slot { border-color: #69db7c; box-shadow: inset 0 0 0 2px rgba(105, 219, 124, 0.5), 0 0 12px rgba(105, 219, 124, 0.3); }
-.thap-slot-ico { width: 38px; height: 38px; border-radius: 6px; object-fit: cover; display: block; border: 1px solid rgba(255, 255, 255, 0.2); }
-.thap-slot-name { font-size: 11px; font-weight: 700; line-height: 1.15; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-.thap-slot-cost { font-size: 10.5px; color: #ffe066; font-variant-numeric: tabular-nums; font-weight: 700; display: flex; align-items: center; gap: 3px; }
-.thap-slot-inc { color: #8ce99a; font-size: 9.5px; font-weight: 700; }
-.thap-slot kbd { position: absolute; top: 2px; left: 2px; }
-.thap-slot-count { position: absolute; top: 2px; right: 22px; min-width: 16px; padding: 1px 4px; border-radius: 999px; background: #1c7ed6; color: #fff; font-size: 10px; font-weight: 800; }
-.thap-auto {
-  position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; padding: 0; border-radius: 5px; font-size: 12px; font-weight: 900; line-height: 1;
-  display: grid; place-items: center; background: rgba(0, 0, 0, 0.45); color: var(--hud-muted); border: 1px solid var(--hud-line);
-}
-.thap-auto:hover { color: #fff; border-color: #69db7c; }
-.thap-auto.on { background: #2f9e44; color: #fff; border-color: #b2f2bb; animation: thap-spin 2.4s linear infinite; }
-@keyframes thap-spin { to { transform: rotate(360deg); } }
 
-.thap-upgrades { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
-.thap-up {
-  position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: 7px; row-gap: 2px; align-items: center;
-  padding: 4px 28px 4px 8px; border-radius: 8px; text-align: left; background: var(--hud-2); color: var(--hud-text); border: 1px solid var(--hud-line);
+.thap-slot:not(:disabled):hover,
+.thap-slot.hovered {
+  filter: none;
+  border-color: rgba(255, 224, 102, 0.82);
+  background: rgba(255, 212, 59, 0.12);
 }
-.thap-up:hover { border-color: #ffd43b; }
-.thap-up-ico { grid-row: 1 / 3; font-size: 16px; }
-.thap-up-name { font-size: 12px; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.thap-up-lv { grid-column: 2; display: flex; gap: 3px; }
-.thap-up-lv i { width: 10px; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.18); }
-.thap-up-lv i.on { background: #ffd43b; }
-.thap-up-cost { grid-row: 1 / 3; grid-column: 3; font-size: 11.5px; font-weight: 700; color: #ffe066; white-space: nowrap; }
-.thap-up.off .thap-up-cost { color: #ff8787; }
-.thap-up.max { opacity: 0.7; }
-.thap-up.max .thap-up-cost { color: #8ce99a; }
-.thap-up kbd { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); }
 
-/* ---------- trò chuyện ---------- */
-.thap-chat {
-  position: absolute; top: 56px; right: max(10px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); width: min(340px, calc(100vw - 20px)); display: flex;
-  border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45); color: var(--text); z-index: 3;
-  user-select: text; -webkit-user-select: text; touch-action: auto;
+.thap-slot.selected,
+.thap-slot-wrap.selected .thap-slot {
+  border-color: #ffe066;
+  background: rgba(255, 212, 59, 0.16);
 }
-.thap-chat > * { flex: 1; min-width: 0; }
 
-/* ---------- kết thúc ---------- */
+.thap-slot:active {
+  transform: scale(0.97);
+}
+
+/* Keep unit portraits 100% crisp & colorful even when gold is low */
+.thap-slot-ico {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  display: block;
+  flex: none;
+  opacity: 1;
+  filter: none;
+}
+
+.thap-slot kbd,
+.thap-slot-key {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  z-index: 2;
+  padding: 1px 4px;
+  font: 700 9.5px/1.1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #ffe066;
+  border: 1px solid rgba(255, 224, 102, 0.35);
+  pointer-events: none;
+}
+
+.thap-slot-name {
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #f1f3f5;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.thap-slot-foot {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  padding: 0 2px;
+}
+
+.thap-slot-cost {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  z-index: 2;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: rgba(8, 12, 20, 0.78);
+  font-size: 10.5px;
+  line-height: 1.25;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #ffe066;
+  pointer-events: none;
+}
+
+.thap-slot-foot .thap-slot-cost {
+  position: static;
+  margin-left: auto;
+  background: transparent;
+  padding: 0;
+}
+
+.thap-slot-cost.poor {
+  color: #ffa8a8;
+}
+
+.thap-slot-inc {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #8ce99a;
+}
+
+/* Classic yellow cursor_p1.png framing the active selected slot */
+.thap-cursor-p1 {
+  position: absolute;
+  inset: -3px;
+  width: calc(100% + 6px);
+  height: calc(100% + 6px);
+  pointer-events: none;
+  z-index: 3;
+  object-fit: fill;
+  display: block;
+}
+
+/* ---------- 4. Classic 4:3 Title Screen (title_bg.jpg + logo_unit.png) ---------- */
+.thap-title-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  background: radial-gradient(circle at center, rgba(18, 28, 16, 0.78) 0%, rgba(6, 9, 14, 0.96) 100%);
+  overflow-y: auto;
+}
+
+.thap-title-stage {
+  position: relative;
+  width: 100%;
+  max-width: min(760px, 100%, calc((100dvh - 24px) * 4 / 3));
+  aspect-ratio: 4 / 3;
+  min-height: min(380px, 100%);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 212, 59, 0.58);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75);
+  background: #141923 url('/database-miraginewar/ui/title_bg.jpg') center / 100% 100% no-repeat;
+}
+
+.thap-title-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+  pointer-events: none;
+}
+
+/* Positioned in the open slate zone below banner leaving top artwork & pedestal clear */
+.thap-title-menu {
+  position: absolute;
+  left: 50%;
+  top: 37%;
+  bottom: 9%;
+  transform: translateX(-50%);
+  width: min(88%, 460px);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 1vh, 9px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.thap-diff-row {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(12, 16, 26, 0.84);
+  border: 1px solid rgba(255, 212, 59, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.thap-diff-pill {
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #dee2e6;
+  font-size: clamp(11px, 1.7vw, 12.5px);
+  font-weight: 700;
+  line-height: 1.15;
+  cursor: pointer;
+}
+
+.thap-diff-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.thap-diff-pill.on {
+  background: linear-gradient(180deg, #ffe066 0%, #f08c00 100%);
+  border-color: #fff3bf;
+  color: #261200;
+  box-shadow: 0 2px 8px rgba(240, 140, 0, 0.45);
+}
+
+.thap-title-menu button.thap-glossy-btn {
+  position: relative;
+  width: clamp(168px, 44%, 235px);
+  aspect-ratio: 227 / 46;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent url('/database-miraginewar/ui/logo_unit.png') center / 100% 100% no-repeat;
+  color: #2b1200;
+  font-size: clamp(11px, 1.8vw, 14.5px);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 0 rgba(255, 245, 204, 0.72);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.58));
+  transition: transform 0.12s ease, filter 0.15s ease;
+}
+
+.thap-title-menu button.thap-glossy-btn:not(:disabled):hover {
+  transform: translateY(-1px) scale(1.03);
+  border: 0;
+  background-color: transparent;
+  filter: brightness(1.08) drop-shadow(0 6px 14px rgba(255, 200, 60, 0.42));
+}
+
+.thap-title-menu button.thap-glossy-btn:not(:disabled):active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.thap-title-menu button.thap-glossy-btn.secondary {
+  width: clamp(142px, 38%, 198px);
+  border: 0;
+  background-color: transparent;
+  color: #2b1200;
+  font-weight: 900;
+  font-size: clamp(10.5px, 1.6vw, 13px);
+  filter: saturate(0.86) brightness(0.96) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.52));
+}
+
+.thap-title-menu button.thap-glossy-btn.secondary:not(:disabled):hover {
+  border: 0;
+  background-color: transparent;
+  filter: brightness(1.08) drop-shadow(0 6px 14px rgba(255, 200, 60, 0.42));
+}
+
+.thap-title-footer {
+  position: absolute;
+  right: 2.4%;
+  bottom: 2%;
+  z-index: 2;
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+.thap-title-footer img {
+  height: clamp(18px, 4.4%, 30px);
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* ---------- 5. Classic 4:3 Tutorial Modal + 16-Unit Almanac ---------- */
+.thap-tutorial-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  background: rgba(6, 10, 18, 0.8);
+  backdrop-filter: blur(4px);
+  overflow-y: auto;
+}
+
+.thap-tutorial-modal {
+  width: min(820px, 100%);
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--hud-panel);
+  border: 1.5px solid var(--hud-gold);
+  color: var(--hud-text);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.65);
+}
+
+.thap-tutorial-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.thap-tutorial-head h2 {
+  margin: 0;
+  font-size: 16.5px;
+  font-weight: 800;
+  color: #ffe066;
+}
+
+.thap-tutorial-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.thap-tutorial-board {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 212, 59, 0.42);
+  background: #1f1e18 url('/database-miraginewar/ui/tutorial_bg.jpg') center / 100% 100% no-repeat;
+}
+
+.thap-tutorial-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+  pointer-events: none;
+}
+
+.thap-tutorial-cols {
+  position: absolute;
+  inset: 0;
+}
+
+/* Aligned over Orange Left & Blue Right panels of tutorial_bg.jpg */
+.thap-tutorial-col {
+  position: absolute;
+  top: 11.5%;
+  height: 72.5%;
+  width: 31%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.thap-tutorial-col.left {
+  left: 9.5%;
+}
+
+.thap-tutorial-col.right {
+  right: 9.5%;
+}
+
+.thap-tutorial-col-head {
+  height: 12%;
+  min-height: 24px;
+  display: grid;
+  place-items: center;
+  padding: 0 6px;
+  font-size: clamp(10.5px, 1.6vw, 14px);
+  font-weight: 900;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+.thap-tutorial-col-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: rgba(247, 242, 228, 0.88);
+  color: #1f1a14;
+  font-size: clamp(10.5px, 1.35vw, 12.5px);
+  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.thap-tutorial-col-body ul {
+  margin: 0;
+  padding-left: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* Interactive 16-Unit Almanac (a{id}.png vs b{id}.png) */
+.thap-almanac {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(10, 14, 24, 0.75);
+  border: 1px solid var(--hud-line);
+}
+
+.thap-almanac-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.thap-almanac-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.thap-almanac-item {
+  width: 100%;
+  min-width: 0;
+  padding: 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--hud-line);
+  color: var(--hud-text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.thap-almanac-item:hover,
+.thap-almanac-item.on {
+  border-color: #ffe066;
+  background: rgba(255, 212, 59, 0.14);
+}
+
+.thap-almanac-sprites {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.thap-almanac-sprites img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
+}
+
+.thap-almanac-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.thap-almanac-meta {
+  font-size: 10.5px;
+  color: #ffe066;
+  font-weight: 700;
+}
+
+.thap-almanac-detail {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 212, 59, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+
+/* ---------- 6. Victory / Defeat Result Modal ---------- */
+.thap-result-backdrop,
 .thap-end {
-  position: absolute; inset: 0; display: grid; place-items: center; padding: 16px;
-  background: rgba(6, 10, 18, 0.55); backdrop-filter: blur(3px); z-index: 4;
+  position: fixed;
+  inset: 0;
+  z-index: 28;
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  background: rgba(6, 10, 18, 0.7);
+  backdrop-filter: blur(4px);
 }
+
+.thap-result-modal,
 .thap-end-card {
-  width: min(500px, 100%); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 22px;
-  background: rgba(16, 22, 36, 0.96); border: 1px solid var(--hud-gold); border-radius: 16px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+  width: min(540px, 100%);
+  max-height: calc(100dvh - 28px);
+  overflow-y: auto;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: rgba(14, 20, 34, 0.96);
+  border: 1.5px solid var(--hud-gold);
+  color: var(--hud-text);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-.thap-end-banner { display: flex; justify-content: center; margin-bottom: 10px; }
-.thap-end-img { max-height: 76px; width: auto; object-fit: contain; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45)); }
-.thap-end-card h2 { color: #e9ecef; }
-.thap-end-card h2.win { color: #ffd43b; }
-.thap-end-list { list-style: none; margin: 14px 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.thap-end-list li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 7px 10px; border-radius: 8px; background: var(--hud-2); font-size: 14px; }
-.thap-end-list li.won { background: rgba(255, 212, 59, 0.14); }
-.thap-end-list li.me { outline: 1.5px solid #ffd43b; }
-.thap-end-list .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.thap-end-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-/* ---------- điện thoại dọc ---------- */
+.thap-result-banner,
+.thap-end-banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Exact 114x161 win.png / lose.png, uncropped */
+.thap-result-img,
+.thap-end-img {
+  width: 114px;
+  height: 161px;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+  flex: none;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
+}
+
+.thap-result-title,
+.thap-end-card h2 {
+  margin: 0;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 800;
+  color: #e9ecef;
+}
+
+.thap-result-title.win,
+.thap-end-card h2.win {
+  color: #ffd43b;
+}
+
+.thap-result-sub {
+  text-align: center;
+  font-size: 13px;
+  color: var(--hud-muted);
+}
+
+/* 2-Column P1 vs Enemy Match Stats Grid */
+.thap-result-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.thap-result-col {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--hud-line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.thap-result-col.red {
+  border-color: rgba(255, 107, 107, 0.45);
+  background: rgba(224, 49, 49, 0.09);
+}
+
+.thap-result-col.blue {
+  border-color: rgba(77, 171, 247, 0.45);
+  background: rgba(28, 126, 214, 0.09);
+}
+
+.thap-result-col h3 {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.thap-result-col.red h3 {
+  color: #ffa8a8;
+}
+
+.thap-result-col.blue h3 {
+  color: #a5d8ff;
+}
+
+.thap-result-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.thap-result-stat-row b {
+  font-variant-numeric: tabular-nums;
+}
+
+.thap-result-actions,
+.thap-end-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+/* ---------- Chat Drawer ---------- */
+.thap-chat {
+  position: absolute;
+  top: 64px;
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  width: min(340px, calc(100vw - 20px));
+  display: flex;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+  z-index: 6;
+  user-select: text;
+  -webkit-user-select: text;
+  touch-action: auto;
+}
+
+.thap-chat > * {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------- 7. Responsive Breakpoints (390x844, 640x480, 1280x720, 1920x1080) ---------- */
 @media (max-width: 760px) {
-  .thap-mini { bottom: auto; left: auto; top: calc(max(8px, env(safe-area-inset-top)) + 48px); right: max(8px, env(safe-area-inset-right)); }
-  .thap-mini canvas { width: 145px !important; height: auto !important; }
-  .thap-scores { top: auto; bottom: 52%; max-height: 28vh; }
-  .thap-bottom { left: 6px; right: 6px; bottom: max(6px, env(safe-area-inset-bottom)); gap: 5px; }
-  .thap-slots { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 3px; }
-  .thap-slot-ico { width: 28px; height: 28px; }
-  .thap-slot-name { font-size: 9.5px; }
-  .thap-slot-cost { font-size: 9.5px; }
-  .thap-slot-inc { display: none; }
-  .thap-slot kbd, .thap-up kbd, .thap-order kbd { display: none; }
-  .thap-unit-inspect { display: none; }
-  .thap-up { padding: 3px 5px; column-gap: 4px; }
-  .thap-up-name { font-size: 10.5px; }
-  .thap-up-ico { font-size: 14px; }
-  .thap-army { padding: 5px; gap: 4px; }
-  .thap-dock { display: none; }
-  .thap-pill { padding: 4px 7px; font-size: 11.5px; }
-  .thap-orders { padding: 5px 6px; }
-  .thap-orders-btns { width: 100%; display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 4px; }
-  .thap-order { padding: 7px 5px; font-size: 11.5px; gap: 3px; justify-content: center; }
-  .thap-orders-state { font-size: 11.5px; }
-  .thap-targets-list { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 420px) {
-  .thap-order svg { display: none; }
+  .thap-top-hud {
+    padding: max(5px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right)) 0 max(6px, env(safe-area-inset-left));
+  }
+
+  .thap-top-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .thap-hud-side.red {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .thap-hud-side.blue {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .thap-wave-clock {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: center;
+    width: 100%;
+    max-width: 340px;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 3px 8px;
+  }
+
+  .thap-clock-face {
+    width: 52px;
+    height: 26px;
+  }
+
+  .thap-clock-num {
+    font-size: 13.5px;
+  }
+
+  .thap-wave-bar-track {
+    flex: 1;
+    min-width: 64px;
+    width: auto;
+    height: 10px;
+  }
+
+  .thap-crystal-row {
+    width: 100%;
+    padding: 3px 6px;
+    gap: 5px;
+  }
+
+  .thap-crystal-ico {
+    width: 17px;
+    height: 25px;
+  }
+
+  .thap-crystal-bar {
+    width: 100%;
+    min-width: 64px;
+    height: 12px;
+  }
+
+  .thap-crystal-label {
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .thap-res-pills {
+    gap: 3px;
+  }
+
+  .thap-pill {
+    padding: 2px 6px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .thap-pill.gold b,
+  .thap-pill.income b,
+  .thap-pill.income-pill b {
+    font-size: 11.5px;
+  }
+
+  .thap-ui-ico {
+    width: 16px;
+    height: 14px;
+  }
+
+  .thap-blue-meta {
+    gap: 3px;
+  }
+
+  .thap-enemy-last {
+    padding: 2px 6px;
+    font-size: 10.5px;
+    gap: 4px;
+  }
+
+  .thap-enemy-last-ico {
+    width: 20px;
+    height: 20px;
+  }
+
+  .thap-top-btns {
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+
+  .thap-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+  }
+
+  .thap-dock {
+    display: none;
+  }
+
+  .thap-bottom {
+    left: 6px;
+    right: 6px;
+    bottom: max(6px, env(safe-area-inset-bottom));
+    gap: 4px;
+  }
+
+  .thap-lane-bar {
+    height: 14px;
+  }
+
+  .thap-army {
+    padding: 5px;
+    gap: 4px;
+  }
+
+  /* Keep .thap-unit-inspect ALWAYS visible and gracefully condensed */
+  .thap-unit-inspect {
+    gap: 6px;
+    padding-bottom: 4px;
+  }
+
+  .thap-inspect-ico {
+    width: 30px;
+    height: 30px;
+  }
+
+  .thap-inspect-title {
+    font-size: 11px;
+    gap: 3px 4px;
+  }
+
+  .thap-tag {
+    padding: 1px 4px;
+    font-size: 9.5px;
+  }
+
+  .thap-inspect-desc {
+    font-size: 10px;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .thap-slots {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .thap-slot {
+    padding: 3px 2px 4px;
+    min-height: 44px;
+  }
+
+  .thap-slot-ico {
+    width: 26px;
+    height: 26px;
+  }
+
+  .thap-slot-name {
+    display: none;
+  }
+
+  .thap-slot kbd,
+  .thap-slot-key {
+    font-size: 8px;
+    padding: 1px 2px;
+    top: 1px;
+    left: 1px;
+  }
+
+  .thap-slot-cost {
+    font-size: 9.5px;
+    right: 2px;
+    bottom: 1px;
+  }
+
+  .thap-slot-inc {
+    display: none;
+  }
+
+  /* Title & Tutorial adaptation for narrow viewports */
+  .thap-title-menu {
+    top: 36%;
+    bottom: 6%;
+    width: 92%;
+    gap: 4px;
+  }
+
+  .thap-diff-pill {
+    padding: 3px 8px;
+    font-size: 10.5px;
+  }
+
+  .thap-title-menu button.thap-glossy-btn {
+    width: min(172px, 48%);
+    font-size: 11px;
+    padding: 0 16px;
+  }
+
+  .thap-title-menu button.thap-glossy-btn.secondary {
+    width: min(152px, 42%);
+    font-size: 10.5px;
+  }
+
+  .thap-tutorial-board {
+    aspect-ratio: auto;
+    background-size: cover;
+  }
+
+  .thap-tutorial-cols {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .thap-tutorial-col,
+  .thap-tutorial-col.left,
+  .thap-tutorial-col.right {
+    position: static;
+    width: 100%;
+    height: auto;
+  }
+
+  .thap-tutorial-col-head {
+    height: auto;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 12.5px;
+  }
+
+  .thap-tutorial-col.left .thap-tutorial-col-head {
+    background: linear-gradient(180deg, #e86b35, #c44a1c);
+  }
+
+  .thap-tutorial-col.right .thap-tutorial-col-head {
+    background: linear-gradient(180deg, #32a8df, #1971a8);
+  }
+
+  .thap-almanac-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .thap-result-stats {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* điện thoại xoay ngang */
-@media (max-height: 560px) and (min-width: 761px) {
-  .thap-mini canvas { width: 155px !important; height: auto !important; }
-  .thap-bottom { left: calc(max(10px, env(safe-area-inset-left)) + 170px); gap: 4px; }
-  .thap-army { padding: 4px 6px; gap: 3px; }
-  .thap-unit-inspect { display: none; }
-  .thap-slots { gap: 3px; }
-  .thap-slot { padding: 2px; }
-  .thap-slot-ico { width: 26px; height: 26px; }
-  .thap-slot-name { font-size: 9.5px; }
-  .thap-slot kbd, .thap-order kbd { display: none; }
-  .thap-pill { padding: 3px 7px; font-size: 11.5px; }
-  .thap-orders { padding: 4px 8px; }
-  .thap-order { padding: 5px 8px; font-size: 12px; }
-  .thap-scores, .thap-chat { top: 46px; }
-  .thap-scores { max-height: calc(100% - 56px); }
+/* Compact Vertical Viewports (e.g. 640x480 Flash & landscape phones) */
+@media (max-height: 560px) {
+  .thap-top-hud {
+    padding: max(4px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
+  }
+
+  .thap-crystal-row {
+    padding: 2px 6px;
+  }
+
+  .thap-crystal-ico {
+    width: 16px;
+    height: 22px;
+  }
+
+  .thap-crystal-bar {
+    height: 11px;
+  }
+
+  .thap-pill {
+    padding: 2px 6px;
+    font-size: 11px;
+  }
+
+  .thap-wave-clock {
+    padding: 2px 8px 4px;
+    gap: 3px;
+  }
+
+  .thap-clock-face {
+    width: 50px;
+    height: 25px;
+  }
+
+  .thap-clock-num {
+    font-size: 13px;
+  }
+
+  .thap-wave-bar-track {
+    height: 9px;
+  }
+
+  .thap-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .thap-bottom {
+    bottom: max(4px, env(safe-area-inset-bottom));
+    gap: 3px;
+  }
+
+  .thap-lane-bar {
+    height: 13px;
+  }
+
+  .thap-army {
+    padding: 4px 6px;
+    gap: 3px;
+  }
+
+  /* Still NEVER display:none on .thap-unit-inspect; condense to single compact strip */
+  .thap-unit-inspect {
+    gap: 6px;
+    padding-bottom: 3px;
+  }
+
+  .thap-inspect-ico {
+    width: 28px;
+    height: 28px;
+  }
+
+  .thap-inspect-meta {
+    gap: 1px;
+  }
+
+  .thap-inspect-title {
+    font-size: 11px;
+    gap: 3px;
+  }
+
+  .thap-tag {
+    padding: 0 4px;
+    font-size: 9.5px;
+  }
+
+  .thap-inspect-desc {
+    display: none;
+  }
+
+  .thap-slots {
+    gap: 3px;
+  }
+
+  .thap-slot {
+    padding: 2px;
+    min-height: 36px;
+  }
+
+  .thap-slot-ico {
+    width: 24px;
+    height: 24px;
+  }
+
+  .thap-slot-name {
+    display: none;
+  }
+
+  .thap-slot-cost {
+    font-size: 9px;
+  }
+
+  .thap-result-img,
+  .thap-end-img {
+    width: auto;
+    height: 96px;
+    aspect-ratio: 114 / 161;
+  }
+
+  .thap-chat {
+    top: 46px;
+  }
 }
 
-/* ---------- phòng chờ & Menu Miragine War nguyên bản ---------- */
+/* ---------- Lobby Shared Miragine Preview Cards ---------- */
 .thap-seat-team {
-  display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; margin: 2px 2px 0 0; border-radius: 999px; border: 1.5px solid;
-  font-size: 11.5px; font-weight: 600; white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  margin: 2px 2px 0 0;
+  border-radius: 999px;
+  border: 1.5px solid;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
 }
-.thap-seat-team i, .thap-team-pick i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-.thap-team-pick { display: inline-flex; align-items: center; gap: 5px; border-width: 2px; }
+
+.thap-seat-team i,
+.thap-team-pick i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.thap-team-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-width: 2px;
+}
 
 .miragine-lobby-hero {
-  position: relative; border-radius: 12px; overflow: hidden; margin-bottom: 10px;
-  border: 1.5px solid rgba(255, 212, 59, 0.55); background: #141824;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  border: 1.5px solid rgba(255, 212, 59, 0.55);
+  background: #141824;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
+
 .miragine-lobby-banner {
-  width: 100%; max-height: 185px; object-fit: cover; object-position: center 22%; display: block;
+  width: 100%;
+  max-height: 185px;
+  object-fit: cover;
+  object-position: center 22%;
+  display: block;
 }
+
 .miragine-lobby-overlay {
-  display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
-  padding: 10px 12px; background: linear-gradient(180deg, rgba(16, 20, 32, 0.92), rgba(10, 14, 24, 0.98));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(16, 20, 32, 0.92), rgba(10, 14, 24, 0.98));
   color: #f8f9fa;
 }
-.miragine-lobby-overlay b { color: #ffd43b; font-size: 14.5px; }
-.miragine-lobby-overlay .muted { color: #ced4da; margin: 2px 0 0; }
+
+.miragine-lobby-overlay b {
+  color: #ffd43b;
+  font-size: 14.5px;
+}
+
+.miragine-lobby-overlay .muted {
+  color: #ced4da;
+  margin: 2px 0 0;
+}
 
 .miragine-menu-modal {
-  display: flex; flex-direction: column; gap: 12px; max-height: 75vh; overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 75vh;
+  overflow-y: auto;
 }
+
 .miragine-menu-hero {
-  display: flex; flex-direction: column; gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-.miragine-title-img, .miragine-tutorial-img {
-  width: 100%; height: auto; border-radius: 10px; border: 1px solid rgba(255, 212, 59, 0.45); display: block;
+
+.miragine-title-img,
+.miragine-tutorial-img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 212, 59, 0.45);
+  display: block;
 }
-.miragine-menu-rules {
-  padding: 10px 14px; border-radius: 10px; background: rgba(20, 26, 40, 0.08);
-  border: 1px solid rgba(128, 128, 128, 0.25); font-size: 13.5px;
-}
-.miragine-menu-rules ul { margin: 6px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
