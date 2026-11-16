@@ -6,10 +6,11 @@ import type { LinkRoomView } from './link';
 import type { LotoRoomView } from './loto';
 import type { ThapRoomView } from './thap';
 import type { BansungRoomView } from './bansung';
+import type { TwRoomView } from './tw';
 
 export type Phase = 'lobby' | 'playing' | 'ended';
 
-export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire' | 'link_duel' | 'loto' | 'thap_hung' | 'bansung';
+export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire' | 'link_duel' | 'loto' | 'thap_hung' | 'total_war' | 'bansung';
 
 export const GAME_MODES: Record<
   GameMode,
@@ -64,12 +65,20 @@ export const GAME_MODES: Record<
     desc: 'Mua 1 tờ 50 xu hoặc 2 tờ 100 xu (đủ 90 số). Máy gọi số mỗi 5 giây – ai đủ 5 số một hàng ngang trước là KINH, ăn cả hũ!',
   },
   thap_hung: {
-    name: 'Miragine War (Solo 10 Người)',
+    name: 'Miragine War',
     shortName: 'Miragine War',
     emoji: '⚔️🔮',
     minPlayers: 1,
-    maxPlayers: 10,
-    desc: 'Miragine War 10 người realtime trên map rộng: 16 binh chủng nguyên bản (Giáp Nhẹ / Giáp Nặng), nhận lương mỗi 30 giây, Hành Quân Tấn Công Chỉ Định & Phòng Thủ, Solo 10 người hỗn chiến hoặc Co-op!',
+    maxPlayers: 2,
+    desc: 'Miragine War cổ điển 1P vs AI hoặc 1v1 PvP: chọn 1 trong 16 binh chủng nguyên bản (Giáp Nhẹ / Giáp Nặng), tự động xuất quân từ Cổng Triệu Hồi mỗi 30 giây để phá hủy Pha Lê Chính của đối phương!',
+  },
+  total_war: {
+    name: 'Tam Quốc Toàn Chiến (Total War 3K)',
+    shortName: 'Tam Quốc TW',
+    emoji: '🐉⚔️',
+    minPlayers: 1,
+    maxPlayers: 8,
+    desc: 'Đại chiến chiến thuật thời gian thực Total War: Three Kingdoms (1–8 Chư Hầu): điều binh kéo đội hình hàng ngàn binh sĩ, phục kích Rừng Thông, Thương Lâm khắc Kỵ, Mưa Tên Đỏ & Đơn Đấu Danh Tướng Ngũ Hành!',
   },
   bansung: {
     name: 'Bắn Súng Co-op (Soul & Steel)',
@@ -272,6 +281,8 @@ export interface RoomView {
   thap?: ThapRoomView;
   /** Bắn Súng Co-op (từng nhịp gửi riêng qua 'bansung:frame') */
   bansung?: BansungRoomView;
+  /** Tam Quốc Toàn Chiến (từng nhịp gửi riêng qua 'tw:frame') */
+  tw?: TwRoomView;
   /** Thưởng xu từng người sau ván */
   payouts?: Record<string, number>;
 }
