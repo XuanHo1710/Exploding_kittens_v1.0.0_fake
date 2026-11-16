@@ -85,7 +85,7 @@ export const GAME_MODES: Record<
     shortName: 'Bắn Súng',
     emoji: '🔫💥',
     minPlayers: 1,
-    maxPlayers: 4,
+    maxPlayers: 10,
     desc: 'Co-op bắn súng sinh tồn 2.5D kiểu Soul Knight × Miragine War: 4 lớp nhân vật, nâng cấp kỹ năng & tiến hóa vũ khí, Boss săn mồi liên hoàn, lướt né, choáng & hồi sinh đồng đội.',
   },
 };

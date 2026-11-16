@@ -342,8 +342,10 @@ export class Game {
         Math.max(
           2,
           this.players.length,
-          resolved === 'tien_len' || resolved === 'bansung'
+          resolved === 'tien_len'
             ? 4
+            : resolved === 'bansung'
+              ? GAME_MODES.bansung.maxPlayers
             : resolved === 'total_war'
               ? TW_MAX_PLAYERS
               : resolved === 'thap_hung'

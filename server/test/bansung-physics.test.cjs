@@ -194,7 +194,7 @@ function findFxTuple(fx, fxType) {
 test('T01.1: shared mode/config normalization, aim quantization & 3-biome arena layouts (6336x4032)', () => {
   assert.equal(BANSUNG_MODE_ID, 'bansung');
   assert.equal(GAME_MODES.bansung.minPlayers, 1);
-  assert.equal(GAME_MODES.bansung.maxPlayers, 4);
+  assert.equal(GAME_MODES.bansung.maxPlayers, 10);
   assert.equal(BANSUNG_MAP_W, 6336);
   assert.equal(BANSUNG_MAP_H, 4032);
   assert.equal(BANSUNG_ARENA_W, 6336);

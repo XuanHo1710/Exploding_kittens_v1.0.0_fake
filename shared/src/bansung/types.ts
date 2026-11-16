@@ -30,7 +30,7 @@ export const BANSUNG_TICK_MS = Math.round(1000 / BANSUNG_TICK_HZ);
 export const BANSUNG_TICK_EXACT_MS = 1000 / BANSUNG_TICK_HZ;
 
 export const BANSUNG_MAX_PLAYERS = 10;
-export const BANSUNG_LOBBY_MAX_PLAYERS = 4;
+export const BANSUNG_LOBBY_MAX_PLAYERS = 10;
 export const BANSUNG_MAX_BOTS = 4;
 
 export const BANSUNG_ARENA_W = 6336;

@@ -314,7 +314,7 @@ test('1a. normalizeGameMode & Game bansung lobby/config/hero/start/dispose lifec
   assert.equal(normalizeGameMode('  bansung  '), 'bansung');
   assert.equal(normalizeGameMode('unknown_mode'), undefined);
   assert.equal(GAME_MODES.bansung.minPlayers, 1);
-  assert.equal(GAME_MODES.bansung.maxPlayers, 4);
+  assert.equal(GAME_MODES.bansung.maxPlayers, 10);
 
   const game = new Game('LOBBY1', noHooks, undefined, 'bansung');
   t.after(() => game.dispose());

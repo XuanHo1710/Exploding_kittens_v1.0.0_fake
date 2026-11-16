@@ -146,19 +146,19 @@ export default function Rules({ rules: suppliedRules, playerCount: suppliedPlaye
           </section>
           <section>
             <h3 className="rules-sec-title">
-              🔫 Luật Bắn Súng Co-op (Soul &amp; Steel — 1–4 Người)
+              🔫 Luật Bắn Súng Co-op (Soul &amp; Steel — 1–10 Người)
             </h3>
             <ul>
-              <li><b>Đấu trường 6336×4032 &amp; Lớp nhân vật:</b> Chơi đơn hoặc Co-op tối đa 4 người (hỗ trợ thêm tối đa 4 đồng đội AI) trên bản đồ mở rộng <b>6336×4032 px</b> (132×84 ô, 12 cổng quái quanh biên &amp; 5 bệ vũ khí) qua 3 vùng: <b>Sa Mạc (Desert Ruins)</b>, <b>Hầm Mộ Đỏ (Crimson Crypt)</b> và <b>Phòng Thí Nghiệm (Cyber Lab)</b>. Chọn 1 trong 4 lớp: <b>Mascot Gunner</b> (Súng Trường), <b>Cyber Ranger</b> (Tiểu Liên, lướt nhanh), <b>Pyromancer</b> (Súng Plasma, năng lượng cao), <b>Knight</b> (Shotgun, máu &amp; giáp dày).</li>
+              <li><b>Đấu trường 6336×4032 &amp; Lớp nhân vật:</b> Chơi đơn hoặc Co-op tối đa 10 người (hỗ trợ thêm tối đa 4 đồng đội AI) trên bản đồ mở rộng <b>6336×4032 px</b> (132×84 ô, 12 cổng quái quanh biên &amp; 5 bệ vũ khí) qua 3 vùng: <b>Sa Mạc (Desert Ruins)</b>, <b>Hầm Mộ Đỏ (Crimson Crypt)</b> và <b>Phòng Thí Nghiệm (Cyber Lab)</b>. Chọn 1 trong 4 lớp: <b>Mascot Gunner</b> (Súng Trường), <b>Cyber Ranger</b> (Tiểu Liên, lướt nhanh), <b>Pyromancer</b> (Súng Plasma, năng lượng cao), <b>Knight</b> (Shotgun, máu &amp; giáp dày).</li>
               <li><b>Sinh Tồn (Mặc Định) &amp; 10 Đợt Cổ Điển:</b>
                 <ul>
                   <li><b>Sinh Tồn (Mặc Định):</b> Trụ vững giữa các đợt quái và Boss ngày càng hung hãn trên chiến trường lớn. Hạ quái nhặt Ngọc XP để lên cấp, mở khóa thẻ nâng cấp Gacha và tiến hóa vũ khí để chống chọi trước làn sóng quái biến dị leo thang vô tận.</li>
                   <li><b>10 Đợt Cổ Điển:</b> Vượt 10 đợt (Mini-Boss Đợt 4, Thủ Cổng / Trạm Tiếp Tế / Pháo Kích Đợt 5–7, Trùm Cuối Đợt 10, chọn <b>1 trong 3 Perk</b> sau đợt 2, 4, 6, 8, kèm tùy chọn Vô Tận).</li>
                 </ul>
               </li>
-              <li><b>Farm XP Lên Cấp · Hộp Gacha 3 Thẻ &amp; Tiến Hóa Súng (Mk.I → Mk.IV):</b> Quái bị hạ rơi <b>Ngọc XP</b> (tự hút và chia sẻ 40% XP cộng hưởng cho đồng đội trong bán kính 600px). Mỗi lần lên cấp mở <b>Hộp Gacha 3 Thẻ</b> (bấm thẻ hoặc phím <b>1 / 2 / 3</b>) gồm:
+              <li><b>Farm XP Lên Cấp · Hộp Gacha 3 Thẻ &amp; Tiến Hóa Súng (Mk.I → Mk.X):</b> Quái bị hạ rơi <b>Ngọc XP</b> (tự hút và chia sẻ 40% XP cộng hưởng cho đồng đội trong bán kính 600px). Mỗi lần lên cấp mở <b>Hộp Gacha 3 Thẻ</b> (bấm thẻ hoặc phím <b>1 / 2 / 3</b>) gồm:
                 <ul>
-                  <li><b>Tiến Hóa Súng (Mk.I → Mk.II Cường Hóa → Mk.III Thức Tỉnh → Mk.IV Tối Thượng):</b> Nâng cấp súng đang cầm để tăng mạnh sát thương, tốc độ bắn, xuyên thấu, giảm năng lượng tiêu hao và thêm tia đạn / nòng súng phát sáng theo cấp.</li>
+                  <li><b>Tiến Hóa Súng (Mk.I → Mk.II Cường Hóa → Mk.III Thức Tỉnh → Mk.IV Tối Thượng → … → Mk.X Huyền Thoại):</b> Nâng cấp súng đang cầm để tăng mạnh sát thương, tốc độ bắn, xuyên thấu, giảm năng lượng tiêu hao và thêm tia đạn / nòng súng phát sáng theo cấp.</li>
                   <li><b>Thẻ Kỹ Năng Gacha (Phổ Thông → Huyền Thoại):</b> Cộng dồn <b>Sát thương súng</b>, <b>Máu tối đa + Hồi máu &amp; Giáp</b>, <b>Tốc độ bắn &amp; Nạp đạn</b>, <b>Thêm +1 tia đạn</b>, <b>Chí mạng &amp; Xuyên giáp</b>, <b>Tốc chạy &amp; Tầm hút XP</b>.</li>
                 </ul>
               </li>
