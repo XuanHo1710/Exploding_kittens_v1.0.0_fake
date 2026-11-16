@@ -161,7 +161,6 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
   const [chatOpen, setChatOpen] = useState(false);
   const [chatTab, setChatTab] = useState<'chat' | 'log'>('chat');
   const [guideOpen, setGuideOpen] = useState(false);
-  const [shopOpen, setShopOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [scoreboardOpen, setScoreboardOpen] = useState(false);
   const [telemetryOpen, setTelemetryOpen] = useState(false);
@@ -191,7 +190,6 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
   const uiBlockRef = useRef(false);
   const endedRef = useRef(ended);
   const guideOpenRef = useRef(guideOpen);
-  const shopOpenRef = useRef(shopOpen);
   const leaveOpenRef = useRef(leaveOpen);
   const chatOpenRef = useRef(chatOpen);
   const scoreboardOpenRef = useRef(scoreboardOpen);
@@ -208,14 +206,13 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
 
   endedRef.current = ended;
   guideOpenRef.current = guideOpen;
-  shopOpenRef.current = shopOpen;
   leaveOpenRef.current = leaveOpen;
   chatOpenRef.current = chatOpen;
   scoreboardOpenRef.current = scoreboardOpen;
   inputModeRef.current = inputMode;
   reducedMotionRef.current = reducedMotion;
   telemetryOpenRef.current = telemetryOpen;
-  uiBlockRef.current = ended || guideOpen || leaveOpen || shopOpen;
+  uiBlockRef.current = ended || guideOpen || leaveOpen;
 
   const sendCmd = useCallback(
     (cmd: BansungCommand) => {
@@ -372,7 +369,6 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
           setChatOpen((open) => !open);
         } else if (action === 'escape') {
           if (guideOpenRef.current) setGuideOpen(false);
-          else if (shopOpenRef.current) setShopOpen(false);
           else if (leaveOpenRef.current) setLeaveOpen(false);
           else if (chatOpenRef.current) setChatOpen(false);
           else if (scoreboardOpenRef.current) setScoreboardOpen(false);
@@ -390,12 +386,7 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
 
     const onWindowKey = (e: KeyboardEvent) => {
       if (isTextInputEl(e.target) || e.repeat) return;
-      if (e.code === 'KeyB' || e.key === 'b' || e.key === 'B') {
-        if (!endedRef.current) {
-          e.preventDefault();
-          setShopOpen((v) => !v);
-        }
-      } else if (e.code === 'F3') {
+      if (e.code === 'F3') {
         e.preventDefault();
         setTelemetryOpen((v) => !v);
       } else if (!aliveRef.current && (e.key === '[' || e.key === ']')) {
@@ -624,10 +615,6 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
     setGuideOpen((v) => !v);
   }, []);
 
-  const handleToggleShop = useCallback(() => {
-    setShopOpen((v) => !v);
-  }, []);
-
   const handleOpenLeave = useCallback(() => {
     setLeaveOpen(true);
   }, []);
@@ -668,19 +655,16 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
 
   // Reset held keys/buttons when modal/draft overlay or post-game ends active play
   useEffect(() => {
-    if (ended && shopOpen) {
-      setShopOpen(false);
-    }
-    if (ended || guideOpen || leaveOpen || shopOpen || hasDraftOverlay) {
+    if (ended || guideOpen || leaveOpen || hasDraftOverlay) {
       bansungInput.resetAll();
     }
-  }, [ended, guideOpen, leaveOpen, shopOpen, hasDraftOverlay]);
+  }, [ended, guideOpen, leaveOpen, hasDraftOverlay]);
 
   const rootClasses = [
     'bs-game',
     inputMode === 'touch' ? 'bs-game--touch' : inputMode === 'desktop' ? 'bs-game--desktop' : '',
     chatOpen ? 'bs-chat-open' : '',
-    !ended && !guideOpen && !leaveOpen && !shopOpen && !hasDraftOverlay && isAliveLocal && !isDownedLocal && !touchUi
+    !ended && !guideOpen && !leaveOpen && !hasDraftOverlay && isAliveLocal && !isDownedLocal && !touchUi
       ? 'bs-cursor-none'
       : specInfo.active && !ended
         ? 'bs-cursor-spec'
@@ -829,11 +813,9 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
         unreadChat={unread}
         chatOpen={chatOpen}
         guideOpen={guideOpen}
-        shopOpen={shopOpen}
         ended={ended}
         onToggleChat={handleToggleChat}
         onToggleGuide={handleToggleGuide}
-        onToggleShop={handleToggleShop}
         onLeave={handleOpenLeave}
         onPing={handlePing}
         onSpectate={handleSpectate}
@@ -847,8 +829,6 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
           onCommand={sendCmd}
           showReloadBar={false}
           showGachaModal={!ended}
-          shopOpen={shopOpen}
-          onToggleShop={handleToggleShop}
         />
       )}
 
@@ -951,7 +931,6 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
                   <th className="num">Hạ</th>
                   <th className="num">ST</th>
                   <th className="num">Hồi sinh</th>
-                  <th className="num">Xu</th>
                 </tr>
               </thead>
               <tbody>
@@ -1016,7 +995,6 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
                       <td className="num">{isMe && me ? me.kills : '-'}</td>
                       <td className="num">{isMe && me ? Math.round(me.damage).toLocaleString('vi-VN') : '-'}</td>
                       <td className="num">{isMe && me ? me.revives : '-'}</td>
-                      <td className="num">{isMe && me ? me.coins : '-'}</td>
                     </tr>
                   );
                 })}

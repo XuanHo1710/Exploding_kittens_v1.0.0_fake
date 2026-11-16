@@ -3730,9 +3730,6 @@ export class BansungWorld implements BotWorldView {
           p.gadgetSlot.charges = Math.min(maxCharges, Math.max(1, p.gadgetSlot.charges + 1));
           p.gadgetSlot.cdTicksLeft = 0;
         }
-        if (out.waveClear.bonusCoins > 0) {
-          p.coins += out.waveClear.bonusCoins;
-        }
         p.armor = p.shield;
         this.syncWeaponAndHeroState(p);
       }
@@ -4369,107 +4366,11 @@ export class BansungWorld implements BotWorldView {
     return true;
   }
 
+  /** Đã bỏ shop xu trong trận: súng chỉ nâng cấp qua Gacha khi lên cấp. */
   private handleShopCommand(
-    p: BansungRuntimePlayer,
-    cmd: Extract<BansungCommand, { t: 'shop' }>,
+    _p: BansungRuntimePlayer,
+    _cmd: Extract<BansungCommand, { t: 'shop' }>,
   ): boolean {
-    if (p.left || p.life !== 'alive' || p.downed) return false;
-
-    if (cmd.op === 'supply_heal') {
-      if (p.coins < BANSUNG_SUPPLY_HEAL_COST) return false;
-      p.coins -= BANSUNG_SUPPLY_HEAL_COST;
-      p.hp = p.maxHp;
-      p.shield = p.maxShield;
-      p.armor = p.shield;
-      p.energy = p.maxEnergy;
-      p.weaponState.energy = p.energy;
-      if (p.gadgetSlot) {
-        const maxCharges = BANSUNG_GADGETS[p.gadgetSlot.id].maxCharges;
-        p.gadgetSlot.charges = Math.min(maxCharges, p.gadgetSlot.charges + 1);
-        p.gadgetSlot.cdTicksLeft = 0;
-      }
-      this.syncWeaponAndHeroState(p);
-      this.fx.push(FX_STATUS, p.idx, BANSUNG_FX_STATUS_GACHA, 1, Math.round(p.x), Math.round(p.y));
-      this.logs.push(`${p.name} mua tiếp tế hồi đầy HP, Khiên & Năng lượng (-${BANSUNG_SUPPLY_HEAL_COST} xu).`);
-      this.hooks.changed();
-      return true;
-    }
-
-    if (cmd.op === 'upgrade_active') {
-      const targetSlot =
-        cmd.slotIdx !== undefined && cmd.slotIdx >= 0 && cmd.slotIdx < BANSUNG_MAX_WEAPON_SLOTS
-          ? cmd.slotIdx
-          : p.weaponState.activeSlot;
-      const slotObj = p.weaponState.slots[targetSlot];
-      if (!slotObj) return false;
-      const curTier = Math.max(1, slotObj.tier ?? 1);
-      if (curTier >= BANSUNG_WEAPON_MAX_TIER) return false;
-      const cost = getWeaponUpgradeCoinCost(curTier);
-      if (cost <= 0 || p.coins < cost) return false;
-      const up = upgradeHeroWeaponTier(p.weaponState, targetSlot);
-      if (!up.ok) return false;
-
-      p.coins -= cost;
-      const spec = getWeaponSpec(slotObj.weaponId);
-      if (spec.magSize > 0) {
-        slotObj.ammoInMag = spec.magSize;
-      }
-      if (p.weaponState.reload && p.weaponState.reload.slot === targetSlot) {
-        p.weaponState.reload = null;
-      }
-      p.slots = buildWeaponSlotsSnapshot(p.weaponState);
-      recomputeHeroStats(p);
-      p.armor = p.shield;
-      p.maxArmor = p.maxShield;
-      this.syncWeaponAndHeroState(p);
-      this.fx.push(
-        FX_STATUS,
-        p.idx,
-        BANSUNG_FX_STATUS_GACHA,
-        slotObj.tier ?? up.toTier,
-        Math.round(p.x),
-        Math.round(p.y),
-      );
-      this.logs.push(`${p.name} nâng cấp ${spec.vnName || spec.name} lên Mk.${up.toTier} (-${cost} xu).`);
-      this.hooks.changed();
-      return true;
-    }
-
-    if (cmd.op === 'buy_weapon' && cmd.weaponId) {
-      const spec = getWeaponSpec(cmd.weaponId);
-      if (!spec) return false;
-      // Do not overwrite/duplicate an already-owned weapon
-      if (p.weaponState.slots.some((s) => s?.weaponId === cmd.weaponId)) return false;
-      const cost = getWeaponShopPrice(cmd.weaponId);
-      if (p.coins < cost) return false;
-
-      let targetSlot =
-        cmd.slotIdx !== undefined && cmd.slotIdx >= 0 && cmd.slotIdx < BANSUNG_MAX_WEAPON_SLOTS
-          ? cmd.slotIdx
-          : p.weaponState.slots.findIndex((s) => s === null);
-      if (targetSlot < 0) targetSlot = p.weaponState.activeSlot;
-
-      const equipped = equipWeaponInSlot(p.weaponState, targetSlot, cmd.weaponId);
-      if (!equipped) return false;
-
-      p.coins -= cost;
-      p.weaponState.activeSlot = targetSlot;
-      p.slotIdx = targetSlot;
-      p.slots = buildWeaponSlotsSnapshot(p.weaponState);
-      this.syncWeaponAndHeroState(p);
-      this.fx.push(
-        FX_STATUS,
-        p.idx,
-        BANSUNG_FX_STATUS_GACHA,
-        equipped.tier ?? 1,
-        Math.round(p.x),
-        Math.round(p.y),
-      );
-      this.logs.push(`${p.name} mua ${spec.vnName || spec.name} (-${cost} xu).`);
-      this.hooks.changed();
-      return true;
-    }
-
     return false;
   }
 

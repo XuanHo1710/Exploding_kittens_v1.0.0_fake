@@ -1660,10 +1660,6 @@ export function TopLeftHud({
                 W{wave}/{BANSUNG_TOTAL_WAVES}
               </span>
             )}
-            <span className="bs-pill" style={{ color: 'var(--bs-coin)' }}>
-              <Coins size={10} />
-              {fmtCoins(me?.coins ?? 0)}
-            </span>
             <span className="bs-pill" style={{ color: '#ffa8a8' }}>
               <Crosshair size={10} />
               {me?.kills ?? 0}

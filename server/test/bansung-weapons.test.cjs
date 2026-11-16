@@ -1126,16 +1126,16 @@ test('crates & loot tables: HP/armor, 2x dash/explosion prop mult, wave replenis
   // and eviction preserves weapon_pedestal while evicting oldest coins/energy_orbs
   const pmCap = new P.PickupManager({ rng: makeRng(11), obsGrid });
   const ped = pmCap.spawnWeaponPedestal(150, 150, 4, [], { weaponId: 'bazooka' });
-  const anchorCoin = pmCap.spawnPickup('coin', 200, 200);
+  const anchorCoin = pmCap.spawnPickup('energy_orb', 200, 200);
   for (let i = 0; i < 120; i++) {
-    pmCap.spawnPickup(i % 2 === 0 ? 'coin' : 'energy_orb', 300 + (i % 25) * 65, 200 + Math.floor(i / 25) * 65);
+    pmCap.spawnPickup('energy_orb', 300 + (i % 25) * 65, 200 + Math.floor(i / 25) * 65);
   }
   assert.ok(pmCap.pickups.length <= 96, 'pickup pool must enforce 96-cap');
   assert.ok(pmCap.pickups.some((pk) => pk.id === ped.id), '96-cap eviction must never evict weapon_pedestal');
   // Re-ensure an anchor coin exists, fill to 96, then verify merge at capacity
-  const freshCoin = pmCap.spawnPickup('coin', 200, 200);
+  const freshCoin = pmCap.spawnPickup('hp_orb', 200, 200);
   const countBeforeMerge = pmCap.pickups.length;
-  pmCap.spawnPickup('coin', 205, 200);
+  pmCap.spawnPickup('hp_orb', 205, 200);
   assert.equal(countBeforeMerge, 96);
   assert.equal(freshCoin.stack, 2, 'at 96-cap nearby identical pickup merges stack instead of evicting');
 
@@ -1214,7 +1214,7 @@ test('pickups: needs-based magnet, co-op 40% energy resonance (<=450px) & 50% go
   assert.ok(h1.energy > 50, 'collector gains energy');
   assert.ok(h2Near.energy > 40, 'living ally within 450px receives 40% energy resonance');
   assert.equal(h3Far.energy, 40, 'ally > 450px away does NOT receive energy resonance');
-  assert.ok(h1.coins > 0 && h2Near.coins > 0 && h3Far.coins > 0, 'living allies share 50% coin value');
+  assert.ok(h1.coins === 0 && h2Near.coins === 0 && h3Far.coins === 0, 'in-match coins removed: coin drops become XP orbs');
 
   // [E] Pedestal interaction: hero with empty/sidearm slot consumes pedestal; hero with rifle swaps left weapon onto pedestal
   const ped = pm.spawnWeaponPedestal(210, 300, 5, [h1, h2Near], { weaponId: 'bazooka' });
@@ -2171,7 +2171,7 @@ test('T09.4 icon sprite sheet parity, Armory Shop [B] commands & reaper/blizzard
   assert.equal(validateBansungCommand({ t: 'shop', op: 'buy_weapon', weaponId: 'fake_gun' }, { arenaW: 4000, arenaH: 2500, maxPlayers: 4 }).ok, false);
   assert.equal(validateBansungCommand({ t: 'shop', op: 'hack_coins' }, { arenaW: 4000, arenaH: 2500, maxPlayers: 4 }).ok, false);
 
-  // 3. BansungWorld Armory Shop transactions (buy_weapon, upgrade_active, supply_heal)
+  // 3. Armory Shop removed: coin shop commands are no-ops (weapons upgrade only via level-up Gacha)
   const noopHooks = { tick() {}, changed() {}, roomMeta() {}, frame() {}, log() {}, end() {} };
   const world = new BansungWorld(
     [{ id: 'p0', name: 'Buyer', heroId: 'mascot' }],
@@ -2182,29 +2182,16 @@ test('T09.4 icon sprite sheet parity, Armory Shop [B] commands & reaper/blizzard
   t.after(() => world.stop());
   const p = world.players[0];
   p.coins = 1000;
-  const railPrice = S.getWeaponShopPrice('railgun');
-  assert.equal(world.enqueueCommand('p0', { t: 'shop', op: 'buy_weapon', weaponId: 'railgun' }).ok, true);
-  world.step();
-  assert.equal(p.coins, 1000 - railPrice, 'buying weapon deducts canonical shop price');
-  const railSlot = p.weaponState.slots.findIndex((s) => s?.weaponId === 'railgun');
-  assert.ok(railSlot >= 0, 'bought railgun must be equipped into hero slots');
-
-  const coinsBeforeUpg = p.coins;
-  const upgCost = S.getWeaponUpgradeCoinCost(1);
-  assert.equal(world.enqueueCommand('p0', { t: 'shop', op: 'upgrade_active', slotIdx: railSlot }).ok, true);
-  world.step();
-  assert.equal(p.coins, coinsBeforeUpg - upgCost, 'upgrading weapon deducts upgrade coin cost');
-  assert.equal(p.weaponState.slots[railSlot].tier, 2, 'upgraded weapon advances from Mk.1 to Mk.2');
-
+  const tiersBefore = p.weaponState.slots.map((s) => s?.tier ?? 0);
+  world.enqueueCommand('p0', { t: 'shop', op: 'buy_weapon', weaponId: 'railgun' });
+  world.enqueueCommand('p0', { t: 'shop', op: 'upgrade_active', slotIdx: p.weaponState.activeSlot });
   p.hp = 10;
-  p.shield = 5;
-  p.armor = 5;
-  const coinsBeforeHeal = p.coins;
-  assert.equal(world.enqueueCommand('p0', { t: 'shop', op: 'supply_heal' }).ok, true);
+  world.enqueueCommand('p0', { t: 'shop', op: 'supply_heal' });
   world.step();
-  assert.equal(p.coins, coinsBeforeHeal - S.BANSUNG_SUPPLY_HEAL_COST, 'supply_heal deducts 80 xu');
-  assert.equal(p.hp, p.maxHp, 'supply_heal restores full HP');
-  assert.equal(p.shield, p.maxShield, 'supply_heal restores full Shield');
+  assert.equal(p.coins, 1000, 'shop no longer spends coins');
+  assert.ok(!p.weaponState.slots.some((s) => s?.weaponId === 'railgun'), 'shop can no longer buy weapons');
+  assert.deepEqual(p.weaponState.slots.map((s) => s?.tier ?? 0), tiersBefore, 'shop can no longer upgrade weapons');
+  assert.ok(p.hp < p.maxHp, 'shop can no longer sell supply heal');
 
   // 4. reaper_scythe melee lifesteal & blizzard_carbine isEnergy + chill AoE
   const mw = makeWorld();

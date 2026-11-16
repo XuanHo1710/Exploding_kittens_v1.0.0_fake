@@ -1749,6 +1749,9 @@ export class PickupManager {
       spawnLockTicks?: number;
     },
   ): PickupInstance | null {
+    // Đã bỏ cơ chế xu trong trận: xu rơi ra được đổi thành ngọc XP (lên cấp → Gacha nâng súng)
+    if (kind === 'coin') kind = 'xp_orb_s';
+    else if (kind === 'gem_coin') kind = 'xp_orb_m';
     const def = BANSUNG_PICKUPS[kind];
     const clamped = clampPickupPos(x, y, this.obsGrid);
     const stack = clamp(Math.floor(opts?.stack ?? 1), 1, BANSUNG_PICKUP_CONSTS.MAX_STACK);
