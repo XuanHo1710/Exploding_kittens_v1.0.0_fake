@@ -17,8 +17,10 @@ function load(): Settings {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? '{}');
     const theme: Theme = saved.theme === 'dark' ? 'dark' : 'light';
     const sound = typeof saved.sound === 'boolean' ? saved.sound : true;
+    setMuted(!sound);
     return { theme, cardStyle: 'photo', sound };
   } catch {
+    setMuted(!fallback.sound);
     return fallback;
   }
 }

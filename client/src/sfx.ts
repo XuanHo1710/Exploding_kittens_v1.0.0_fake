@@ -3,9 +3,26 @@ export type Sfx = 'crack' | 'thud' | 'kiss' | 'pop' | 'splat' | 'shuffle' | 'tap
 
 let ctx: AudioContext | null = null;
 let muted = false;
+const muteListeners = new Set<(muted: boolean) => void>();
 
 export function setMuted(m: boolean) {
+  if (muted === m) return;
   muted = m;
+  muteListeners.forEach((fn) => {
+    try {
+      fn(m);
+    } catch {
+      /* bỏ qua lỗi của từng bộ âm thanh */
+    }
+  });
+}
+
+/** Đăng ký nhận thông báo ngay khi trạng thái tắt tiếng đổi (tránh lệch thứ tự useEffect cha/con) */
+export function onMuteChange(fn: (muted: boolean) => void) {
+  muteListeners.add(fn);
+  return () => {
+    muteListeners.delete(fn);
+  };
 }
 
 /** Dùng chung AudioContext và trạng thái tắt tiếng cho các bộ âm thanh khác (Nối Thú…) */
