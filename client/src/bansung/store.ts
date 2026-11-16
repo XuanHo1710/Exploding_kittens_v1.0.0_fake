@@ -2452,16 +2452,9 @@ export class BansungStore {
   // Camera, Screen Shake & Spectator Follow Switcher
   // --------------------------------------------------------------------------
 
-  /** Adds trauma camera shake (`shakeMag <= 24`) with optional directional kick. */
-  addShake(trauma: number, dirRad?: number): void {
-    if (!Number.isFinite(trauma) || trauma <= 0) return;
-    const mult = this.cam.mode === 'spectate' ? 0.5 : 1;
-    this.cam.shakeMag = Math.min(24, this.cam.shakeMag + trauma * mult);
-    if (dirRad !== undefined && Number.isFinite(dirRad)) {
-      const kick = Math.min(6, trauma * 0.45) * mult * (this.reducedMotion ? 0.25 : 1);
-      this.cam.x -= Math.cos(dirRad) * kick;
-      this.cam.y -= Math.sin(dirRad) * kick;
-    }
+  /** No-op: screen shake disabled for clean aiming. */
+  addShake(_trauma: number, _dirRad?: number): void {
+    // Screen shake disabled
   }
 
   /** Toggles reduced-motion scaling for camera shake. */
@@ -2710,23 +2703,10 @@ export class BansungStore {
 
     this.clampCamera();
 
-    // Trauma screen shake decay
-    this.cam.shakeMag *= Math.exp(-12 * dtSec);
-    if (this.cam.shakeMag < 0.05) {
-      this.cam.shakeMag = 0;
-      this.cam.shakeX = 0;
-      this.cam.shakeY = 0;
-    } else {
-      const motionScale = this.reducedMotion ? 0.25 : 1;
-      this.cam.shakeX =
-        (Math.sin(now * 0.053) * 0.6 + Math.cos(now * 0.097) * 0.4) *
-        this.cam.shakeMag *
-        motionScale;
-      this.cam.shakeY =
-        (Math.cos(now * 0.061) * 0.6 + Math.sin(now * 0.089) * 0.4) *
-        this.cam.shakeMag *
-        motionScale;
-    }
+    // Screen shake disabled
+    this.cam.shakeMag = 0;
+    this.cam.shakeX = 0;
+    this.cam.shakeY = 0;
   }
 
   private clampCamera(): void {

@@ -46,17 +46,17 @@ export const MOTION_CFG = {
   GUN_IDLE_PRUNE_MS: 2000,
   CAM_STIFFNESS: 260,
   CAM_DAMPING: 24,
-  MAX_CAM_KICK_PX: 22,
-  MAX_SHAKE_PX: 14,
+  MAX_CAM_KICK_PX: 0,
+  MAX_SHAKE_PX: 0,
   TRAUMA_DECAY: 2.4,
   BLAST_TRAUMA_RANGE_PX: 480,
   BLAST_HITSTOP_RANGE_PX: 420,
-  DASH_CAM_KICK_PX: 1.5,
+  DASH_CAM_KICK_PX: 0,
   HITSTOP_CRIT_MS: 30,
   HITSTOP_EXPLOSION_MS: 30,
   HITSTOP_BOSS_MS: 45,
   HITSTOP_COOLDOWN_MS: 140,
-  HITSTOP_TREMOR_PX: 1.5,
+  HITSTOP_TREMOR_PX: 0,
   MOVE_BLOOM_PX: 3.5,
   DASH_BLOOM_PX: 4.0,
   HIT_MARKER_MS: 110,
@@ -107,13 +107,13 @@ export interface WeaponRecoilProfile {
   readonly bloomDecay: number;
 }
 
-/** Canonical d21 weapon recoil & crosshair bloom presets. */
+/** Canonical d21 weapon recoil & crosshair bloom presets (screen shake/cam kick disabled). */
 export const RECOIL_PROFILES: Readonly<Record<RecoilPresetId, WeaponRecoilProfile>> = {
   pistol: {
     kickPx: 4.0,
     muzzleSnapRad: 0.14,
-    camKickPx: 3.0,
-    traumaAdd: 0.06,
+    camKickPx: 0,
+    traumaAdd: 0,
     bloomAdd: 4.5,
     bloomBase: 5,
     bloomMax: 20,
@@ -122,8 +122,8 @@ export const RECOIL_PROFILES: Readonly<Record<RecoilPresetId, WeaponRecoilProfil
   rifle: {
     kickPx: 5.5,
     muzzleSnapRad: 0.11,
-    camKickPx: 4.5,
-    traumaAdd: 0.07,
+    camKickPx: 0,
+    traumaAdd: 0,
     bloomAdd: 3.2,
     bloomBase: 6,
     bloomMax: 22,
@@ -132,8 +132,8 @@ export const RECOIL_PROFILES: Readonly<Record<RecoilPresetId, WeaponRecoilProfil
   smg: {
     kickPx: 3.0,
     muzzleSnapRad: 0.08,
-    camKickPx: 2.2,
-    traumaAdd: 0.04,
+    camKickPx: 0,
+    traumaAdd: 0,
     bloomAdd: 2.6,
     bloomBase: 7,
     bloomMax: 24,
@@ -142,8 +142,8 @@ export const RECOIL_PROFILES: Readonly<Record<RecoilPresetId, WeaponRecoilProfil
   shotgun: {
     kickPx: 11.0,
     muzzleSnapRad: 0.32,
-    camKickPx: 11.0,
-    traumaAdd: 0.24,
+    camKickPx: 0,
+    traumaAdd: 0,
     bloomAdd: 10.0,
     bloomBase: 11,
     bloomMax: 28,
@@ -152,8 +152,8 @@ export const RECOIL_PROFILES: Readonly<Record<RecoilPresetId, WeaponRecoilProfil
   railgun: {
     kickPx: 13.0,
     muzzleSnapRad: 0.28,
-    camKickPx: 14.0,
-    traumaAdd: 0.3,
+    camKickPx: 0,
+    traumaAdd: 0,
     bloomAdd: 8.0,
     bloomBase: 4,
     bloomMax: 22,
@@ -162,8 +162,8 @@ export const RECOIL_PROFILES: Readonly<Record<RecoilPresetId, WeaponRecoilProfil
   launcher: {
     kickPx: 12.0,
     muzzleSnapRad: 0.35,
-    camKickPx: 12.0,
-    traumaAdd: 0.28,
+    camKickPx: 0,
+    traumaAdd: 0,
     bloomAdd: 9.0,
     bloomBase: 8,
     bloomMax: 26,
@@ -172,8 +172,8 @@ export const RECOIL_PROFILES: Readonly<Record<RecoilPresetId, WeaponRecoilProfil
   melee: {
     kickPx: -6.0,
     muzzleSnapRad: 0.0,
-    camKickPx: 2.5,
-    traumaAdd: 0.05,
+    camKickPx: 0,
+    traumaAdd: 0,
     bloomAdd: 0.0,
     bloomBase: 4,
     bloomMax: 10,
@@ -196,8 +196,8 @@ function buildWeaponRecoilProfiles(): Readonly<Record<BansungWeaponId, WeaponRec
       out[id] = {
         kickPx: Number((base.kickPx * ratio).toFixed(2)),
         muzzleSnapRad: Number((base.muzzleSnapRad * ratio).toFixed(3)),
-        camKickPx: Number((base.camKickPx * ratio).toFixed(2)),
-        traumaAdd: Number((base.traumaAdd * ratio).toFixed(3)),
+        camKickPx: 0,
+        traumaAdd: 0,
         bloomAdd: Number((base.bloomAdd * (0.7 + 0.3 * ratio)).toFixed(2)),
         bloomBase: base.bloomBase,
         bloomMax: base.bloomMax,
@@ -206,8 +206,8 @@ function buildWeaponRecoilProfiles(): Readonly<Record<BansungWeaponId, WeaponRec
     } else if (spec.category === 'melee') {
       out[id] = {
         ...RECOIL_PROFILES.melee,
-        camKickPx: spec.camImpulsePx,
-        traumaAdd: spec.id === 'reaper_scythe' ? 0.11 : RECOIL_PROFILES.melee.traumaAdd,
+        camKickPx: 0,
+        traumaAdd: 0,
       };
     } else {
       // plasma_rifle, lightning_staff, arcane_book
@@ -215,8 +215,8 @@ function buildWeaponRecoilProfiles(): Readonly<Record<BansungWeaponId, WeaponRec
       out[id] = {
         kickPx: Math.max(2.5, spec.recoilKickPx),
         muzzleSnapRad: Math.max(0.06, snapRad),
-        camKickPx: Math.max(2.2, spec.camImpulsePx),
-        traumaAdd: 0.06,
+        camKickPx: 0,
+        traumaAdd: 0,
         bloomAdd: id === 'plasma_rifle' ? 2.8 : 2.4,
         bloomBase: 5,
         bloomMax: 20,
@@ -1251,7 +1251,6 @@ export class BansungMotionController {
     tracker.idleMs = 0;
     if (!tracker.active) {
       this.startDashVisual(tracker, x, footY, dirX, dirY, biome, true, nowMs);
-      this.triggerDashCameraKick(tracker.dirX, tracker.dirY);
     }
     return tracker;
   }
@@ -1619,62 +1618,43 @@ export class BansungMotionController {
   // --------------------------------------------------------------------------
 
   /**
-   * Trigger full weapon shot feedback:
+   * Trigger weapon shot feedback:
    * - Gun kickback + rotational muzzle-snap spring for any visible shooter
-   * - Directional camera recoil + trauma^2 shake for local/spectated shooter
    * - Crosshair bloom expansion for local shooter
+   * (Camera kick & trauma screen shake disabled.)
    */
   triggerShotJuice(opts: TriggerShotJuiceOpts): void {
     const nowMs = opts.nowMs ?? nowDefault();
     const profile = resolveWeaponRecoilProfile(opts.weapon);
     this.triggerGunRecoil(opts.entityId, opts.aimRad, opts.weapon, nowMs);
 
-    if (!opts.isLocal && !opts.isSpectated) return;
+    if (!opts.isLocal) return;
 
-    const spectateScale = opts.isLocal ? 1 : 0.5;
-    const motionScale = this.reducedScreenShake ? MOTION_CFG.REDUCED_SHAKE_SCALE : 1;
-    const scale = spectateScale * motionScale;
-
-    this.camera.rvx -= Math.cos(opts.aimRad) * profile.camKickPx * 15 * scale;
-    this.camera.rvy -= Math.sin(opts.aimRad) * profile.camKickPx * 15 * scale;
-    this.camera.trauma = Math.min(1, this.camera.trauma + profile.traumaAdd * scale);
-
-    if (opts.isLocal) {
-      this.activeWeaponProfile = profile;
-      this.crosshair.bloomPx = Math.min(
-        profile.bloomMax,
-        this.crosshair.bloomPx + profile.bloomAdd,
-      );
-    }
+    this.activeWeaponProfile = profile;
+    this.crosshair.bloomPx = Math.min(
+      profile.bloomMax,
+      this.crosshair.bloomPx + profile.bloomAdd,
+    );
   }
 
-  /** Apply `1.5px` directional camera kickoff impulse on dash start (d20 §6). */
-  triggerDashCameraKick(dirX: number, dirY: number, isSpectated = false): void {
-    const len = Math.hypot(dirX, dirY);
-    if (len < 1e-4) return;
-    const scale =
-      (isSpectated ? 0.5 : 1) * (this.reducedScreenShake ? MOTION_CFG.REDUCED_SHAKE_SCALE : 1);
-    this.camera.rvx += (dirX / len) * MOTION_CFG.DASH_CAM_KICK_PX * 15 * scale;
-    this.camera.rvy += (dirY / len) * MOTION_CFG.DASH_CAM_KICK_PX * 15 * scale;
+  /** No-op: directional camera dash kick disabled to prevent screen shake/wobble. */
+  triggerDashCameraKick(_dirX: number, _dirY: number, _isSpectated = false): void {
+    // Screen/camera shake disabled
   }
 
-  /** Add camera trauma `[0..1]` and optional world-space impulse velocity. */
+  /** No-op: camera trauma/impulse disabled to prevent screen shake/wobble. */
   addCameraTrauma(
-    traumaAmount: number,
-    impulseVx = 0,
-    impulseVy = 0,
-    isSpectated = false,
+    _traumaAmount: number,
+    _impulseVx = 0,
+    _impulseVy = 0,
+    _isSpectated = false,
   ): void {
-    const scale =
-      (isSpectated ? 0.5 : 1) * (this.reducedScreenShake ? MOTION_CFG.REDUCED_SHAKE_SCALE : 1);
-    this.camera.trauma = Math.min(1, this.camera.trauma + Math.max(0, traumaAmount) * scale);
-    this.camera.rvx += impulseVx * scale;
-    this.camera.rvy += impulseVy * scale;
+    // Screen/camera shake disabled
   }
 
   /**
-   * Apply distance-attenuated explosion camera impulse, trauma (`480px`),
-   * and optional `30ms`/`45ms` visual hitstop (`420px`) gated by `140ms` cooldown (d21 §§3-4).
+   * Trigger optional `30ms`/`45ms` visual hitstop (`420px`) gated by `140ms` cooldown
+   * on explosions (camera kick & screen shake disabled).
    */
   triggerExplosionJuice(
     bx: number,
@@ -1684,20 +1664,7 @@ export class BansungMotionController {
     nowMs = nowDefault(),
     opts?: TriggerExplosionJuiceOpts,
   ): void {
-    const dx = camX - bx;
-    const dy = camY - by;
-    const dist = Math.hypot(dx, dy);
-    const strength = clamp(opts?.strength ?? 1, 0.2, 2);
-
-    if (dist <= MOTION_CFG.BLAST_TRAUMA_RANGE_PX) {
-      const falloff = clamp(1 - dist / MOTION_CFG.BLAST_TRAUMA_RANGE_PX, 0.15, 1) * strength;
-      const nx = dist > 1e-4 ? dx / dist : 0;
-      const ny = dist > 1e-4 ? dy / dist : -1;
-      const scale = this.reducedScreenShake ? MOTION_CFG.REDUCED_SHAKE_SCALE : 1;
-      this.camera.rvx += nx * 320 * falloff * scale;
-      this.camera.rvy += ny * 320 * falloff * scale;
-      this.camera.trauma = Math.min(1, this.camera.trauma + 0.45 * falloff * scale);
-    }
+    const dist = Math.hypot(camX - bx, camY - by);
 
     if (opts?.triggerHitstop !== false && dist <= MOTION_CFG.BLAST_HITSTOP_RANGE_PX) {
       const dur = opts?.isBossEvent
@@ -1822,21 +1789,16 @@ export class BansungMotionController {
       this.stepCameraSprings(visualDtS);
     }
 
-    // 4. Deterministic trauma^2 shake + hitstop micro-tremor
-    const t = this.camera.visualTimeMs / 1000;
-    const amp = this.camera.trauma * this.camera.trauma * MOTION_CFG.MAX_SHAKE_PX;
-    let sx = amp * Math.sin(t * 73) * Math.cos(t * 41);
-    let sy = amp * Math.cos(t * 67) * Math.sin(t * 53);
-
-    if (this.camera.hitstopRemMs > 0 && !this.reducedScreenShake) {
-      sx += MOTION_CFG.HITSTOP_TREMOR_PX * Math.sin(nowMs * 0.41);
-      sy += MOTION_CFG.HITSTOP_TREMOR_PX * Math.cos(nowMs * 0.53);
-    }
-
-    this.camera.shakeX = sx;
-    this.camera.shakeY = sy;
-    this.camera.offsetX = this.camera.rx + sx;
-    this.camera.offsetY = this.camera.ry + sy;
+    // 4. Screen shake & camera kick disabled
+    this.camera.rx = 0;
+    this.camera.ry = 0;
+    this.camera.rvx = 0;
+    this.camera.rvy = 0;
+    this.camera.trauma = 0;
+    this.camera.shakeX = 0;
+    this.camera.shakeY = 0;
+    this.camera.offsetX = 0;
+    this.camera.offsetY = 0;
   }
 
   private stepDashTrackers(dtS: number, nowMs: number): void {
@@ -2000,40 +1962,12 @@ export class BansungMotionController {
     }
   }
 
-  private stepCameraSprings(dtS: number): void {
-    advanceSpring1D(
-      this.camera.rx,
-      this.camera.rvx,
-      MOTION_CFG.CAM_STIFFNESS,
-      MOTION_CFG.CAM_DAMPING,
-      dtS,
-      -MOTION_CFG.MAX_CAM_KICK_PX,
-      MOTION_CFG.MAX_CAM_KICK_PX,
-      0.02,
-      0.2,
-      SPRING_SCRATCH,
-    );
-    this.camera.rx = SPRING_SCRATCH[0];
-    this.camera.rvx = SPRING_SCRATCH[1];
-
-    advanceSpring1D(
-      this.camera.ry,
-      this.camera.rvy,
-      MOTION_CFG.CAM_STIFFNESS,
-      MOTION_CFG.CAM_DAMPING,
-      dtS,
-      -MOTION_CFG.MAX_CAM_KICK_PX,
-      MOTION_CFG.MAX_CAM_KICK_PX,
-      0.02,
-      0.2,
-      SPRING_SCRATCH,
-    );
-    this.camera.ry = SPRING_SCRATCH[0];
-    this.camera.rvy = SPRING_SCRATCH[1];
-
-    if (this.camera.trauma > 0) {
-      this.camera.trauma = Math.max(0, this.camera.trauma - MOTION_CFG.TRAUMA_DECAY * dtS);
-    }
+  private stepCameraSprings(_dtS: number): void {
+    this.camera.rx = 0;
+    this.camera.rvx = 0;
+    this.camera.ry = 0;
+    this.camera.rvy = 0;
+    this.camera.trauma = 0;
   }
 
   /**

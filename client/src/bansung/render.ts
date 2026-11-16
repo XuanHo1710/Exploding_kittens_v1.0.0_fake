@@ -5375,9 +5375,8 @@ export function renderBansungScene(
   sortItemsLastFrame = 0;
 
   const zoom = clamp(o.cam.zoom || RENDER_CFG.WORLD_ZOOM_BASE, 0.5, 4);
-  const juice = bansungMotion.getCameraJuice();
-  const totalCamX = o.cam.x + o.cam.shakeX + juice.offsetX;
-  const totalCamY = o.cam.y + o.cam.shakeY + juice.offsetY;
+  const totalCamX = o.cam.x;
+  const totalCamY = o.cam.y;
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.imageSmoothingEnabled = false;

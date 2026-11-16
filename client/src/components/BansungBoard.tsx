@@ -526,8 +526,8 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
         x: snapped.x,
         y: snapped.y,
         zoom: snapped.zoom,
-        shakeX: snapped.shakeX,
-        shakeY: snapped.shakeY,
+        shakeX: 0,
+        shakeY: 0,
         flashAlpha: 0,
         flashColor: '#ffffff',
       };
@@ -1144,7 +1144,7 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
                 <span>Tiện ích & Trợ năng</span>
               </div>
               <label className="bs-guide-toggle-row">
-                <span>Giảm rung màn hình & chớp sáng (Reduced Motion)</span>
+                <span>Giảm chớp sáng màn hình (Reduced Motion)</span>
                 <input
                   type="checkbox"
                   checked={reducedMotion}
