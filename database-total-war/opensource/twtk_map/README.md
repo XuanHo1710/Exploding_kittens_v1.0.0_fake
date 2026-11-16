@@ -1,0 +1,47 @@
+# twtk-interactive-map
+
+Total War THREE KINGDOMS Interactive Map.
+
+This map is no longed maintained, the latest versions of the [Three Kingdoms maps](https://twdb.io/three-kingdoms/maps/) are available here:
+* [Rise of the Warlords](https://twdb.io/three-kingdoms/maps/rise-of-the-warlords/)
+* [Mandate of Heaven](https://twdb.io/three-kingdoms/maps/mandate-of-heaven/)
+* [A World Betrayed](https://twdb.io/three-kingdoms/maps/a-world-betrayed/)
+* [Fates Divided](https://twdb.io/three-kingdoms/maps/fates-divided/)
+* [Eight Princes](https://twdb.io/three-kingdoms/maps/eight-princes/)
+
+[View the app here](https://imrz.github.io/twtk-interactive-map)
+
+**Open an issue if you have suggestions/feature requests or problems!**
+
+## Built With
+
+* [React.js](https://reactjs.org)
+* [Leaflet.js](https://leafletjs.com)
+
+## Getting started
+``` bash
+# Install git-lfs
+sudo apt install git-lfs
+
+# Clone the repo
+git clone git@github.com:IMRZ/tww2-twtk-interactive-map.git
+
+# Install dependencies
+npm install
+
+# Runs the app in the development mode.
+npm run start
+```
+
+## Contributors
+* [IMRZ](https://github.com/IMRZ)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+
+## Acknowledgments
+* [Creative Assembly](https://www.creative-assembly.com)
+* [Rusted PackFile Manager](https://github.com/Frodo45127/rpfm)
+* [packfilemanager](https://sourceforge.net/projects/packfilemanager)
+* [johnsirett](https://gitlab.com/johnsirett/ca_vp8-reverse)

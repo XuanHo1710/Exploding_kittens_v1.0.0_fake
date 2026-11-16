@@ -1,0 +1,5594 @@
+{
+  "meta": {
+    "title": "Tam Quốc Toàn Chiến (Total War: Three Kingdoms) — Open-Source Historical & RTS Reference DB",
+    "schemaVersion": "1.0.0",
+    "sources": [
+      {
+        "id": "han_china",
+        "repo": "https://github.com/0ADMods/han_china.git",
+        "commitSha": "8fe9d2834608e32b89bd0f6ddc6943fee97df8bb",
+        "licenses": [
+          "GPL-2.0-or-later",
+          "CC-BY-SA-3.0"
+        ]
+      },
+      {
+        "id": "twtk_map",
+        "repo": "https://github.com/IMRZ/twtk-interactive-map.git",
+        "commitSha": "2a6df04b5cc5836d1e70298da6d3864090b79384",
+        "licenses": [
+          "MIT"
+        ]
+      },
+      {
+        "id": "yuka_steering",
+        "repo": "https://github.com/Mugen87/yuka.git",
+        "commitSha": "10591304811222d6856020d5de129b39ef43b58d",
+        "licenses": [
+          "MIT"
+        ]
+      }
+    ],
+    "counts": {
+      "campaigns": 4,
+      "warlords": 38,
+      "featuredBattlefields": 5,
+      "regions": 201,
+      "hanUnitTemplates": 57,
+      "hanTechnologies": 25,
+      "hanAuras": 16,
+      "hanStructures": 40
+    }
+  },
+  "campaigns": [
+    {
+      "key": "3k_dlc04_start_pos",
+      "year": 182,
+      "titleEn": "Mandate of Heaven",
+      "titleVi": "Thiên Mệnh (182 CN)",
+      "description": "The Han falters and rebellions rise"
+    },
+    {
+      "key": "3k_main_campaign_map",
+      "year": 190,
+      "titleEn": "Rise of the Warlords",
+      "titleVi": "Quần Hùng Trục Lộc (190 CN)",
+      "description": "Dong Zhuo seizes the young emperor"
+    },
+    {
+      "key": "3k_dlc05_start_pos",
+      "year": 194,
+      "titleEn": "A World Betrayed",
+      "titleVi": "Thiên Hạ Phản Bội (194 CN)",
+      "description": "Warlords inherit a world in chaos"
+    },
+    {
+      "key": "8p_start_pos",
+      "year": 291,
+      "titleEn": "Eight Princes",
+      "titleVi": "Loạn Bát Vương (291 CN)",
+      "description": "A divided family battles for the throne"
+    }
+  ],
+  "featuredBattlefields": [
+    {
+      "id": "pingyuan",
+      "nameEn": "Plains of Pingyuan",
+      "nameVi": "Trận Bình Nguyên (191 CN)",
+      "nameZh": "平原",
+      "year": 191,
+      "terrainType": "open_plains_farmland",
+      "linkedRegionKeys": [
+        "3k_main_pingyuan_capital",
+        "3k_main_pingyuan_resource_1"
+      ],
+      "coordinates": {
+        "x": 2273,
+        "y": 2352
+      },
+      "belligerents": [
+        "Lưu Bị (Liu Bei)",
+        "Quân Khăn Vàng / Viên Đàm (Yellow Turbans / Northern Warlords)"
+      ],
+      "historicalSummaryVi": "Vùng đồng bằng trù phú bên bờ Hoàng Hà nơi Lưu Bị nhậm chức Tướng quốc Bình Nguyên cùng Quan Vũ, Trương Phi bảo hộ bá tánh và rèn luyện nghĩa quân.",
+      "historicalSummaryEn": "Fertile northern plains of Qingzhou/Hebei where Liu Bei served as Chancellor of Pingyuan alongside Guan Yu and Zhang Fei."
+    },
+    {
+      "id": "guandu",
+      "nameEn": "Battle of Guandu",
+      "nameVi": "Trận Quan Độ (200 CN)",
+      "nameZh": "官渡之戰",
+      "year": 200,
+      "terrainType": "fortified_river_crossing",
+      "linkedRegionKeys": [
+        "3k_main_yingchuan_resource_1",
+        "3k_main_dongjun_capital",
+        "3k_dlc06_hulao_pass"
+      ],
+      "coordinates": {
+        "x": 2071,
+        "y": 2098
+      },
+      "belligerents": [
+        "Tào Tháo (Cao Cao)",
+        "Viên Thiệu (Yuan Shao)"
+      ],
+      "historicalSummaryVi": "Đại chiến quyết định vận mệnh phương Bắc năm 200 CN: Tào Tháo lấy ít địch nhiều, tập kích đốt kho lương Ô Sào, đại phá đại quân Viên Thiệu.",
+      "historicalSummaryEn": "Decisive 200 CE showdown south of the Yellow River where Cao Cao outmaneuvered Yuan Shao's numerically superior host by burning the Wuchao supply depot."
+    },
+    {
+      "id": "changban",
+      "nameEn": "Battle of Changban",
+      "nameVi": "Trận Đương Dương Trường Bản (208 CN)",
+      "nameZh": "長坂坡之戰",
+      "year": 208,
+      "terrainType": "wooded_hills_bridge_chokepoint",
+      "linkedRegionKeys": [
+        "3k_main_xiangyang_resource_1",
+        "3k_main_jingzhou_capital",
+        "3k_main_xiangyang_capital"
+      ],
+      "coordinates": {
+        "x": 1593,
+        "y": 1714
+      },
+      "belligerents": [
+        "Lưu Bị — Triệu Vân & Trương Phi (Liu Bei)",
+        "Tào Tháo — Hổ Báo Kỵ (Cao Cao)"
+      ],
+      "historicalSummaryVi": "Triệu Tử Long một mình một ngựa phá vây Hổ Báo Kỵ cứu ấu chúa A Đẩu; Trương Dực Đức đứng chặn cầu Trường Bản thét lui quân Tào.",
+      "historicalSummaryEn": "Legendary 208 CE rearguard battle in Dangyang where Zhao Yun rescued infant Liu Shan through Cao Cao's Tiger & Leopard Cavalry and Zhang Fei held Changban Bridge."
+    },
+    {
+      "id": "chibi",
+      "nameEn": "Battle of Red Cliffs (Chibi)",
+      "nameVi": "Đại Chiến Xích Bích (208 CN)",
+      "nameZh": "赤壁之戰",
+      "year": 208,
+      "terrainType": "yangtze_river_cliffs_naval_shore",
+      "linkedRegionKeys": [
+        "3k_main_changsha_resource_1",
+        "3k_main_jiangxia_capital",
+        "3k_main_jingzhou_capital"
+      ],
+      "coordinates": {
+        "x": 1881,
+        "y": 1439
+      },
+      "belligerents": [
+        "Liên minh Tôn Quyền - Lưu Bị (Chu Du & Gia Cát Lượng)",
+        "Tào Tháo (Cao Cao)"
+      ],
+      "historicalSummaryVi": "Liên quân Tôn - Lưu mượn gió Đông dùng hỏa thuyền (Mông Xung Đấu Hạm) thiêu rụi thủy trại liên hoàn của Tào Tháo trên sông Trường Giang, định hình thế chân vạc Tam Quốc.",
+      "historicalSummaryEn": "Iconic winter 208 CE Yangtze campaign where Allied Sun Quan and Liu Bei forces under Zhou Yu and Zhuge Liang unleashed fire ships against Cao Cao's chained armada."
+    },
+    {
+      "id": "hulao_pass",
+      "nameEn": "Siege of Hulao Pass",
+      "nameVi": "Trận Hổ Lao Quan (190 CN)",
+      "nameZh": "虎牢關之戰",
+      "year": 190,
+      "terrainType": "mountain_fortress_gate_pass",
+      "linkedRegionKeys": [
+        "3k_dlc06_hulao_pass",
+        "3k_main_luoyang_capital"
+      ],
+      "coordinates": {
+        "x": 2019,
+        "y": 2081
+      },
+      "belligerents": [
+        "Thập Bát Lộ Chư Hầu (Tam Anh Lưu - Quan - Trương)",
+        "Đổng Trác & Lữ Bố (Dong Zhuo & Lü Bu)"
+      ],
+      "historicalSummaryVi": "Cửa ải hiểm yếu phía đông Lạc Dương nơi Tam Anh (Lưu Bị, Quan Vũ, Trương Phi) đại chiến Chiến thần Lữ Bố.",
+      "historicalSummaryEn": "Formidable mountain gate guarding Luoyang where the Eighteen Coalition Warlords clashed with Dong Zhuo's champion Lü Bu."
+    }
+  ],
+  "warlords": [
+    {
+      "id": "3k_main_hero_special_earth_cao_cao",
+      "nameEn": "Cao Cao",
+      "nameVi": "Tào Tháo",
+      "subtitleEn": "Strategic Mastermind",
+      "subtitleVi": "Bậc Thầy Mưu Lược",
+      "allegianceGroup": "Ngụy (Wei)",
+      "wuXingElement": "earth",
+      "description": "Cao Cao is not ignorant to the failings of the Han, yet he will fight all the same to see its survival. Despite his loyalty, he has nevertheless experienced first-hand the capricious nature of the imperial court. The emperor, split between corrupt eunuchs and the resistant empress, proffers generosity to Cao Cao with one hand, yet cruelty with the other.\\n\\nRecalled now to fight the emperor's enemies, Cao Cao will proliferate the imperial message to all, whether with conjured rhetoric or remorseless steel.",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_earth_cao_cao/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_earth_cao_cao/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc04_start_pos",
+          "year": 182,
+          "factionKey": "3k_main_faction_cao_cao",
+          "pin": {
+            "x": 2355,
+            "y": 1521
+          }
+        },
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_main_faction_cao_cao",
+          "pin": {
+            "x": 2170,
+            "y": 1908
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_cao_cao",
+          "pin": {
+            "x": 2170,
+            "y": 1917
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_fire_dong_zhuo",
+      "nameEn": "Dong Zhuo",
+      "nameVi": "Đổng Trác",
+      "subtitleEn": "Cruel Tyrant",
+      "subtitleVi": "Bạo Chúa Tàn Ngược",
+      "allegianceGroup": "Đổng Trác (Tyrant)",
+      "wuXingElement": "fire",
+      "description": "Although he swears fealty to the emperor, Dong Zhuo sees the fire fading from the Han. His mind sours, beginning to imagine life beyond the dynasty. His career has been marked by success, yet as the government becomes corrupt, his victories fade to nothing before his failures.\\n\\nAlthough known for brutality, Dong Zhuo is loved by his troops, who enjoy his generosity. Yet as his bitterness increases, so too does his cruelty. In his quest for satisfaction, there is no knowing how Dong Zhuo will act...",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_fire_dong_zhuo/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_fire_dong_zhuo/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc04_start_pos",
+          "year": 182,
+          "factionKey": "3k_main_faction_dong_zhuo",
+          "pin": {
+            "x": 1339,
+            "y": 2632
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_dong_zhuo",
+          "pin": {
+            "x": 1373,
+            "y": 2063
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_ytr_hero_special_veteran_gong_du",
+      "nameEn": "Gong Du",
+      "nameVi": "Cung Đô",
+      "subtitleEn": "Master of the Land",
+      "subtitleVi": "Thủ Lĩnh Khăn Vàng Nhữ Nam",
+      "allegianceGroup": "Khăn Vàng (Yellow Turbans)",
+      "wuXingElement": "yellow_turban",
+      "description": "It would be unwise to suggest that Gong Du does not share his brothers' zealous belief in the Yellow Turban cause, yet he views victory through a more practical lens. The Taipingjing - 'The Way of Great Peace' - dictates that harmony between heaven and earth can only be brought about through the defeat of evil, and Gong Du is primarily concerned with how that defeat should be brought about; war-making is his business - logistics, manpower, strategy - and he intends to thrive in this endeavour!",
+      "portraitMini": "twtk_map/src/assets/characters/3k_ytr_hero_special_veteran_gong_du/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_ytr_hero_special_veteran_gong_du/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_yellow_turban_anding",
+          "pin": {
+            "x": 986,
+            "y": 1982
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_fire_gongsun_zan",
+      "nameEn": "Gongsun Zan",
+      "nameVi": "Công Tôn Toản",
+      "subtitleEn": "The Iron Fist General",
+      "subtitleVi": "Bạch Mã Tướng Quân",
+      "allegianceGroup": "Quần Hùng (Youzhou)",
+      "wuXingElement": "fire",
+      "description": "In the cacophony of rising chaos, Gongsun Zan is heard like a clarion call above the fray. He stands firm in his beliefs and is unafraid to do what he feels is right. A childhood friend of Liu Bei, Gongsun Zan earned a reputation as a fierce warrior, defending the empire against foreign foes beyond the border. Gongsun Zan rules his lands with the same martial mindset with which he governs his forces – on the dangerous fringes of the empire, military precision in all things must be observed.",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_fire_gongsun_zan/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_fire_gongsun_zan/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_main_faction_gongsun_zan",
+          "pin": {
+            "x": 2282,
+            "y": 2572
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_gongsun_zan",
+          "pin": {
+            "x": 2381,
+            "y": 2610
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_ytr_hero_special_healer_he_yi",
+      "nameEn": "He Yi",
+      "nameVi": "Hà Nghi",
+      "subtitleEn": "Leader of the People",
+      "subtitleVi": "Thủ Lĩnh Khăn Vàng Dự Châu",
+      "allegianceGroup": "Khăn Vàng (Yellow Turbans)",
+      "wuXingElement": "yellow_turban",
+      "description": "He Yi sees the Mandate of Heaven passing from the Han and knows it is time to pick up the mantle of the Yellow Turban rebellion and lead them in righteous revolution! He believes most ardently that if the Taipingjing - 'The Way of Great Peace' - declares that the land must be purified of evil, then he will be the instrument that delivers that purification. The old dynasty will be purged by war, and He Yi will see the Yellow Sky rise over a field of blood!",
+      "portraitMini": "twtk_map/src/assets/characters/3k_ytr_hero_special_healer_he_yi/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_ytr_hero_special_healer_he_yi/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_yellow_turban_rebels",
+          "pin": {
+            "x": 2032,
+            "y": 1740
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_ytr_hero_special_scholar_huang_shao",
+      "nameEn": "Huang Shao",
+      "nameVi": "Hoàng Thiệu",
+      "subtitleEn": "Wielder of the Heavenly Way",
+      "subtitleVi": "Thủ Lĩnh Khăn Vàng Đông Quận",
+      "allegianceGroup": "Khăn Vàng (Yellow Turbans)",
+      "wuXingElement": "yellow_turban",
+      "description": "For Huang Shao, there can be no compromising his beliefs - there is only the way of the Yellow Sky; all those opposed will be rent asunder. Yellow Turban philosophy stems from Taipingjing - 'The Way of Great Peace' - which states that harmony between man and heaven can only be achieved by exorcising 'evil omens'. The right of rebellion belongs to the people, and Huang Shao will exercise that right to overthrow a corrupt and unworthy dynasty!",
+      "portraitMini": "twtk_map/src/assets/characters/3k_ytr_hero_special_scholar_huang_shao/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_ytr_hero_special_scholar_huang_shao/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_yellow_turban_taishan",
+          "pin": {
+            "x": 2282,
+            "y": 2266
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_water_kong_rong",
+      "nameEn": "Kong Rong",
+      "nameVi": "Khổng Dung",
+      "subtitleEn": "Master Scholar",
+      "subtitleVi": "Bậc Đại Nho Học",
+      "allegianceGroup": "Bắc Hải (Beihai)",
+      "wuXingElement": "water",
+      "description": "The bureaucracy of China can only succeed through the support of education; this is what Kong Rong earnestly believes. He is focused on wisdom and learning, that it might better the people, and the economy – in Qing Province he is establishing schools to rehabilitate the population in the wake of the devastating Yellow Turban rebellions. Now, as chaos consumes China once more, Kong Rong knows that only through knowledge and insight will prosperity prevail once more.",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_water_kong_rong/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_water_kong_rong/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_main_faction_kong_rong",
+          "pin": {
+            "x": 2703,
+            "y": 2244
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_kong_rong",
+          "pin": {
+            "x": 2514,
+            "y": 2266
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_earth_liu_bei",
+      "nameEn": "Liu Bei",
+      "nameVi": "Lưu Bị",
+      "subtitleEn": "Virtuous Idealist",
+      "subtitleVi": "Nhân Đức Chí Nhân",
+      "allegianceGroup": "Thục Hán (Shu Han)",
+      "wuXingElement": "earth",
+      "description": "Liu Bei has come from nothing, has nothing, but in him lies the potential to be something far greater. Born with nominal attachment to the ruling Han dynasty, Liu Bei grew up with ambitious dreams and lofty ideals, yet this ardour has faded as his life, shaken by tragedy, and become more mundane out of necessity. However, though dimmed, his passion has never fully died. Loved by all those who know him, Liu Bei still has the desire to aid the world; he just does not yet know how...",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_earth_liu_bei/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_earth_liu_bei/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc04_start_pos",
+          "year": 182,
+          "factionKey": "3k_main_faction_liu_bei",
+          "pin": {
+            "x": 2196,
+            "y": 2266
+          }
+        },
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_main_faction_liu_bei",
+          "pin": {
+            "x": 2458,
+            "y": 2012
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_liu_bei",
+          "pin": {
+            "x": 2333,
+            "y": 2171
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_earth_liu_biao",
+      "nameEn": "Liu Biao",
+      "nameVi": "Lưu Biểu",
+      "subtitleEn": "Gentleman of the Han",
+      "subtitleVi": "Danh Sĩ Hoàng Tộc",
+      "allegianceGroup": "Kinh Châu (Jingzhou)",
+      "wuXingElement": "earth",
+      "description": "Liu Biao has served the Han faithfully and wisely, yet for his efforts he has found nothing but condemnation. A well-respected and high-ranking academic in the imperial capital, Luoyang, Liu Biao was vocal and outspoken in his criticisms of the corruption affecting the empire. The eunuchs, displeased by his defamations, found ways to strip him of his titles and all-but exile him. \\n\\n Liu Biao has now found himself far from the capital, a fervent loyalty for the Han and a burning hatred of the eunuchs still beating in his breast...",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_earth_liu_biao/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_earth_liu_biao/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc04_start_pos",
+          "year": 182,
+          "factionKey": "3k_main_faction_liu_biao",
+          "pin": {
+            "x": 1722,
+            "y": 1551
+          }
+        },
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_main_faction_liu_biao",
+          "pin": {
+            "x": 1507,
+            "y": 1646
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_liu_biao",
+          "pin": {
+            "x": 1675,
+            "y": 1727
+          }
+        }
+      ]
+    },
+    {
+      "id": "mh_hero_special_earth_liu_chong",
+      "nameEn": "Liu Chong",
+      "nameVi": "Lưu Sủng",
+      "subtitleEn": "Prince of Chen",
+      "subtitleVi": "Trần Vương Thiện Xạ",
+      "allegianceGroup": "Hoàng Tộc Nhà Hán (Han Empire)",
+      "wuXingElement": "earth",
+      "description": "Prince Liu Chong is a warrior whose dedication to his people is matched only by his formidable skill in battle. Whilst other imperial princes choose not to actively govern, Liu Chong gladly rules over his territory, and through his energetic nature and genuine concern, is beloved.\\n\\n As trouble now brews in the imperial court and in the provinces, Liu Chong knows his primary concern is for his people. A prestigious warrior, unafraid of a fight, he readies himself for whatever may come with confidence and zeal!",
+      "portraitMini": "twtk_map/src/assets/characters/mh_hero_special_earth_liu_chong/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/mh_hero_special_earth_liu_chong/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc04_start_pos",
+          "year": 182,
+          "factionKey": "3k_dlc04_faction_prince_liu_chong",
+          "pin": {
+            "x": 2019,
+            "y": 1956
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_dlc04_faction_prince_liu_chong",
+          "pin": {
+            "x": 2002,
+            "y": 1973
+          }
+        }
+      ]
+    },
+    {
+      "id": "mh_hero_special_emperor_ling",
+      "nameEn": "Liu Hong",
+      "nameVi": "Hán Linh Đế (Lưu Hoành)",
+      "subtitleEn": "Inconstant Emperor",
+      "subtitleVi": "Thiên Tử Đại Hán",
+      "allegianceGroup": "Đông Hán (Han Dynasty)",
+      "wuXingElement": "imperial",
+      "description": "The emperor is the steward of the Han dynasty, burdened with the heaven-sent responsibility of guiding the disparate realms of China under one rule. Yet despite his celestial duty, the dynasty over which he presides is racked by turmoil - this is his opportunity to right the madness consuming the land. \\n\\n To succeed, he must reconcile and balance the competing powers in his court; the relatively newly-crowned empress tries to stem the flow of corruption, yet the ever-more powerful eunuch attendants continue to whisper their desires, honeyed and tempting, into his ears.",
+      "portraitMini": "twtk_map/src/assets/characters/mh_hero_special_emperor_ling/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/mh_hero_special_emperor_ling/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc04_start_pos",
+          "year": 182,
+          "factionKey": "3k_dlc04_faction_empress_he",
+          "pin": {
+            "x": 1614,
+            "y": 2076
+          }
+        }
+      ]
+    },
+    {
+      "id": "mh_hero_special_water_lu_zhi",
+      "nameEn": "Lu Zhi",
+      "nameVi": "Lư Thực",
+      "subtitleEn": "Respected Mentor",
+      "subtitleVi": "Danh Nho Đương Thế",
+      "allegianceGroup": "Đông Hán (Han Dynasty)",
+      "wuXingElement": "water",
+      "description": "Lu Zhi is as wise as he imposing, a scholar whose writing often carries portends that, if unheeded, predict dark tidings for the future of the land. Although known also as a powerful general in his own right, Lu Zhi is one of the foremost historians and scholars of the time, aiding in the writing of the history of the Eastern Han. He was also the mentor to Liu Bei, whose compassion and wisdom brings honour to the teacher that clearly taught him so well.",
+      "portraitMini": "twtk_map/src/assets/characters/mh_hero_special_water_lu_zhi/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/mh_hero_special_water_lu_zhi/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc04_start_pos",
+          "year": 182,
+          "factionKey": "3k_dlc04_faction_lu_zhi",
+          "pin": {
+            "x": 2066,
+            "y": 2184
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_fire_lu_bu",
+      "nameEn": "Lü Bu",
+      "nameVi": "Lữ Bố",
+      "subtitleEn": "Warrior Without Equal",
+      "subtitleVi": "Chiến Thần Vô Song",
+      "allegianceGroup": "Quần Hùng (Warlords)",
+      "wuXingElement": "fire",
+      "description": "Lü Bu is overlooked and insulted by those undeserving of his skill; a prodigious talent stung by the constant arrows of indignity. Although he undoubtedly did the land a service by ridding it of the tyrant Dong Zhuo, Lü Bu has felt nothing but the cold hand of derision from all those he has come to serve. Now, as Cao Cao's eyes are elsewhere, he has chosen to take matters into his own hands, rebelling against his liege's rule to forge a kingdom of his own.",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_fire_lu_bu/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_fire_lu_bu/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_main_faction_lu_bu",
+          "pin": {
+            "x": 2135,
+            "y": 2042
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_fire_ma_teng",
+      "nameEn": "Ma Teng",
+      "nameVi": "Mã Đằng",
+      "subtitleEn": "Protector of the West",
+      "subtitleVi": "Tây Lương Hộ Quốc",
+      "allegianceGroup": "Tây Lương (Xiliang)",
+      "wuXingElement": "fire",
+      "description": "Ma Teng had thought the emperor safe, but with Dong Zhuo dead, he sees the chaos coming, and hopes he is prepared for the storm. Though many say the dynasty is finished, Ma Teng remains loyal to the Han, prosecuting the enemies of the emperor above all else. On the western fringes of the empire, he has long defended China's most valuable trade routes, holding back hostile interlopers, and will continue to charge into battle in the emperor's name.",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_fire_ma_teng/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_fire_ma_teng/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_main_faction_ma_teng",
+          "pin": {
+            "x": 1102,
+            "y": 2085
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_ma_teng",
+          "pin": {
+            "x": 1025,
+            "y": 2072
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_dlc06_hero_special_meng_huo",
+      "nameEn": "Meng Huo",
+      "nameVi": "Mạnh Hoạch",
+      "subtitleEn": "King of the Man",
+      "subtitleVi": "Nam Man Đại Vương",
+      "allegianceGroup": "Nam Man (Nanman)",
+      "wuXingElement": "nanman",
+      "description": "Meng Huo shows his friends every generosity, and his enemies an unending, merciless rage. Whilst some may identify this as a true loyalty, it belies another, deeper tendency towards rage, one which can erupt at the smallest slight, easily rising to become an all-consuming blaze. This tempestuous energy has led Meng Huo to dissatisfaction with his lot – he looks now beyond the valleys of his home to greater things – uniting the tribes, and destroying his enemies!",
+      "portraitMini": "twtk_map/src/assets/characters/3k_dlc06_hero_special_meng_huo/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_dlc06_hero_special_meng_huo/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_dlc06_faction_nanman_king_meng_huo",
+          "pin": {
+            "x": 719,
+            "y": 1129
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_dlc06_faction_nanman_king_meng_huo",
+          "pin": {
+            "x": 758,
+            "y": 1202
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_dlc06_hero_special_king_mulu",
+      "nameEn": "Mulu",
+      "nameVi": "Mộc Lộc Đại Vương",
+      "subtitleEn": "Chief of Bana Ravine",
+      "subtitleVi": "Chúa Động Bát Nạp",
+      "allegianceGroup": "Nam Man (Nanman)",
+      "wuXingElement": "nanman",
+      "description": "The world of men is barely a footnote to King Mulu – nature is his calling, and defending it against those who threaten such ancient orders. Mulu is indifferent to the ways of people, regarded as aloof and distant, yet this seeming disinterest hides a keen insight into the peoples he encounters. Should he perceive threats, Mulu is incensed, and charges into battle with both loyal man and beast at his call!",
+      "portraitMini": "twtk_map/src/assets/characters/3k_dlc06_hero_special_king_mulu/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_dlc06_hero_special_king_mulu/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_dlc06_faction_nanman_king_mulu",
+          "pin": {
+            "x": 994,
+            "y": 913
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_dlc06_faction_nanman_king_mulu",
+          "pin": {
+            "x": 891,
+            "y": 900
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_dlc06_hero_special_king_shamoke",
+      "nameEn": "Shamoke",
+      "nameVi": "Sa Ma Kha",
+      "subtitleEn": "Ruler of the Five Valleys",
+      "subtitleVi": "Ngũ Khê Man Vương",
+      "allegianceGroup": "Nam Man (Nanman)",
+      "wuXingElement": "nanman",
+      "description": "Where the valleys converge, there too is King Shamoke, straddling the border between nations; the tumbling waters of the confluence as precarious as his future. To his north, east and south lie the Han, a persistent thorn in the side of those who would call themselves independent. Yet Shamoke must appease this unstable empire, lest he invite their wrath. At the same time, however, he is respected by the tribes of the south, and so cannot concede too much, or risk shattering the fragile ground beneath his feet.",
+      "portraitMini": "twtk_map/src/assets/characters/3k_dlc06_hero_special_king_shamoke/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_dlc06_hero_special_king_shamoke/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_dlc06_faction_nanman_king_shamoke",
+          "pin": {
+            "x": 1386,
+            "y": 1361
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_dlc06_faction_nanman_king_shamoke",
+          "pin": {
+            "x": 1373,
+            "y": 1370
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_dlc06_hero_special_water_shi_xie",
+      "nameEn": "Shi Xie",
+      "nameVi": "Sĩ Nhiếp",
+      "subtitleEn": "Governor Shi",
+      "subtitleVi": "Giao Châu Thái Thú",
+      "allegianceGroup": "Giao Châu (Jiaozhi)",
+      "wuXingElement": "water",
+      "description": "Shi Xie has wisely, and insidiously, kindled the favour of the Han, for he is cunning of mind and a barrier against threats from distant lands. His rise was won through the strength of his family's deep and noble lineage, and not-insignificant personal favours to the powerful. Shi Xie benevolently welcomes the needy and the destitute to his lands, all-the-while planting his own family members into positions of power. For as surely as Shi Xie gives generously, he also takes advantageously...",
+      "portraitMini": "twtk_map/src/assets/characters/3k_dlc06_hero_special_water_shi_xie/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_dlc06_hero_special_water_shi_xie/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_main_faction_shi_xie",
+          "pin": {
+            "x": 1494,
+            "y": 732
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_shi_xie",
+          "pin": {
+            "x": 1360,
+            "y": 676
+          }
+        }
+      ]
+    },
+    {
+      "id": "ep_hero_special_wood_sima_ai",
+      "nameEn": "Sima Ai",
+      "nameVi": "Tư Mã Nghệ",
+      "subtitleEn": "Principled Administrator",
+      "subtitleVi": "Trường Sa Vương Chính Trực",
+      "allegianceGroup": "Tây Tấn (Eight Princes)",
+      "wuXingElement": "wood",
+      "description": "Of all the princes vying for control of the fledgling emperor, Sima Ai stands alone as worthy of victory. Widely praised for his noble ideals and filial piety, Sima Ai defended the emperor - his brother - when it became clear that the empress dowager harboured dark designs. \\n\\n Yet now, with the empress dowager gone, and Empress Jia ascendant, Sima Ai must decide where his loyalties lie, and how he might best serve the emperor as his kin descend into civil war...",
+      "portraitMini": "twtk_map/src/assets/characters/ep_hero_special_wood_sima_ai/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/ep_hero_special_wood_sima_ai/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "8p_start_pos",
+          "year": 291,
+          "factionKey": "ep_faction_prince_of_changsha",
+          "pin": {
+            "x": 1791,
+            "y": 1167
+          }
+        }
+      ]
+    },
+    {
+      "id": "ep_hero_special_wood_sima_jiong",
+      "nameEn": "Sima Jiong",
+      "nameVi": "Tư Mã Quýnh",
+      "subtitleEn": "Imperious Regent",
+      "subtitleVi": "Tề Vương Chấp Chính",
+      "allegianceGroup": "Tây Tấn (Eight Princes)",
+      "wuXingElement": "wood",
+      "description": "Sima Jiong has suffered great indignities at the hands of the Jin emperors, yet despite it all he has forged a place of power within the turmoil. His father, Sima You, was so qualified that many believed he should be heir. As a result, he was jealously exiled from the capital by the emperor. Since then, Sima Jiong has carved a position of relative strength, and watches Luoyang with a burning desire to correct the injustices of the past...",
+      "portraitMini": "twtk_map/src/assets/characters/ep_hero_special_wood_sima_jiong/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/ep_hero_special_wood_sima_jiong/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "8p_start_pos",
+          "year": 291,
+          "factionKey": "ep_faction_prince_of_qi",
+          "pin": {
+            "x": 2518,
+            "y": 2266
+          }
+        }
+      ]
+    },
+    {
+      "id": "ep_hero_special_wood_sima_liang",
+      "nameEn": "Sima Liang",
+      "nameVi": "Tư Mã Lượng",
+      "subtitleEn": "Rightful Regent",
+      "subtitleVi": "Nhữ Nam Vương",
+      "allegianceGroup": "Tây Tấn (Eight Princes)",
+      "wuXingElement": "wood",
+      "description": "Sima Liang has lived long enough to see the Wei fall and the Jin rise, and wonders now if he will survive long enough to see the flame of yet another great dynasty extinguished. He has enjoyed a long and illustrious life serving as both military commander and senior advisor to the emperor. With the death of Emperor Wu, however, his regency has been stripped and his loyalty questioned. Even now, Empress Jia demands his arrest, and Sima Wei marches on the son of Sima Yi to do her bidding...",
+      "portraitMini": "twtk_map/src/assets/characters/ep_hero_special_wood_sima_liang/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/ep_hero_special_wood_sima_liang/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "8p_start_pos",
+          "year": 291,
+          "factionKey": "ep_faction_prince_of_runan",
+          "pin": {
+            "x": 1886,
+            "y": 1671
+          }
+        }
+      ]
+    },
+    {
+      "id": "ep_hero_special_earth_sima_lun",
+      "nameEn": "Sima Lun",
+      "nameVi": "Tư Mã Luân",
+      "subtitleEn": "Usurper Prince",
+      "subtitleVi": "Triệu Vương Soán Ngôi",
+      "allegianceGroup": "Tây Tấn (Eight Princes)",
+      "wuXingElement": "earth",
+      "description": "Sima Lun sees the truth of a leaderless dynasty, and is bold - or brazen - enough to stake his own claim upon the throne. His ambition is unquestioned, even if his style of governance is not yet proven; his early administrations were marked by accusations of corruption and, later, rebellions against his rule. \\n\\n However, Sima Lun has the favour of the empress, an advantage for one so untested yet so ambitious. Such ruthless desire for power is a dangerous weapon, and Sima Lun will wield it without mercy.",
+      "portraitMini": "twtk_map/src/assets/characters/ep_hero_special_earth_sima_lun/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/ep_hero_special_earth_sima_lun/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "8p_start_pos",
+          "year": 291,
+          "factionKey": "ep_faction_prince_of_zhao",
+          "pin": {
+            "x": 1769,
+            "y": 2240
+          }
+        }
+      ]
+    },
+    {
+      "id": "ep_hero_special_metal_sima_wei",
+      "nameEn": "Sima Wei",
+      "nameVi": "Tư Mã Vĩ",
+      "subtitleEn": "Tempestuous General",
+      "subtitleVi": "Sở Vương Dũng Mãnh",
+      "allegianceGroup": "Tây Tấn (Eight Princes)",
+      "wuXingElement": "metal",
+      "description": "Sima Wei is as a volatile storm, directing his furious energy at those who would threaten or attempt to undermine the Jin dynasty. Long known as an excellent general, his career is defined by positions of military authority. After the death of Emperor Wu, however, Sima Wei participated in a coup, orchestrated by Empress Jia, to overthrow the new emperor's regents. \\n\\n Despite his participation, the empress still views Sima Wei with suspicion, so he must move to defend both himself and then the dynasty he serves.",
+      "portraitMini": "twtk_map/src/assets/characters/ep_hero_special_metal_sima_wei/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/ep_hero_special_metal_sima_wei/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "8p_start_pos",
+          "year": 291,
+          "factionKey": "ep_faction_prince_of_chu",
+          "pin": {
+            "x": 1593,
+            "y": 2085
+          }
+        }
+      ]
+    },
+    {
+      "id": "ep_hero_special_water_sima_ying",
+      "nameEn": "Sima Ying",
+      "nameVi": "Tư Mã Dĩnh",
+      "subtitleEn": "Beloved Governor",
+      "subtitleVi": "Thành Đô Vương Đắc Nhân",
+      "allegianceGroup": "Tây Tấn (Eight Princes)",
+      "wuXingElement": "water",
+      "description": "Even as his opinion at court deteriorates, Sima Ying has earned the love of his people, developing a reputation for respect, leniency and consideration. Possessed of handsome looks but low intelligence, Sima Ying has acted in as forthright a manner as he knows how, all whilst viewing the imperial court with distrust. \\n\\n As the Jin descend into civil war, he must choose carefully who to fight and who to defend, and who might best serve the people.",
+      "portraitMini": "twtk_map/src/assets/characters/ep_hero_special_water_sima_ying/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/ep_hero_special_water_sima_ying/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "8p_start_pos",
+          "year": 291,
+          "factionKey": "ep_faction_prince_of_chengdu",
+          "pin": {
+            "x": 964,
+            "y": 1710
+          }
+        }
+      ]
+    },
+    {
+      "id": "ep_hero_special_fire_sima_yong",
+      "nameEn": "Sima Yong",
+      "nameVi": "Tư Mã Ngung",
+      "subtitleEn": "Shrewd Defender",
+      "subtitleVi": "Hà Gian Vương Lão Luyện",
+      "allegianceGroup": "Tây Tấn (Eight Princes)",
+      "wuXingElement": "fire",
+      "description": "Sima Yong has an eye for ability; he values those he can use, and those who might help advance his ambitions. He is not a man who believes allegiance has to be a fixed thing, and his opinions - and allies - will shift depending on what best suits him. \\n\\n As China descends once more into the chaos of civil war, Sima Yong watches the pieces on the board move and considers carefully what moves to make...",
+      "portraitMini": "twtk_map/src/assets/characters/ep_hero_special_fire_sima_yong/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/ep_hero_special_fire_sima_yong/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "8p_start_pos",
+          "year": 291,
+          "factionKey": "ep_faction_prince_of_hejian",
+          "pin": {
+            "x": 2316,
+            "y": 2356
+          }
+        }
+      ]
+    },
+    {
+      "id": "ep_hero_special_metal_sima_yue",
+      "nameEn": "Sima Yue",
+      "nameVi": "Tư Mã Việt",
+      "subtitleEn": "Imperial Overseer",
+      "subtitleVi": "Đông Hải Vương Quyền Thế",
+      "allegianceGroup": "Tây Tấn (Eight Princes)",
+      "wuXingElement": "metal",
+      "description": "Sima Yue acts in the name of the dynasty, working tirelessly to ensure the bureaucracy of the realm continues, even as civil war looms. Equal parts principled and pragmatic, Sima Yue acts in defence of the realm, yet when faced with defeat he will not put his principles before his own survival. \\n\\n As his kin turn on one another, Sima Yue is faced with a choice between aiding those seeking to usurp the emperor or those wishing to defend him...",
+      "portraitMini": "twtk_map/src/assets/characters/ep_hero_special_metal_sima_yue/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/ep_hero_special_metal_sima_yue/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "8p_start_pos",
+          "year": 291,
+          "factionKey": "ep_faction_prince_of_donghai",
+          "pin": {
+            "x": 2458,
+            "y": 2012
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_fire_sun_ce",
+      "nameEn": "Sun Ce",
+      "nameVi": "Tôn Sách",
+      "subtitleEn": "Little Conqueror",
+      "subtitleVi": "Tiểu Bá Vương",
+      "allegianceGroup": "Đông Ngô (Eastern Wu)",
+      "wuXingElement": "fire",
+      "description": "The legacy of his family spurs Sun Ce ever onward – the hopes of his father lifting him to ever-greater deeds. Since his father's death, Sun Ce has searched for a way to emulate that same bravery and power. It is in the service of Yuan Shu that he may have found this power. However, as the machinations of Yuan Shu become ever-more nefarious, and the lure of a new land in the south becomes stronger, Sun Ce has to ask once again how he might best serve his people.",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_fire_sun_ce/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_fire_sun_ce/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_dlc05_faction_sun_ce",
+          "pin": {
+            "x": 2256,
+            "y": 1667
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_metal_sun_jian",
+      "nameEn": "Sun Jian",
+      "nameVi": "Tôn Kiên",
+      "subtitleEn": "Tiger of Jiangdong",
+      "subtitleVi": "Mãnh Hổ Giang Đông",
+      "allegianceGroup": "Đông Ngô (Eastern Wu)",
+      "wuXingElement": "metal",
+      "description": "Sun Jian is bold and brave - some may say reckless - yet everything he does, he does for his family. He is no stranger to throwing himself head-first into the action, regardless of the consequences. Famed for single-handedly defeating a group of pirates, he tricked them into fleeing without ever raising his blade. \\n\\n As a storm of discord rolls across China, Sun Jian knows that whatever action he takes, it will be in defence not only of China, but his homeland and his family.",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_metal_sun_jian/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_metal_sun_jian/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc04_start_pos",
+          "year": 182,
+          "factionKey": "3k_main_faction_sun_jian",
+          "pin": {
+            "x": 2544,
+            "y": 1271
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_sun_jian",
+          "pin": {
+            "x": 1726,
+            "y": 1546
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_water_tao_qian",
+      "nameEn": "Tao Qian",
+      "nameVi": "Đào Khiêm",
+      "subtitleEn": "Benevolent Arbiter",
+      "subtitleVi": "Thái Thú Nhân Từ",
+      "allegianceGroup": "Từ Châu (Xuzhou)",
+      "wuXingElement": "water",
+      "description": "Tao Qian is possessed of a quiet resolve that has carried him through decades of service and strengthens him against the coming storm. In his youth, he was famed for his knowledge, his dedication to his studies, and his honesty. As an administrator, he is benevolent and beloved, offering shelter to those weary wanderers with noble ideals and nowhere to turn. With chaos rising across the land, Tao Qian will bring his considerable talent to bear to see such dark clouds dispersed!",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_water_tao_qian/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_water_tao_qian/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc04_start_pos",
+          "year": 182,
+          "factionKey": "3k_main_faction_tao_qian",
+          "pin": {
+            "x": 2630,
+            "y": 1977
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_tao_qian",
+          "pin": {
+            "x": 2372,
+            "y": 2020
+          }
+        }
+      ]
+    },
+    {
+      "id": "lb_main_hero_special_metal_white_tiger_yan",
+      "nameEn": "Yan Baihu",
+      "nameVi": "Nghiêm Bạch Hổ",
+      "subtitleEn": "The White Tiger",
+      "subtitleVi": "Đông Ngô Đức Vương",
+      "allegianceGroup": "Giang Đông Lục Lâm (Bandits)",
+      "wuXingElement": "metal",
+      "description": "Yan Baihu has spent his life building a home in the south; an existence he will now defend against invaders with steel and rage. As a supposed descendant of the Shanyue tribe, Yan Baihu has a vested interest in the life and freedom of the southlands. As Sun Ce and others begin to look with greed upon his territory, he has resolved that he will take up arms against them all, using his network of bandits and outcasts to find his way to victory!",
+      "portraitMini": "twtk_map/src/assets/characters/lb_main_hero_special_metal_white_tiger_yan/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/lb_main_hero_special_metal_white_tiger_yan/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_dlc05_faction_white_tiger_yan",
+          "pin": {
+            "x": 2432,
+            "y": 1417
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_dlc05_faction_white_tiger_yan",
+          "pin": {
+            "x": 2561,
+            "y": 1456
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_earth_yuan_shao",
+      "nameEn": "Yuan Shao",
+      "nameVi": "Viên Thiệu",
+      "subtitleEn": "Preeminent Commander",
+      "subtitleVi": "Danh Môn Thống Soái",
+      "allegianceGroup": "Quần Hùng (河北 Hebei)",
+      "wuXingElement": "earth",
+      "description": "Yuan Shao is the Han's loyal defender, and will follow the dynasty to whatever end. It was he who stormed Luoyang to liberate the emperor, personally slaughtering the traitorous eunuchs in his lord's defence. Descended from power and prestige, Yuan Shao was chosen – because of his reputation and wealth – to lead the coalition against Dong Zhuo's tyrannical reign. Although the coalition now stagnates, the Dragon of the Yuan stands proud; although he may lack substance, let none doubt his ostentatious style...",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_earth_yuan_shao/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_earth_yuan_shao/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_main_faction_yuan_shao",
+          "pin": {
+            "x": 2333,
+            "y": 2274
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_yuan_shao",
+          "pin": {
+            "x": 2036,
+            "y": 2244
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_earth_yuan_shu",
+      "nameEn": "Yuan Shu",
+      "nameVi": "Viên Thuật",
+      "subtitleEn": "Ambitious Powermonger",
+      "subtitleVi": "Dã Tâm Xưng Đế",
+      "allegianceGroup": "Quần Hùng (Huainan)",
+      "wuXingElement": "earth",
+      "description": "Yuan Shu can feel his time is coming; with every new sentence written in history's ledger, he knows his time is approaching, and draws his schemes accordingly. He hails from the prestigious and wealthy Yuan family, which weighs upon his shoulders, as does the braggish blustering of his half-brother, Yuan Shao. Only through demonstrating his legitimacy to others can Yuan Shu prove his right to rule.",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_earth_yuan_shu/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_earth_yuan_shu/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_main_faction_yuan_shu",
+          "pin": {
+            "x": 2320,
+            "y": 1745
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_yuan_shu",
+          "pin": {
+            "x": 1791,
+            "y": 1874
+          }
+        }
+      ]
+    },
+    {
+      "id": "mh_hero_special_veteran_zhang_bao",
+      "nameEn": "Zhang Bao",
+      "nameVi": "Trương Bảo",
+      "subtitleEn": "General of the Land",
+      "subtitleVi": "Địa Công Tướng Quân",
+      "allegianceGroup": "Khăn Vàng (Yellow Turbans)",
+      "wuXingElement": "yellow_turban",
+      "description": "Zhang Bao hurls himself into the fray, brave and bold, in pursuit of a better future for all. Although a fearsome warrior in his own right, Zhang Bao knows that only through union with his brothers, and with the people, will China be freed from the yoke of corruption and tyranny. \\n\\n Legend has it that their redemption of China was prophesised; that together, with an army behind them, the Azure Sky would fall and the Yellow Sky finally rise!",
+      "portraitMini": "twtk_map/src/assets/characters/mh_hero_special_veteran_zhang_bao/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/mh_hero_special_veteran_zhang_bao/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc04_start_pos",
+          "year": 182,
+          "factionKey": "3k_dlc04_faction_zhang_bao",
+          "pin": {
+            "x": 1967,
+            "y": 2313
+          }
+        }
+      ]
+    },
+    {
+      "id": "mh_hero_special_healer_zhang_jue",
+      "nameEn": "Zhang Jue",
+      "nameVi": "Trương Giác",
+      "subtitleEn": "General of Heaven",
+      "subtitleVi": "Thiên Công Tướng Quân",
+      "allegianceGroup": "Khăn Vàng (Yellow Turbans)",
+      "wuXingElement": "yellow_turban",
+      "description": "Zhang Jue has heard his future told; he is destined to tear down the corrupt dynasty and lead the people to a better future! Known as a healer in his native Julu Commandery, Zhang Jue and his brothers were well liked by the people. Yet his discovery of the Scriptures of Great Peace, detailing the connection between heaven and earth, set him on a path to raising a righteous rebellion against the Han. With his brothers in-tow, he will topple the corrupt government and begin the world anew!",
+      "portraitMini": "twtk_map/src/assets/characters/mh_hero_special_healer_zhang_jue/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/mh_hero_special_healer_zhang_jue/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc04_start_pos",
+          "year": 182,
+          "factionKey": "3k_dlc04_faction_zhang_jue",
+          "pin": {
+            "x": 2045,
+            "y": 2417
+          }
+        }
+      ]
+    },
+    {
+      "id": "mh_hero_special_veteran_zhang_liang",
+      "nameEn": "Zhang Liang",
+      "nameVi": "Trương Lương",
+      "subtitleEn": "General of the People",
+      "subtitleVi": "Nhân Công Tướng Quân",
+      "allegianceGroup": "Khăn Vàng (Yellow Turbans)",
+      "wuXingElement": "yellow_turban",
+      "description": "Zhang Liang is the watchful giant, a sentinel who will hold the line, and his beliefs, against any and all enemies. He, along with his brothers, set to easing the pain of a suffering people by preaching a better way, then mobilising them into a force capable of toppling the corrupt regime. \\n\\n Although an imposing figure, Zhang Liang knows that only together that they will be able to strike the fatal blow that will tear down the Azure Sky forever and lead to a greater future for China.",
+      "portraitMini": "twtk_map/src/assets/characters/mh_hero_special_veteran_zhang_liang/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/mh_hero_special_veteran_zhang_liang/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc04_start_pos",
+          "year": 182,
+          "factionKey": "3k_dlc04_faction_zhang_liang",
+          "pin": {
+            "x": 2062,
+            "y": 2279
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_wood_zhang_yan",
+      "nameEn": "Zhang Yan",
+      "nameVi": "Trương Yên",
+      "subtitleEn": "King of Black Mountain",
+      "subtitleVi": "Hắc Sơn Phi Yến",
+      "allegianceGroup": "Hắc Sơn Quân (Bandits)",
+      "wuXingElement": "wood",
+      "description": "Zhang Yan and his bandits exist as neither fully Han or outlaw, and as the land slips into ever greater chaos, they know their best hope is to navigate the space between. To attack the Black Mountain bandits is to invite deception and ambush, as they have mastered the art of war unseen. Yet all the same, Zhang Yan will form alliances and friendships with any who will serve his interests – be they high-born or mud-stained...",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_wood_zhang_yan/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_wood_zhang_yan/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_main_faction_zhang_yan",
+          "pin": {
+            "x": 1670,
+            "y": 2352
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_zhang_yan",
+          "pin": {
+            "x": 1851,
+            "y": 2537
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_main_hero_special_wood_zheng_jiang",
+      "nameEn": "Zheng Jiang",
+      "nameVi": "Trịnh Khương",
+      "subtitleEn": "Bandit Queen",
+      "subtitleVi": "Nữ Vương Sơn Trại",
+      "allegianceGroup": "Sơn Việt / Lục Lâm (Bandits)",
+      "wuXingElement": "wood",
+      "description": "Dynasties and nobility mean nothing to Zheng Jiang; she prefers to seize glory in her own way. As the Han burns, she sees at last the crumbling of an institution she deeply despises. What have they ever known of hunger? What fear have they ever felt for corrupt and avaricious officials? Zheng Jiang has never known the ease of a noble upbringing, nor the expectation of 'civilised' society. Instead, she is resolved to earn fame and prestige for herself through merciless fury and unrelenting strength!",
+      "portraitMini": "twtk_map/src/assets/characters/3k_main_hero_special_wood_zheng_jiang/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_main_hero_special_wood_zheng_jiang/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_main_faction_zheng_jiang",
+          "pin": {
+            "x": 2234,
+            "y": 2042
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_main_faction_zheng_jiang",
+          "pin": {
+            "x": 1657,
+            "y": 2339
+          }
+        }
+      ]
+    },
+    {
+      "id": "3k_dlc06_hero_special_lady_zhurong",
+      "nameEn": "Zhurong",
+      "nameVi": "Chúc Dung Phu Nhân",
+      "subtitleEn": "Goddess of Fire",
+      "subtitleVi": "Hỏa Thần Chi Hậu",
+      "allegianceGroup": "Nam Man (Nanman)",
+      "wuXingElement": "nanman",
+      "description": "Lady Zhurong believes that only through her might – inherited, they say, from the goddess of fire herself – will her people succeed where others have floundered. The pride of her lineage weighs heavily upon her, but Zhurong does not let such responsibilities overwhelm her. She sees the languorous and bloated valley kings, and vows not to grow as indolent. Her followers – loyal to the death – combined with her own skill, will protect her lands and her people against the very gods, if need be!",
+      "portraitMini": "twtk_map/src/assets/characters/3k_dlc06_hero_special_lady_zhurong/mini.png",
+      "portraitBobble": "twtk_map/src/assets/characters/3k_dlc06_hero_special_lady_zhurong/bobble.png",
+      "campaignStarts": [
+        {
+          "startposKey": "3k_dlc05_start_pos",
+          "year": 194,
+          "factionKey": "3k_dlc06_faction_nanman_lady_zhurong",
+          "pin": {
+            "x": 542,
+            "y": 1150
+          }
+        },
+        {
+          "startposKey": "3k_main_campaign_map",
+          "year": 190,
+          "factionKey": "3k_dlc06_faction_nanman_lady_zhurong",
+          "pin": {
+            "x": 469,
+            "y": 1142
+          }
+        }
+      ]
+    }
+  ],
+  "regions": [
+    {
+      "key": "3k_dlc06_gu_pass",
+      "name": "Gu Pass",
+      "isCapital": true,
+      "resourceType": "gate_pass",
+      "iconPath": "twtk_map/src/assets/icons/gate_pass.png",
+      "provinceKey": "3k_dlc06_gu_pass",
+      "provinceName": "Gu Pass",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1718,
+        "y": 2262
+      }
+    },
+    {
+      "key": "3k_dlc06_hangu_pass",
+      "name": "Hangu Pass",
+      "isCapital": true,
+      "resourceType": "gate_pass",
+      "iconPath": "twtk_map/src/assets/icons/gate_pass.png",
+      "provinceKey": "3k_dlc06_hangu_pass",
+      "provinceName": "Hangu Pass",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1657,
+        "y": 2055
+      }
+    },
+    {
+      "key": "3k_dlc06_hedong_resource_2",
+      "name": "Pingyang",
+      "isCapital": false,
+      "resourceType": "iron",
+      "iconPath": "twtk_map/src/assets/icons/iron.png",
+      "provinceKey": "3k_main_hedong_capital",
+      "provinceName": "Hedong",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1601,
+        "y": 2227
+      }
+    },
+    {
+      "key": "3k_dlc06_hulao_pass",
+      "name": "Hulao Pass",
+      "isCapital": true,
+      "resourceType": "gate_pass",
+      "iconPath": "twtk_map/src/assets/icons/gate_pass.png",
+      "provinceKey": "3k_dlc06_hulao_pass",
+      "provinceName": "Hulao Pass",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2019,
+        "y": 2081
+      }
+    },
+    {
+      "key": "3k_dlc06_jiameng_pass",
+      "name": "Jiameng Pass",
+      "isCapital": true,
+      "resourceType": "gate_pass",
+      "iconPath": "twtk_map/src/assets/icons/gate_pass.png",
+      "provinceKey": "3k_dlc06_jiameng_pass",
+      "provinceName": "Jiameng Pass",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1003,
+        "y": 1895
+      }
+    },
+    {
+      "key": "3k_dlc06_jianning_resource_3",
+      "name": "Dianchi",
+      "isCapital": false,
+      "resourceType": "copper",
+      "iconPath": "twtk_map/src/assets/icons/copper.png",
+      "provinceKey": "3k_main_jianning_capital",
+      "provinceName": "Jianning",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 629,
+        "y": 1064
+      }
+    },
+    {
+      "key": "3k_dlc06_jiaozhi_resource_3",
+      "name": "Wanwen",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_main_jiaozhi_capital",
+      "provinceName": "Jiaozhi",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 977,
+        "y": 935
+      }
+    },
+    {
+      "key": "3k_dlc06_jiuzhen_capital",
+      "name": "Xupu",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_dlc06_jiuzhen_capital",
+      "provinceName": "Jiuzhen",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 990,
+        "y": 560
+      }
+    },
+    {
+      "key": "3k_dlc06_jiuzhen_resource_1",
+      "name": "Rinan",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_dlc06_jiuzhen_capital",
+      "provinceName": "Jiuzhen",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 999,
+        "y": 388
+      }
+    },
+    {
+      "key": "3k_dlc06_kui_pass",
+      "name": "Kui Pass",
+      "isCapital": true,
+      "resourceType": "gate_pass",
+      "iconPath": "twtk_map/src/assets/icons/gate_pass.png",
+      "provinceKey": "3k_dlc06_kui_pass",
+      "provinceName": "Kui Pass",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1498,
+        "y": 1706
+      }
+    },
+    {
+      "key": "3k_dlc06_liaodong_capital",
+      "name": "Xiangping",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_dlc06_liaodong_capital",
+      "provinceName": "Liaodong",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2833,
+        "y": 2675
+      }
+    },
+    {
+      "key": "3k_dlc06_liaodong_resource_1",
+      "name": "Xuantu",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_dlc06_liaodong_capital",
+      "provinceName": "Liaodong",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2742,
+        "y": 2774
+      }
+    },
+    {
+      "key": "3k_dlc06_qi_pass",
+      "name": "Qi Pass",
+      "isCapital": true,
+      "resourceType": "gate_pass",
+      "iconPath": "twtk_map/src/assets/icons/gate_pass.png",
+      "provinceKey": "3k_dlc06_qi_pass",
+      "provinceName": "Qi Pass",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1700,
+        "y": 2106
+      }
+    },
+    {
+      "key": "3k_dlc06_san_pass",
+      "name": "San Pass",
+      "isCapital": true,
+      "resourceType": "gate_pass",
+      "iconPath": "twtk_map/src/assets/icons/gate_pass.png",
+      "provinceKey": "3k_dlc06_san_pass",
+      "provinceName": "San Pass",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1141,
+        "y": 2068
+      }
+    },
+    {
+      "key": "3k_dlc06_shangdang_resource_2",
+      "name": "Zhixian",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_shangdang_capital",
+      "provinceName": "Shangdang",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1868,
+        "y": 2162
+      }
+    },
+    {
+      "key": "3k_dlc06_tong_pass",
+      "name": "Tong Pass",
+      "isCapital": true,
+      "resourceType": "gate_pass",
+      "iconPath": "twtk_map/src/assets/icons/gate_pass.png",
+      "provinceKey": "3k_dlc06_tong_pass",
+      "provinceName": "Tong Pass",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1481,
+        "y": 2055
+      }
+    },
+    {
+      "key": "3k_dlc06_wu_pass",
+      "name": "Wu Pass",
+      "isCapital": true,
+      "resourceType": "gate_pass",
+      "iconPath": "twtk_map/src/assets/icons/gate_pass.png",
+      "provinceKey": "3k_dlc06_wu_pass",
+      "provinceName": "Wu Pass",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1446,
+        "y": 2012
+      }
+    },
+    {
+      "key": "3k_dlc06_xiapi_capital",
+      "name": "Xiapi",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_dlc06_xiapi_capital",
+      "provinceName": "Xiapi",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2394,
+        "y": 1951
+      }
+    },
+    {
+      "key": "3k_dlc06_xiapi_resource_1",
+      "name": "Xuexian",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_dlc06_xiapi_capital",
+      "provinceName": "Xiapi",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2402,
+        "y": 2033
+      }
+    },
+    {
+      "key": "3k_dlc06_yongchang_capital",
+      "name": "Buwei",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_dlc06_yongchang_capital",
+      "provinceName": "Yongchang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 293,
+        "y": 1077
+      }
+    },
+    {
+      "key": "3k_dlc06_yongchang_resource_1",
+      "name": "Yongshou",
+      "isCapital": false,
+      "resourceType": "spice",
+      "iconPath": "twtk_map/src/assets/icons/spice.png",
+      "provinceKey": "3k_dlc06_yongchang_capital",
+      "provinceName": "Yongchang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 491,
+        "y": 986
+      }
+    },
+    {
+      "key": "3k_dlc06_yunnan_capital",
+      "name": "Longdong",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_dlc06_yunnan_capital",
+      "provinceName": "Yunnan",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 409,
+        "y": 1142
+      }
+    },
+    {
+      "key": "3k_dlc06_yunnan_resource_1",
+      "name": "Qingling",
+      "isCapital": false,
+      "resourceType": "iron",
+      "iconPath": "twtk_map/src/assets/icons/iron.png",
+      "provinceKey": "3k_dlc06_yunnan_capital",
+      "provinceName": "Yunnan",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 530,
+        "y": 1150
+      }
+    },
+    {
+      "key": "3k_dlc06_yunnan_resource_2",
+      "name": "Yuexi",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_dlc06_yunnan_capital",
+      "provinceName": "Yunnan",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 555,
+        "y": 1297
+      }
+    },
+    {
+      "key": "3k_main_anding_capital",
+      "name": "Linjing",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_anding_capital",
+      "provinceName": "Anding",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1184,
+        "y": 2227
+      }
+    },
+    {
+      "key": "3k_main_anding_resource_1",
+      "name": "Gaonu",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_anding_capital",
+      "provinceName": "Anding",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1378,
+        "y": 2300
+      }
+    },
+    {
+      "key": "3k_main_anding_resource_2",
+      "name": "Canluan",
+      "isCapital": false,
+      "resourceType": "tools",
+      "iconPath": "twtk_map/src/assets/icons/tools.png",
+      "provinceKey": "3k_main_anding_capital",
+      "provinceName": "Anding",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1197,
+        "y": 2309
+      }
+    },
+    {
+      "key": "3k_main_anding_resource_3",
+      "name": "Sanshui",
+      "isCapital": false,
+      "resourceType": "livestock",
+      "iconPath": "twtk_map/src/assets/icons/livestock.png",
+      "provinceKey": "3k_main_anding_capital",
+      "provinceName": "Anding",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1037,
+        "y": 2374
+      }
+    },
+    {
+      "key": "3k_main_anping_capital",
+      "name": "Xindu",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_anping_capital",
+      "provinceName": "Anping",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2114,
+        "y": 2378
+      }
+    },
+    {
+      "key": "3k_main_anping_resource_1",
+      "name": "Julu",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_anping_capital",
+      "provinceName": "Anping",
+      "fertility": "high",
+      "coordinates": {
+        "x": 1976,
+        "y": 2343
+      }
+    },
+    {
+      "key": "3k_main_badong_capital",
+      "name": "Yong'an",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_badong_capital",
+      "provinceName": "Badong",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1494,
+        "y": 1667
+      }
+    },
+    {
+      "key": "3k_main_badong_resource_1",
+      "name": "Quren",
+      "isCapital": false,
+      "resourceType": "iron",
+      "iconPath": "twtk_map/src/assets/icons/iron.png",
+      "provinceKey": "3k_main_badong_capital",
+      "provinceName": "Badong",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1339,
+        "y": 1594
+      }
+    },
+    {
+      "key": "3k_main_badong_resource_2",
+      "name": "Linyuan",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_main_badong_capital",
+      "provinceName": "Badong",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1640,
+        "y": 1465
+      }
+    },
+    {
+      "key": "3k_main_bajun_capital",
+      "name": "Jiangzhou",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_bajun_capital",
+      "provinceName": "Ba",
+      "fertility": "high",
+      "coordinates": {
+        "x": 1076,
+        "y": 1486
+      }
+    },
+    {
+      "key": "3k_main_bajun_resource_1",
+      "name": "Danqu",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_bajun_capital",
+      "provinceName": "Ba",
+      "fertility": "high",
+      "coordinates": {
+        "x": 1205,
+        "y": 1749
+      }
+    },
+    {
+      "key": "3k_main_baxi_capital",
+      "name": "Langzhong",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_baxi_capital",
+      "provinceName": "Baxi",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1037,
+        "y": 1745
+      }
+    },
+    {
+      "key": "3k_main_baxi_resource_1",
+      "name": "Hanchang",
+      "isCapital": false,
+      "resourceType": "tools",
+      "iconPath": "twtk_map/src/assets/icons/tools.png",
+      "provinceKey": "3k_main_baxi_capital",
+      "provinceName": "Baxi",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1162,
+        "y": 1848
+      }
+    },
+    {
+      "key": "3k_main_baxi_resource_2",
+      "name": "Zitong",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_baxi_capital",
+      "provinceName": "Baxi",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 861,
+        "y": 1770
+      }
+    },
+    {
+      "key": "3k_main_beihai_capital",
+      "name": "Juxian",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_beihai_capital",
+      "provinceName": "Beihai",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2488,
+        "y": 2279
+      }
+    },
+    {
+      "key": "3k_main_beihai_resource_1",
+      "name": "Jimo",
+      "isCapital": false,
+      "resourceType": "livestock",
+      "iconPath": "twtk_map/src/assets/icons/livestock.png",
+      "provinceKey": "3k_main_beihai_capital",
+      "provinceName": "Beihai",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2592,
+        "y": 2257
+      }
+    },
+    {
+      "key": "3k_main_bohai_capital",
+      "name": "Nanpi",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_bohai_capital",
+      "provinceName": "Bohai",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2204,
+        "y": 2455
+      }
+    },
+    {
+      "key": "3k_main_bohai_resource_1",
+      "name": "Zhangwu",
+      "isCapital": false,
+      "resourceType": "fish",
+      "iconPath": "twtk_map/src/assets/icons/fish.png",
+      "provinceKey": "3k_main_bohai_capital",
+      "provinceName": "Bohai",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2303,
+        "y": 2481
+      }
+    },
+    {
+      "key": "3k_main_cangwu_capital",
+      "name": "Guangxin",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_cangwu_capital",
+      "provinceName": "Cangwu",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1675,
+        "y": 831
+      }
+    },
+    {
+      "key": "3k_main_cangwu_resource_1",
+      "name": "Fuchuan",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_cangwu_capital",
+      "provinceName": "Cangwu",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1653,
+        "y": 999
+      }
+    },
+    {
+      "key": "3k_main_cangwu_resource_2",
+      "name": "Mengling",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_main_cangwu_capital",
+      "provinceName": "Cangwu",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1541,
+        "y": 896
+      }
+    },
+    {
+      "key": "3k_main_cangwu_resource_3",
+      "name": "Dingzhou",
+      "isCapital": false,
+      "resourceType": "livestock",
+      "iconPath": "twtk_map/src/assets/icons/livestock.png",
+      "provinceKey": "3k_main_cangwu_capital",
+      "provinceName": "Cangwu",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1399,
+        "y": 1051
+      }
+    },
+    {
+      "key": "3k_main_changan_capital",
+      "name": "Chang'an",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_changan_capital",
+      "provinceName": "Jingzhao",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1330,
+        "y": 2046
+      }
+    },
+    {
+      "key": "3k_main_changan_resource_1",
+      "name": "Lantian",
+      "isCapital": false,
+      "resourceType": "jade",
+      "iconPath": "twtk_map/src/assets/icons/jade.png",
+      "provinceKey": "3k_main_changan_capital",
+      "provinceName": "Jingzhao",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1352,
+        "y": 1977
+      }
+    },
+    {
+      "key": "3k_main_changsha_capital",
+      "name": "Linxiang",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_changsha_capital",
+      "provinceName": "Changsha",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1808,
+        "y": 1318
+      }
+    },
+    {
+      "key": "3k_main_changsha_resource_1",
+      "name": "Chibi",
+      "isCapital": false,
+      "resourceType": "trade_port",
+      "iconPath": "twtk_map/src/assets/icons/trade_port.png",
+      "provinceKey": "3k_main_changsha_capital",
+      "provinceName": "Changsha",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1881,
+        "y": 1439
+      }
+    },
+    {
+      "key": "3k_main_changsha_resource_2",
+      "name": "Lingxian",
+      "isCapital": false,
+      "resourceType": "craftsmen_armour",
+      "iconPath": "twtk_map/src/assets/icons/craftsmen_armour.png",
+      "provinceKey": "3k_main_changsha_capital",
+      "provinceName": "Changsha",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1743,
+        "y": 1193
+      }
+    },
+    {
+      "key": "3k_main_changsha_resource_3",
+      "name": "Chaling",
+      "isCapital": false,
+      "resourceType": "tea",
+      "iconPath": "twtk_map/src/assets/icons/tea.png",
+      "provinceKey": "3k_main_changsha_capital",
+      "provinceName": "Changsha",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1864,
+        "y": 1167
+      }
+    },
+    {
+      "key": "3k_main_chengdu_capital",
+      "name": "Chengdu",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_chengdu_capital",
+      "provinceName": "Shu",
+      "fertility": "high",
+      "coordinates": {
+        "x": 749,
+        "y": 1615
+      }
+    },
+    {
+      "key": "3k_main_chengdu_resource_1",
+      "name": "Hanjia",
+      "isCapital": false,
+      "resourceType": "craftsmen_armour",
+      "iconPath": "twtk_map/src/assets/icons/craftsmen_armour.png",
+      "provinceKey": "3k_main_chengdu_capital",
+      "provinceName": "Shu",
+      "fertility": "high",
+      "coordinates": {
+        "x": 629,
+        "y": 1572
+      }
+    },
+    {
+      "key": "3k_main_chengdu_resource_2",
+      "name": "Luocheng",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_chengdu_capital",
+      "provinceName": "Shu",
+      "fertility": "high",
+      "coordinates": {
+        "x": 951,
+        "y": 1633
+      }
+    },
+    {
+      "key": "3k_main_chengdu_resource_3",
+      "name": "Zizhong",
+      "isCapital": false,
+      "resourceType": "salt",
+      "iconPath": "twtk_map/src/assets/icons/salt.png",
+      "provinceKey": "3k_main_chengdu_capital",
+      "provinceName": "Shu",
+      "fertility": "high",
+      "coordinates": {
+        "x": 848,
+        "y": 1551
+      }
+    },
+    {
+      "key": "3k_main_chenjun_capital",
+      "name": "Suiyang",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_chenjun_capital",
+      "provinceName": "Chen",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2135,
+        "y": 1938
+      }
+    },
+    {
+      "key": "3k_main_chenjun_resource_1",
+      "name": "Peixian",
+      "isCapital": false,
+      "resourceType": "livestock",
+      "iconPath": "twtk_map/src/assets/icons/livestock.png",
+      "provinceKey": "3k_main_chenjun_capital",
+      "provinceName": "Chen",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2234,
+        "y": 1878
+      }
+    },
+    {
+      "key": "3k_main_chenjun_resource_2",
+      "name": "Ruyang",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_chenjun_capital",
+      "provinceName": "Chen",
+      "fertility": "high",
+      "coordinates": {
+        "x": 1989,
+        "y": 1848
+      }
+    },
+    {
+      "key": "3k_main_chenjun_resource_3",
+      "name": "Liangxian",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_main_luoyang_capital",
+      "provinceName": "Luoyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1782,
+        "y": 1999
+      }
+    },
+    {
+      "key": "3k_main_daijun_capital",
+      "name": "Gaoliu",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_daijun_capital",
+      "provinceName": "Dai",
+      "fertility": "low",
+      "coordinates": {
+        "x": 2036,
+        "y": 2593
+      }
+    },
+    {
+      "key": "3k_main_daijun_resource_1",
+      "name": "Zhuo Lu",
+      "isCapital": false,
+      "resourceType": "horses",
+      "iconPath": "twtk_map/src/assets/icons/horses.png",
+      "provinceKey": "3k_main_daijun_capital",
+      "provinceName": "Dai",
+      "fertility": "low",
+      "coordinates": {
+        "x": 2144,
+        "y": 2623
+      }
+    },
+    {
+      "key": "3k_main_donghai_capital",
+      "name": "Tanxian",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_donghai_capital",
+      "provinceName": "Donghai",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2480,
+        "y": 2007
+      }
+    },
+    {
+      "key": "3k_main_donghai_resource_1",
+      "name": "Haixi",
+      "isCapital": false,
+      "resourceType": "fish",
+      "iconPath": "twtk_map/src/assets/icons/fish.png",
+      "provinceKey": "3k_main_donghai_capital",
+      "provinceName": "Donghai",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2712,
+        "y": 1947
+      }
+    },
+    {
+      "key": "3k_main_dongjun_capital",
+      "name": "Puyang",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_dongjun_capital",
+      "provinceName": "Dong",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2213,
+        "y": 2214
+      }
+    },
+    {
+      "key": "3k_main_dongjun_resource_1",
+      "name": "Dongping",
+      "isCapital": false,
+      "resourceType": "iron",
+      "iconPath": "twtk_map/src/assets/icons/iron.png",
+      "provinceKey": "3k_main_dongjun_capital",
+      "provinceName": "Dong",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2381,
+        "y": 2167
+      }
+    },
+    {
+      "key": "3k_main_donglai_capital",
+      "name": "Huangxian",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_donglai_capital",
+      "provinceName": "Donglai",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2652,
+        "y": 2369
+      }
+    },
+    {
+      "key": "3k_main_donglai_resource_1",
+      "name": "Changyang",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_donglai_capital",
+      "provinceName": "Donglai",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2794,
+        "y": 2296
+      }
+    },
+    {
+      "key": "3k_main_dongou_capital",
+      "name": "Yongning",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_dongou_capital",
+      "provinceName": "Linhai",
+      "fertility": "low",
+      "coordinates": {
+        "x": 2777,
+        "y": 1232
+      }
+    },
+    {
+      "key": "3k_main_dongou_resource_1",
+      "name": "Wenma",
+      "isCapital": false,
+      "resourceType": "salt",
+      "iconPath": "twtk_map/src/assets/icons/salt.png",
+      "provinceKey": "3k_main_dongou_capital",
+      "provinceName": "Linhai",
+      "fertility": "low",
+      "coordinates": {
+        "x": 2682,
+        "y": 1116
+      }
+    },
+    {
+      "key": "3k_main_fuling_capital",
+      "name": "Fuling",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_fuling_capital",
+      "provinceName": "Fuling",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1270,
+        "y": 1452
+      }
+    },
+    {
+      "key": "3k_main_fuling_resource_1",
+      "name": "Jianwei",
+      "isCapital": false,
+      "resourceType": "livestock",
+      "iconPath": "twtk_map/src/assets/icons/livestock.png",
+      "provinceKey": "3k_main_fuling_capital",
+      "provinceName": "Fuling",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1145,
+        "y": 1322
+      }
+    },
+    {
+      "key": "3k_main_gaoliang_capital",
+      "name": "Siping",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_gaoliang_capital",
+      "provinceName": "Gaoliang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1817,
+        "y": 706
+      }
+    },
+    {
+      "key": "3k_main_gaoliang_resource_1",
+      "name": "Anning",
+      "isCapital": false,
+      "resourceType": "salt",
+      "iconPath": "twtk_map/src/assets/icons/salt.png",
+      "provinceKey": "3k_main_gaoliang_capital",
+      "provinceName": "Gaoliang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1688,
+        "y": 668
+      }
+    },
+    {
+      "key": "3k_main_guangling_capital",
+      "name": "Huaiyin",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_guangling_capital",
+      "provinceName": "Guangling",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2579,
+        "y": 1861
+      }
+    },
+    {
+      "key": "3k_main_guangling_resource_1",
+      "name": "Gaoyou",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_guangling_capital",
+      "provinceName": "Guangling",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2682,
+        "y": 1801
+      }
+    },
+    {
+      "key": "3k_main_guangling_resource_2",
+      "name": "Jiangdu",
+      "isCapital": false,
+      "resourceType": "trade_port",
+      "iconPath": "twtk_map/src/assets/icons/trade_port.png",
+      "provinceKey": "3k_main_guangling_capital",
+      "provinceName": "Guangling",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2716,
+        "y": 1723
+      }
+    },
+    {
+      "key": "3k_main_hanzhong_capital",
+      "name": "Nanzheng",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_hanzhong_capital",
+      "provinceName": "Hanzhong",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1124,
+        "y": 1930
+      }
+    },
+    {
+      "key": "3k_main_hanzhong_resource_1",
+      "name": "Meixian",
+      "isCapital": false,
+      "resourceType": "silk",
+      "iconPath": "twtk_map/src/assets/icons/silk.png",
+      "provinceKey": "3k_main_hanzhong_capital",
+      "provinceName": "Hanzhong",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1218,
+        "y": 2025
+      }
+    },
+    {
+      "key": "3k_main_hedong_capital",
+      "name": "Anyi",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_hedong_capital",
+      "provinceName": "Hedong",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1554,
+        "y": 2150
+      }
+    },
+    {
+      "key": "3k_main_hedong_resource_1",
+      "name": "Puzhou",
+      "isCapital": false,
+      "resourceType": "trade_port",
+      "iconPath": "twtk_map/src/assets/icons/trade_port.png",
+      "provinceKey": "3k_main_hedong_capital",
+      "provinceName": "Hedong",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1481,
+        "y": 2128
+      }
+    },
+    {
+      "key": "3k_main_henei_capital",
+      "name": "Huaixian",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_henei_capital",
+      "provinceName": "Henei",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2041,
+        "y": 2154
+      }
+    },
+    {
+      "key": "3k_main_henei_resource_1",
+      "name": "Zhaoge",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_henei_capital",
+      "provinceName": "Henei",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2152,
+        "y": 2244
+      }
+    },
+    {
+      "key": "3k_main_hepu_capital",
+      "name": "Hepu",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_hepu_capital",
+      "provinceName": "Hepu",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1360,
+        "y": 659
+      }
+    },
+    {
+      "key": "3k_main_hepu_resource_1",
+      "name": "Xuwen",
+      "isCapital": false,
+      "resourceType": "fish",
+      "iconPath": "twtk_map/src/assets/icons/fish.png",
+      "provinceKey": "3k_main_hepu_capital",
+      "provinceName": "Hepu",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1545,
+        "y": 607
+      }
+    },
+    {
+      "key": "3k_main_hepu_resource_2",
+      "name": "Zhuya",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_main_hepu_capital",
+      "provinceName": "Hepu",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1537,
+        "y": 439
+      }
+    },
+    {
+      "key": "3k_main_jianan_capital",
+      "name": "Jian'an",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_jianan_capital",
+      "provinceName": "Northern Jian'an",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2536,
+        "y": 1210
+      }
+    },
+    {
+      "key": "3k_main_jianan_resource_1",
+      "name": "Jiangle",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_jianan_capital",
+      "provinceName": "Northern Jian'an",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2441,
+        "y": 1228
+      }
+    },
+    {
+      "key": "3k_main_jianan_resource_2",
+      "name": "Jianping",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_main_jianan_capital",
+      "provinceName": "Northern Jian'an",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2583,
+        "y": 1340
+      }
+    },
+    {
+      "key": "3k_main_jiangxia_capital",
+      "name": "Xiling",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_jiangxia_capital",
+      "provinceName": "Jiangxia",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1924,
+        "y": 1546
+      }
+    },
+    {
+      "key": "3k_main_jiangxia_resource_1",
+      "name": "Xiyang",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_jiangxia_capital",
+      "provinceName": "Jiangxia",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2006,
+        "y": 1620
+      }
+    },
+    {
+      "key": "3k_main_jiangyang_capital",
+      "name": "Jiangyang",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_jiangyang_capital",
+      "provinceName": "Jiangyang",
+      "fertility": "high",
+      "coordinates": {
+        "x": 926,
+        "y": 1404
+      }
+    },
+    {
+      "key": "3k_main_jiangyang_resource_1",
+      "name": "Wuyang",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_jiangyang_capital",
+      "provinceName": "Jiangyang",
+      "fertility": "high",
+      "coordinates": {
+        "x": 728,
+        "y": 1490
+      }
+    },
+    {
+      "key": "3k_main_jiangyang_resource_2",
+      "name": "Zhuti",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_main_jiangyang_capital",
+      "provinceName": "Jiangyang",
+      "fertility": "high",
+      "coordinates": {
+        "x": 775,
+        "y": 1344
+      }
+    },
+    {
+      "key": "3k_main_jiangyang_resource_3",
+      "name": "Pingyi",
+      "isCapital": false,
+      "resourceType": "copper",
+      "iconPath": "twtk_map/src/assets/icons/copper.png",
+      "provinceKey": "3k_main_jiangyang_capital",
+      "provinceName": "Jiangyang",
+      "fertility": "high",
+      "coordinates": {
+        "x": 943,
+        "y": 1318
+      }
+    },
+    {
+      "key": "3k_main_jianning_capital",
+      "name": "Weixian",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_jianning_capital",
+      "provinceName": "Jianning",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 728,
+        "y": 1142
+      }
+    },
+    {
+      "key": "3k_main_jianning_resource_1",
+      "name": "Tangao",
+      "isCapital": false,
+      "resourceType": "iron",
+      "iconPath": "twtk_map/src/assets/icons/iron.png",
+      "provinceKey": "3k_main_jianning_capital",
+      "provinceName": "Jianning",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 822,
+        "y": 1159
+      }
+    },
+    {
+      "key": "3k_main_jianning_resource_2",
+      "name": "Xiuyun",
+      "isCapital": false,
+      "resourceType": "spice",
+      "iconPath": "twtk_map/src/assets/icons/spice.png",
+      "provinceKey": "3k_main_jianning_capital",
+      "provinceName": "Jianning",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 775,
+        "y": 956
+      }
+    },
+    {
+      "key": "3k_main_jianye_capital",
+      "name": "Jianye",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_jianye_capital",
+      "provinceName": "Danyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2553,
+        "y": 1710
+      }
+    },
+    {
+      "key": "3k_main_jianye_resource_1",
+      "name": "Wu",
+      "isCapital": false,
+      "resourceType": "salt",
+      "iconPath": "twtk_map/src/assets/icons/salt.png",
+      "provinceKey": "3k_main_jianye_capital",
+      "provinceName": "Danyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2794,
+        "y": 1637
+      }
+    },
+    {
+      "key": "3k_main_jianye_resource_2",
+      "name": "Wanling",
+      "isCapital": false,
+      "resourceType": "copper",
+      "iconPath": "twtk_map/src/assets/icons/copper.png",
+      "provinceKey": "3k_main_jianye_capital",
+      "provinceName": "Danyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2600,
+        "y": 1611
+      }
+    },
+    {
+      "key": "3k_main_jiaozhi_capital",
+      "name": "Longbien",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_jiaozhi_capital",
+      "provinceName": "Jiaozhi",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1072,
+        "y": 689
+      }
+    },
+    {
+      "key": "3k_main_jiaozhi_resource_1",
+      "name": "Linchen",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_jiaozhi_capital",
+      "provinceName": "Jiaozhi",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1192,
+        "y": 745
+      }
+    },
+    {
+      "key": "3k_main_jiaozhi_resource_2",
+      "name": "Xisui",
+      "isCapital": false,
+      "resourceType": "tea",
+      "iconPath": "twtk_map/src/assets/icons/tea.png",
+      "provinceKey": "3k_main_jiaozhi_capital",
+      "provinceName": "Jiaozhi",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 930,
+        "y": 836
+      }
+    },
+    {
+      "key": "3k_main_jincheng_capital",
+      "name": "Jincheng",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_jincheng_capital",
+      "provinceName": "Jincheng",
+      "fertility": "low",
+      "coordinates": {
+        "x": 689,
+        "y": 2223
+      }
+    },
+    {
+      "key": "3k_main_jincheng_resource_1",
+      "name": "Zhanyin",
+      "isCapital": false,
+      "resourceType": "silk",
+      "iconPath": "twtk_map/src/assets/icons/silk.png",
+      "provinceKey": "3k_main_jincheng_capital",
+      "provinceName": "Jincheng",
+      "fertility": "low",
+      "coordinates": {
+        "x": 887,
+        "y": 2309
+      }
+    },
+    {
+      "key": "3k_main_jincheng_resource_2",
+      "name": "Tianshui",
+      "isCapital": false,
+      "resourceType": "horses",
+      "iconPath": "twtk_map/src/assets/icons/horses.png",
+      "provinceKey": "3k_main_jincheng_capital",
+      "provinceName": "Jincheng",
+      "fertility": "low",
+      "coordinates": {
+        "x": 943,
+        "y": 2162
+      }
+    },
+    {
+      "key": "3k_main_jingzhou_capital",
+      "name": "Jiangling",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_jingzhou_capital",
+      "provinceName": "Nan",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1670,
+        "y": 1538
+      }
+    },
+    {
+      "key": "3k_main_jingzhou_resource_1",
+      "name": "Huarong",
+      "isCapital": false,
+      "resourceType": "livestock",
+      "iconPath": "twtk_map/src/assets/icons/livestock.png",
+      "provinceKey": "3k_main_jingzhou_capital",
+      "provinceName": "Nan",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1795,
+        "y": 1581
+      }
+    },
+    {
+      "key": "3k_main_kuaiji_capital",
+      "name": "Shanyin",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_kuaiji_capital",
+      "provinceName": "Kuaiji",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2785,
+        "y": 1486
+      }
+    },
+    {
+      "key": "3k_main_kuaiji_resource_1",
+      "name": "Linhai",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_kuaiji_capital",
+      "provinceName": "Kuaiji",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2811,
+        "y": 1357
+      }
+    },
+    {
+      "key": "3k_main_kuaiji_resource_2",
+      "name": "Wushang",
+      "isCapital": false,
+      "resourceType": "livestock",
+      "iconPath": "twtk_map/src/assets/icons/livestock.png",
+      "provinceKey": "3k_main_kuaiji_capital",
+      "provinceName": "Kuaiji",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2686,
+        "y": 1409
+      }
+    },
+    {
+      "key": "3k_main_langye_capital",
+      "name": "Dongwu",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_langye_capital",
+      "provinceName": "Langya",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2626,
+        "y": 2180
+      }
+    },
+    {
+      "key": "3k_main_langye_resource_1",
+      "name": "Kaiyang",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_main_langye_capital",
+      "provinceName": "Langya",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2493,
+        "y": 2111
+      }
+    },
+    {
+      "key": "3k_main_langye_resource_2",
+      "name": "Buji",
+      "isCapital": false,
+      "resourceType": "fish",
+      "iconPath": "twtk_map/src/assets/icons/fish.png",
+      "provinceKey": "3k_main_langye_capital",
+      "provinceName": "Langya",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2708,
+        "y": 2236
+      }
+    },
+    {
+      "key": "3k_main_lingling_capital",
+      "name": "Quanling",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_lingling_capital",
+      "provinceName": "Lingling",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1657,
+        "y": 1094
+      }
+    },
+    {
+      "key": "3k_main_lingling_resource_1",
+      "name": "Chenxian",
+      "isCapital": false,
+      "resourceType": "tools",
+      "iconPath": "twtk_map/src/assets/icons/tools.png",
+      "provinceKey": "3k_main_lingling_capital",
+      "provinceName": "Lingling",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1907,
+        "y": 1047
+      }
+    },
+    {
+      "key": "3k_main_lingling_resource_2",
+      "name": "Nanping",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_main_lingling_capital",
+      "provinceName": "Lingling",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1795,
+        "y": 982
+      }
+    },
+    {
+      "key": "3k_main_lujiang_capital",
+      "name": "Hefei",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_lujiang_capital",
+      "provinceName": "Lujiang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2247,
+        "y": 1628
+      }
+    },
+    {
+      "key": "3k_main_lujiang_resource_1",
+      "name": "Xunyang",
+      "isCapital": false,
+      "resourceType": "fish",
+      "iconPath": "twtk_map/src/assets/icons/fish.png",
+      "provinceKey": "3k_main_lujiang_capital",
+      "provinceName": "Lujiang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2079,
+        "y": 1400
+      }
+    },
+    {
+      "key": "3k_main_lujiang_resource_2",
+      "name": "Shuxian",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_main_lujiang_capital",
+      "provinceName": "Lujiang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2273,
+        "y": 1525
+      }
+    },
+    {
+      "key": "3k_main_luling_capital",
+      "name": "Yudu",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_luling_capital",
+      "provinceName": "Luling",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2075,
+        "y": 1055
+      }
+    },
+    {
+      "key": "3k_main_luling_resource_1",
+      "name": "Yangdu",
+      "isCapital": false,
+      "resourceType": "copper",
+      "iconPath": "twtk_map/src/assets/icons/copper.png",
+      "provinceKey": "3k_main_luling_capital",
+      "provinceName": "Luling",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2355,
+        "y": 1129
+      }
+    },
+    {
+      "key": "3k_main_luoyang_capital",
+      "name": "Luoyang",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_luoyang_capital",
+      "provinceName": "Luoyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1851,
+        "y": 2072
+      }
+    },
+    {
+      "key": "3k_main_luoyang_resource_1",
+      "name": "Hongnong",
+      "isCapital": false,
+      "resourceType": "trade_port",
+      "iconPath": "twtk_map/src/assets/icons/trade_port.png",
+      "provinceKey": "3k_main_luoyang_capital",
+      "provinceName": "Luoyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1541,
+        "y": 2072
+      }
+    },
+    {
+      "key": "3k_main_nanhai_capital",
+      "name": "Panyu",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_nanhai_capital",
+      "provinceName": "Nanhai",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1967,
+        "y": 750
+      }
+    },
+    {
+      "key": "3k_main_nanhai_resource_1",
+      "name": "Longchuan",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_nanhai_capital",
+      "provinceName": "Nanhai",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2058,
+        "y": 879
+      }
+    },
+    {
+      "key": "3k_main_nanhai_resource_2",
+      "name": "Jieyang",
+      "isCapital": false,
+      "resourceType": "trade_port",
+      "iconPath": "twtk_map/src/assets/icons/trade_port.png",
+      "provinceKey": "3k_main_nanhai_capital",
+      "provinceName": "Nanhai",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2320,
+        "y": 793
+      }
+    },
+    {
+      "key": "3k_main_nanyang_capital",
+      "name": "Wanxian",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_nanyang_capital",
+      "provinceName": "Nanyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1761,
+        "y": 1917
+      }
+    },
+    {
+      "key": "3k_main_nanyang_resource_1",
+      "name": "Xinye",
+      "isCapital": false,
+      "resourceType": "jade",
+      "iconPath": "twtk_map/src/assets/icons/jade.png",
+      "provinceKey": "3k_main_nanyang_capital",
+      "provinceName": "Nanyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1804,
+        "y": 1818
+      }
+    },
+    {
+      "key": "3k_main_penchang_capital",
+      "name": "Pengcheng",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_penchang_capital",
+      "provinceName": "Pengcheng",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2277,
+        "y": 1934
+      }
+    },
+    {
+      "key": "3k_main_penchang_resource_1",
+      "name": "Luxian",
+      "isCapital": false,
+      "resourceType": "temple",
+      "iconPath": "twtk_map/src/assets/icons/temple.png",
+      "provinceKey": "3k_main_penchang_capital",
+      "provinceName": "Pengcheng",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2286,
+        "y": 2042
+      }
+    },
+    {
+      "key": "3k_main_pingyuan_capital",
+      "name": "Pingyuan",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_pingyuan_capital",
+      "provinceName": "Pingyuan",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2273,
+        "y": 2352
+      }
+    },
+    {
+      "key": "3k_main_pingyuan_resource_1",
+      "name": "Leling",
+      "isCapital": false,
+      "resourceType": "salt",
+      "iconPath": "twtk_map/src/assets/icons/salt.png",
+      "provinceKey": "3k_main_pingyuan_capital",
+      "provinceName": "Pingyuan",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2376,
+        "y": 2386
+      }
+    },
+    {
+      "key": "3k_main_poyang_capital",
+      "name": "Poyang",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_poyang_capital",
+      "provinceName": "Poyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2260,
+        "y": 1314
+      }
+    },
+    {
+      "key": "3k_main_poyang_resource_1",
+      "name": "Haihun",
+      "isCapital": false,
+      "resourceType": "iron",
+      "iconPath": "twtk_map/src/assets/icons/iron.png",
+      "provinceKey": "3k_main_poyang_capital",
+      "provinceName": "Poyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2079,
+        "y": 1335
+      }
+    },
+    {
+      "key": "3k_main_poyang_resource_2",
+      "name": "Guangchang",
+      "isCapital": false,
+      "resourceType": "copper",
+      "iconPath": "twtk_map/src/assets/icons/copper.png",
+      "provinceKey": "3k_main_poyang_capital",
+      "provinceName": "Poyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2303,
+        "y": 1426
+      }
+    },
+    {
+      "key": "3k_main_poyang_resource_3",
+      "name": "Lean",
+      "isCapital": false,
+      "resourceType": "craftsmen_weapon",
+      "iconPath": "twtk_map/src/assets/icons/craftsmen_weapon.png",
+      "provinceKey": "3k_main_poyang_capital",
+      "provinceName": "Poyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2419,
+        "y": 1387
+      }
+    },
+    {
+      "key": "3k_main_runan_capital",
+      "name": "Ruyin",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_runan_capital",
+      "provinceName": "Runan",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2049,
+        "y": 1702
+      }
+    },
+    {
+      "key": "3k_main_runan_resource_1",
+      "name": "Pingyu",
+      "isCapital": false,
+      "resourceType": "iron",
+      "iconPath": "twtk_map/src/assets/icons/iron.png",
+      "provinceKey": "3k_main_runan_capital",
+      "provinceName": "Runan",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1873,
+        "y": 1702
+      }
+    },
+    {
+      "key": "3k_main_shangdang_capital",
+      "name": "Zhangzi",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_shangdang_capital",
+      "provinceName": "Shangdang",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1731,
+        "y": 2180
+      }
+    },
+    {
+      "key": "3k_main_shangdang_resource_1",
+      "name": "Shexian",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_shangdang_capital",
+      "provinceName": "Shangdang",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1855,
+        "y": 2262
+      }
+    },
+    {
+      "key": "3k_main_shangyong_capital",
+      "name": "Shangyong",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_shangyong_capital",
+      "provinceName": "Shangyong",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1459,
+        "y": 1835
+      }
+    },
+    {
+      "key": "3k_main_shangyong_resource_1",
+      "name": "Xicheng",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_main_shangyong_capital",
+      "provinceName": "Shangyong",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1330,
+        "y": 1870
+      }
+    },
+    {
+      "key": "3k_main_shangyong_resource_2",
+      "name": "Shanglian",
+      "isCapital": false,
+      "resourceType": "craftsmen_weapon",
+      "iconPath": "twtk_map/src/assets/icons/craftsmen_weapon.png",
+      "provinceKey": "3k_main_shangyong_capital",
+      "provinceName": "Shangyong",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1343,
+        "y": 1723
+      }
+    },
+    {
+      "key": "3k_main_shoufang_capital",
+      "name": "Heyin",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_shoufang_capital",
+      "provinceName": "Shuofang",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1339,
+        "y": 2654
+      }
+    },
+    {
+      "key": "3k_main_shoufang_resource_1",
+      "name": "Pingding",
+      "isCapital": false,
+      "resourceType": "horses",
+      "iconPath": "twtk_map/src/assets/icons/horses.png",
+      "provinceKey": "3k_main_shoufang_capital",
+      "provinceName": "Shuofang",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1369,
+        "y": 2494
+      }
+    },
+    {
+      "key": "3k_main_shoufang_resource_2",
+      "name": "Dacheng",
+      "isCapital": false,
+      "resourceType": "craftsmen_mounts",
+      "iconPath": "twtk_map/src/assets/icons/craftsmen_mounts.png",
+      "provinceKey": "3k_main_shoufang_capital",
+      "provinceName": "Shuofang",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1192,
+        "y": 2572
+      }
+    },
+    {
+      "key": "3k_main_shoufang_resource_3",
+      "name": "Sheyan",
+      "isCapital": false,
+      "resourceType": "salt",
+      "iconPath": "twtk_map/src/assets/icons/salt.png",
+      "provinceKey": "3k_main_shoufang_capital",
+      "provinceName": "Shuofang",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1167,
+        "y": 2451
+      }
+    },
+    {
+      "key": "3k_main_taishan_capital",
+      "name": "Dongpingling",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_taishan_capital",
+      "provinceName": "Lean",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2372,
+        "y": 2266
+      }
+    },
+    {
+      "key": "3k_main_taishan_resource_1",
+      "name": "Lean",
+      "isCapital": false,
+      "resourceType": "trade_port",
+      "iconPath": "twtk_map/src/assets/icons/trade_port.png",
+      "provinceKey": "3k_main_taishan_capital",
+      "provinceName": "Lean",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2488,
+        "y": 2339
+      }
+    },
+    {
+      "key": "3k_main_taiyuan_capital",
+      "name": "Jinyang",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_taiyuan_capital",
+      "provinceName": "Taiyuan",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1713,
+        "y": 2382
+      }
+    },
+    {
+      "key": "3k_main_taiyuan_resource_1",
+      "name": "Jingxing",
+      "isCapital": false,
+      "resourceType": "iron",
+      "iconPath": "twtk_map/src/assets/icons/iron.png",
+      "provinceKey": "3k_main_taiyuan_capital",
+      "provinceName": "Taiyuan",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1821,
+        "y": 2378
+      }
+    },
+    {
+      "key": "3k_main_taiyuan_resource_2",
+      "name": "Jiexiu",
+      "isCapital": false,
+      "resourceType": "tools",
+      "iconPath": "twtk_map/src/assets/icons/tools.png",
+      "provinceKey": "3k_main_taiyuan_capital",
+      "provinceName": "Taiyuan",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1679,
+        "y": 2287
+      }
+    },
+    {
+      "key": "3k_main_tongan_capital",
+      "name": "Dong'an",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_tongan_capital",
+      "provinceName": "Southern Jian'an",
+      "fertility": "low",
+      "coordinates": {
+        "x": 2488,
+        "y": 918
+      }
+    },
+    {
+      "key": "3k_main_tongan_resource_1",
+      "name": "Shashu",
+      "isCapital": false,
+      "resourceType": "livestock",
+      "iconPath": "twtk_map/src/assets/icons/livestock.png",
+      "provinceKey": "3k_main_tongan_capital",
+      "provinceName": "Southern Jian'an",
+      "fertility": "low",
+      "coordinates": {
+        "x": 2488,
+        "y": 1081
+      }
+    },
+    {
+      "key": "3k_main_weijun_capital",
+      "name": "Ye",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_weijun_capital",
+      "provinceName": "Wei",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2075,
+        "y": 2296
+      }
+    },
+    {
+      "key": "3k_main_weijun_resource_1",
+      "name": "Gongcheng",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_weijun_capital",
+      "provinceName": "Wei",
+      "fertility": "high",
+      "coordinates": {
+        "x": 1985,
+        "y": 2206
+      }
+    },
+    {
+      "key": "3k_main_wudu_capital",
+      "name": "Xiabian",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_wudu_capital",
+      "provinceName": "Wudu",
+      "fertility": "low",
+      "coordinates": {
+        "x": 977,
+        "y": 2016
+      }
+    },
+    {
+      "key": "3k_main_wudu_resource_1",
+      "name": "Shanggui",
+      "isCapital": false,
+      "resourceType": "silk",
+      "iconPath": "twtk_map/src/assets/icons/silk.png",
+      "provinceKey": "3k_main_wudu_capital",
+      "provinceName": "Wudu",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1055,
+        "y": 2111
+      }
+    },
+    {
+      "key": "3k_main_wudu_resource_2",
+      "name": "Yinping",
+      "isCapital": false,
+      "resourceType": "copper",
+      "iconPath": "twtk_map/src/assets/icons/copper.png",
+      "provinceKey": "3k_main_wudu_capital",
+      "provinceName": "Wudu",
+      "fertility": "low",
+      "coordinates": {
+        "x": 891,
+        "y": 1951
+      }
+    },
+    {
+      "key": "3k_main_wuling_capital",
+      "name": "Qianling",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_wuling_capital",
+      "provinceName": "Wuling",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1378,
+        "y": 1340
+      }
+    },
+    {
+      "key": "3k_main_wuling_resource_1",
+      "name": "Chongxian",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_wuling_capital",
+      "provinceName": "Wuling",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1429,
+        "y": 1456
+      }
+    },
+    {
+      "key": "3k_main_wuling_resource_2",
+      "name": "Chancheng",
+      "isCapital": false,
+      "resourceType": "tools",
+      "iconPath": "twtk_map/src/assets/icons/tools.png",
+      "provinceKey": "3k_main_wuling_capital",
+      "provinceName": "Wuling",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1395,
+        "y": 1172
+      }
+    },
+    {
+      "key": "3k_main_wuwei_capital",
+      "name": "Guzang",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_wuwei_capital",
+      "provinceName": "Wuwei",
+      "fertility": "low",
+      "coordinates": {
+        "x": 581,
+        "y": 2425
+      }
+    },
+    {
+      "key": "3k_main_wuwei_resource_1",
+      "name": "Xiutu",
+      "isCapital": false,
+      "resourceType": "horses",
+      "iconPath": "twtk_map/src/assets/icons/horses.png",
+      "provinceKey": "3k_main_wuwei_capital",
+      "provinceName": "Wuwei",
+      "fertility": "low",
+      "coordinates": {
+        "x": 779,
+        "y": 2447
+      }
+    },
+    {
+      "key": "3k_main_wuwei_resource_2",
+      "name": "Lingzhou",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_wuwei_capital",
+      "provinceName": "Wuwei",
+      "fertility": "low",
+      "coordinates": {
+        "x": 973,
+        "y": 2511
+      }
+    },
+    {
+      "key": "3k_main_xiangyang_capital",
+      "name": "Xiangyang",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_xiangyang_capital",
+      "provinceName": "Xiangyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1705,
+        "y": 1792
+      }
+    },
+    {
+      "key": "3k_main_xiangyang_resource_1",
+      "name": "linju",
+      "isCapital": false,
+      "resourceType": "tools",
+      "iconPath": "twtk_map/src/assets/icons/tools.png",
+      "provinceKey": "3k_main_xiangyang_capital",
+      "provinceName": "Xiangyang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1593,
+        "y": 1714
+      }
+    },
+    {
+      "key": "3k_main_xihe_capital",
+      "name": "Lishi",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_xihe_capital",
+      "provinceName": "Xihe",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1537,
+        "y": 2404
+      }
+    },
+    {
+      "key": "3k_main_xihe_resource_1",
+      "name": "Mengmen",
+      "isCapital": false,
+      "resourceType": "fish",
+      "iconPath": "twtk_map/src/assets/icons/fish.png",
+      "provinceKey": "3k_main_xihe_capital",
+      "provinceName": "Xihe",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1472,
+        "y": 2313
+      }
+    },
+    {
+      "key": "3k_main_xindu_capital",
+      "name": "Shixin",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_xindu_capital",
+      "provinceName": "Xindu",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2544,
+        "y": 1490
+      }
+    },
+    {
+      "key": "3k_main_xindu_resource_1",
+      "name": "Xin'an",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_main_xindu_capital",
+      "provinceName": "Xindu",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2510,
+        "y": 1426
+      }
+    },
+    {
+      "key": "3k_main_xindu_resource_2",
+      "name": "Wuhu",
+      "isCapital": false,
+      "resourceType": "fish",
+      "iconPath": "twtk_map/src/assets/icons/fish.png",
+      "provinceKey": "3k_main_xindu_capital",
+      "provinceName": "Xindu",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2372,
+        "y": 1538
+      }
+    },
+    {
+      "key": "3k_main_yangzhou_capital",
+      "name": "Shouchun",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_yangzhou_capital",
+      "provinceName": "Huainan",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2342,
+        "y": 1736
+      }
+    },
+    {
+      "key": "3k_main_yangzhou_resource_1",
+      "name": "Fuli",
+      "isCapital": false,
+      "resourceType": "livestock",
+      "iconPath": "twtk_map/src/assets/icons/livestock.png",
+      "provinceKey": "3k_main_yangzhou_capital",
+      "provinceName": "Huainan",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2329,
+        "y": 1826
+      }
+    },
+    {
+      "key": "3k_main_yangzhou_resource_2",
+      "name": "Gushi",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_yangzhou_capital",
+      "provinceName": "Huainan",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2174,
+        "y": 1758
+      }
+    },
+    {
+      "key": "3k_main_yangzhou_resource_3",
+      "name": "Juchao",
+      "isCapital": false,
+      "resourceType": "tools",
+      "iconPath": "twtk_map/src/assets/icons/tools.png",
+      "provinceKey": "3k_main_yangzhou_capital",
+      "provinceName": "Huainan",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2394,
+        "y": 1658
+      }
+    },
+    {
+      "key": "3k_main_yanmen_capital",
+      "name": "Yinguan",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_yanmen_capital",
+      "provinceName": "Yanmen",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1692,
+        "y": 2529
+      }
+    },
+    {
+      "key": "3k_main_yanmen_resource_1",
+      "name": "Fanzhi",
+      "isCapital": false,
+      "resourceType": "lumber",
+      "iconPath": "twtk_map/src/assets/icons/lumber.png",
+      "provinceKey": "3k_main_yanmen_capital",
+      "provinceName": "Yanmen",
+      "fertility": "low",
+      "coordinates": {
+        "x": 1911,
+        "y": 2554
+      }
+    },
+    {
+      "key": "3k_main_yingchuan_capital",
+      "name": "Xuchang",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_yingchuan_capital",
+      "provinceName": "Yingchuan",
+      "fertility": "high",
+      "coordinates": {
+        "x": 1980,
+        "y": 2007
+      }
+    },
+    {
+      "key": "3k_main_yingchuan_resource_1",
+      "name": "Chenliu",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_yingchuan_capital",
+      "provinceName": "Yingchuan",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2071,
+        "y": 2098
+      }
+    },
+    {
+      "key": "3k_main_yizhou_island_capital",
+      "name": "Danshui",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_yizhou_island_capital",
+      "provinceName": "Yizhou",
+      "fertility": "low",
+      "coordinates": {
+        "x": 2854,
+        "y": 905
+      }
+    },
+    {
+      "key": "3k_main_yizhou_island_resource_1",
+      "name": "Chiqian",
+      "isCapital": false,
+      "resourceType": "fish",
+      "iconPath": "twtk_map/src/assets/icons/fish.png",
+      "provinceKey": "3k_main_yizhou_island_capital",
+      "provinceName": "Yizhou",
+      "fertility": "low",
+      "coordinates": {
+        "x": 2729,
+        "y": 681
+      }
+    },
+    {
+      "key": "3k_main_youbeiping_capital",
+      "name": "Tuyin",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_youbeiping_capital",
+      "provinceName": "Youbeiping",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2368,
+        "y": 2589
+      }
+    },
+    {
+      "key": "3k_main_youbeiping_resource_1",
+      "name": "Linyu",
+      "isCapital": false,
+      "resourceType": "trade_port",
+      "iconPath": "twtk_map/src/assets/icons/trade_port.png",
+      "provinceKey": "3k_main_youbeiping_capital",
+      "provinceName": "Youbeiping",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2536,
+        "y": 2628
+      }
+    },
+    {
+      "key": "3k_main_youzhou_capital",
+      "name": "Ji",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_youzhou_capital",
+      "provinceName": "Guangyang",
+      "fertility": "low",
+      "coordinates": {
+        "x": 2230,
+        "y": 2615
+      }
+    },
+    {
+      "key": "3k_main_youzhou_resource_1",
+      "name": "Junmi",
+      "isCapital": false,
+      "resourceType": "iron",
+      "iconPath": "twtk_map/src/assets/icons/iron.png",
+      "provinceKey": "3k_main_youzhou_capital",
+      "provinceName": "Guangyang",
+      "fertility": "low",
+      "coordinates": {
+        "x": 2376,
+        "y": 2662
+      }
+    },
+    {
+      "key": "3k_main_yu_capital",
+      "name": "Yangle",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_yu_capital",
+      "provinceName": "Liaoxi",
+      "fertility": "low",
+      "coordinates": {
+        "x": 2622,
+        "y": 2757
+      }
+    },
+    {
+      "key": "3k_main_yu_resource_1",
+      "name": "Liucheng",
+      "isCapital": false,
+      "resourceType": "tools",
+      "iconPath": "twtk_map/src/assets/icons/tools.png",
+      "provinceKey": "3k_main_yu_capital",
+      "provinceName": "Liaoxi",
+      "fertility": "low",
+      "coordinates": {
+        "x": 2505,
+        "y": 2714
+      }
+    },
+    {
+      "key": "3k_main_yulin_capital",
+      "name": "Bushan",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_yulin_capital",
+      "provinceName": "Yulin",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1502,
+        "y": 750
+      }
+    },
+    {
+      "key": "3k_main_yulin_resource_1",
+      "name": "Tanzhong",
+      "isCapital": false,
+      "resourceType": "trade_port",
+      "iconPath": "twtk_map/src/assets/icons/trade_port.png",
+      "provinceKey": "3k_main_yulin_capital",
+      "provinceName": "Yulin",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1429,
+        "y": 831
+      }
+    },
+    {
+      "key": "3k_main_yulin_resource_2",
+      "name": "Guangyu",
+      "isCapital": false,
+      "resourceType": "spice",
+      "iconPath": "twtk_map/src/assets/icons/spice.png",
+      "provinceKey": "3k_main_yulin_capital",
+      "provinceName": "Yulin",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1317,
+        "y": 909
+      }
+    },
+    {
+      "key": "3k_main_yuzhang_capital",
+      "name": "Nanchang",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_yuzhang_capital",
+      "provinceName": "Yuzhang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2165,
+        "y": 1223
+      }
+    },
+    {
+      "key": "3k_main_yuzhang_resource_1",
+      "name": "Jianchang",
+      "isCapital": false,
+      "resourceType": "farms",
+      "iconPath": "twtk_map/src/assets/icons/farms.png",
+      "provinceKey": "3k_main_yuzhang_capital",
+      "provinceName": "Yuzhang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2049,
+        "y": 1206
+      }
+    },
+    {
+      "key": "3k_main_yuzhang_resource_2",
+      "name": "Geyang",
+      "isCapital": false,
+      "resourceType": "livestock",
+      "iconPath": "twtk_map/src/assets/icons/livestock.png",
+      "provinceKey": "3k_main_yuzhang_capital",
+      "provinceName": "Yuzhang",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 2312,
+        "y": 1232
+      }
+    },
+    {
+      "key": "3k_main_zangke_capital",
+      "name": "Julan",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_zangke_capital",
+      "provinceName": "Zangke",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1184,
+        "y": 1150
+      }
+    },
+    {
+      "key": "3k_main_zangke_resource_1",
+      "name": "Yelang",
+      "isCapital": false,
+      "resourceType": "tea",
+      "iconPath": "twtk_map/src/assets/icons/tea.png",
+      "provinceKey": "3k_main_zangke_capital",
+      "provinceName": "Zangke",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 990,
+        "y": 1167
+      }
+    },
+    {
+      "key": "3k_main_zangke_resource_2",
+      "name": "Wulian",
+      "isCapital": false,
+      "resourceType": "trade_port",
+      "iconPath": "twtk_map/src/assets/icons/trade_port.png",
+      "provinceKey": "3k_main_zangke_capital",
+      "provinceName": "Zangke",
+      "fertility": "normal",
+      "coordinates": {
+        "x": 1180,
+        "y": 1055
+      }
+    },
+    {
+      "key": "3k_main_zhongshan_capital",
+      "name": "Lunu",
+      "isCapital": true,
+      "resourceType": "city",
+      "iconPath": "twtk_map/src/assets/icons/city.png",
+      "provinceKey": "3k_main_zhongshan_capital",
+      "provinceName": "Zhongshan",
+      "fertility": "high",
+      "coordinates": {
+        "x": 2045,
+        "y": 2473
+      }
+    },
+    {
+      "key": "3k_main_zhongshan_resource_1",
+      "name": "Changshan",
+      "isCapital": false,
+      "resourceType": "livestock",
+      "iconPath": "twtk_map/src/assets/icons/livestock.png",
+      "provinceKey": "3k_main_zhongshan_capital",
+      "provinceName": "Zhongshan",
+      "fertility": "high",
+      "coordinates": {
+        "x": 1916,
+        "y": 2464
+      }
+    }
+  ],
+  "hanCivilization": {
+    "code": "han",
+    "culture": "china",
+    "emblemIcon": "han_china/art/textures/ui/session/portraits/emblems/emblem_chinese.png",
+    "shieldTextures": [
+      "han_china/art/textures/ui/shields/banner_han.png",
+      "han_china/art/textures/ui/shields/garrison_flag_han.png",
+      "han_china/art/textures/ui/shields/han_sail_dragon.png",
+      "han_china/art/textures/ui/shields/han_xin.png",
+      "han_china/art/textures/ui/shields/prop_swords_han.png",
+      "han_china/art/textures/ui/shields/sh_c01.png",
+      "han_china/art/textures/ui/shields/sh_c02.png",
+      "han_china/art/textures/ui/shields/sh_c03.png",
+      "han_china/art/textures/ui/shields/sh_c04.png",
+      "han_china/art/textures/ui/shields/sh_c05.png",
+      "han_china/art/textures/ui/shields/sh_c06.png",
+      "han_china/art/textures/ui/shields/sh_c07.png"
+    ],
+    "musicTracks": [
+      {
+        "file": "han_china/audio/music/red_dawn.ogg",
+        "type": "peace"
+      },
+      {
+        "file": "han_china/audio/music/hill_of_sorrows.ogg",
+        "type": "peace"
+      }
+    ],
+    "imperialRulerNames": [
+      "Liu Bang",
+      "Liu Ying",
+      "Liu Gong",
+      "Liu Hong",
+      "Liu Heng",
+      "Liu Qi",
+      "Liu Che",
+      "Liu Fuling",
+      "Liu He",
+      "Liu Bingyi",
+      "Liu Shi",
+      "Liu Ao",
+      "Liu Xin",
+      "Liu Kan",
+      "Liu Xuan",
+      "Liu Xiu",
+      "Liu Zhuang",
+      "Liu Da",
+      "Liu Zhao",
+      "Liu Long",
+      "Liu Hu",
+      "Liu Yi",
+      "Liu Bao",
+      "Liu Bing",
+      "Liu Zuan",
+      "Liu Zhi",
+      "Liu Hong",
+      "Liu Bian",
+      "Liu Xie"
+    ],
+    "startEntities": [
+      {
+        "Template": "structures/han/civil_centre"
+      },
+      {
+        "Template": "units/han/support_female_citizen",
+        "Count": 4
+      },
+      {
+        "Template": "units/han/infantry_spearman_b",
+        "Count": 2
+      },
+      {
+        "Template": "units/han/infantry_archer_b",
+        "Count": 2
+      },
+      {
+        "Template": "units/han/cavalry_archer_b"
+      },
+      {
+        "Template": "units/han/support_minister"
+      }
+    ],
+    "unitTemplates": [
+      {
+        "id": "units/han/catafalque",
+        "shortId": "catafalque",
+        "parentTemplate": "template_unit_catafalque",
+        "baseArchetype": "template_unit_catafalque",
+        "category": "support",
+        "rank": "standard",
+        "specificName": "Emperor Wǔ (Liu Che)",
+        "nameVi": "Linh Xa Hán Vũ Đế Lưu Triệt (Catafalque of Emperor Wu)",
+        "iconPath": null,
+        "actorXml": null,
+        "templateXml": "han_china/simulation/templates/units/han/catafalque.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": [
+          "units/catafalques/han_catafalque_1",
+          "units/catafalques/han_catafalque_2"
+        ]
+      },
+      {
+        "id": "units/han/cavalry_archer_a",
+        "shortId": "cavalry_archer_a",
+        "parentTemplate": "units/han/cavalry_archer_b",
+        "baseArchetype": "template_unit_cavalry_ranged_archer",
+        "category": "cavalry",
+        "rank": "advanced",
+        "specificName": "Gōng Qíbīng",
+        "nameVi": "Cung Kỵ Binh (Han Horse Archer) [Trung Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/cavalry_archer.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_archer_a_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/cavalry_archer_a.xml",
+        "requiredTechnology": null,
+        "promotesTo": "units/han/cavalry_archer_e",
+        "auras": []
+      },
+      {
+        "id": "units/han/cavalry_archer_b",
+        "shortId": "cavalry_archer_b",
+        "parentTemplate": "template_unit_cavalry_ranged_archer",
+        "baseArchetype": "template_unit_cavalry_ranged_archer",
+        "category": "cavalry",
+        "rank": "basic",
+        "specificName": "Gōng Qíbīng",
+        "nameVi": "Cung Kỵ Binh (Han Horse Archer) [Sơ Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/cavalry_archer.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_archer_b_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/cavalry_archer_b.xml",
+        "requiredTechnology": null,
+        "promotesTo": "units/han/cavalry_archer_a",
+        "auras": []
+      },
+      {
+        "id": "units/han/cavalry_archer_e",
+        "shortId": "cavalry_archer_e",
+        "parentTemplate": "units/han/cavalry_archer_a",
+        "baseArchetype": "template_unit_cavalry_ranged_archer",
+        "category": "cavalry",
+        "rank": "elite",
+        "specificName": "Gōng Qíbīng",
+        "nameVi": "Cung Kỵ Binh (Han Horse Archer) [Tinh Nhuệ]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/cavalry_archer.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_archer_e_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/cavalry_archer_e.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/cavalry_crossbowman_a",
+        "shortId": "cavalry_crossbowman_a",
+        "parentTemplate": "units/han/cavalry_crossbowman_b",
+        "baseArchetype": "template_unit_cavalry_ranged_crossbowman",
+        "category": "cavalry",
+        "rank": "advanced",
+        "specificName": "Han Cavalry Crossbowman",
+        "nameVi": "Nỏ Kỵ Binh (Han Crossbow Cavalry) [Trung Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/cavalry_crossbowman.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_crossbowman_a_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/cavalry_crossbowman_a.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": "units/han/cavalry_crossbowman_e",
+        "auras": []
+      },
+      {
+        "id": "units/han/cavalry_crossbowman_b",
+        "shortId": "cavalry_crossbowman_b",
+        "parentTemplate": "template_unit_cavalry_ranged_crossbowman",
+        "baseArchetype": "template_unit_cavalry_ranged_crossbowman",
+        "category": "cavalry",
+        "rank": "basic",
+        "specificName": "Han Cavalry Crossbowman",
+        "nameVi": "Nỏ Kỵ Binh (Han Crossbow Cavalry) [Sơ Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/cavalry_crossbowman.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_crossbowman_b_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/cavalry_crossbowman_b.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": "units/han/cavalry_crossbowman_a",
+        "auras": []
+      },
+      {
+        "id": "units/han/cavalry_crossbowman_e",
+        "shortId": "cavalry_crossbowman_e",
+        "parentTemplate": "units/han/cavalry_crossbowman_a",
+        "baseArchetype": "template_unit_cavalry_ranged_crossbowman",
+        "category": "cavalry",
+        "rank": "elite",
+        "specificName": "Han Cavalry Crossbowman",
+        "nameVi": "Nỏ Kỵ Binh (Han Crossbow Cavalry) [Tinh Nhuệ]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/cavalry_crossbowman.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_crossbowman_e_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/cavalry_crossbowman_e.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/cavalry_spearman_a",
+        "shortId": "cavalry_spearman_a",
+        "parentTemplate": "units/han/cavalry_spearman_b",
+        "baseArchetype": "template_unit_cavalry_melee_spearman",
+        "category": "cavalry",
+        "rank": "advanced",
+        "specificName": "Máo Qíbīng",
+        "nameVi": "Thương Kỵ Binh (Han Spear Cavalry) [Trung Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/cavalry_spearman.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_spearman_a_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/cavalry_spearman_a.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": "units/han/cavalry_spearman_e",
+        "auras": []
+      },
+      {
+        "id": "units/han/cavalry_spearman_b",
+        "shortId": "cavalry_spearman_b",
+        "parentTemplate": "template_unit_cavalry_melee_spearman",
+        "baseArchetype": "template_unit_cavalry_melee_spearman",
+        "category": "cavalry",
+        "rank": "basic",
+        "specificName": "Máo Qíbīng",
+        "nameVi": "Thương Kỵ Binh (Han Spear Cavalry) [Sơ Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/cavalry_spearman.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_spearman_b_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/cavalry_spearman_b.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": "units/han/cavalry_spearman_a",
+        "auras": []
+      },
+      {
+        "id": "units/han/cavalry_spearman_e",
+        "shortId": "cavalry_spearman_e",
+        "parentTemplate": "units/han/cavalry_spearman_a",
+        "baseArchetype": "template_unit_cavalry_melee_spearman",
+        "category": "cavalry",
+        "rank": "elite",
+        "specificName": "Máo Qíbīng",
+        "nameVi": "Thương Kỵ Binh (Han Spear Cavalry) [Tinh Nhuệ]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/cavalry_spearman.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_spearman_e_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/cavalry_spearman_e.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/cavalry_swordsman_a",
+        "shortId": "cavalry_swordsman_a",
+        "parentTemplate": "units/han/cavalry_swordsman_b",
+        "baseArchetype": "template_unit_cavalry_melee_swordsman",
+        "category": "cavalry",
+        "rank": "advanced",
+        "specificName": "Dāo Qíbīng",
+        "nameVi": "Đao Kỵ Binh (Han Sabre Cavalry) [Trung Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/cavalry_swordsman.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_swordsman_a_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/cavalry_swordsman_a.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": "units/han/cavalry_swordsman_e",
+        "auras": []
+      },
+      {
+        "id": "units/han/cavalry_swordsman_b",
+        "shortId": "cavalry_swordsman_b",
+        "parentTemplate": "template_unit_cavalry_melee_swordsman",
+        "baseArchetype": "template_unit_cavalry_melee_swordsman",
+        "category": "cavalry",
+        "rank": "basic",
+        "specificName": "Dāo Qíbīng",
+        "nameVi": "Đao Kỵ Binh (Han Sabre Cavalry) [Sơ Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/cavalry_swordsman.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_swordsman_b_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/cavalry_swordsman_b.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": "units/han/cavalry_swordsman_a",
+        "auras": []
+      },
+      {
+        "id": "units/han/cavalry_swordsman_e",
+        "shortId": "cavalry_swordsman_e",
+        "parentTemplate": "units/han/cavalry_swordsman_a",
+        "baseArchetype": "template_unit_cavalry_melee_swordsman",
+        "category": "cavalry",
+        "rank": "elite",
+        "specificName": "Dāo Qíbīng",
+        "nameVi": "Đao Kỵ Binh (Han Sabre Cavalry) [Tinh Nhuệ]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/cavalry_swordsman.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_swordsman_e_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/cavalry_swordsman_e.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/champion_cavalry_crossbowman",
+        "shortId": "champion_cavalry_crossbowman",
+        "parentTemplate": "template_unit_champion_cavalry_crossbowman",
+        "baseArchetype": "template_unit_champion_cavalry_crossbowman",
+        "category": "cavalry",
+        "rank": "champion",
+        "specificName": "Sun Wu Trouble Freeing Forces",
+        "nameVi": "Giải Phiền Thiện Xạ Đông Ngô (Sun Wu Elite Crossbow Cavalry)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/champion_cavalry_crossbowman.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_crossbowman_c_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/champion_cavalry_crossbowman.xml",
+        "requiredTechnology": "phase_city",
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/champion_cavalry_spearman",
+        "shortId": "champion_cavalry_spearman",
+        "parentTemplate": "template_unit_champion_cavalry_spearman",
+        "baseArchetype": "template_unit_champion_cavalry_spearman",
+        "category": "cavalry",
+        "rank": "champion",
+        "specificName": "Wu Wei Yin Cao Cao Guard",
+        "nameVi": "Vũ Vệ Thiết Kỵ Tào Ngụy (Wu Wei Heavy Guard Cavalry)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/champion_cavalry_spearman.png",
+        "actorXml": "han_china/art/actors/units/han/cavalry_spearman_c_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/champion_cavalry_spearman.xml",
+        "requiredTechnology": "phase_city",
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/champion_infantry_archer",
+        "shortId": "champion_infantry_archer",
+        "parentTemplate": "template_unit_champion_infantry_archer",
+        "baseArchetype": "template_unit_champion_infantry_archer",
+        "category": "infantry",
+        "rank": "champion",
+        "specificName": "Yǔ Lín",
+        "nameVi": "Vũ Lâm Thần Tiễn (Yulin Imperial Archers)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/champion_infantry_archer.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_archer_c.xml",
+        "templateXml": "han_china/simulation/templates/units/han/champion_infantry_archer.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/champion_infantry_swordsman",
+        "shortId": "champion_infantry_swordsman",
+        "parentTemplate": "template_unit_champion_infantry_swordsman",
+        "baseArchetype": "template_unit_champion_infantry_swordsman",
+        "category": "infantry",
+        "rank": "champion",
+        "specificName": "Hǔ Bēn",
+        "nameVi": "Hổ Bôn Cấm Vệ (Huben Imperial Swordsmen)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/champion_infantry_swordsman.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_swordsman_c.xml",
+        "templateXml": "han_china/simulation/templates/units/han/champion_infantry_swordsman.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/hero_han_xin",
+        "shortId": "hero_han_xin",
+        "parentTemplate": "template_unit_hero_infantry_pikeman",
+        "baseArchetype": "template_unit_hero_infantry_pikeman",
+        "category": "infantry",
+        "rank": "hero",
+        "specificName": "Hán Xìn",
+        "nameVi": "Hoài Âm Hầu Hàn Tín (Grand Marshal Han Xin)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/hero_han_xin.png",
+        "actorXml": "han_china/art/actors/units/han/hero_infantry_han_xin.xml",
+        "templateXml": "han_china/simulation/templates/units/han/hero_han_xin.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": [
+          "units/heroes/han_hero_han_xin_1",
+          "units/heroes/han_hero_han_xin_2"
+        ]
+      },
+      {
+        "id": "units/han/hero_han_xin_horse",
+        "shortId": "hero_han_xin_horse",
+        "parentTemplate": "template_unit_hero_cavalry_spearman",
+        "baseArchetype": "template_unit_hero_cavalry_spearman",
+        "category": "cavalry",
+        "rank": "hero",
+        "specificName": "Hán Xìn",
+        "nameVi": "Hoài Âm Hầu Hàn Tín — Chiến Mã (Mounted Han Xin)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/hero_han_xin.png",
+        "actorXml": "han_china/art/actors/units/han/hero_cavalry_spearman_han_xin_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/hero_han_xin_horse.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": [
+          "units/heroes/han_hero_han_xin_1",
+          "units/heroes/han_hero_han_xin_2"
+        ]
+      },
+      {
+        "id": "units/han/hero_liu_bang",
+        "shortId": "hero_liu_bang",
+        "parentTemplate": "template_unit_hero_infantry_swordsman",
+        "baseArchetype": "template_unit_hero_infantry_swordsman",
+        "category": "infantry",
+        "rank": "hero",
+        "specificName": "Liú Bāng",
+        "nameVi": "Hán Cao Tổ Lưu Bang (Emperor Gaozu Liu Bang)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/hero_liu_bang.png",
+        "actorXml": "han_china/art/actors/units/han/hero_infantry_liu_bang.xml",
+        "templateXml": "han_china/simulation/templates/units/han/hero_liu_bang.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": [
+          "units/heroes/han_hero_liu_bang_1",
+          "units/heroes/han_hero_liu_bang_2"
+        ]
+      },
+      {
+        "id": "units/han/hero_liu_bang_horse",
+        "shortId": "hero_liu_bang_horse",
+        "parentTemplate": "template_unit_hero_cavalry_swordsman",
+        "baseArchetype": "template_unit_hero_cavalry_swordsman",
+        "category": "cavalry",
+        "rank": "hero",
+        "specificName": "Liú Bāng",
+        "nameVi": "Hán Cao Tổ Lưu Bang — Chiến Mã (Mounted Liu Bang)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/hero_liu_bang.png",
+        "actorXml": "han_china/art/actors/units/han/hero_cavalry_swordsman_liu_bang_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/hero_liu_bang_horse.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": [
+          "units/heroes/han_hero_liu_bang_1",
+          "units/heroes/han_hero_liu_bang_2"
+        ]
+      },
+      {
+        "id": "units/han/hero_wei_qing",
+        "shortId": "hero_wei_qing",
+        "parentTemplate": "template_unit_hero_infantry_crossbowman",
+        "baseArchetype": "template_unit_hero_infantry_crossbowman",
+        "category": "infantry",
+        "rank": "hero",
+        "specificName": "Wèi Qīng",
+        "nameVi": "Đại Tướng Quân Vệ Thanh (General Wei Qing)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/hero_wei_qing.png",
+        "actorXml": "han_china/art/actors/units/han/hero_infantry_wei_qing.xml",
+        "templateXml": "han_china/simulation/templates/units/han/hero_wei_qing.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": [
+          "units/heroes/han_hero_wei_qing_1",
+          "units/heroes/han_hero_wei_qing_2"
+        ]
+      },
+      {
+        "id": "units/han/hero_wei_qing_chariot",
+        "shortId": "hero_wei_qing_chariot",
+        "parentTemplate": "template_unit_hero_cavalry_crossbowman",
+        "baseArchetype": "template_unit_hero_cavalry_crossbowman",
+        "category": "cavalry",
+        "rank": "hero",
+        "specificName": "Wèi Qīng",
+        "nameVi": "Đại Tướng Quân Vệ Thanh — Chiến Xa (Chariot Wei Qing)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/hero_wei_qing.png",
+        "actorXml": "han_china/art/actors/units/han/hero_chariot_crossbowman_wei_qing_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/hero_wei_qing_chariot.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": [
+          "units/heroes/han_hero_wei_qing_1",
+          "units/heroes/han_hero_wei_qing_2",
+          "units/heroes/han_hero_wei_qing_3"
+        ]
+      },
+      {
+        "id": "units/han/hero_wei_qing_horse",
+        "shortId": "hero_wei_qing_horse",
+        "parentTemplate": "template_unit_hero_cavalry_crossbowman",
+        "baseArchetype": "template_unit_hero_cavalry_crossbowman",
+        "category": "cavalry",
+        "rank": "hero",
+        "specificName": "Wèi Qīng",
+        "nameVi": "Đại Tướng Quân Vệ Thanh — Chiến Mã (Mounted Wei Qing)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/hero_wei_qing.png",
+        "actorXml": "han_china/art/actors/units/han/hero_cavalry_crossbowman_wei_qing_m.xml",
+        "templateXml": "han_china/simulation/templates/units/han/hero_wei_qing_horse.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": [
+          "units/heroes/han_hero_wei_qing_1",
+          "units/heroes/han_hero_wei_qing_2"
+        ]
+      },
+      {
+        "id": "units/han/infantry_archer_a",
+        "shortId": "infantry_archer_a",
+        "parentTemplate": "units/han/infantry_archer_b",
+        "baseArchetype": "template_unit_infantry_ranged_archer",
+        "category": "infantry",
+        "rank": "advanced",
+        "specificName": "Shè Shǒu",
+        "nameVi": "Cung Thủ Hán Quân (Han Composite Archer) [Trung Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_archer.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_archer_a.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_archer_a.xml",
+        "requiredTechnology": null,
+        "promotesTo": "units/han/infantry_archer_e",
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_archer_b",
+        "shortId": "infantry_archer_b",
+        "parentTemplate": "template_unit_infantry_ranged_archer",
+        "baseArchetype": "template_unit_infantry_ranged_archer",
+        "category": "infantry",
+        "rank": "basic",
+        "specificName": "Shè Shǒu",
+        "nameVi": "Cung Thủ Hán Quân (Han Composite Archer) [Sơ Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_archer.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_archer_b.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_archer_b.xml",
+        "requiredTechnology": null,
+        "promotesTo": "units/han/infantry_archer_a",
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_archer_e",
+        "shortId": "infantry_archer_e",
+        "parentTemplate": "units/han/infantry_archer_a",
+        "baseArchetype": "template_unit_infantry_ranged_archer",
+        "category": "infantry",
+        "rank": "elite",
+        "specificName": "Shè Shǒu",
+        "nameVi": "Cung Thủ Hán Quân (Han Composite Archer) [Tinh Nhuệ]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_archer.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_archer_e.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_archer_e.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_crossbowman_a",
+        "shortId": "infantry_crossbowman_a",
+        "parentTemplate": "units/han/infantry_crossbowman_b",
+        "baseArchetype": "template_unit_infantry_ranged_crossbowman",
+        "category": "infantry",
+        "rank": "advanced",
+        "specificName": "Nǔ Shǒu",
+        "nameVi": "Nỏ Thủ Đại Hán (Han Crossbowman) [Trung Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_crossbowman.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_crossbowman_a.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_crossbowman_a.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": "units/han/infantry_crossbowman_e",
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_crossbowman_b",
+        "shortId": "infantry_crossbowman_b",
+        "parentTemplate": "template_unit_infantry_ranged_crossbowman",
+        "baseArchetype": "template_unit_infantry_ranged_crossbowman",
+        "category": "infantry",
+        "rank": "basic",
+        "specificName": "Nǔ Shǒu",
+        "nameVi": "Nỏ Thủ Đại Hán (Han Crossbowman) [Sơ Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_crossbowman.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_crossbowman_b.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_crossbowman_b.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": "units/han/infantry_crossbowman_a",
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_crossbowman_e",
+        "shortId": "infantry_crossbowman_e",
+        "parentTemplate": "units/han/infantry_crossbowman_a",
+        "baseArchetype": "template_unit_infantry_ranged_crossbowman",
+        "category": "infantry",
+        "rank": "elite",
+        "specificName": "Nǔ Shǒu",
+        "nameVi": "Nỏ Thủ Đại Hán (Han Crossbowman) [Tinh Nhuệ]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_crossbowman.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_crossbowman_e.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_crossbowman_e.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_pikeman_a",
+        "shortId": "infantry_pikeman_a",
+        "parentTemplate": "units/han/infantry_pikeman_b",
+        "baseArchetype": "template_unit_infantry_melee_pikeman",
+        "category": "infantry",
+        "rank": "advanced",
+        "specificName": "Jǐ Bīng",
+        "nameVi": "Kích Binh Trường Thương (Han Ji Halberdier) [Trung Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_halberdman.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_halberdman_a.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_pikeman_a.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": "units/han/infantry_pikeman_e",
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_pikeman_b",
+        "shortId": "infantry_pikeman_b",
+        "parentTemplate": "template_unit_infantry_melee_pikeman",
+        "baseArchetype": "template_unit_infantry_melee_pikeman",
+        "category": "infantry",
+        "rank": "basic",
+        "specificName": "Jǐ Bīng",
+        "nameVi": "Kích Binh Trường Thương (Han Ji Halberdier) [Sơ Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_halberdman.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_halberdman_b.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_pikeman_b.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": "units/han/infantry_pikeman_a",
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_pikeman_e",
+        "shortId": "infantry_pikeman_e",
+        "parentTemplate": "units/han/infantry_pikeman_a",
+        "baseArchetype": "template_unit_infantry_melee_pikeman",
+        "category": "infantry",
+        "rank": "elite",
+        "specificName": "Jǐ Bīng",
+        "nameVi": "Kích Binh Trường Thương (Han Ji Halberdier) [Tinh Nhuệ]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_halberdman.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_halberdman_e.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_pikeman_e.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_spearman_a",
+        "shortId": "infantry_spearman_a",
+        "parentTemplate": "units/han/infantry_spearman_b",
+        "baseArchetype": "template_unit_infantry_melee_spearman",
+        "category": "infantry",
+        "rank": "advanced",
+        "specificName": "Máo Bīng",
+        "nameVi": "Mâu Binh Hán Triều (Han Spearman) [Trung Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_spearman.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_spearman_a.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_spearman_a.xml",
+        "requiredTechnology": null,
+        "promotesTo": "units/han/infantry_spearman_e",
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_spearman_b",
+        "shortId": "infantry_spearman_b",
+        "parentTemplate": "template_unit_infantry_melee_spearman",
+        "baseArchetype": "template_unit_infantry_melee_spearman",
+        "category": "infantry",
+        "rank": "basic",
+        "specificName": "Máo Bīng",
+        "nameVi": "Mâu Binh Hán Triều (Han Spearman) [Sơ Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_spearman.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_spearman_b.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_spearman_b.xml",
+        "requiredTechnology": null,
+        "promotesTo": "units/han/infantry_spearman_a",
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_spearman_e",
+        "shortId": "infantry_spearman_e",
+        "parentTemplate": "units/han/infantry_spearman_a",
+        "baseArchetype": "template_unit_infantry_melee_spearman",
+        "category": "infantry",
+        "rank": "elite",
+        "specificName": "Máo Bīng",
+        "nameVi": "Mâu Binh Hán Triều (Han Spearman) [Tinh Nhuệ]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_spearman.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_spearman_e.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_spearman_e.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_swordsman_a",
+        "shortId": "infantry_swordsman_a",
+        "parentTemplate": "units/han/infantry_swordsman_b",
+        "baseArchetype": "template_unit_infantry_melee_swordsman",
+        "category": "infantry",
+        "rank": "advanced",
+        "specificName": "Dāo Bīng",
+        "nameVi": "Đao Khiên Bộ Binh (Han Dao Swordsman) [Trung Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_swordsman.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_swordsman_a.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_swordsman_a.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": "units/han/infantry_swordsman_e",
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_swordsman_b",
+        "shortId": "infantry_swordsman_b",
+        "parentTemplate": "template_unit_infantry_melee_swordsman",
+        "baseArchetype": "template_unit_infantry_melee_swordsman",
+        "category": "infantry",
+        "rank": "basic",
+        "specificName": "Dāo Bīng",
+        "nameVi": "Đao Khiên Bộ Binh (Han Dao Swordsman) [Sơ Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_swordsman.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_swordsman_b.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_swordsman_b.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": "units/han/infantry_swordsman_a",
+        "auras": []
+      },
+      {
+        "id": "units/han/infantry_swordsman_e",
+        "shortId": "infantry_swordsman_e",
+        "parentTemplate": "units/han/infantry_swordsman_a",
+        "baseArchetype": "template_unit_infantry_melee_swordsman",
+        "category": "infantry",
+        "rank": "elite",
+        "specificName": "Dāo Bīng",
+        "nameVi": "Đao Khiên Bộ Binh (Han Dao Swordsman) [Tinh Nhuệ]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/infantry_swordsman.png",
+        "actorXml": "han_china/art/actors/units/han/infantry_swordsman_e.xml",
+        "templateXml": "han_china/simulation/templates/units/han/infantry_swordsman_e.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/ship_bireme",
+        "shortId": "ship_bireme",
+        "parentTemplate": "template_unit_ship_bireme",
+        "baseArchetype": "template_unit_ship_bireme",
+        "category": "naval",
+        "rank": "standard",
+        "specificName": "Zhàn Chuán",
+        "nameVi": "Mông Xung Chiến Thuyền (Mengchong Warship)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/ship_bireme.png",
+        "actorXml": "han_china/art/actors/structures/han/bireme.xml",
+        "templateXml": "han_china/simulation/templates/units/han/ship_bireme.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/ship_fire",
+        "shortId": "ship_fire",
+        "parentTemplate": "template_unit_ship_fire",
+        "baseArchetype": "template_unit_ship_fire",
+        "category": "naval",
+        "rank": "standard",
+        "specificName": "Huǒ Chuán",
+        "nameVi": "Hỏa Thuyền Xích Bích (Chibi Fire Ship)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/ship_fire.png",
+        "actorXml": "han_china/art/actors/structures/han/fireship.xml",
+        "templateXml": "han_china/simulation/templates/units/han/ship_fire.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/ship_fishing",
+        "shortId": "ship_fishing",
+        "parentTemplate": "template_unit_ship_fishing",
+        "baseArchetype": "template_unit_ship_fishing",
+        "category": "naval",
+        "rank": "standard",
+        "specificName": "Yú Chuán",
+        "nameVi": "Ngư Thuyền (Fishing Boat)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/ship_fishing.png",
+        "actorXml": "han_china/art/actors/structures/han/fishing_ship.xml",
+        "templateXml": "han_china/simulation/templates/units/han/ship_fishing.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/ship_merchant",
+        "shortId": "ship_merchant",
+        "parentTemplate": "template_unit_ship_merchant",
+        "baseArchetype": "template_unit_ship_merchant",
+        "category": "naval",
+        "rank": "standard",
+        "specificName": "Shāng Chuán",
+        "nameVi": "Thương Thuyền Giang Nam (Han Merchant Vessel)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/ship_merchant.png",
+        "actorXml": "han_china/art/actors/structures/han/merchant_ship.xml",
+        "templateXml": "han_china/simulation/templates/units/han/ship_merchant.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/ship_quinquereme",
+        "shortId": "ship_quinquereme",
+        "parentTemplate": "template_unit_ship_quinquereme",
+        "baseArchetype": "template_unit_ship_quinquereme",
+        "category": "naval",
+        "rank": "standard",
+        "specificName": "Dà Lóu Chuán",
+        "nameVi": "Đại Lâu Thuyền Soái Hạm (Grand Louchuan Flagship)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/ship_quinquereme.png",
+        "actorXml": "han_china/art/actors/structures/han/towership.xml",
+        "templateXml": "han_china/simulation/templates/units/han/ship_quinquereme.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/ship_trireme",
+        "shortId": "ship_trireme",
+        "parentTemplate": "template_unit_ship_trireme",
+        "baseArchetype": "template_unit_ship_trireme",
+        "category": "naval",
+        "rank": "standard",
+        "specificName": "Lóu Chuán",
+        "nameVi": "Lâu Thuyền Trung Cấp (Louchuan Tower Ship)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/ship_trireme.png",
+        "actorXml": "han_china/art/actors/structures/han/trireme.xml",
+        "templateXml": "han_china/simulation/templates/units/han/ship_trireme.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/siege_mangonel_packed",
+        "shortId": "siege_mangonel_packed",
+        "parentTemplate": "units/han/siege_mangonel_unpacked",
+        "baseArchetype": "template_unit_siege_stonethrower",
+        "category": "siege",
+        "rank": "standard",
+        "specificName": "Tóushí Chē",
+        "nameVi": "Đầu Thạch Xa — Thu Gọn (Packed Mangonel Catapult)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/siege_mangonel_packed.png",
+        "actorXml": "han_china/art/actors/units/han/siege_mangonel_pivot_packed.xml",
+        "templateXml": "han_china/simulation/templates/units/han/siege_mangonel_packed.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/siege_mangonel_unpacked",
+        "shortId": "siege_mangonel_unpacked",
+        "parentTemplate": "template_unit_siege_stonethrower",
+        "baseArchetype": "template_unit_siege_stonethrower",
+        "category": "siege",
+        "rank": "standard",
+        "specificName": "Tóushí Chē",
+        "nameVi": "Đầu Thạch Xa — Khai Hỏa (Deployed Mangonel Catapult)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/siege_mangonel.png",
+        "actorXml": "han_china/art/actors/units/han/siege_mangonel.xml",
+        "templateXml": "han_china/simulation/templates/units/han/siege_mangonel_unpacked.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/siege_ram",
+        "shortId": "siege_ram",
+        "parentTemplate": "template_unit_siege_ram",
+        "baseArchetype": "template_unit_siege_ram",
+        "category": "siege",
+        "rank": "standard",
+        "specificName": "Gōngchéng Chuí",
+        "nameVi": "Công Thành Chùy (Siege Battering Ram)",
+        "iconPath": null,
+        "actorXml": null,
+        "templateXml": "han_china/simulation/templates/units/han/siege_ram.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": [],
+        "upstreamCoreActor": "han_china/art/actors/structures/athenians/siege_ram.xml"
+      },
+      {
+        "id": "units/han/siege_shoushe",
+        "shortId": "siege_shoushe",
+        "parentTemplate": "template_unit_siege_boltshooter",
+        "baseArchetype": "template_unit_siege_boltshooter",
+        "category": "siege",
+        "rank": "standard",
+        "specificName": "Nǔ Chē",
+        "nameVi": "Sàng Tử Nỏ — Liên Châu Nỏ Xa (Shoushe Siege Crossbow)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/siege_boltshooter.png",
+        "actorXml": "han_china/art/actors/units/han/siege_shoushe.xml",
+        "templateXml": "han_china/simulation/templates/units/han/siege_shoushe.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/siege_tower",
+        "shortId": "siege_tower",
+        "parentTemplate": "template_unit_siege_tower",
+        "baseArchetype": "template_unit_siege_tower",
+        "category": "siege",
+        "rank": "standard",
+        "specificName": "Gōngchéng Tǎ",
+        "nameVi": "Vân Thê Công Thành Tháp (Siege Assault Tower)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/siege_tower.png",
+        "actorXml": "han_china/art/actors/structures/han/siege_tower.xml",
+        "templateXml": "han_china/simulation/templates/units/han/siege_tower.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/support_female_citizen",
+        "shortId": "support_female_citizen",
+        "parentTemplate": "template_unit_support_female_citizen",
+        "baseArchetype": "template_unit_support_female_citizen",
+        "category": "support",
+        "rank": "standard",
+        "specificName": "support_female_citizen",
+        "nameVi": "Dân Nữ Hán Triều (Han Citizen)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/support_female_citizen.png",
+        "actorXml": "han_china/art/actors/units/han/female_citizen.xml",
+        "templateXml": "han_china/simulation/templates/units/han/support_female_citizen.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/support_female_citizen_house",
+        "shortId": "support_female_citizen_house",
+        "parentTemplate": "units/han/support_female_citizen",
+        "baseArchetype": "template_unit_support_female_citizen",
+        "category": "support",
+        "rank": "standard",
+        "specificName": "support_female_citizen_house",
+        "nameVi": "Dân Nữ Nội Trạch (Han House Citizen)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/support_female_citizen.png",
+        "actorXml": "han_china/art/actors/units/han/female_citizen.xml",
+        "templateXml": "han_china/simulation/templates/units/han/support_female_citizen_house.xml",
+        "requiredTechnology": "unlock_females_house",
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/support_healer_a",
+        "shortId": "support_healer_a",
+        "parentTemplate": "units/han/support_healer_b",
+        "baseArchetype": "template_unit_support_healer",
+        "category": "support",
+        "rank": "advanced",
+        "specificName": "Yīshī",
+        "nameVi": "Quân Y Thái Y Viện (Military Physician) [Trung Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/support_healer.png",
+        "actorXml": "han_china/art/actors/units/han/healer.xml",
+        "templateXml": "han_china/simulation/templates/units/han/support_healer_a.xml",
+        "requiredTechnology": null,
+        "promotesTo": "units/han/support_healer_e",
+        "auras": []
+      },
+      {
+        "id": "units/han/support_healer_b",
+        "shortId": "support_healer_b",
+        "parentTemplate": "template_unit_support_healer",
+        "baseArchetype": "template_unit_support_healer",
+        "category": "support",
+        "rank": "basic",
+        "specificName": "Yīshī",
+        "nameVi": "Quân Y Thái Y Viện (Military Physician) [Sơ Cấp]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/support_healer.png",
+        "actorXml": "han_china/art/actors/units/han/healer.xml",
+        "templateXml": "han_china/simulation/templates/units/han/support_healer_b.xml",
+        "requiredTechnology": null,
+        "promotesTo": "units/han/support_healer_a",
+        "auras": []
+      },
+      {
+        "id": "units/han/support_healer_e",
+        "shortId": "support_healer_e",
+        "parentTemplate": "units/han/support_healer_a",
+        "baseArchetype": "template_unit_support_healer",
+        "category": "support",
+        "rank": "elite",
+        "specificName": "Yīshī",
+        "nameVi": "Quân Y Thái Y Viện (Military Physician) [Tinh Nhuệ]",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/support_healer.png",
+        "actorXml": "han_china/art/actors/units/han/healer.xml",
+        "templateXml": "han_china/simulation/templates/units/han/support_healer_e.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": []
+      },
+      {
+        "id": "units/han/support_minister",
+        "shortId": "support_minister",
+        "parentTemplate": "template_unit_support",
+        "baseArchetype": "template_unit_support",
+        "category": "support",
+        "rank": "standard",
+        "specificName": "Guānlì",
+        "nameVi": "Quan Lại Thượng Thư (Imperial Minister)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/minister.png",
+        "actorXml": "han_china/art/actors/units/han/minister.xml",
+        "templateXml": "han_china/simulation/templates/units/han/support_minister.xml",
+        "requiredTechnology": "phase_town",
+        "promotesTo": null,
+        "auras": [
+          "units/han_minister_garrison",
+          "units/han_minister_gathering",
+          "units/han_minister_building",
+          "units/han_minister_garrison_ministry"
+        ]
+      },
+      {
+        "id": "units/han/support_trader",
+        "shortId": "support_trader",
+        "parentTemplate": "template_unit_support_trader",
+        "baseArchetype": "template_unit_support_trader",
+        "category": "support",
+        "rank": "standard",
+        "specificName": "Shāngrén",
+        "nameVi": "Thương Nhân Con Đường Tơ Lụa (Silk Road Trader)",
+        "iconPath": "han_china/art/textures/ui/session/portraits/units/han/support_trader.png",
+        "actorXml": null,
+        "templateXml": "han_china/simulation/templates/units/han/support_trader.xml",
+        "requiredTechnology": null,
+        "promotesTo": null,
+        "auras": [],
+        "upstreamCoreActor": "han_china/art/actors/units/carthaginians/trader.xml"
+      }
+    ],
+    "technologies": [
+      {
+        "id": "art_of_war",
+        "genericName": "Sun Tzu's \"The Art of War\"",
+        "specificNameHan": "Sūnzǐ BīngFǎ",
+        "description": "This famous and most important work of the Seven Military Classics teaches Chinese commanders everything about planning battles, maintaining armies, and defeating one's enemies.",
+        "cost": {
+          "food": 800,
+          "metal": 800
+        },
+        "icon": "patriotism.png"
+      },
+      {
+        "id": "civbonuses/han_popcap",
+        "genericName": "Federated States",
+        "specificNameHan": null,
+        "description": "By uniting China under one emperor, the Han Dynasty ruled over 40 million people, one of the largest empires of antiquity by population.",
+        "cost": {},
+        "icon": null
+      },
+      {
+        "id": "civbonuses/han_walls",
+        "genericName": "Great Wall",
+        "specificNameHan": null,
+        "description": "Han built massive walls, the great wall.",
+        "cost": {},
+        "icon": "wall.png"
+      },
+      {
+        "id": "civil_engineering_01",
+        "genericName": "Civil Engineering - Level 1",
+        "specificNameHan": "Gōngchéng",
+        "description": "",
+        "cost": {
+          "food": 0,
+          "wood": 250,
+          "stone": 250,
+          "metal": 0
+        },
+        "icon": "chinese_engineering_01.png"
+      },
+      {
+        "id": "civil_engineering_02",
+        "genericName": "Civil Engineering - Level 2",
+        "specificNameHan": "Gōngchéng",
+        "description": "",
+        "cost": {
+          "food": 0,
+          "wood": 500,
+          "stone": 500,
+          "metal": 0
+        },
+        "icon": "chinese_engineering_02.png"
+      },
+      {
+        "id": "civil_service_01",
+        "genericName": "Civil Service - Level 1",
+        "specificNameHan": "Guānliáo",
+        "description": "",
+        "cost": {
+          "food": 250,
+          "wood": 250,
+          "stone": 0,
+          "metal": 0
+        },
+        "icon": "chinese_bureaucracy_01.png"
+      },
+      {
+        "id": "civil_service_02",
+        "genericName": "Civil Service - Level 2",
+        "specificNameHan": "Guānliáo",
+        "description": "",
+        "cost": {
+          "food": 200,
+          "wood": 200,
+          "stone": 200,
+          "metal": 400
+        },
+        "icon": "chinese_bureaucracy_02.png"
+      },
+      {
+        "id": "gather_farming_chain_pump",
+        "genericName": "Chain Pump",
+        "specificNameHan": null,
+        "description": "Install a chain pump for improved irrigation.",
+        "cost": {
+          "wood": 400,
+          "metal": 300
+        },
+        "icon": "flood_control.png"
+      },
+      {
+        "id": "gather_farming_fertilizer",
+        "genericName": "Fertilizer",
+        "specificNameHan": null,
+        "description": "Extra nutrients for farms.",
+        "cost": {
+          "wood": 400,
+          "metal": 300
+        },
+        "icon": "olives.png"
+      },
+      {
+        "id": "gather_farming_plows",
+        "genericName": "Iron Plow",
+        "specificNameHan": null,
+        "description": "Equip your workers with iron plows, animal-drawn instruments to turn the sod.",
+        "cost": {
+          "wood": 200,
+          "metal": 100
+        },
+        "icon": "plow.png"
+      },
+      {
+        "id": "gather_farming_seed_drill",
+        "genericName": "Seed Drill",
+        "specificNameHan": null,
+        "description": "Equip your workers with seed drills.",
+        "cost": {
+          "wood": 200,
+          "metal": 100
+        },
+        "icon": "torsion_springs.png"
+      },
+      {
+        "id": "gather_farming_training",
+        "genericName": "Gather Training",
+        "specificNameHan": null,
+        "description": "Training for workers to increase farm gathering speed.",
+        "cost": {
+          "wood": 300,
+          "metal": 200
+        },
+        "icon": "farming_training.png"
+      },
+      {
+        "id": "gather_farming_water_weeding",
+        "genericName": "Water Weeding",
+        "specificNameHan": null,
+        "description": "Grow water weeds to to supply rice plants with nutricients.",
+        "cost": {
+          "wood": 300,
+          "metal": 200
+        },
+        "icon": "irrigation.png"
+      },
+      {
+        "id": "pair_unlock_arrows_type",
+        "genericName": "Fire Arrows vs Poison Arrows",
+        "specificNameHan": null,
+        "description": "",
+        "cost": {},
+        "icon": null
+      },
+      {
+        "id": "poison_arrows",
+        "genericName": "Poison Arrows",
+        "specificNameHan": null,
+        "description": "",
+        "cost": {
+          "food": 1200,
+          "wood": 1200
+        },
+        "icon": "arrow_poison.png"
+      },
+      {
+        "id": "poison_blades",
+        "genericName": "Poison Blades",
+        "specificNameHan": null,
+        "description": "",
+        "cost": {
+          "food": 1200,
+          "metal": 1200
+        },
+        "icon": "sword_poison.png"
+      },
+      {
+        "id": "silk_road",
+        "genericName": "Silk Road",
+        "specificNameHan": null,
+        "description": "",
+        "cost": {
+          "food": 500,
+          "wood": 500
+        },
+        "icon": "trade_routes.png"
+      },
+      {
+        "id": "special_crossbow_tradition",
+        "genericName": "Crossbow Tradition",
+        "specificNameHan": null,
+        "description": "The Chinese had a tradition of fine archery and a penchant for using massed crossbowmen in battle.",
+        "cost": {
+          "food": 500,
+          "wood": 500,
+          "stone": 0,
+          "metal": 250
+        },
+        "icon": "armor_plates_ranged.png"
+      },
+      {
+        "id": "tower_crenellations",
+        "genericName": "Crenellations",
+        "specificNameHan": null,
+        "description": "Crenellations on the battlements allow soldiers wider range of fire in defending a keep.",
+        "cost": {
+          "stone": 500,
+          "metal": 250
+        },
+        "icon": "crenelations.png"
+      },
+      {
+        "id": "tower_health",
+        "genericName": "Sturdy Foundations",
+        "specificNameHan": null,
+        "description": "Reinforce the foundations in preparation of an attack.",
+        "cost": {
+          "wood": 500,
+          "stone": 500,
+          "metal": 500
+        },
+        "icon": "masonry_clamps.png"
+      },
+      {
+        "id": "tower_murderholes",
+        "genericName": "Murder Holes",
+        "specificNameHan": null,
+        "description": "Murder holes allow hitting enemies at the foot of the tower.",
+        "cost": {
+          "wood": 250,
+          "stone": 100
+        },
+        "icon": "murder_holes.png"
+      },
+      {
+        "id": "tower_range",
+        "genericName": "Arrow Shooters",
+        "specificNameHan": null,
+        "description": "Arrow shooters increase the maximum range of the fire arrows.",
+        "cost": {
+          "wood": 500,
+          "metal": 250
+        },
+        "icon": "arrow.png"
+      },
+      {
+        "id": "tower_watch",
+        "genericName": "Sentries",
+        "specificNameHan": "Shàobīng",
+        "description": "A night's watch increases vigilance.",
+        "cost": {
+          "food": 500
+        },
+        "icon": "helmet_corinthian_bronze.png"
+      },
+      {
+        "id": "unlock_champion_cavalry",
+        "genericName": "Unlock Champion Cavalry",
+        "specificNameHan": null,
+        "description": "Guard units (Champions) are professionals who wield the best weapons and have the best training.",
+        "cost": {
+          "food": 600
+        },
+        "icon": "helmet_corinthian_crest.png"
+      },
+      {
+        "id": "unlock_champion_infantry",
+        "genericName": "Unlock Champion Infantry",
+        "specificNameHan": null,
+        "description": "Guard units (Champions) are professionals who wield the best weapons and have the best training.",
+        "cost": {
+          "food": 600
+        },
+        "icon": "helmet_corinthian_crest.png"
+      }
+    ],
+    "auras": [
+      {
+        "id": "structures/han_laozi_gate",
+        "auraName": "Taoism",
+        "auraDescription": "Humans +1 health regeneration rate, +25% health",
+        "type": "range",
+        "radius": 75,
+        "affectedPlayers": []
+      },
+      {
+        "id": "teambonuses/han_player_teambonus",
+        "auraName": "Silk Road",
+        "auraDescription": "Allies +20% international trade bonus.",
+        "type": "global",
+        "radius": null,
+        "affectedPlayers": [
+          "ExclusiveMutualAlly"
+        ]
+      },
+      {
+        "id": "units/catafalques/han_catafalque_1",
+        "auraName": "Territorial Expansion",
+        "auraDescription": "At its height, the Empire's borders spanned from the Fergana Valley in the west, to Korea in the east, and to northern Vietnam in the south.\nTerritory influence bonus +20%.",
+        "type": "global",
+        "radius": null,
+        "affectedPlayers": []
+      },
+      {
+        "id": "units/catafalques/han_catafalque_2",
+        "auraName": "Imperial Music Bureau",
+        "auraDescription": "The Music Bureau was charged directly, by the emperor to perform various tasks related to music, poetry, entertainment, or religious worship.\n Techcost -50%.",
+        "type": "global",
+        "radius": null,
+        "affectedPlayers": []
+      },
+      {
+        "id": "units/han_minister_building",
+        "auraName": "Building Programs",
+        "auraDescription": "Builders construct buildings +2% faster for every nearby Minister.",
+        "type": "range",
+        "radius": 40,
+        "affectedPlayers": []
+      },
+      {
+        "id": "units/han_minister_cost",
+        "auraName": "The Cost of Splendor",
+        "auraDescription": "Cost +20% and build time +20% for each new Minister trained.",
+        "type": "global",
+        "radius": null,
+        "affectedPlayers": []
+      },
+      {
+        "id": "units/han_minister_garrison",
+        "auraName": "Excellency of Works",
+        "auraDescription": "Decrease resource costs and research time of technologies in a building by 2% for each Minister garrisoned within.",
+        "type": "garrison",
+        "radius": null,
+        "affectedPlayers": []
+      },
+      {
+        "id": "units/han_minister_garrison_ministry",
+        "auraName": "Nationalized Industries",
+        "auraDescription": "The Imperial Ministry gains a +0.1 wood, stone, metal trickle for each garrisoned minister.",
+        "type": "garrison",
+        "radius": null,
+        "affectedPlayers": []
+      },
+      {
+        "id": "units/han_minister_gathering",
+        "auraName": "Minister over the Masses",
+        "auraDescription": "Gatherers +2% gathering rate for every nearby Minister.",
+        "type": "range",
+        "radius": 40,
+        "affectedPlayers": []
+      },
+      {
+        "id": "units/heroes/han_hero_han_xin_1",
+        "auraName": "Northern Army",
+        "auraDescription": "Own and Allied Soldiers -50% promotion experience.",
+        "type": "range",
+        "radius": 40,
+        "affectedPlayers": [
+          "Ally"
+        ]
+      },
+      {
+        "id": "units/heroes/han_hero_han_xin_2",
+        "auraName": "Southern Army",
+        "auraDescription": "Own and Allied Soldiers +15% walk speed and +25% vision range.",
+        "type": "global",
+        "radius": null,
+        "affectedPlayers": [
+          "Ally"
+        ]
+      },
+      {
+        "id": "units/heroes/han_hero_liu_bang_1",
+        "auraName": "Confucian Reforms",
+        "auraDescription": "Walls +10 health regeneration rate.",
+        "type": "global",
+        "radius": null,
+        "affectedPlayers": []
+      },
+      {
+        "id": "units/heroes/han_hero_liu_bang_2",
+        "auraName": "Confucian Reforms",
+        "auraDescription": "Cavalry +20% attack damage.",
+        "type": "range",
+        "radius": 40,
+        "affectedPlayers": []
+      },
+      {
+        "id": "units/heroes/han_hero_wei_qing_1",
+        "auraName": "Mandate of Heaven",
+        "auraDescription": "Champions +2 capture attack strength, +20% melee and ranged attack damage.",
+        "type": "range",
+        "radius": 60,
+        "affectedPlayers": []
+      },
+      {
+        "id": "units/heroes/han_hero_wei_qing_2",
+        "auraName": "Mandate of Heaven",
+        "auraDescription": "Enemy Cavalry −10% melee and ranged attack damage.",
+        "type": "range",
+        "radius": 30,
+        "affectedPlayers": [
+          "Enemy"
+        ]
+      },
+      {
+        "id": "units/heroes/han_hero_wei_qing_3",
+        "auraName": "Scythes",
+        "auraDescription": "Nearby enemy units -10 health/second.",
+        "type": "range",
+        "radius": 8,
+        "affectedPlayers": [
+          "Enemy"
+        ]
+      }
+    ],
+    "structures": [
+      "academy",
+      "arsenal",
+      "barracks",
+      "civil_centre",
+      "civil_centre_court",
+      "corral",
+      "defense_tower",
+      "defense_tower_great",
+      "dock",
+      "farmstead",
+      "field",
+      "field_grain",
+      "forge",
+      "fortress",
+      "fortress_old",
+      "house",
+      "laozigate",
+      "market",
+      "ministry",
+      "outpost",
+      "palisades_curve",
+      "palisades_gate",
+      "palisades_long",
+      "palisades_medium",
+      "palisades_short",
+      "palisades_tower",
+      "practice_range",
+      "range",
+      "sentry_tower",
+      "stable",
+      "storehouse",
+      "temple",
+      "wall_gate",
+      "wall_long",
+      "wall_medium",
+      "wall_short",
+      "wall_tower",
+      "wallset_palisade",
+      "wallset_stone",
+      "wonder"
+    ]
+  },
+  "steeringReference": {
+    "library": "Yuka Game AI Library (Mugen87/yuka)",
+    "license": "MIT",
+    "rootDir": "yuka_steering/src",
+    "modules": {
+      "formationOffsetPursuit": "yuka_steering/src/steering/behaviors/OffsetPursuitBehavior.js",
+      "flockingSeparation": "yuka_steering/src/steering/behaviors/SeparationBehavior.js",
+      "flockingAlignment": "yuka_steering/src/steering/behaviors/AlignmentBehavior.js",
+      "flockingCohesion": "yuka_steering/src/steering/behaviors/CohesionBehavior.js",
+      "followPath": "yuka_steering/src/steering/behaviors/FollowPathBehavior.js",
+      "obstacleAvoidance": "yuka_steering/src/steering/behaviors/ObstacleAvoidanceBehavior.js",
+      "arrive": "yuka_steering/src/steering/behaviors/ArriveBehavior.js",
+      "seek": "yuka_steering/src/steering/behaviors/SeekBehavior.js",
+      "vehicleAgent": "yuka_steering/src/steering/Vehicle.js",
+      "steeringManager": "yuka_steering/src/steering/SteeringManager.js",
+      "astarSearch": "yuka_steering/src/graph/search/AStar.js",
+      "navMesh": "yuka_steering/src/navigation/navmesh/NavMesh.js",
+      "spatialGrid": "yuka_steering/src/partitioning/CellSpacePartitioning.js"
+    }
+  }
+}
