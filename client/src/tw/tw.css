@@ -1,0 +1,3242 @@
+/* =========================================================
+   Tam Quốc Toàn Chiến (Total War: Three Kingdoms) – tw.css
+   Hệ thống giao diện Thủy Mặc (Sumi Ink-Wash), Giấy Tuyên (Rice-Paper Parchment)
+   & Viền Đồng Vàng (Bronze-Gold Trim) tối ưu độ rõ nét chiến thuật 2.5D
+   ========================================================= */
+
+.tw-game,
+.tw-screen {
+  /* Semantic Scoped Tokens (Required Core Palette) */
+  --tw-ink: rgba(16, 18, 20, 0.88);
+  --tw-ink-deep: rgba(10, 12, 14, 0.94);
+  --tw-parchment: #ebe4d4;
+  --tw-gold: #d4af37;
+  --tw-gold-dim: rgba(212, 175, 55, 0.42);
+  --tw-jade: #37b24d;
+  --tw-cinnabar: #e03131;
+  --tw-azure: #339af0;
+  --tw-muted: #adb5bd;
+
+  /* Derived Ink-Wash & Wu Xing Tokens */
+  --tw-parchment-ivory: rgba(246, 243, 236, 0.95);
+  --tw-parchment-aged: #d6cbb5;
+  --tw-bronze-line: rgba(180, 148, 76, 0.52);
+  --tw-ink-line: rgba(235, 228, 212, 0.14);
+  --tw-ink-surface: rgba(255, 255, 255, 0.06);
+  --tw-shadow-hud: 0 10px 28px rgba(0, 0, 0, 0.62);
+  --tw-wuxing-fire: #e03131;
+  --tw-wuxing-wood: #37b24d;
+  --tw-wuxing-water: #339af0;
+  --tw-wuxing-metal: #9c6ade;
+  --tw-wuxing-earth: #d4af37;
+
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  overflow: hidden;
+  background: #141815;
+  color: #f2ece1;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+/* ---------- Scoped Typography, Scrollbars & Button Resets ---------- */
+.tw-game,
+.tw-game * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tw-gold-dim) rgba(0, 0, 0, 0.3);
+}
+.tw-game ::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.tw-game ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.28);
+}
+.tw-game ::-webkit-scrollbar-thumb {
+  background: var(--tw-gold-dim);
+  border-radius: 3px;
+}
+
+.tw-game .muted { color: var(--tw-muted); }
+.tw-game .gold-text { color: var(--tw-gold); }
+.tw-game .good-text { color: #69db7c; font-weight: 700; }
+.tw-game .bad-text { color: #ff8787; font-weight: 700; }
+.tw-game .tabular { font-variant-numeric: tabular-nums; }
+
+.tw-game kbd {
+  font: 600 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding: 2px 4px;
+  border-radius: 3px;
+  background: rgba(8, 10, 12, 0.82);
+  color: var(--tw-gold);
+  border: 1px solid var(--tw-gold-dim);
+  pointer-events: none;
+}
+
+.tw-game .modal {
+  color: var(--text);
+  user-select: text;
+  -webkit-user-select: text;
+  touch-action: auto;
+}
+
+.tw-game button:focus-visible {
+  outline: 2px solid var(--tw-gold);
+  outline-offset: 2px;
+}
+.tw-end button {
+  color: #f2ece1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--tw-ink-line);
+}
+.tw-end button.primary,
+.tw-btn-gold {
+  background: linear-gradient(180deg, #caa22c, #997417);
+  color: #151107;
+  border: 1px solid #f3d474;
+  font-weight: 700;
+  border-radius: 4px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+}
+.tw-end button.primary:not(:disabled):hover,
+.tw-btn-gold:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+.tw-end button.secondary,
+.tw-btn-ink {
+  background: var(--tw-ink-deep);
+  color: var(--tw-parchment);
+  border: 1px solid var(--tw-gold-dim);
+  font-weight: 600;
+  border-radius: 4px;
+}
+.tw-end button.secondary:not(:disabled):hover,
+.tw-btn-ink:not(:disabled):hover {
+  border-color: var(--tw-gold);
+  background: rgba(34, 30, 22, 0.95);
+}
+.tw-end button.ghost {
+  background: transparent;
+  color: var(--tw-muted);
+  border-color: transparent;
+}
+.tw-end button.ghost:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--tw-parchment);
+}
+.tw-end button.small {
+  padding: 4px 9px;
+  font-size: 12px;
+}
+.tw-end button.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--tw-gold);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* ---------- 2. Fullscreen 2.5D Battlefield Canvas ---------- */
+.tw-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+.tw-game.picking .tw-canvas,
+.tw-game.targeting .tw-canvas,
+.tw-game.duel-picking .tw-canvas {
+  cursor: crosshair !important;
+}
+.tw-game.panning .tw-canvas {
+  cursor: grabbing !important;
+}
+
+.tw-selection-box {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  border: 1.5px solid var(--tw-gold);
+  background: rgba(212, 175, 55, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+/* ---------- 3. Top Bar & Top-Right Utility Dock ---------- */
+.tw-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding: max(8px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 0 max(10px, env(safe-area-inset-left));
+  pointer-events: none;
+}
+.tw-top > * {
+  pointer-events: auto;
+}
+
+.tw-top-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tw-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--tw-ink);
+  border: 1px solid var(--tw-gold-dim);
+  color: var(--tw-parchment);
+  font-size: 12.5px;
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+.tw-pill b {
+  font-variant-numeric: tabular-nums;
+  color: var(--tw-gold);
+}
+.tw-pill.warn {
+  border-color: rgba(224, 49, 49, 0.72);
+  color: #ffc9c9;
+}
+
+.tw-top-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+/* Support standalone .tw-top-right directly under .tw-game */
+.tw-game > .tw-top-right {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  z-index: 4;
+}
+
+.tw-icon,
+.tw-util-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--tw-ink-deep);
+  color: var(--tw-parchment);
+  border: 1.5px solid var(--tw-gold-dim);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+  font-size: 14px;
+}
+.tw-icon:not(:disabled):hover,
+.tw-util-btn:not(:disabled):hover,
+.tw-icon.on,
+.tw-util-btn.on {
+  border-color: var(--tw-gold);
+  color: #fff3bf;
+  background: radial-gradient(circle at 50% 30%, rgba(64, 50, 22, 0.95), rgba(16, 14, 10, 0.98));
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.24), 0 3px 10px rgba(0, 0, 0, 0.55);
+}
+.tw-icon.guide-i,
+.tw-util-btn.guide-i {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 16px;
+}
+.tw-icon.leave,
+.tw-util-btn.leave {
+  border-color: rgba(224, 49, 49, 0.55);
+  color: #ffc9c9;
+}
+.tw-icon.leave:not(:disabled):hover,
+.tw-util-btn.leave:not(:disabled):hover {
+  background: rgba(180, 32, 32, 0.92);
+  border-color: #ff8787;
+  color: #ffffff;
+}
+
+.tw-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--tw-cinnabar);
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+}
+.tw-badge.plain,
+.tw-badge.gold {
+  background: var(--tw-gold);
+  color: #181206;
+  border-color: rgba(24, 18, 6, 0.45);
+}
+
+.tw-dock {
+  display: inline-flex;
+  align-items: center;
+  background: var(--tw-ink-deep);
+  border: 1px solid var(--tw-gold-dim);
+  border-radius: 999px;
+  padding: 2px 5px;
+  color: var(--tw-parchment);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+}
+.tw-dock .dock {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+.tw-dock button {
+  background: transparent;
+  border: 0;
+  color: var(--tw-parchment);
+  height: 30px;
+  padding: 0 7px;
+  border-radius: 999px;
+}
+.tw-dock button:not(:disabled):hover {
+  background: rgba(212, 175, 55, 0.16);
+  color: var(--tw-gold);
+}
+
+/* Tactical Alerts, Deployment Phase & Spectator Strip */
+.tw-alert {
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  z-index: 4;
+  transform: translateX(-50%);
+  padding: 7px 16px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgba(110, 18, 18, 0.94), rgba(168, 28, 28, 0.96), rgba(110, 18, 18, 0.94));
+  border: 1px solid var(--tw-gold);
+  color: #fff5f5;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+}
+.tw-hint {
+  position: absolute;
+  top: 96px;
+  left: 50%;
+  z-index: 4;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 24px);
+  padding: 7px 14px;
+  border-radius: 4px;
+  background: var(--tw-ink-deep);
+  border: 1px solid var(--tw-gold-dim);
+  color: var(--tw-parchment);
+  font-size: 12.5px;
+  text-align: center;
+  box-shadow: var(--tw-shadow-hud);
+}
+.tw-spec-banner {
+  position: absolute;
+  top: 56px;
+  left: max(12px, env(safe-area-inset-left));
+  z-index: 3;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--tw-ink-deep);
+  border: 1px solid var(--tw-gold-dim);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--tw-gold);
+}
+
+/* ---------- 4. Left & Right General Banter / Taunt Popups ---------- */
+.tw-banter-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.tw-banter-card {
+  position: absolute;
+  bottom: 224px;
+  width: min(312px, 42vw);
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.62));
+}
+.tw-banter-card.left {
+  left: max(14px, env(safe-area-inset-left));
+  align-items: flex-start;
+  animation: tw-banter-in-left 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.tw-banter-card.right {
+  right: max(14px, env(safe-area-inset-right));
+  align-items: flex-end;
+  animation: tw-banter-in-right 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.tw-banter-card.leaving {
+  opacity: 0;
+  transition: opacity 0.24s ease, transform 0.24s ease;
+  transform: translateY(8px);
+}
+
+@keyframes tw-banter-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-26px) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+@keyframes tw-banter-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(26px) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+.tw-banter-portrait,
+.tw-banter-bust,
+.tw-banter-card > img {
+  position: relative;
+  z-index: 1;
+  height: 92px;
+  width: auto;
+  max-width: 128px;
+  object-fit: contain;
+  object-position: bottom center;
+  margin-bottom: -8px;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.72));
+}
+.tw-banter-card.left .tw-banter-portrait,
+.tw-banter-card.left .tw-banter-bust,
+.tw-banter-card.left > img {
+  margin-left: 8px;
+}
+.tw-banter-card.right .tw-banter-portrait,
+.tw-banter-card.right .tw-banter-bust,
+.tw-banter-card.right > img {
+  margin-right: 8px;
+}
+.tw-banter-portrait.flip,
+.tw-banter-bust.flip {
+  transform: scaleX(-1);
+}
+
+/* Sumi Ink-Brush Dialogue Frame */
+.tw-banter-box,
+.tw-banter-dialog {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  background: var(--tw-ink-deep);
+  border: 1px solid var(--tw-gold-dim);
+  border-top: 2px solid var(--tw-gold);
+  border-radius: 3px;
+  padding: 5px 7px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tw-banter-name,
+.tw-banter-header {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--tw-ink-deep);
+  color: var(--tw-gold);
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  border: 1px solid var(--tw-gold-dim);
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+}
+.tw-banter-box .tw-banter-name,
+.tw-banter-box .tw-banter-header,
+.tw-banter-dialog .tw-banter-name,
+.tw-banter-dialog .tw-banter-header {
+  padding: 2px 4px 3px;
+  border: 0;
+  background: transparent;
+}
+.tw-banter-card.right .tw-banter-name,
+.tw-banter-card.right .tw-banter-header {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.tw-banter-role {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--tw-muted);
+  letter-spacing: 0.04em;
+}
+
+/* Crisp Ivory Rice-Paper Quote Box */
+.tw-banter-quote,
+.tw-banter-text {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 8px 11px;
+  background: rgba(246, 243, 236, 0.95);
+  color: #181818;
+  font-style: italic;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.42;
+  border-radius: 2px;
+  border-left: 3px solid var(--tw-gold);
+  box-shadow: inset 0 0 0 1px rgba(24, 24, 24, 0.08);
+}
+.tw-banter-card.right .tw-banter-quote,
+.tw-banter-card.right .tw-banter-text {
+  border-left: 0;
+  border-right: 3px solid var(--tw-cinnabar);
+  text-align: right;
+}
+
+/* ---------- 5 & 6. Bottom-Left Authentic TW3K Army Retinue HUD ---------- */
+.tw-hud-bottom-left {
+  position: absolute;
+  bottom: max(6px, env(safe-area-inset-bottom));
+  left: max(8px, env(safe-area-inset-left));
+  max-width: calc(100vw - 260px);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  pointer-events: none;
+}
+.tw-hud-bottom-left > * {
+  pointer-events: auto;
+}
+
+/* 6. Unit Hover / Selected Inspector Tooltip */
+.tw-unit-inspector {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  padding: 5px 11px;
+  max-width: 100%;
+  background: var(--tw-ink-deep);
+  border: 1px solid var(--tw-gold-dim);
+  border-left: 3px solid var(--tw-gold);
+  border-radius: 3px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  font-size: 11.5px;
+  color: var(--tw-parchment);
+  pointer-events: none;
+}
+.tw-inspector-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.tw-inspector-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
+.tw-inspector-class {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--tw-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.tw-inspector-stats {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.tw-stat-chip,
+.tw-inspector-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: #e9ecef;
+  white-space: nowrap;
+}
+.tw-stat-chip b,
+.tw-inspector-stat b {
+  color: #ffffff;
+  font-weight: 700;
+}
+.tw-stat-chip.good,
+.tw-inspector-stat.good {
+  color: #8ce99a;
+  border-color: rgba(55, 178, 77, 0.45);
+  background: rgba(55, 178, 77, 0.14);
+}
+.tw-stat-chip.bad,
+.tw-inspector-stat.bad {
+  color: #ffa8a8;
+  border-color: rgba(224, 49, 49, 0.45);
+  background: rgba(224, 49, 49, 0.14);
+}
+.tw-stat-chip.warn,
+.tw-inspector-stat.warn {
+  color: #ffe066;
+  border-color: rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.14);
+}
+.tw-stat-chip.terrain,
+.tw-inspector-stat.terrain {
+  color: #74c0fc;
+  border-color: rgba(51, 154, 240, 0.45);
+  background: rgba(51, 154, 240, 0.14);
+}
+
+/* 5a. Circular Tactical Order Buttons Strip */
+.tw-order-strip {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0 4px;
+  margin-bottom: -1px;
+}
+
+.tw-order-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--tw-gold-dim);
+  margin: 0 2px;
+  flex: none;
+}
+
+.tw-order-circle {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 28%, rgba(44, 46, 48, 0.96), rgba(14, 16, 18, 0.98));
+  color: var(--tw-parchment);
+  border: 1.5px solid var(--tw-bronze-line);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.58), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+  line-height: 1;
+}
+.tw-order-circle:not(:disabled):hover {
+  border-color: var(--tw-gold);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+.tw-order-circle.on,
+.tw-order-circle.active {
+  border-color: var(--tw-gold);
+  color: #ffe066;
+  background: radial-gradient(circle at 50% 28%, rgba(82, 64, 22, 0.96), rgba(24, 18, 8, 0.98));
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.3), 0 0 10px rgba(212, 175, 55, 0.32), inset 0 0 6px rgba(212, 175, 55, 0.22);
+}
+.tw-order-circle.duel {
+  border-color: rgba(224, 49, 49, 0.72);
+  color: #ffc9c9;
+  background: radial-gradient(circle at 50% 28%, rgba(76, 22, 22, 0.96), rgba(22, 10, 10, 0.98));
+}
+.tw-order-circle.duel.on,
+.tw-order-circle.duel:not(:disabled):hover {
+  border-color: var(--tw-gold);
+  color: #fff3bf;
+  box-shadow: 0 0 0 2px rgba(224, 49, 49, 0.45), 0 0 12px rgba(224, 49, 49, 0.45);
+}
+
+/* Wu Xing Active Skill Ring Accents */
+.tw-order-circle.fire { border-color: rgba(224, 49, 49, 0.8); }
+.tw-order-circle.wood { border-color: rgba(55, 178, 77, 0.8); }
+.tw-order-circle.water { border-color: rgba(51, 154, 240, 0.8); }
+.tw-order-circle.metal { border-color: rgba(156, 106, 222, 0.8); }
+.tw-order-circle.earth { border-color: rgba(212, 175, 55, 0.85); }
+
+.tw-order-circle kbd {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  font-size: 8.5px;
+  padding: 1px 3px;
+  border-radius: 3px;
+}
+
+.tw-order-cd,
+.tw-cd-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(8, 10, 12, 0.78);
+  color: #ffe066;
+  font-size: 10px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+/* Tactical Order Pills (Fire Arrows & Battlefield Deployables) */
+.tw-order-pill {
+  position: relative;
+  height: 32px;
+  padding: 0 9px;
+  border-radius: 999px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: radial-gradient(circle at 50% 28%, rgba(44, 46, 48, 0.96), rgba(14, 16, 18, 0.98));
+  color: var(--tw-parchment);
+  border: 1.5px solid var(--tw-bronze-line);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.58), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.tw-order-pill:not(:disabled):hover {
+  border-color: var(--tw-gold);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+.tw-order-pill:disabled {
+  opacity: 0.42;
+  filter: grayscale(0.65);
+  cursor: not-allowed;
+}
+.tw-order-pill kbd {
+  position: static;
+  font-size: 8.5px;
+  padding: 1px 3.5px;
+  border-radius: 3px;
+}
+.tw-order-pill.fire-arrow {
+  border-color: rgba(255, 122, 48, 0.68);
+}
+.tw-order-pill.fire-arrow.on {
+  border-color: #ffd43b;
+  color: #fff3bf;
+  background: linear-gradient(180deg, rgba(152, 52, 16, 0.96), rgba(64, 20, 8, 0.98));
+  box-shadow: 0 0 0 2px rgba(255, 112, 36, 0.36), 0 0 12px rgba(255, 92, 24, 0.45);
+}
+.tw-order-pill.deploy.on {
+  border-color: #ffe066;
+  color: #fff3bf;
+  background: linear-gradient(180deg, rgba(96, 74, 22, 0.96), rgba(32, 24, 8, 0.98));
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.35), 0 0 12px rgba(212, 175, 55, 0.38);
+}
+.tw-deploy-count {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: rgba(212, 175, 55, 0.22);
+  border: 1px solid var(--tw-gold-dim);
+  color: #ffe066;
+  font-size: 10px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  display: inline-grid;
+  place-items: center;
+}
+.tw-deploy-count.empty {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--tw-muted);
+}
+
+/* Optional Formation Popover Strip above Order Circle */
+.tw-formation-pop {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: var(--tw-ink-deep);
+  border: 1px solid var(--tw-gold);
+  box-shadow: var(--tw-shadow-hud);
+}
+
+/* 5b. Main Retinue Tray */
+.tw-retinue-tray {
+  display: flex;
+  align-items: stretch;
+  gap: 5px;
+  max-width: 100%;
+  padding: 5px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(20, 22, 24, 0.92), rgba(10, 12, 14, 0.97));
+  border: 1px solid var(--tw-gold-dim);
+  border-top: 2px solid rgba(212, 175, 55, 0.65);
+  box-shadow: var(--tw-shadow-hud), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Battle Info Ink Plaque (~155px wide, flush 155px height with 2x76+3 grid) */
+.tw-battle-plaque {
+  position: relative;
+  width: 155px;
+  flex: 0 0 155px;
+  min-height: 155px;
+  padding: 8px 9px;
+  border-radius: 3px;
+  background: radial-gradient(130% 100% at 0% 0%, rgba(36, 33, 27, 0.95), rgba(10, 12, 14, 0.98));
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  overflow: hidden;
+}
+.tw-battle-plaque::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 2px;
+  background: var(--tw-gold);
+}
+
+.tw-plaque-title,
+.tw-battle-title {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.25;
+  color: var(--tw-parchment);
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.22);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tw-plaque-sub {
+  font-size: 10px;
+  color: var(--tw-muted);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tw-plaque-counts,
+.tw-battle-counts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: auto 0;
+}
+.tw-plaque-regiments {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tw-muted);
+  font-variant-numeric: tabular-nums;
+}
+.tw-plaque-regiments b {
+  color: var(--tw-gold);
+}
+.tw-plaque-troops,
+.tw-troop-headcount {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+.tw-plaque-season,
+.tw-battle-season {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tw-gold);
+  white-space: nowrap;
+}
+
+/* General Portrait Cards (3 tall vertical cards ~66px x 155px) */
+.tw-general-cards {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  flex: none;
+}
+
+.tw-general-card {
+  position: relative;
+  width: 66px;
+  height: 155px;
+  padding: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  flex: none;
+  cursor: pointer;
+  background: linear-gradient(180deg, #e5decb 0%, #c4b79c 68%, #181a1c 100%);
+  border: 1.5px solid var(--tw-bronze-line);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease, opacity 0.15s ease;
+}
+.tw-general-card:not(.wiped):hover {
+  border-color: var(--tw-gold);
+}
+.tw-general-card.selected {
+  border-color: #ffe066;
+  box-shadow: 0 0 0 1.5px var(--tw-gold), 0 -4px 12px rgba(212, 175, 55, 0.35);
+  transform: translateY(-3px);
+  z-index: 2;
+}
+.tw-general-card.grouped {
+  border-top: 2.5px solid var(--tw-gold);
+}
+.tw-general-card.dueling {
+  border-color: var(--tw-cinnabar);
+  box-shadow: 0 0 0 1.5px rgba(224, 49, 49, 0.75), 0 0 12px rgba(224, 49, 49, 0.45);
+}
+.tw-general-card.wavering {
+  animation: tw-card-wavering 0.9s ease-in-out infinite alternate;
+}
+.tw-general-card.routing {
+  animation: tw-card-routing 0.48s steps(2, end) infinite;
+}
+.tw-general-card.wiped,
+.tw-general-card.dead {
+  filter: grayscale(0.85);
+  opacity: 0.4;
+}
+
+.tw-general-img,
+.tw-general-card > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  pointer-events: none;
+  transition: transform 0.18s ease;
+}
+.tw-general-card:not(.wiped):hover .tw-general-img,
+.tw-general-card:not(.wiped):hover > img {
+  transform: scale(1.03);
+}
+
+/* Wu Xing Element Class Dot */
+.tw-wuxing-dot {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 2;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--tw-gold);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.68);
+}
+.tw-wuxing-dot.fire, .tw-wuxing-dot.vanguard { background: var(--tw-wuxing-fire); }
+.tw-wuxing-dot.wood, .tw-wuxing-dot.champion { background: var(--tw-wuxing-wood); }
+.tw-wuxing-dot.water, .tw-wuxing-dot.strategist { background: var(--tw-wuxing-water); }
+.tw-wuxing-dot.metal, .tw-wuxing-dot.sentinel { background: var(--tw-wuxing-metal); }
+.tw-wuxing-dot.earth, .tw-wuxing-dot.commander { background: var(--tw-wuxing-earth); }
+
+/* Veterancy Chevrons (Đồng / Bạc / Vàng) & Guanxi / Fire-Arrow Card Pills */
+.tw-vet-chevrons {
+  position: absolute;
+  top: 3px;
+  left: 17px;
+  z-index: 2;
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  background: rgba(10, 12, 14, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.72);
+  pointer-events: auto;
+}
+.tw-vet-chevrons.bronze { border-color: rgba(205, 127, 50, 0.72); }
+.tw-vet-chevrons.silver { border-color: rgba(222, 226, 230, 0.68); }
+.tw-vet-chevrons.gold { border-color: rgba(255, 212, 59, 0.78); box-shadow: 0 0 6px rgba(255, 212, 59, 0.35); }
+.tw-vet-chevrons.unit {
+  top: 15px;
+  left: 2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.tw-guanxi-pill {
+  position: absolute;
+  top: 20px;
+  left: 3px;
+  right: 3px;
+  z-index: 2;
+  padding: 1.5px 3px;
+  border-radius: 3px;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgba(10, 12, 14, 0.88);
+  border: 1px solid var(--tw-gold-dim);
+  color: #fff3bf;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.68);
+  pointer-events: none;
+}
+.tw-guanxi-pill.enraged {
+  background: rgba(136, 20, 16, 0.94);
+  border-color: #ff6b6b;
+  color: #fff5f5;
+  box-shadow: 0 0 8px rgba(224, 49, 49, 0.55);
+}
+.tw-guanxi-pill.harmony {
+  background: rgba(22, 78, 40, 0.94);
+  border-color: #69db7c;
+  color: #d3f9d8;
+}
+.tw-guanxi-pill.rival {
+  background: rgba(96, 60, 14, 0.94);
+  border-color: #ffd43b;
+  color: #fff3bf;
+}
+.tw-guanxi-pill.unit {
+  top: auto;
+  bottom: 32px;
+  left: 2px;
+  right: 5px;
+  font-size: 7px;
+  padding: 1px 2px;
+}
+
+.tw-fire-arrow-tag {
+  position: absolute;
+  bottom: 21px;
+  left: 2px;
+  right: 5px;
+  z-index: 2;
+  padding: 1px 2.5px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(138, 40, 12, 0.94), rgba(76, 22, 8, 0.96));
+  border: 1px solid rgba(255, 146, 43, 0.8);
+  color: #ffe8cc;
+  font-size: 7.5px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.68);
+}
+
+.tw-general-duel-ico {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(224, 49, 49, 0.92);
+  border: 1px solid var(--tw-gold);
+  color: #ffffff;
+  font-size: 10px;
+  display: grid;
+  place-items: center;
+  animation: tw-pulse-duel 1s ease-in-out infinite alternate;
+}
+@keyframes tw-pulse-duel {
+  from { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(224, 49, 49, 0.65); }
+  to { transform: scale(1.06); box-shadow: 0 0 0 5px rgba(224, 49, 49, 0); }
+}
+
+.tw-general-skill {
+  position: absolute;
+  right: 3px;
+  bottom: 26px;
+  z-index: 3;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--tw-ink-deep);
+  border: 1px solid var(--tw-gold);
+  color: var(--tw-gold);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
+}
+.tw-general-skill:not(:disabled):hover {
+  background: rgba(74, 58, 20, 0.95);
+  color: #ffffff;
+}
+
+.tw-general-foot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 14px 4px 4px;
+  background: linear-gradient(180deg, transparent, rgba(10, 12, 14, 0.9) 42%, rgba(8, 10, 12, 0.98));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tw-general-name {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--tw-parchment);
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tw-general-hp {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.72);
+  overflow: hidden;
+}
+.tw-general-hp > i,
+.tw-general-hp-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--tw-jade), #69db7c);
+  transition: width 0.2s linear;
+}
+.tw-general-hp.low > i,
+.tw-general-hp-fill.low {
+  background: var(--tw-cinnabar);
+}
+
+/* 5c. 2-Row Tall Retinue Unit Cards Grid */
+.tw-unit-grid {
+  display: grid;
+  grid-template-rows: repeat(2, 76px);
+  grid-auto-flow: column;
+  grid-auto-columns: 46px;
+  gap: 3px;
+  align-content: start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-width: 0;
+}
+
+.tw-unit-card {
+  position: relative;
+  width: 46px;
+  height: 76px;
+  padding: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: pointer;
+  background: linear-gradient(180deg, var(--tw-parchment) 0%, var(--tw-parchment-aged) 72%, #1d1f21 100%);
+  border: 1px solid rgba(164, 138, 82, 0.55);
+  color: var(--tw-parchment);
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease, opacity 0.15s ease;
+}
+.tw-unit-card:not(.wiped):hover {
+  border-color: var(--tw-gold);
+}
+
+/* Unit Card Tactical States */
+.tw-unit-card.selected {
+  border-color: #ffe066;
+  box-shadow: 0 0 0 1.5px var(--tw-gold), 0 -3px 10px rgba(212, 175, 55, 0.35);
+  transform: translateY(-3px);
+  z-index: 3;
+}
+.tw-unit-card.grouped {
+  border-top: 2px solid var(--tw-gold);
+  box-shadow: inset 0 2px 0 rgba(212, 175, 55, 0.38);
+}
+.tw-unit-card.grouped.selected {
+  box-shadow: 0 0 0 1.5px var(--tw-gold), 0 -3px 10px rgba(212, 175, 55, 0.35), inset 0 2px 0 rgba(212, 175, 55, 0.45);
+}
+.tw-unit-card.wavering {
+  animation: tw-card-wavering 0.85s ease-in-out infinite alternate;
+}
+.tw-unit-card.routing {
+  animation: tw-card-routing 0.45s steps(2, end) infinite;
+}
+.tw-unit-card.wiped {
+  filter: grayscale(0.85);
+  opacity: 0.4;
+  pointer-events: none;
+  transform: none;
+}
+
+@keyframes tw-card-wavering {
+  from {
+    border-color: #f59f00;
+    box-shadow: inset 0 0 0 1px rgba(245, 159, 0, 0.35);
+  }
+  to {
+    border-color: #ffe066;
+    box-shadow: inset 0 0 10px rgba(245, 159, 0, 0.55), 0 0 6px rgba(245, 159, 0, 0.35);
+  }
+}
+@keyframes tw-card-routing {
+  0% {
+    border-color: #ffffff;
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.55);
+  }
+  50% {
+    border-color: var(--tw-cinnabar);
+    box-shadow: inset 0 0 10px rgba(224, 49, 49, 0.65);
+  }
+}
+
+.tw-unit-art,
+.tw-unit-img,
+.tw-unit-card > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  pointer-events: none;
+}
+
+.tw-unit-group {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  z-index: 2;
+  min-width: 12px;
+  height: 12px;
+  padding: 0 2px;
+  border-radius: 2px;
+  background: rgba(10, 12, 14, 0.84);
+  border: 1px solid var(--tw-gold-dim);
+  color: var(--tw-gold);
+  font-size: 8.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.tw-unit-status {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 5px;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+.tw-unit-status > span,
+.tw-status-ico {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: rgba(10, 12, 14, 0.8);
+  color: #ffffff;
+  font-size: 8.5px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+}
+
+/* Thin Vertical Ammo Bar on Right Edge for Ranged Units */
+.tw-unit-ammo {
+  position: absolute;
+  top: 2px;
+  bottom: 18px;
+  right: 1px;
+  z-index: 3;
+  width: 3px;
+  border-radius: 1.5px;
+  background: rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+.tw-unit-ammo > i,
+.tw-unit-ammo-fill {
+  display: block;
+  width: 100%;
+  background: linear-gradient(180deg, #74c0fc, var(--tw-azure));
+  transition: height 0.2s linear;
+}
+.tw-unit-ammo.low > i,
+.tw-unit-ammo-fill.low {
+  background: #ffd43b;
+}
+
+/* Unit Card Bottom Overlay Strip (Morale/HP + Weapon Icon + Tabular Count) */
+.tw-unit-foot,
+.tw-unit-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 8px 3px 2px;
+  background: linear-gradient(180deg, transparent, rgba(12, 14, 16, 0.88) 38%, rgba(10, 12, 14, 0.98));
+  display: flex;
+  flex-direction: column;
+  gap: 1.5px;
+  pointer-events: none;
+}
+
+.tw-unit-hp {
+  width: 100%;
+  height: 3px;
+  border-radius: 1.5px;
+  background: rgba(0, 0, 0, 0.75);
+  overflow: hidden;
+}
+.tw-unit-hp > i,
+.tw-unit-hp-fill {
+  display: block;
+  height: 100%;
+  background: var(--tw-jade);
+  transition: width 0.2s linear;
+}
+.tw-unit-hp.low > i,
+.tw-unit-hp-fill.low,
+.tw-unit-hp.enemy > i {
+  background: var(--tw-cinnabar);
+}
+
+.tw-unit-morale {
+  width: 100%;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+}
+.tw-unit-morale > i,
+.tw-unit-morale-fill {
+  display: block;
+  height: 100%;
+  background: #e9ecef;
+  transition: width 0.2s linear;
+}
+.tw-unit-card.wavering .tw-unit-morale > i,
+.tw-unit-morale.wavering > i {
+  background: #ffd43b;
+}
+.tw-unit-card.routing .tw-unit-morale > i,
+.tw-unit-morale.routing > i {
+  background: var(--tw-cinnabar);
+}
+
+.tw-unit-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  line-height: 1;
+}
+.tw-unit-cat {
+  font-size: 9px;
+  color: var(--tw-gold);
+  line-height: 1;
+  flex: none;
+}
+.tw-unit-count {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 800;
+  color: #f8f5ec;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* ---------- 7. Bottom-Right Tactical Radar Minimap & Balance of Power ---------- */
+.tw-minimap-dock {
+  position: absolute;
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(8px, env(safe-area-inset-bottom));
+  width: 224px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  pointer-events: none;
+}
+.tw-minimap-top,
+.tw-clock-strip,
+.tw-minimap-controls,
+.tw-minimap-frame,
+.tw-bop-bar,
+.tw-bop-labels,
+.tw-minimap-dock > canvas {
+  pointer-events: auto;
+}
+
+/* Top Rim Battle Clock & Speed / Camera Controls */
+.tw-minimap-top,
+.tw-clock-strip {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: -1px;
+}
+
+.tw-minimap-controls {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+}
+
+.tw-minimap-speed-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 2px 4px;
+  border-radius: 999px;
+  background: var(--tw-ink-deep);
+  border: 1px solid var(--tw-gold-dim);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.55);
+}
+
+.tw-minimap-speed-bar .tw-speed-btn {
+  width: auto;
+  min-width: 28px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.26);
+  color: var(--tw-parchment);
+  font-size: 10.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  box-shadow: none;
+  pointer-events: auto;
+}
+.tw-minimap-speed-bar .tw-speed-btn:not(:disabled):hover {
+  border-color: var(--tw-gold);
+  color: #ffe066;
+  background: rgba(70, 54, 20, 0.85);
+}
+.tw-minimap-speed-bar .tw-speed-btn.on {
+  background: linear-gradient(180deg, rgba(168, 128, 34, 0.94), rgba(88, 64, 16, 0.98));
+  border-color: var(--tw-gold);
+  color: #fff8db;
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.42), inset 0 1px 0 rgba(255, 243, 191, 0.35);
+}
+.tw-minimap-speed-bar .tw-speed-btn.paused-pill {
+  padding: 0 8px;
+  background: linear-gradient(180deg, rgba(188, 128, 22, 0.96), rgba(104, 66, 10, 0.98));
+  border-color: #ffd43b;
+  color: #fff9db;
+  letter-spacing: 0.02em;
+}
+.tw-minimap-speed-bar .tw-speed-btn:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+.tw-wind-vane {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(14, 16, 18, 0.9);
+  border: 1px solid rgba(212, 175, 55, 0.34);
+  color: #e8dfc8;
+  font-size: 10.5px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  cursor: help;
+}
+.tw-wind-arrow {
+  width: 14px;
+  height: 14px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--tw-gold);
+  flex: none;
+  transition: transform 0.35s ease;
+}
+.tw-wind-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.02em;
+}
+
+.tw-battle-clock,
+.tw-clock-pill {
+  min-width: 60px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--tw-ink-deep);
+  border: 1.5px solid var(--tw-gold);
+  color: #f8f5ec;
+  font-size: 12.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.55);
+}
+.tw-battle-clock.warn,
+.tw-clock-pill.warn {
+  border-color: var(--tw-cinnabar);
+  color: #ffa8a8;
+}
+
+.tw-mini-btn,
+.tw-speed-btn {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--tw-ink-deep);
+  border: 1px solid var(--tw-gold-dim);
+  color: var(--tw-parchment);
+  font-size: 10.5px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+.tw-mini-btn:not(:disabled):hover,
+.tw-speed-btn:not(:disabled):hover,
+.tw-mini-btn.on,
+.tw-speed-btn.on {
+  border-color: var(--tw-gold);
+  color: #ffe066;
+  background: rgba(70, 54, 20, 0.94);
+}
+
+/* Parchment-Framed Minimap Canvas (216x156 inside 224px dock) */
+.tw-minimap-frame {
+  position: relative;
+  padding: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #2d2619, #15130f);
+  border: 1px solid var(--tw-gold-dim);
+  box-shadow: var(--tw-shadow-hud), inset 0 0 0 1px rgba(235, 228, 212, 0.14);
+  line-height: 0;
+}
+.tw-minimap-frame canvas,
+.tw-minimap-canvas {
+  width: 216px;
+  height: 156px;
+  display: block;
+  border-radius: 2px;
+  background: var(--tw-parchment);
+  cursor: pointer;
+  touch-action: none;
+}
+.tw-minimap-dock > canvas {
+  width: 100%;
+  height: 156px;
+  display: block;
+  border-radius: 3px;
+  background: var(--tw-parchment);
+  border: 2px solid var(--tw-gold-dim);
+  box-shadow: var(--tw-shadow-hud);
+  cursor: pointer;
+  touch-action: none;
+}
+
+/* Balance of Power Bar (Jade vs Cinnabar) */
+.tw-bop-bar {
+  position: relative;
+  width: 100%;
+  height: 10px;
+  border-radius: 2px;
+  overflow: hidden;
+  display: flex;
+  background: linear-gradient(90deg, #fa5252, var(--tw-cinnabar), #961414);
+  border: 1px solid var(--tw-gold-dim);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+.tw-bop-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.6);
+  pointer-events: none;
+}
+.tw-bop-ally,
+.tw-bop-fill,
+.tw-bop-bar > i:first-child {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #237032, var(--tw-jade), #69db7c);
+  border-right: 2px solid #fff3bf;
+  transition: width 0.3s ease;
+}
+.tw-bop-enemy {
+  flex: 1;
+  height: 100%;
+  background: linear-gradient(90deg, #fa5252, var(--tw-cinnabar), #961414);
+}
+.tw-bop-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--tw-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 8. Top-Center Banners: Deployment Phase, Tactical Pause & Active Duel ---------- */
+.tw-center-banners {
+  position: absolute;
+  top: calc(max(8px, env(safe-area-inset-top)) + 44px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.tw-center-banners > * {
+  pointer-events: auto;
+}
+
+.tw-deploy-banner {
+  max-width: min(840px, calc(100vw - 24px));
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(30, 25, 17, 0.96), rgba(14, 12, 9, 0.98));
+  border: 1.5px solid var(--tw-gold);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.72), inset 0 0 0 1px rgba(235, 228, 212, 0.14);
+  color: var(--tw-parchment);
+}
+.tw-deploy-banner-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.tw-deploy-banner-title {
+  flex: 1 1 320px;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #f6eedb;
+}
+.tw-deploy-banner-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+.tw-deploy-countdown {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.58);
+  border: 1px solid var(--tw-gold-dim);
+  color: #ffe066;
+  font-size: 12.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.tw-deploy-ready-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #da9c28, #996110);
+  border: 1.5px solid #ffe066;
+  color: #fffdf5;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  box-shadow: 0 3px 12px rgba(212, 175, 55, 0.38);
+  pointer-events: auto;
+  transition: filter 0.14s ease, transform 0.1s ease;
+}
+.tw-deploy-ready-btn:hover {
+  filter: brightness(1.08);
+}
+.tw-deploy-ready-btn:active {
+  transform: translateY(1px);
+}
+.tw-deploy-ready-btn.ready {
+  background: linear-gradient(180deg, rgba(42, 120, 58, 0.96), rgba(22, 72, 34, 0.98));
+  border-color: #69db7c;
+  color: #ebfaee;
+  box-shadow: 0 3px 12px rgba(55, 178, 77, 0.35);
+}
+
+.tw-pause-banner {
+  max-width: min(760px, calc(100vw - 24px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(14, 16, 18, 0.95);
+  border: 1.5px solid #ffd43b;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.68);
+  color: #fff3bf;
+  font-size: 12px;
+  font-weight: 700;
+}
+.tw-pause-resume-btn {
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(172, 128, 28, 0.96), rgba(96, 68, 14, 0.98));
+  border: 1px solid #ffe066;
+  color: #fff9db;
+  font-size: 11.5px;
+  font-weight: 800;
+  pointer-events: auto;
+}
+.tw-pause-resume-btn:hover {
+  filter: brightness(1.1);
+}
+
+.tw-place-hint {
+  max-width: min(680px, calc(100vw - 24px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(28, 22, 12, 0.95);
+  border: 1px solid #f59f00;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.62);
+  color: #ffec99;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.tw-place-cancel-btn {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(224, 49, 49, 0.24);
+  border: 1px solid rgba(255, 135, 135, 0.68);
+  color: #ffc9c9;
+  font-size: 11px;
+  font-weight: 700;
+  pointer-events: auto;
+}
+.tw-place-cancel-btn:hover {
+  background: rgba(224, 49, 49, 0.38);
+}
+
+.tw-duel-banner {
+  position: absolute;
+  top: calc(max(8px, env(safe-area-inset-top)) + 44px);
+  left: 50%;
+  z-index: 4;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 24px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(16, 36, 22, 0.94) 0%, rgba(10, 12, 14, 0.98) 50%, rgba(48, 14, 14, 0.94) 100%);
+  border: 1.5px solid var(--tw-gold);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.65), 0 0 16px rgba(212, 175, 55, 0.22);
+}
+.tw-center-banners .tw-duel-banner {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+}
+.tw-duel-banner.has-actions {
+  flex-direction: column;
+  gap: 6px;
+  border-radius: 14px;
+  padding: 7px 14px 8px;
+}
+.tw-duel-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.tw-duel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  width: 100%;
+  padding-top: 5px;
+  border-top: 1px solid rgba(212, 175, 55, 0.28);
+}
+.tw-duel-act-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(20, 22, 26, 0.94);
+  border: 1px solid var(--tw-gold-dim);
+  color: var(--tw-parchment);
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+  transition: border-color 0.14s ease, background 0.14s ease, transform 0.1s ease;
+}
+.tw-duel-act-btn:hover {
+  border-color: var(--tw-gold);
+  color: #fff3bf;
+}
+.tw-duel-act-btn:active {
+  transform: translateY(1px);
+}
+.tw-duel-act-btn.press.on {
+  background: linear-gradient(180deg, rgba(196, 52, 28, 0.94), rgba(118, 24, 14, 0.98));
+  border-color: #ff8787;
+  color: #fff5f5;
+  box-shadow: 0 0 10px rgba(250, 82, 82, 0.44);
+}
+.tw-duel-act-btn.guard.on {
+  background: linear-gradient(180deg, rgba(36, 116, 168, 0.94), rgba(18, 62, 98, 0.98));
+  border-color: #74c0fc;
+  color: #e7f5ff;
+  box-shadow: 0 0 10px rgba(77, 171, 247, 0.42);
+}
+.tw-duel-act-btn.retreat:hover {
+  background: rgba(224, 49, 49, 0.26);
+  border-color: #ff8787;
+  color: #ffc9c9;
+}
+
+.tw-duel-fighter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.tw-duel-fighter.right {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.tw-duel-token {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex: none;
+  object-fit: cover;
+  background: var(--tw-parchment);
+  border: 2px solid var(--tw-jade);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+}
+.tw-duel-fighter.right .tw-duel-token,
+.tw-duel-token.enemy {
+  border-color: var(--tw-cinnabar);
+}
+
+.tw-duel-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 96px;
+  max-width: 150px;
+}
+.tw-duel-name {
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tw-parchment);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tw-duel-hp {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+.tw-duel-hp > i,
+.tw-duel-hp-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--tw-jade), #69db7c);
+  transition: width 0.2s ease;
+}
+.tw-duel-fighter.right .tw-duel-hp > i,
+.tw-duel-hp.enemy > i {
+  background: linear-gradient(90deg, #ff6b6b, var(--tw-cinnabar));
+  margin-left: auto;
+}
+
+.tw-duel-center,
+.tw-duel-vs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  flex: none;
+  line-height: 1.05;
+}
+.tw-duel-vs b {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--tw-gold);
+  letter-spacing: 0.08em;
+}
+.tw-duel-timer {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--tw-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 9. Scoreboard Drawer, Chat Drawer & End-of-Battle Overlay ---------- */
+.tw-scores {
+  position: absolute;
+  top: 54px;
+  right: max(10px, env(safe-area-inset-right));
+  z-index: 5;
+  width: min(345px, calc(100vw - 20px));
+  max-height: 46vh;
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 5px;
+  background: var(--tw-ink-deep);
+  border: 1px solid var(--tw-gold-dim);
+  border-top: 2px solid var(--tw-gold);
+  box-shadow: var(--tw-shadow-hud);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tw-team-sum,
+.tw-coalition-sum {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 2px 2px 7px;
+  margin-bottom: 3px;
+  border-bottom: 1px solid var(--tw-ink-line);
+}
+.tw-team-chip,
+.tw-coalition-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1.5px solid var(--tw-gold-dim);
+  background: var(--tw-ink-surface);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.tw-team-chip i,
+.tw-coalition-chip i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.tw-team-chip.me,
+.tw-coalition-chip.me {
+  border-color: var(--tw-gold);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.25);
+}
+.tw-team-chip.dead,
+.tw-coalition-chip.dead {
+  opacity: 0.48;
+  text-decoration: line-through;
+}
+
+.tw-score-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+.tw-score-row:hover {
+  background: var(--tw-ink-surface);
+}
+.tw-score-row.me {
+  background: rgba(212, 175, 55, 0.14);
+  border-left: 2px solid var(--tw-gold);
+}
+.tw-score-row.targeted {
+  background: rgba(224, 49, 49, 0.2);
+  outline: 1px solid rgba(224, 49, 49, 0.55);
+}
+.tw-score-row.dead {
+  opacity: 0.45;
+}
+.tw-score-row.dead .name {
+  text-decoration: line-through;
+}
+
+.tw-score-look {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 18px 10px minmax(0, 1fr) 46px auto;
+  align-items: center;
+  gap: 6px;
+  padding: 2px;
+  background: transparent;
+  border: 0;
+  color: var(--tw-parchment);
+  font-size: 12.5px;
+  text-align: left;
+}
+.tw-score-row .rank {
+  color: var(--tw-muted);
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.tw-score-row .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+}
+.tw-score-row .name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.tw-score-row .hp {
+  height: 5px;
+  border-radius: 2.5px;
+  background: rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+.tw-score-row .hp > i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--tw-jade), #69db7c);
+}
+.tw-score-row b {
+  font-variant-numeric: tabular-nums;
+  min-width: 32px;
+  text-align: right;
+  color: var(--tw-gold);
+}
+
+/* Chat Drawer */
+.tw-chat {
+  position: absolute;
+  top: 54px;
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(232px, env(safe-area-inset-bottom));
+  z-index: 5;
+  width: min(340px, calc(100vw - 20px));
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--tw-gold-dim);
+  box-shadow: var(--tw-shadow-hud);
+  color: var(--text);
+  user-select: text;
+  -webkit-user-select: text;
+  touch-action: auto;
+}
+.tw-chat > * {
+  flex: 1;
+  min-width: 0;
+}
+
+/* End-of-Battle Result Overlay */
+.tw-end {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: radial-gradient(circle at 50% 38%, rgba(22, 20, 16, 0.72), rgba(6, 8, 10, 0.88));
+  backdrop-filter: blur(4px);
+  animation: tw-fade-in 0.25s ease-out;
+}
+@keyframes tw-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.tw-end-card {
+  width: min(580px, 100%);
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 24px 26px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(22, 22, 24, 0.98), rgba(10, 12, 14, 0.99));
+  border: 1.5px solid var(--tw-gold);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.78), inset 0 0 0 1px rgba(212, 175, 55, 0.16);
+  color: var(--tw-parchment);
+}
+
+.tw-end-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  text-align: center;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--tw-gold-dim);
+}
+.tw-end-seal {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 2px;
+  border: 1.5px solid var(--tw-cinnabar);
+  background: rgba(224, 49, 49, 0.14);
+  color: #ff8787;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.tw-end-card h2 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tw-parchment);
+  margin: 2px 0;
+}
+.tw-end-card h2.win,
+.tw-end-banner.win h2 {
+  color: var(--tw-gold);
+  text-shadow: 0 2px 16px rgba(212, 175, 55, 0.35);
+}
+.tw-end-card h2.lose,
+.tw-end-banner.lose h2 {
+  color: #ff8787;
+  text-shadow: 0 2px 14px rgba(224, 49, 49, 0.32);
+}
+.tw-end-sub {
+  font-size: 12.5px;
+  color: var(--tw-muted);
+}
+
+/* Casualties / Kills Table & List */
+.tw-end-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.tw-end-table th {
+  padding: 6px 8px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--tw-muted);
+  border-bottom: 1px solid var(--tw-gold-dim);
+}
+.tw-end-table th:first-child,
+.tw-end-table td:first-child {
+  text-align: left;
+}
+.tw-end-table td {
+  padding: 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--tw-ink-line);
+}
+.tw-end-table tr.me {
+  background: rgba(212, 175, 55, 0.12);
+}
+.tw-end-table tr.won td:first-child {
+  color: var(--tw-gold);
+  font-weight: 700;
+}
+
+.tw-end-list {
+  list-style: none;
+  margin: 12px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.tw-end-list li {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: var(--tw-ink-surface);
+  border: 1px solid var(--tw-ink-line);
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+.tw-end-list li.won {
+  background: rgba(212, 175, 55, 0.14);
+  border-color: var(--tw-gold-dim);
+}
+.tw-end-list li.me {
+  outline: 1.5px solid var(--tw-gold);
+}
+.tw-end-list .name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.tw-end-payout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  margin: 12px 0;
+  border-radius: 4px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid var(--tw-gold-dim);
+  color: #ffe066;
+  font-size: 13.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tw-end-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--tw-ink-line);
+}
+
+/* ---------- Lobby & Encyclopedia / Wu Xing Guide Helpers ---------- */
+.tw-lobby-hero {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  border: 1.5px solid var(--tw-gold-dim, rgba(212, 175, 55, 0.42));
+  background: #141815;
+}
+.tw-lobby-overlay {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(16, 18, 20, 0.92), rgba(10, 12, 14, 0.98));
+  color: #f2ece1;
+}
+.tw-lobby-overlay b {
+  color: #d4af37;
+  font-size: 14.5px;
+}
+
+.tw-guide-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 75vh;
+  overflow-y: auto;
+  font-size: 13.5px;
+}
+.tw-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 8px;
+}
+.tw-guide-card {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+/* ---------- Lobby Custom Army Builder (Chiêu Mộ Danh Tướng & Bộ Tùy TW3K) ---------- */
+.tw-army-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1.5px solid rgba(197, 155, 39, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.tw-ab-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.tw-ab-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.tw-ab-funds {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(197, 155, 39, 0.14);
+  border: 1px solid rgba(197, 155, 39, 0.45);
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.tw-ab-funds.tight {
+  background: rgba(230, 119, 0, 0.16);
+  border-color: rgba(230, 119, 0, 0.55);
+}
+.tw-ab-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tw-ab-budget-bar {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.tw-ab-budget-bar > i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #2b8a3e, #c59b27);
+  border-radius: 999px;
+  transition: width 0.22s ease;
+}
+.tw-ab-budget-bar > i.tight {
+  background: linear-gradient(90deg, #c59b27, #e67700);
+}
+
+.tw-ab-synergies {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.tw-guanxi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(43, 138, 62, 0.14);
+  border: 1px solid rgba(43, 138, 62, 0.45);
+  color: var(--text);
+}
+.tw-guanxi-badge.kin {
+  background: rgba(230, 119, 0, 0.15);
+  border-color: rgba(230, 119, 0, 0.5);
+}
+.tw-guanxi-badge.rival {
+  background: rgba(201, 42, 42, 0.14);
+  border-color: rgba(201, 42, 42, 0.48);
+}
+
+.tw-ab-collapsed {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.tw-ab-mini-gen {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.14s ease, transform 0.1s ease;
+}
+.tw-ab-mini-gen:hover {
+  border-color: #c59b27;
+}
+.tw-ab-mini-gen img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #c59b27;
+  flex-shrink: 0;
+}
+.tw-ab-mini-units {
+  margin-left: auto;
+  font-size: 13px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.tw-ab-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.tw-ab-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 9px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top-width: 3px;
+}
+
+.tw-ab-gen-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.tw-ab-gen-btn:hover,
+.tw-ab-gen-btn.on {
+  border-color: #c59b27;
+}
+.tw-ab-gen-token {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #c59b27;
+  flex-shrink: 0;
+}
+.tw-ab-gen-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tw-ab-gen-name-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+}
+.tw-ab-el-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.tw-ab-swap-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  color: #b8860b;
+  white-space: nowrap;
+}
+
+.tw-ab-gen-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+  gap: 5px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 6px;
+  border-radius: 7px;
+  background: var(--surface-2);
+  border: 1px solid rgba(197, 155, 39, 0.45);
+}
+.tw-ab-gen-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-align: left;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+.tw-ab-gen-opt:not(:disabled):hover,
+.tw-ab-gen-opt.on {
+  border-color: #c59b27;
+  background: rgba(197, 155, 39, 0.1);
+}
+.tw-ab-gen-opt:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.tw-ab-gen-opt img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #c59b27;
+  flex-shrink: 0;
+}
+.tw-ab-gen-opt-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.tw-ab-mini-bond {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(43, 138, 62, 0.14);
+  color: #2b8a3e;
+}
+.tw-ab-mini-bond.kin {
+  background: rgba(230, 119, 0, 0.14);
+  color: #d9480f;
+}
+.tw-ab-mini-bond.rival {
+  background: rgba(201, 42, 42, 0.14);
+  color: #c92a2a;
+}
+
+.tw-ab-retinue-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.tw-ab-unit-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.14s ease, transform 0.1s ease;
+}
+.tw-ab-unit-slot:hover,
+.tw-ab-unit-slot.on {
+  border-color: #c59b27;
+  box-shadow: 0 0 0 2px rgba(197, 155, 39, 0.22);
+}
+.tw-ab-unit-thumb-wrap {
+  position: relative;
+  width: 100%;
+  height: 58px;
+  background: #1c1a16;
+  overflow: hidden;
+}
+.tw-ab-unit-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+  display: block;
+}
+.tw-ab-vanguard-tag {
+  position: absolute;
+  left: 4px;
+  bottom: 3px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(20, 56, 28, 0.9);
+  border: 1px solid rgba(105, 219, 124, 0.65);
+  color: #d3f9d8;
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.tw-ab-unit-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px 6px;
+}
+.tw-ab-unit-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tw-ab-unit-cost {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tw-ab-unit-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1.5px solid rgba(197, 155, 39, 0.55);
+}
+.tw-ab-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+}
+.tw-ab-drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 7px;
+}
+.tw-ab-unit-choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.tw-ab-unit-choice:not(:disabled):hover,
+.tw-ab-unit-choice.on {
+  border-color: #c59b27;
+  background: rgba(197, 155, 39, 0.12);
+}
+.tw-ab-unit-choice:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.tw-ab-choice-img {
+  width: 44px;
+  height: 54px;
+  border-radius: 5px;
+  object-fit: cover;
+  background: #1c1a16;
+  border: 1px solid rgba(197, 155, 39, 0.4);
+  flex-shrink: 0;
+}
+.tw-ab-choice-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tw-ab-choice-top {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+.tw-ab-choice-top b {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tw-ab-choice-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 11px;
+}
+.tw-ab-choice-cost {
+  font-weight: 700;
+  color: #b8860b;
+  font-variant-numeric: tabular-nums;
+}
+.tw-ab-choice-cost.over {
+  color: #c92a2a;
+}
+.tw-ab-vanguard-inline {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(43, 138, 62, 0.14);
+  color: #2b8a3e;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ---------- 10. Responsive Breakpoints ---------- */
+
+/* Tablet & Compact Laptop */
+@media (max-width: 1024px) {
+  .tw-hud-bottom-left {
+    max-width: calc(100vw - 218px);
+  }
+  .tw-order-circle {
+    width: 31px;
+    height: 31px;
+    font-size: 13px;
+  }
+  .tw-order-pill {
+    height: 29px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+  .tw-battle-plaque {
+    width: 132px;
+    flex-basis: 132px;
+    min-height: 139px;
+    padding: 7px;
+  }
+  .tw-plaque-troops,
+  .tw-troop-headcount {
+    font-size: 17px;
+  }
+  .tw-general-card {
+    width: 56px;
+    height: 139px;
+  }
+  .tw-unit-grid {
+    grid-template-rows: repeat(2, 68px);
+    grid-auto-columns: 42px;
+    gap: 3px;
+  }
+  .tw-unit-card {
+    width: 42px;
+    height: 68px;
+  }
+  .tw-minimap-dock {
+    width: 196px;
+  }
+  .tw-minimap-speed-bar .tw-speed-btn {
+    min-width: 24px;
+    padding: 0 5px;
+    font-size: 10px;
+  }
+  .tw-minimap-frame canvas,
+  .tw-minimap-canvas {
+    width: 188px;
+    height: 136px;
+  }
+  .tw-minimap-dock > canvas {
+    height: 136px;
+  }
+  .tw-banter-card {
+    bottom: 204px;
+    width: min(270px, 42vw);
+  }
+  .tw-banter-portrait,
+  .tw-banter-bust,
+  .tw-banter-card > img {
+    height: 78px;
+  }
+  .tw-ab-columns {
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+}
+
+/* Narrow Phones: Relocate Minimap to Top-Right below Top Bar & Scrollable Retinue Grid */
+@media (max-width: 760px) {
+  .tw-game kbd {
+    display: none;
+  }
+  .tw-dock {
+    display: none;
+  }
+  .tw-icon,
+  .tw-util-btn {
+    width: 33px;
+    height: 33px;
+    font-size: 13px;
+  }
+
+  /* Move minimap to top-right below top bar so nothing overlaps bottom HUD */
+  .tw-minimap-dock {
+    top: calc(max(8px, env(safe-area-inset-top)) + 42px);
+    bottom: auto;
+    right: max(8px, env(safe-area-inset-right));
+    width: 150px;
+    gap: 3px;
+  }
+  .tw-battle-clock,
+  .tw-clock-pill {
+    min-width: 50px;
+    height: 23px;
+    padding: 0 7px;
+    font-size: 11px;
+  }
+  .tw-mini-btn,
+  .tw-speed-btn {
+    width: 22px;
+    height: 22px;
+    font-size: 9.5px;
+  }
+  .tw-minimap-speed-bar {
+    gap: 2px;
+    padding: 2px 3px;
+  }
+  .tw-minimap-speed-bar .tw-speed-btn {
+    min-width: 22px;
+    height: 19px;
+    padding: 0 4px;
+    font-size: 9px;
+  }
+  .tw-minimap-speed-bar .tw-speed-btn.paused-pill {
+    padding: 0 5px;
+    font-size: 8.5px;
+  }
+  .tw-wind-vane {
+    padding: 2px 6px;
+    font-size: 9.5px;
+    gap: 3px;
+  }
+  .tw-minimap-frame {
+    padding: 2px;
+  }
+  .tw-minimap-frame canvas,
+  .tw-minimap-canvas {
+    width: 144px;
+    height: 102px;
+  }
+  .tw-minimap-dock > canvas {
+    height: 102px;
+  }
+  .tw-bop-bar {
+    height: 7px;
+  }
+  .tw-bop-labels {
+    display: none;
+  }
+
+  /* Center Banners & Duel Banner shift left of top-right minimap on narrow screens */
+  .tw-center-banners {
+    top: calc(max(8px, env(safe-area-inset-top)) + 42px);
+    left: max(8px, env(safe-area-inset-left));
+    transform: none;
+    align-items: flex-start;
+    max-width: calc(100vw - 170px);
+    gap: 4px;
+  }
+  .tw-deploy-banner {
+    max-width: 100%;
+    padding: 6px 9px;
+  }
+  .tw-deploy-banner-title {
+    flex-basis: 100%;
+    font-size: 11px;
+  }
+  .tw-deploy-ready-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+  .tw-pause-banner,
+  .tw-place-hint {
+    max-width: 100%;
+    border-radius: 10px;
+    padding: 5px 9px;
+    font-size: 10.5px;
+  }
+  .tw-duel-banner {
+    top: calc(max(8px, env(safe-area-inset-top)) + 42px);
+    left: max(8px, env(safe-area-inset-left));
+    transform: none;
+    max-width: calc(100vw - 170px);
+    padding: 4px 9px;
+    gap: 6px;
+  }
+  .tw-center-banners .tw-duel-banner {
+    max-width: 100%;
+  }
+  .tw-duel-main {
+    gap: 6px;
+  }
+  .tw-duel-act-btn {
+    padding: 3px 7px;
+    font-size: 10px;
+  }
+  .tw-duel-token {
+    width: 28px;
+    height: 28px;
+  }
+  .tw-duel-info {
+    min-width: 58px;
+    max-width: 88px;
+  }
+  .tw-duel-name {
+    font-size: 10px;
+  }
+
+  /* Full-width Bottom Retinue HUD with Horizontal Scroll on Unit Grid */
+  .tw-hud-bottom-left {
+    left: max(6px, env(safe-area-inset-left));
+    right: max(6px, env(safe-area-inset-right));
+    bottom: max(5px, env(safe-area-inset-bottom));
+    max-width: none;
+    gap: 3px;
+  }
+  .tw-unit-inspector {
+    padding: 4px 8px;
+    font-size: 11px;
+    gap: 4px 7px;
+  }
+  .tw-order-strip {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .tw-order-circle {
+    width: 30px;
+    height: 30px;
+    font-size: 12.5px;
+  }
+  .tw-order-pill {
+    height: 28px;
+    padding: 0 7px;
+    font-size: 10.5px;
+    flex: none;
+  }
+  .tw-retinue-tray {
+    width: 100%;
+    padding: 4px;
+    gap: 4px;
+  }
+  .tw-battle-plaque {
+    width: 98px;
+    flex-basis: 98px;
+    min-height: 119px;
+    padding: 5px 6px;
+  }
+  .tw-plaque-title,
+  .tw-battle-title {
+    font-size: 9.5px;
+    padding-bottom: 3px;
+  }
+  .tw-plaque-troops,
+  .tw-troop-headcount {
+    font-size: 15px;
+  }
+  .tw-plaque-season,
+  .tw-battle-season {
+    font-size: 9px;
+  }
+  .tw-general-cards {
+    gap: 3px;
+  }
+  .tw-general-card {
+    width: 48px;
+    height: 119px;
+  }
+  .tw-general-skill {
+    width: 18px;
+    height: 18px;
+    font-size: 9.5px;
+    bottom: 22px;
+  }
+  .tw-guanxi-pill {
+    font-size: 8px;
+    padding: 1px 3px;
+  }
+  .tw-unit-grid {
+    flex: 1;
+    min-width: 0;
+    grid-template-rows: repeat(2, 58px);
+    grid-auto-columns: 38px;
+    gap: 3px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tw-unit-card {
+    width: 38px;
+    height: 58px;
+  }
+  .tw-unit-count {
+    font-size: 9px;
+  }
+
+  /* Compact General Banter Popups above mobile HUD */
+  .tw-banter-card {
+    bottom: 184px;
+    width: min(210px, 47vw);
+  }
+  .tw-banter-portrait,
+  .tw-banter-bust,
+  .tw-banter-card > img {
+    height: 60px;
+    margin-bottom: -6px;
+  }
+  .tw-banter-name,
+  .tw-banter-header {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+  .tw-banter-quote,
+  .tw-banter-text {
+    font-size: 11px;
+    padding: 6px 8px;
+    line-height: 1.32;
+  }
+
+  .tw-scores {
+    top: auto;
+    bottom: 176px;
+    max-height: 32vh;
+  }
+  .tw-chat {
+    top: 48px;
+    bottom: max(172px, env(safe-area-inset-bottom));
+  }
+  .tw-end-card {
+    padding: 18px 16px;
+  }
+  .tw-end-card h2 {
+    font-size: 21px;
+  }
+
+  /* Mobile Lobby Custom Army Builder */
+  .tw-ab-collapsed,
+  .tw-ab-columns {
+    grid-template-columns: 1fr;
+  }
+  .tw-ab-drawer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Landscape Mobile Viewport */
+@media (max-height: 540px) {
+  .tw-battle-plaque {
+    width: 116px;
+    flex-basis: 116px;
+    min-height: 115px;
+    padding: 5px 7px;
+  }
+  .tw-plaque-troops,
+  .tw-troop-headcount {
+    font-size: 16px;
+  }
+  .tw-general-card {
+    width: 48px;
+    height: 115px;
+  }
+  .tw-unit-grid {
+    grid-template-rows: repeat(2, 56px);
+    grid-auto-columns: 38px;
+    gap: 3px;
+  }
+  .tw-unit-card {
+    width: 38px;
+    height: 56px;
+  }
+  .tw-order-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  .tw-order-pill {
+    height: 26px;
+    padding: 0 7px;
+    font-size: 10.5px;
+  }
+  .tw-unit-inspector {
+    display: none;
+  }
+  .tw-minimap-dock {
+    width: 168px;
+  }
+  .tw-minimap-speed-bar .tw-speed-btn {
+    min-width: 22px;
+    height: 19px;
+    padding: 0 4px;
+    font-size: 9px;
+  }
+  .tw-minimap-frame canvas,
+  .tw-minimap-canvas {
+    width: 160px;
+    height: 110px;
+  }
+  .tw-banter-card {
+    bottom: 160px;
+    width: min(240px, 38vw);
+  }
+  .tw-banter-portrait,
+  .tw-banter-bust,
+  .tw-banter-card > img {
+    height: 62px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tw-banter-card.left,
+  .tw-banter-card.right,
+  .tw-end {
+    animation: none;
+  }
+  .tw-general-duel-ico,
+  .tw-unit-card.wavering,
+  .tw-general-card.wavering {
+    animation: none;
+  }
+}

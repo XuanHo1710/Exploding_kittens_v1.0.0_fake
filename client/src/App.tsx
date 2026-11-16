@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
-import { DEFAULT_ROOM_RULES, type AccountInfo, type AntsFrame, type BansungFrame, type ChatMessage, type Emote, type GameFx, type Identity, type LinkState, type PrivateNotice, type RoomView, type ThapFrame } from '../../shared/src';
+import { DEFAULT_ROOM_RULES, type AccountInfo, type AntsFrame, type BansungFrame, type ChatMessage, type Emote, type GameFx, type Identity, type LinkState, type PrivateNotice, type RoomView, type ThapFrame, type TwFrame } from '../../shared/src';
 import { RoomPlayerCountContext, RoomRulesContext } from './roomRulesContext';
 import { clearIdentity, loadIdentity, updateIdentity } from './identity';
 import { logoutAccount } from './api';
@@ -17,7 +17,10 @@ import TienLenBoard from './components/TienLenBoard';
 import AntsBoard from './components/AntsBoard';
 import { antsStore } from './ants/store';
 import ThapBoard from './components/ThapBoard';
+import { stopMiragineBgm, syncMiragineBgmMute } from './thap/sound';
 import { thapStore } from './thap/store';
+import TwBoard from './components/TwBoard';
+import { twStore } from './tw/store';
 import { linkStore } from './link/store';
 import LinkBoard from './components/LinkBoard';
 import LotoBoard from './components/LotoBoard';
@@ -104,6 +107,19 @@ export default function App() {
     else if (!linkRoom.current) writeRoomParam(null);
   }, [view?.code]);
 
+  // Dọn kho & nhạc nền Miragine War khi rời phòng hoặc chuyển sang trò chơi khác
+  useEffect(() => {
+    if (!view || view.gameMode !== 'thap_hung') {
+      thapStore.reset('', 0);
+      stopMiragineBgm();
+    }
+  }, [view?.code, view?.gameMode]);
+
+  // Đồng bộ công tắc tắt tiếng Dock tới nhạc nền & SFX Miragine War xuyên suốt Menu/Game
+  useEffect(() => {
+    syncMiragineBgmMute();
+  }, [settings.sound]);
+
   // Server chỉ nhận socket có token tài khoản: chưa đăng nhập bằng PIN thì chưa kết nối
   const hasToken = !!identity?.token;
   useEffect(() => {
@@ -115,6 +131,9 @@ export default function App() {
     s.on('state', (v: RoomView | null) => {
       setView(v);
       if (!v) setChat([]);
+      if (!v || v.gameMode !== 'thap_hung' || v.phase === 'lobby') {
+        thapStore.reset('', 0);
+      }
       joinFromLink(s, v);
     });
     s.on('toast', showToast);
@@ -123,6 +142,7 @@ export default function App() {
     s.on('bansung:frame', (f: BansungFrame) => {
       if (f && typeof f === 'object') bansungStore.push(f);
     });
+    s.on('tw:frame', (f: TwFrame) => twStore.push(f));
     s.on('link:state', (st: LinkState) => linkStore.push(st));
     s.on('notice', (n: PrivateNotice) => (n.kind === 'future' ? setNotice(n) : setReveal({ ...n, key: Date.now() })));
     s.on('fx', (f: GameFx) => setFx({ id: ++fxSeq.current, fx: f }));
@@ -238,6 +258,8 @@ export default function App() {
             <LinkBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'thap_hung' && view.thap ? (
             <ThapBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
+          ) : view.gameMode === 'total_war' && view.tw ? (
+            <TwBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'loto' && view.loto ? (
             <LotoBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'bansung' ? (

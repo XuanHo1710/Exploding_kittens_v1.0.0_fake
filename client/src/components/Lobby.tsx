@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode, type SyntheticEvent } from 'react';
 import { BookOpen, Check, Coins, Copy, Crown, Gamepad2, Link2, LogOut, Play, Settings2, Trophy, UserPlus, UserX, Users } from 'lucide-react';
 import {
   ANTS_MAX_EMPIRES,
@@ -39,25 +39,60 @@ import {
   LOTO_SHEET_PRICE,
   MIN_PLAYERS,
   THAP_BASE,
+  roomDeckSummary,
   THAP_BOT_LABEL,
-  THAP_FIRST_ROUND_S,
+  THAP_COLORS,
   THAP_MAX_PLAYERS,
-  THAP_MAX_POP,
   THAP_MINUTE_OPTIONS,
   THAP_MODE_LABEL,
   THAP_ROUND_S,
   THAP_START_GOLD,
   THAP_START_ROUND_INCOME,
-  THAP_TEAM_COLORS,
-  THAP_TEAM_NAMES,
-  assignThapTeams,
   getBansungHero,
   linkBossMaxHp,
   lotoDefaultColors,
   normalizeBansungHero,
-  normalizeThapTeam,
   resolveBansungGameMode,
-  roomDeckSummary,
+  type ThapConfig,
+  assignTwTeams,
+  DEFAULT_TW_CONFIG,
+  defaultTwLoadoutForFaction,
+  findTwGuanxiBond,
+  normalizeTwFaction,
+  normalizeTwLoadout,
+  normalizeTwTeam,
+  twAllowedUnitsForGeneral,
+  twLoadoutCost,
+  TW_BATTLE_FUNDS,
+  TW_BOT_NAMES,
+  TW_CLASSES,
+  TW_DURATION_OPTIONS,
+  TW_FACTIONS,
+  TW_FACTION_IDS,
+  TW_FORMATION_IDS,
+  TW_FORMATIONS,
+  TW_GENERALS,
+  TW_GENERAL_CLASSES,
+  TW_GENERAL_IDS,
+  TW_MAPS,
+  TW_MAP_IDS,
+  TW_MAX_PLAYERS,
+  TW_MODE_LABEL,
+  TW_TEAM_COLORS,
+  TW_TEAM_NAMES,
+  TW_UNITS,
+  type TwArmyLoadout,
+  type TwArmyScale,
+  type TwBotDifficulty,
+  type TwConfig,
+  type TwFactionId,
+  type TwGeneralClass,
+  type TwGeneralId,
+  type TwGuanxiBond,
+  type TwMapId,
+  type TwMode,
+  type TwUnitCategory,
+  type TwUnitKind,
   type AccountInfo,
   type BansungBiome,
   type BansungBotLevel,
@@ -79,7 +114,11 @@ import { LobbySpectators, isSpectating, roomPeople } from './Spectators';
 import { roomInviteUrl } from '../roomLink';
 import { initBansungAudio, setBansungBgm, stopBansungBgm, syncBansungMute } from '../bansung/sound';
 import { startMiragineBgm, stopMiragineBgm } from '../thap/sound';
+import MiragineTitleScreen from './thap/MiragineTitleScreen';
+import MiragineTutorialModal from './thap/MiragineTutorialModal';
 import '../thap/thap.css';
+import { startTwBgm, stopTwBgm } from '../tw/sound';
+import '../tw/tw.css';
 
 interface Props {
   view: RoomView;
@@ -120,30 +159,162 @@ function SelectField({
   );
 }
 
+/** Khớp 100% thứ tự thế lực mặc định theo ghế ở server (`Game.DEFAULT_TW_SEAT_FACTIONS`) */
+const TW_SEAT_FACTIONS: readonly TwFactionId[] = ['jin', 'yuan', 'wei', 'shu', 'wu', 'lubu'];
+
+const TW_FACTION_BOT_NAME: Record<TwFactionId, string> = {
+  wei: '🤖 Tào Mạnh Đức',
+  shu: '🤖 Lưu Huyền Đức',
+  wu: '🤖 Tôn Văn Đài',
+  yuan: '🤖 Viên Bản Sơ',
+  lubu: '🤖 Lữ Phụng Tiên',
+  jin: '🤖 Tư Mã Tương An',
+};
+
+const TW_COALITION_LABELS: readonly [string, string] = [
+  'Liên Minh Quan Đông',
+  'Triều Đình / Bắc Phạt',
+];
+
+const TW_COALITION_SHORT: readonly [string, string] = [
+  'Quan Đông',
+  'Triều Đình',
+];
+
+const TW_BOT_DIFFICULTY_LABELS: Record<TwBotDifficulty, string> = {
+  easy: 'Tân Thủ',
+  normal: 'Chiến Tướng',
+  hard: 'Thừa Tướng',
+};
+
+const TW_MAP_LOBBY_INFO: Record<TwMapId, { chipLabel: string; seasonLabel: string; terrainHighlights: string }> = {
+  pingyuan: {
+    chipLabel: '🌾 Trận Bình Nguyên · Thu 196',
+    seasonLabel: 'Thu 196',
+    terrainHighlights: 'Đồng bằng mùa thu rộng mở ở trung tâm, Rừng Thông Tây Bắc giấu phục binh & Đồi Cao Đông Bắc khống chế tầm pháo đá',
+  },
+  guandu: {
+    chipLabel: '🏯 Chiến Dịch Quan Độ · Thu 200',
+    seasonLabel: 'Thu 200',
+    terrainHighlights: 'Bến cạn Hoàng Hà phía Bắc, Rừng kho lương Ô Sào, Lũy đất phòng ngự phía Tây & bãi bồi đầm lầy trung lộ',
+  },
+  changban: {
+    chipLabel: '⛰️ Dốc Trường Bản · Hạ 208',
+    seasonLabel: 'Hạ 208',
+    terrainHighlights: 'Triền dốc Đương Dương hiểm trở, hai cánh Rừng Trúc phục kích sát sườn & dòng sông chặn ngang cầu rút quân',
+  },
+  chibi: {
+    chipLabel: '🔥 Đại Chiến Xích Bích · Đông 208',
+    seasonLabel: 'Đông 208',
+    terrainHighlights: 'Bờ Trường Giang rực lửa mùa đông, Đài cầu gió Nam Bình Sơn, Rừng sâu & Đầm lầy Hoa Dung Đạo lầy lội',
+  },
+};
+
+const TW_CLASS_ELEMENT_ICON: Record<TwGeneralClass, string> = {
+  vanguard: '/database-total-war/ui/el_fire.png',
+  champion: '/database-total-war/ui/el_wood.png',
+  sentinel: '/database-total-war/ui/el_metal.png',
+  commander: '/database-total-war/ui/el_earth.png',
+  strategist: '/database-total-war/ui/el_water.png',
+};
+
+const TW_UNIT_CAT_META: Record<TwUnitCategory, { vn: string; glyph: string }> = {
+  infantry_polearm: { vn: 'Trường Thương', glyph: '🔱' },
+  infantry_sword: { vn: 'Đao Khiên', glyph: '🗡️' },
+  ranged_bow: { vn: 'Cung Thủ', glyph: '🏹' },
+  ranged_crossbow: { vn: 'Nỏ Binh', glyph: '🎯' },
+  artillery: { vn: 'Pháo Đá', glyph: '☄️' },
+  cavalry_shock: { vn: 'Xung Kỵ', glyph: '🐎' },
+  cavalry_melee: { vn: 'Chiến Kỵ', glyph: '🛡️' },
+};
+
+function twBondGlyph(bond: TwGuanxiBond): string {
+  if (bond.vnTitle.includes('Giang Đông') || bond.vnTitle.includes('Xích Bích')) return '🔥';
+  if (bond.kind === 'rival') return '⚡';
+  return '🤝';
+}
+
+function collectGuanxiSynergies(
+  generals: readonly [TwGeneralId, TwGeneralId, TwGeneralId],
+): Array<{ key: string; bond: TwGuanxiBond; pairLabel: string; glyph: string }> {
+  const pairs: Array<[TwGeneralId, TwGeneralId]> = [
+    [generals[0], generals[1]],
+    [generals[0], generals[2]],
+    [generals[1], generals[2]],
+  ];
+  const out: Array<{ key: string; bond: TwGuanxiBond; pairLabel: string; glyph: string }> = [];
+  for (const [a, b] of pairs) {
+    const bond = findTwGuanxiBond(a, b);
+    if (!bond) continue;
+    out.push({
+      key: `${a}_${b}`,
+      bond,
+      pairLabel: `${TW_GENERALS[a].vnName} · ${TW_GENERALS[b].vnName}`,
+      glyph: twBondGlyph(bond),
+    });
+  }
+  return out;
+}
+
+function makeTwUnitFallbackSvg(glyph: string): string {
+  const safe = encodeURIComponent(glyph);
+  return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="88" viewBox="0 0 64 88"><rect width="64" height="88" fill="%23dfd3b7"/><text x="32" y="50" text-anchor="middle" font-size="24">${safe}</text></svg>`;
+}
+
 export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSaveRules }: Props) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [miragineGuideOpen, setMiragineGuideOpen] = useState(false);
+  const [twGuideOpen, setTwGuideOpen] = useState(false);
+  const [twBuilderOpen, setTwBuilderOpen] = useState(true);
+  const [twOpenGenSlot, setTwOpenGenSlot] = useState<0 | 1 | 2 | null>(null);
+  const [twPickingUnit, setTwPickingUnit] = useState<{ genSlot: 0 | 1 | 2; unitIdx: 0 | 1 | 2 | 3 } | null>(null);
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const { typingNames, unread } = useChatState(chat, roomPeople(view), meId, true);
   const isHost = view.hostId === meId;
   const gameMode: GameMode = view.gameMode ?? 'exploding_kittens';
-
+  const autoTwDeployDoneRef = useRef(false);
+  useEffect(() => {
+    if (gameMode !== 'total_war') {
+      autoTwDeployDoneRef.current = false;
+      return;
+    }
+    if (
+      !autoTwDeployDoneRef.current &&
+      isHost &&
+      view.players.length === 1 &&
+      view.tw?.config.deploymentPhase === undefined
+    ) {
+      autoTwDeployDoneRef.current = true;
+      emit('tw:config', {
+        config: { ...(view.tw?.config ?? DEFAULT_TW_CONFIG), deploymentPhase: true },
+      });
+    }
+  }, [isHost, gameMode, view.players.length, view.tw?.config, emit]);
   useEffect(() => {
     if (gameMode === 'thap_hung') {
       stopBansungBgm();
+      stopTwBgm();
       startMiragineBgm('menu');
       return () => stopMiragineBgm();
     }
     if (gameMode === 'bansung') {
       stopMiragineBgm();
+      stopTwBgm();
       void initBansungAudio().catch(() => {});
       syncBansungMute();
       setBansungBgm('menu');
       return () => stopBansungBgm();
     }
+    if (gameMode === 'total_war') {
+      stopMiragineBgm();
+      stopBansungBgm();
+      startTwBgm('menu');
+      return () => stopTwBgm();
+    }
     stopMiragineBgm();
     stopBansungBgm();
+    stopTwBgm();
     return undefined;
   }, [gameMode]);
 
@@ -169,21 +340,21 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
   const linkCfg = view.link?.config ?? DEFAULT_LINK_CONFIG;
   const linkBots = Math.max(0, Math.min(LINK_MAX_PLAYERS - online, linkCfg.bots ?? 0));
 
+  // Miragine War cổ điển: 1 người -> 1P vs AI, 2 người -> 1v1 PvP
   const isThap = gameMode === 'thap_hung';
-  const thapCfg = view.thap?.config ?? DEFAULT_THAP_CONFIG;
-  const thapBots = Math.max(0, Math.min(THAP_MAX_PLAYERS - online, thapCfg.bots));
-  const thapTeamOf = (id: string) => normalizeThapTeam(view.thap?.teams?.[id] ?? Math.max(0, view.players.findIndex((p) => p.id === id)) % 2);
-  const thapHumans = view.players.filter((p) => p.connected);
-  const thapAssign = assignThapTeams(thapHumans.map((p) => thapTeamOf(p.id)), thapBots, thapCfg.mode);
-  const thapBotTeams = thapAssign.slice(thapHumans.length);
-  const thapTotal = online + thapBots;
-  const thapProblem =
-    thapTotal < 2 ? 'Cần ≥ 2 phe (thêm máy)'
-      : thapTotal > THAP_MAX_PLAYERS ? `Tối đa ${THAP_MAX_PLAYERS} phe`
-      : thapCfg.mode === 'coop' && thapBots < 1 ? 'Co-op cần ≥ 1 máy'
-      : thapCfg.mode === 'teams' && new Set(thapAssign).size < 2 ? 'Cần ≥ 2 đội khác nhau'
-      : '';
-  const setThap = (patch: Partial<typeof thapCfg>) => emit('thap:config', { config: { ...thapCfg, ...patch } });
+  const thapBots = view.players.length >= 2 ? 0 : 1;
+  const thapRawCfg = view.thap?.config ?? DEFAULT_THAP_CONFIG;
+  const thapMinutes = (THAP_MINUTE_OPTIONS as readonly number[]).includes(thapRawCfg.minutes)
+    ? thapRawCfg.minutes
+    : DEFAULT_THAP_CONFIG.minutes;
+  const thapCfg: ThapConfig = {
+    ...thapRawCfg,
+    bots: thapBots,
+    mode: thapBots === 0 ? 'pvp' : 'solo',
+    minutes: thapMinutes,
+  };
+  const thapProblem = online > THAP_MAX_PLAYERS ? `Tối đa ${THAP_MAX_PLAYERS} người chơi` : '';
+  const setThap = (patch: Partial<ThapConfig>) => emit('thap:config', { config: { ...thapCfg, ...patch } });
 
   const isBansung = gameMode === 'bansung';
   const bansungCfg = view.bansung?.config ?? DEFAULT_BANSUNG_CONFIG;
@@ -207,10 +378,58 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
   const myBansungHero = bansungHeroOf(meId);
   const pickBansungHero = (hero: BansungHeroId) => emit('bansung:hero', { hero });
 
+  // Tam Quốc Toàn Chiến: khớp 100% thế lực, liên minh và phân bổ máy AI như server (`Game.twView` / `Game.startTw`)
+  const isTw = gameMode === 'total_war';
+  const twCfg = view.tw?.config ?? DEFAULT_TW_CONFIG;
+  const twBotDiff: TwBotDifficulty = twCfg.botDifficulty ?? 'normal';
+  const twBots = Math.max(0, Math.min(TW_MAX_PLAYERS - online, twCfg.bots));
+  const twFactionOf = (id: string, seatIdx = 0): TwFactionId => {
+    const picked = view.tw?.factions?.[id];
+    if (picked && (TW_FACTION_IDS as readonly string[]).includes(picked)) return normalizeTwFaction(picked, seatIdx);
+    const resolvedIdx = seatIdx >= 0 ? seatIdx : Math.max(0, view.players.findIndex((p) => p.id === id));
+    return TW_SEAT_FACTIONS[resolvedIdx % TW_SEAT_FACTIONS.length];
+  };
+  const twTeamOf = (id: string) =>
+    normalizeTwTeam(view.tw?.teams?.[id] ?? Math.max(0, view.players.findIndex((p) => p.id === id)) % 2) % 2;
+  const twHumans = view.players.filter((p) => p.connected);
+  const twHumanTeams = twHumans.map((p) => twTeamOf(p.id));
+  const twAssign = assignTwTeams(twHumanTeams, twBots, twCfg.mode);
+  const twBotTeams = twAssign.slice(twHumans.length);
+  const twTotal = online + twBots;
+  const twProblem =
+    twTotal < 2 ? 'Cần ít nhất 2 Chư Hầu – thêm Máy AI nhé'
+      : twTotal > TW_MAX_PLAYERS ? 'Tối đa 8 Chư Hầu'
+      : (twCfg.mode === 'historical_2teams' && twBots === 0 && new Set(twHumanTeams).size < 2) ||
+        new Set(twAssign).size < 2
+        ? 'Cần ít nhất 2 Liên Minh đối địch – đổi Liên Minh hoặc thêm Máy AI'
+      : '';
+  const setTw = (patch: Partial<TwConfig>) =>
+    emit('tw:config', { config: { ...twCfg, ...patch } });
+  const twBotPreviews = (() => {
+    if (!isTw || twBots <= 0) return [];
+    const usedFactions = new Set<TwFactionId>(
+      view.players.slice(0, TW_MAX_PLAYERS).map((p, idx) => twFactionOf(p.id, idx)),
+    );
+    const usedBotNames = new Set<string>();
+    const botRotation: TwFactionId[] = ['yuan', ...TW_FACTION_IDS.filter((f) => f !== 'yuan')];
+    return Array.from({ length: twBots }, (_, b) => {
+      const seatIdx = view.players.length + b;
+      const faction = botRotation.find((f) => !usedFactions.has(f)) ?? TW_FACTION_IDS[seatIdx % TW_FACTION_IDS.length];
+      usedFactions.add(faction);
+      const preferredName = TW_FACTION_BOT_NAME[faction];
+      const botName = !usedBotNames.has(preferredName)
+        ? preferredName
+        : TW_BOT_NAMES.find((n) => !usedBotNames.has(n)) ?? TW_BOT_NAMES[b % TW_BOT_NAMES.length];
+      usedBotNames.add(botName);
+      const team = twBotTeams[b] ?? (seatIdx % 2);
+      return { faction, botName, team };
+    });
+  })();
   const deckOk =
     gameMode === 'exploding_kittens' ? deck.canStart
       : isThap ? !thapProblem
       : isBansung ? !bansungProblem
+      : isTw ? !twProblem
       : gameMode === 'ant_empire' ? online + antsCfg.bots >= 2 && online + antsCfg.bots <= ANTS_MAX_EMPIRES
       : gameMode === 'link_duel' ? online + linkBots >= 1 && online + linkBots <= LINK_MAX_PLAYERS
         : online <= modeInfo.maxPlayers;
@@ -348,7 +567,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
 
           {/* Danh sách ghế người chơi gọn */}
           <div className="lobby-seats">
-            {view.players.map((p) => (
+            {view.players.map((p, seatIdx) => (
               <div key={p.id} className={`lobby-seat${p.connected ? '' : ' offline'}${p.id === meId ? ' me' : ''}`}>
                 {isHost && p.id !== meId && (
                   <button
@@ -382,11 +601,6 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                       </span>
                     )}
                   </span>
-                  {isThap && thapCfg.mode === 'teams' && (
-                    <span className="thap-seat-team" style={{ borderColor: THAP_TEAM_COLORS[thapTeamOf(p.id)] }}>
-                      <i style={{ background: THAP_TEAM_COLORS[thapTeamOf(p.id)] }} /> {THAP_TEAM_NAMES[thapTeamOf(p.id)]}
-                    </span>
-                  )}
                   {isBansung && (() => {
                     const heroId = bansungHeroOf(p.id);
                     const hero = getBansungHero(heroId);
@@ -399,6 +613,39 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                         />
                         {hero.name}
                       </span>
+                    );
+                  })()}
+                  {isThap && (
+                    <span
+                      className="thap-seat-team"
+                      style={{ borderColor: THAP_COLORS[seatIdx === 0 ? 0 : 1] }}
+                    >
+                      <i style={{ background: THAP_COLORS[seatIdx === 0 ? 0 : 1] }} />{' '}
+                      {seatIdx === 0 ? 'Phe Đỏ (Trái)' : 'Phe Xanh (Phải)'}
+                    </span>
+                  )}
+                  {isTw && (() => {
+                    const fSpec = TW_FACTIONS[twFactionOf(p.id, seatIdx)];
+                    const tIdx = twTeamOf(p.id);
+                    return (
+                      <>
+                        <span
+                          className="thap-seat-team"
+                          style={{ borderColor: fSpec.color }}
+                          title={`Thế lực 【${fSpec.emblemText}】 ${fSpec.vnName} · Chủ tướng ${fSpec.leaderName}`}
+                        >
+                          <i style={{ background: fSpec.color }} /> {fSpec.emblemText} {fSpec.vnName}
+                        </span>
+                        {twCfg.mode === 'historical_2teams' && (
+                          <span
+                            className="thap-seat-team"
+                            style={{ borderColor: TW_TEAM_COLORS[tIdx] }}
+                            title={`${TW_COALITION_LABELS[tIdx]} (${TW_TEAM_NAMES[tIdx]})`}
+                          >
+                            <i style={{ background: TW_TEAM_COLORS[tIdx] }} /> {TW_COALITION_SHORT[tIdx]}
+                          </span>
+                        )}
+                      </>
                     );
                   })()}
                   {isLoto && (
@@ -493,91 +740,792 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
               </>
             ) : isThap ? (
               <>
-                <div className="cfg-select-grid">
-                  <SelectField
-                    label="Kiểu trận"
-                    value={thapCfg.mode}
-                    disabled={!isHost}
-                    onChange={(v) => setThap({ mode: v as ThapMode })}
-                  >
-                    <option value="ffa">Hỗn chiến (FFA)</option>
-                    <option value="teams">Lập đội (Đồng minh)</option>
-                    <option value="coop">Co-op (Đánh máy)</option>
-                  </SelectField>
-                  <SelectField
-                    label="Thành máy"
-                    hint={`${thapTotal}/${THAP_MAX_PLAYERS}`}
-                    value={thapBots}
-                    disabled={!isHost}
-                    onChange={(v) => setThap({ bots: Number(v) })}
-                  >
-                    {Array.from({ length: Math.max(0, THAP_MAX_PLAYERS - view.players.length) + 1 }, (_, n) => (
-                      <option key={n} value={n}>{n === 0 ? 'Không máy' : `+${n} máy`}</option>
-                    ))}
-                  </SelectField>
-                  <SelectField
-                    label="Độ khó máy"
-                    value={thapCfg.botLevel}
-                    disabled={!isHost || thapBots === 0}
-                    onChange={(v) => setThap({ botLevel: v as 'easy' | 'normal' | 'hard' })}
-                  >
-                    {(['easy', 'normal', 'hard'] as const).map((lv) => (
-                      <option key={lv} value={lv}>{THAP_BOT_LABEL[lv]}</option>
-                    ))}
-                  </SelectField>
-                  <SelectField
-                    label="Thời gian"
-                    value={thapCfg.minutes}
-                    disabled={!isHost}
-                    onChange={(v) => setThap({ minutes: Number(v) })}
-                  >
-                    {THAP_MINUTE_OPTIONS.map((m) => (
-                      <option key={m} value={m}>{m ? `${m} phút` : 'Không giới hạn'}</option>
-                    ))}
-                  </SelectField>
-                  {thapCfg.mode === 'teams' && (
-                    <SelectField
-                      label="Đội của bạn"
-                      hint={
-                        <span className="thap-seat-team" style={{ borderColor: THAP_TEAM_COLORS[thapTeamOf(meId)] }}>
-                          <i style={{ background: THAP_TEAM_COLORS[thapTeamOf(meId)] }} />
-                        </span>
-                      }
-                      value={thapTeamOf(meId)}
-                      disabled={!me || spectating}
-                      onChange={(v) => emit('thap:team', { team: Number(v) })}
-                    >
-                      {THAP_TEAM_NAMES.map((name, t) => (
-                        <option key={t} value={t}>{name}</option>
+                <div
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    aspectRatio: '4 / 3',
+                    minHeight: 430,
+                    borderRadius: 14,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <MiragineTitleScreen
+                    config={thapCfg}
+                    isHost={isHost}
+                    players={view.players}
+                    canStart={canStart}
+                    onChangeConfig={(patch) => setThap(patch)}
+                    onStart={() => emit('game:start')}
+                    onOpenTutorial={() => setMiragineGuideOpen(true)}
+                    onLeave={() => emit('room:leave')}
+                  />
+                </div>
+                <p className="muted small" style={{ margin: 0 }}>
+                  {view.players.length >= 2 ? (
+                    <>
+                      ⚔️ <b>{THAP_MODE_LABEL.pvp}:</b> Ghế 1 (<b>Phe Đỏ</b>, trái) vs Ghế 2 (<b>Phe Xanh</b>, phải) ·{' '}
+                      {thapCfg.minutes > 0 ? `${thapCfg.minutes} phút` : 'Đánh tới khi vỡ Pha Lê Chính'}.
+                    </>
+                  ) : (
+                    <>
+                      🤖 <b>{THAP_MODE_LABEL.solo}:</b> Bạn (<b>Phe Đỏ</b>, trái) vs{' '}
+                      <b>AI ({THAP_BOT_LABEL[thapCfg.botLevel]})</b> (<b>Phe Xanh</b>, phải) · có thể bấm Bắt đầu ngay hoặc mời thêm 1 bạn để đấu 1v1 PvP.
+                    </>
+                  )}
+                </p>
+              </>
+            ) : isTw ? (
+              <>
+                <div className="tw-lobby-hero" style={{ borderColor: 'rgba(212, 175, 55, 0.55)' }}>
+                  <img
+                    src="/database-total-war/ui/title_bg.jpg"
+                    alt="Tam Quốc Toàn Chiến – Total War: Three Kingdoms"
+                    className="miragine-lobby-banner"
+                  />
+                  <div className="tw-lobby-overlay">
+                    <div>
+                      <b>🐉 Tam Quốc Toàn Chiến – Total War: Three Kingdoms (1–8 Chư Hầu)</b>
+                      <p className="small" style={{ color: '#d6cbb5', marginTop: 2 }}>
+                        Chiến trường Thủy Mặc 2.5D · Phục kích Rừng Thông · Quỹ đạo Mưa Tên Đỏ cong vút · Thương Lâm phản xung kích Kỵ Binh &amp; Đơn Đấu Võ Tướng 1v1
+                      </p>
+                    </div>
+                    <button type="button" className="secondary small" onClick={() => setTwGuideOpen(true)}>
+                      📜 Cẩm Nang 6 Thế Lực &amp; Ngũ Hành
+                    </button>
+                  </div>
+                </div>
+                <div className="ants-lobby-cfg">
+                  <div>
+                    <span className="muted small">Chiến trường lịch sử (3200 × 2200)</span>
+                    <div className="bet-chips">
+                      {TW_MAP_IDS.map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          className={`bet-chip${m === twCfg.mapId ? ' on' : ''}`}
+                          disabled={!isHost}
+                          onClick={() => setTw({ mapId: m })}
+                        >
+                          {TW_MAP_LOBBY_INFO[m].chipLabel}
+                        </button>
                       ))}
-                    </SelectField>
+                    </div>
+                    <p className="muted small">
+                      <b>{TW_MAPS[twCfg.mapId].vnName}</b> ({TW_MAP_LOBBY_INFO[twCfg.mapId].seasonLabel} · {TW_MAPS[twCfg.mapId].enName}): {TW_MAP_LOBBY_INFO[twCfg.mapId].terrainHighlights} · Đài Hiệu Lệnh: <b>{TW_MAPS[twCfg.mapId].capturePoints.map((c) => c.name).join(' · ')}</b>.
+                    </p>
+                  </div>
+                  <div>
+                    <span className="muted small">Thế cục chiến trường</span>
+                    <div className="bet-chips">
+                      {([
+                        ['historical_2teams', '⚔️ Lịch Sử 2 Liên Minh'],
+                        ['ffa', '🔥 Quần Hùng Hỗn Chiến'],
+                      ] as [TwMode, string][]).map(([m, label]) => (
+                        <button
+                          key={m}
+                          type="button"
+                          className={`bet-chip${m === twCfg.mode ? ' on' : ''}`}
+                          disabled={!isHost}
+                          title={TW_MODE_LABEL[m]}
+                          onClick={() => setTw({ mode: m })}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="muted small">Quy mô đại quân</span>
+                    <div className="bet-chips">
+                      {([
+                        ['normal', 'Chuẩn (Normal)'],
+                        ['grand', 'Đại Quân (Grand · ~1.500 quân/phe)'],
+                      ] as [TwArmyScale, string][]).map(([sc, label]) => (
+                        <button
+                          key={sc}
+                          type="button"
+                          className={`bet-chip${sc === twCfg.armyScale ? ' on' : ''}`}
+                          disabled={!isHost}
+                          onClick={() => setTw({ armyScale: sc })}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="muted small">Chế độ Diễn Nghĩa</span>
+                    <div className="bet-chips">
+                      {([
+                        [true, '⚡ Diễn Nghĩa (Đơn Đấu Võ Tướng 1v1 & Tuyệt Kỹ Ngũ Hành)'],
+                        [false, '📜 Chính Sử (Cân Bằng Thực Chiến)'],
+                      ] as [boolean, string][]).map(([rm, label]) => (
+                        <button
+                          key={String(rm)}
+                          type="button"
+                          className={`bet-chip${rm === twCfg.romanceMode ? ' on' : ''}`}
+                          disabled={!isHost}
+                          onClick={() => setTw({ romanceMode: rm })}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="muted small">Chư hầu Máy AI (🤖) · tổng {twTotal}/{TW_MAX_PLAYERS} Chư Hầu</span>
+                    <div className="bet-chips">
+                      {Array.from({ length: Math.max(0, TW_MAX_PLAYERS - view.players.length) + 1 }, (_, n) => n).map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          className={`bet-chip${n === twBots ? ' on' : ''}`}
+                          disabled={!isHost}
+                          onClick={() => setTw({ bots: n })}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="muted small">Độ khó AI</span>
+                    <div className="bet-chips">
+                      {(['easy', 'normal', 'hard'] as const).map((lv) => (
+                        <button
+                          key={lv}
+                          type="button"
+                          className={`bet-chip${lv === twBotDiff ? ' on' : ''}`}
+                          disabled={!isHost || twBots === 0}
+                          onClick={() => setTw({ botDifficulty: lv })}
+                        >
+                          {TW_BOT_DIFFICULTY_LABELS[lv]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="muted small">Thời lượng trận</span>
+                    <div className="bet-chips">
+                      {TW_DURATION_OPTIONS.map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          className={`bet-chip${d === twCfg.durationMin ? ' on' : ''}`}
+                          disabled={!isHost}
+                          onClick={() => setTw({ durationMin: d })}
+                        >
+                          {d} phút
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="muted small">Pha Bố Trận Khai Chiến</span>
+                    <div className="bet-chips">
+                      {([
+                        [true, '🛡️ Bố Trận & Đặt Bẫy 25s'],
+                        [false, '⚡ Khai Chiến Ngay'],
+                      ] as [boolean, string][]).map(([dp, label]) => (
+                        <button
+                          key={String(dp)}
+                          type="button"
+                          className={`bet-chip${Boolean(twCfg.deploymentPhase) === dp ? ' on' : ''}`}
+                          disabled={!isHost}
+                          onClick={() => setTw({ deploymentPhase: dp })}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {!spectating && me && (() => {
+                    const mySeatIdx = Math.max(0, view.players.findIndex((p) => p.id === meId));
+                    const myFaction = twFactionOf(meId, mySeatIdx);
+                    const histDefaultLoadout = defaultTwLoadoutForFaction(myFaction);
+                    const rawLoadout = view.tw?.loadouts?.[meId];
+                    const myLoadout: TwArmyLoadout = rawLoadout
+                      ? normalizeTwLoadout(rawLoadout, myFaction)
+                      : histDefaultLoadout;
+                    const totalCost = twLoadoutCost(myLoadout);
+                    const budgetPct = Math.min(100, Math.round((totalCost / TW_BATTLE_FUNDS) * 100));
+                    const isHistDefault =
+                      JSON.stringify(myLoadout) === JSON.stringify(histDefaultLoadout);
+                    const synergies = collectGuanxiSynergies(myLoadout.generals);
+
+                    const handleResetHistoricalLoadout = () => {
+                      setTwOpenGenSlot(null);
+                      setTwPickingUnit(null);
+                      emit('tw:loadout', { loadout: histDefaultLoadout });
+                    };
+
+                    const handleSwapGeneral = (genSlot: 0 | 1 | 2, nextGenId: TwGeneralId) => {
+                      if (myLoadout.generals[genSlot] === nextGenId) {
+                        setTwOpenGenSlot(null);
+                        return;
+                      }
+                      const prevGenId = myLoadout.generals[genSlot];
+                      const nextGenerals = [...myLoadout.generals] as [
+                        TwGeneralId,
+                        TwGeneralId,
+                        TwGeneralId,
+                      ];
+                      nextGenerals[genSlot] = nextGenId;
+
+                      const nextRetinues = myLoadout.retinues.map((r) => [
+                        ...r,
+                      ]) as TwArmyLoadout['retinues'];
+                      const prevDef = TW_GENERALS[prevGenId].defaultRetinue;
+                      const curRet = myLoadout.retinues[genSlot];
+                      if (curRet.every((u, idx) => u === prevDef[idx])) {
+                        nextRetinues[genSlot] = [...TW_GENERALS[nextGenId].defaultRetinue];
+                      }
+
+                      const normalized = normalizeTwLoadout(
+                        { generals: nextGenerals, retinues: nextRetinues },
+                        myFaction,
+                      );
+                      setTwOpenGenSlot(null);
+                      if (twPickingUnit?.genSlot === genSlot) {
+                        setTwPickingUnit(null);
+                      }
+                      emit('tw:loadout', { loadout: normalized });
+                    };
+
+                    const handlePickRetinueUnit = (
+                      genSlot: 0 | 1 | 2,
+                      unitIdx: 0 | 1 | 2 | 3,
+                      nextKind: TwUnitKind,
+                    ) => {
+                      const curKind = myLoadout.retinues[genSlot][unitIdx];
+                      const projected =
+                        totalCost - TW_UNITS[curKind].cost + TW_UNITS[nextKind].cost;
+                      if (projected > TW_BATTLE_FUNDS) return;
+                      const nextRetinues = myLoadout.retinues.map((r) => [
+                        ...r,
+                      ]) as TwArmyLoadout['retinues'];
+                      nextRetinues[genSlot][unitIdx] = nextKind;
+                      const normalized = normalizeTwLoadout(
+                        {
+                          generals: [...myLoadout.generals] as [
+                            TwGeneralId,
+                            TwGeneralId,
+                            TwGeneralId,
+                          ],
+                          retinues: nextRetinues,
+                        },
+                        myFaction,
+                      );
+                      setTwPickingUnit(null);
+                      emit('tw:loadout', { loadout: normalized });
+                    };
+
+                    return (
+                      <>
+                        <div>
+                          <span className="muted small">Chọn Thế Lực Chư Hầu của bạn · 3 Danh Tướng &amp; 12 trung đoàn bộ tùy</span>
+                          <div className="tw-guide-grid">
+                            {TW_SEAT_FACTIONS.map((fid) => {
+                              const f = TW_FACTIONS[fid];
+                              const leadGen = TW_GENERALS[f.defaultGenerals[0]];
+                              const active = myFaction === fid;
+                              return (
+                                <button
+                                  key={fid}
+                                  type="button"
+                                  className={`mode-card${active ? ' on' : ''}`}
+                                  style={active ? { borderColor: f.color } : undefined}
+                                  onClick={() => {
+                                    setTwOpenGenSlot(null);
+                                    setTwPickingUnit(null);
+                                    emit('tw:faction', { faction: fid });
+                                  }}
+                                >
+                                  <div className="mode-card-head">
+                                    <img
+                                      src={leadGen.tokenPortrait}
+                                      alt={leadGen.vnName}
+                                      width={38}
+                                      height={38}
+                                      style={{
+                                        width: 38,
+                                        height: 38,
+                                        borderRadius: '50%',
+                                        objectFit: 'cover',
+                                        border: `2px solid ${f.color}`,
+                                        flexShrink: 0,
+                                      }}
+                                    />
+                                    <span
+                                      style={{
+                                        display: 'inline-grid',
+                                        placeItems: 'center',
+                                        width: 24,
+                                        height: 24,
+                                        borderRadius: 5,
+                                        background: f.color,
+                                        color: fid === 'yuan' ? '#181a20' : '#ffffff',
+                                        fontWeight: 800,
+                                        fontSize: 13,
+                                        flexShrink: 0,
+                                      }}
+                                    >
+                                      {f.emblemText}
+                                    </span>
+                                    <div style={{ minWidth: 0 }}>
+                                      <b>{f.vnName}</b>
+                                      <div className="muted small">{f.leaderName}</div>
+                                    </div>
+                                  </div>
+                                  <div className="small">
+                                    <b>Danh tướng:</b>{' '}
+                                    {f.defaultGenerals
+                                      .map((g) => `${TW_GENERALS[g].vnName} (${TW_CLASSES[TW_GENERALS[g].class].element})`)
+                                      .join(' · ')}
+                                  </div>
+                                  <small className="muted">{f.bonusDesc}</small>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Bảng Chiêu Mộ Danh Tướng & Bộ Tùy (Custom Army Builder TW3K) */}
+                        <div className="tw-army-builder">
+                          <div className="tw-ab-head">
+                            <div className="tw-ab-title-wrap">
+                              <b>⚔️ Chiêu Mộ Danh Tướng &amp; Bộ Tùy</b>
+                              <span className={`tw-ab-funds${budgetPct >= 95 ? ' tight' : ''}`}>
+                                Ngân Quỹ Chiến Trận: <b>{totalCost.toLocaleString('vi-VN')}</b> /{' '}
+                                {TW_BATTLE_FUNDS.toLocaleString('vi-VN')} Lượng
+                              </span>
+                            </div>
+                            <div className="tw-ab-actions">
+                              <button
+                                type="button"
+                                className={`bet-chip${isHistDefault ? ' on' : ''}`}
+                                onClick={handleResetHistoricalLoadout}
+                                title="Đặt lại 3 Danh Tướng & 12 trung đoàn lịch sử mặc định của Thế lực"
+                              >
+                                📜 Đội Hình Lịch Sử
+                              </button>
+                              <button
+                                type="button"
+                                className={`bet-chip${twBuilderOpen ? ' on' : ''}`}
+                                onClick={() => setTwBuilderOpen((v) => !v)}
+                                aria-expanded={twBuilderOpen}
+                              >
+                                🛠️ Tự Chọn Tướng &amp; Quân {twBuilderOpen ? '▴' : '▾'}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div
+                            className="tw-ab-budget-bar"
+                            title={`Ngân quỹ đã chi: ${totalCost.toLocaleString('vi-VN')} / ${TW_BATTLE_FUNDS.toLocaleString('vi-VN')} Lượng (còn dư ${(TW_BATTLE_FUNDS - totalCost).toLocaleString('vi-VN')} Lượng)`}
+                          >
+                            <i
+                              style={{ width: `${budgetPct}%` }}
+                              className={budgetPct >= 95 ? 'tight' : undefined}
+                            />
+                          </div>
+
+                          <div className="tw-ab-synergies">
+                            <span className="muted small">Quan hệ Ngũ Hành (Guanxi):</span>
+                            {synergies.length > 0 ? (
+                              synergies.map((syn) => (
+                                <span
+                                  key={syn.key}
+                                  className={`tw-guanxi-badge ${syn.bond.kind}`}
+                                  title={
+                                    syn.bond.kind === 'rival'
+                                      ? `${syn.bond.vnTitle} (${syn.pairLabel}) — Kình địch tranh công: tăng uy lực tấn công cạnh tranh trên chiến trường!`
+                                      : `${syn.bond.vnTitle} (${syn.pairLabel}) — Đồng tâm hiệp lực (+Sĩ khí) & bộc phát Cuồng Nộ Báo Thù nếu nghĩa đệ ngã xuống!`
+                                  }
+                                >
+                                  {syn.glyph} {syn.bond.vnTitle} <small>({syn.pairLabel})</small>
+                                </span>
+                              ))
+                            ) : (
+                              <span className="muted small">
+                                Tự do phối tướng · ghép Lưu–Quan–Trương, Tôn Kiên–Chu Du hoặc Tào Tháo–Hạ Hầu Đôn để kích hoạt duyên phận!
+                              </span>
+                            )}
+                          </div>
+
+                          {!twBuilderOpen ? (
+                            <div className="tw-ab-collapsed">
+                              {([0, 1, 2] as const).map((slot) => {
+                                const gid = myLoadout.generals[slot];
+                                const gSpec = TW_GENERALS[gid];
+                                const cls = TW_CLASSES[gSpec.class];
+                                return (
+                                  <button
+                                    key={slot}
+                                    type="button"
+                                    className="tw-ab-mini-gen"
+                                    onClick={() => setTwBuilderOpen(true)}
+                                    title={`Nhấp mở bảng tùy chỉnh bộ tùy của ${gSpec.vnName}`}
+                                  >
+                                    <img
+                                      src={gSpec.tokenPortrait}
+                                      alt={gSpec.vnName}
+                                      width={28}
+                                      height={28}
+                                      style={{ borderColor: cls.color }}
+                                    />
+                                    <span>
+                                      <b>{gSpec.vnName}</b>{' '}
+                                      <small className="muted">({cls.element})</small>
+                                    </span>
+                                    <span className="tw-ab-mini-units">
+                                      {myLoadout.retinues[slot]
+                                        .map((uk) => TW_UNIT_CAT_META[TW_UNITS[uk].category].glyph)
+                                        .join(' ')}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <>
+                              <div className="tw-ab-columns">
+                                {([0, 1, 2] as const).map((slot) => {
+                                  const gid = myLoadout.generals[slot];
+                                  const gSpec = TW_GENERALS[gid];
+                                  const cls = TW_CLASSES[gSpec.class];
+                                  const swapOpen = twOpenGenSlot === slot;
+                                  const otherSlots = ([0, 1, 2] as const).filter((s) => s !== slot);
+
+                                  return (
+                                    <div
+                                      key={slot}
+                                      className="tw-ab-col"
+                                      style={{ borderTopColor: cls.color }}
+                                    >
+                                      <button
+                                        type="button"
+                                        className={`tw-ab-gen-btn${swapOpen ? ' on' : ''}`}
+                                        onClick={() => {
+                                          setTwPickingUnit(null);
+                                          setTwOpenGenSlot((prev) => (prev === slot ? null : slot));
+                                        }}
+                                        title={`${gSpec.vnName} (${gSpec.enName}) · Hệ ${cls.element} (${cls.vnName})\nTuyệt kỹ: ${gSpec.skill.vnName} — ${gSpec.skill.desc}\nNhấp để đổi Danh Tướng Đạo #${slot + 1}`}
+                                      >
+                                        <img
+                                          src={gSpec.tokenPortrait}
+                                          alt={gSpec.vnName}
+                                          width={38}
+                                          height={38}
+                                          className="tw-ab-gen-token"
+                                          style={{ borderColor: cls.color }}
+                                        />
+                                        <div className="tw-ab-gen-meta">
+                                          <div className="tw-ab-gen-name-row">
+                                            <span
+                                              className="tw-ab-el-dot"
+                                              style={{ background: cls.color }}
+                                            />
+                                            <b>{gSpec.vnName}</b>
+                                          </div>
+                                          <span className="muted small">
+                                            Hệ {cls.element} · {cls.vnName} · ✨ {gSpec.skill.vnName}
+                                          </span>
+                                        </div>
+                                        <span className="tw-ab-swap-lbl">
+                                          Đổi {swapOpen ? '▴' : '▾'}
+                                        </span>
+                                      </button>
+
+                                      {swapOpen && (
+                                        <div className="tw-ab-gen-picker">
+                                          {TW_GENERAL_IDS.map((candId) => {
+                                            const cand = TW_GENERALS[candId];
+                                            const candCls = TW_CLASSES[cand.class];
+                                            const isCurrent = candId === gid;
+                                            const takenOtherSlot = otherSlots.find(
+                                              (os) => myLoadout.generals[os] === candId,
+                                            );
+                                            const bondsWithOthers = otherSlots
+                                              .map((os) =>
+                                                findTwGuanxiBond(candId, myLoadout.generals[os]),
+                                              )
+                                              .filter((b): b is TwGuanxiBond => Boolean(b));
+
+                                            return (
+                                              <button
+                                                key={candId}
+                                                type="button"
+                                                className={`tw-ab-gen-opt${isCurrent ? ' on' : ''}`}
+                                                disabled={takenOtherSlot !== undefined}
+                                                style={
+                                                  isCurrent
+                                                    ? { borderColor: candCls.color }
+                                                    : undefined
+                                                }
+                                                onClick={() => handleSwapGeneral(slot, candId)}
+                                                title={`${cand.vnName} (${cand.enName}) · Hệ ${candCls.element} (${candCls.vnName})\nTuyệt kỹ: ${cand.skill.vnName} — ${cand.skill.desc}`}
+                                              >
+                                                <img
+                                                  src={cand.tokenPortrait}
+                                                  alt={cand.vnName}
+                                                  width={28}
+                                                  height={28}
+                                                  style={{ borderColor: candCls.color }}
+                                                />
+                                                <div className="tw-ab-gen-opt-info">
+                                                  <div>
+                                                    <i
+                                                      className="tw-ab-el-dot"
+                                                      style={{ background: candCls.color }}
+                                                    />{' '}
+                                                    <b>{cand.vnName}</b>
+                                                  </div>
+                                                  <small className="muted">
+                                                    {candCls.element} · {candCls.vnName}
+                                                    {takenOtherSlot !== undefined
+                                                      ? ` (Đạo ${takenOtherSlot + 1})`
+                                                      : ''}
+                                                  </small>
+                                                  {bondsWithOthers.map((b, bi) => (
+                                                    <span
+                                                      key={bi}
+                                                      className={`tw-ab-mini-bond ${b.kind}`}
+                                                    >
+                                                      {twBondGlyph(b)} {b.vnTitle}
+                                                    </span>
+                                                  ))}
+                                                </div>
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
+
+                                      <div className="tw-ab-retinue-grid">
+                                        {([0, 1, 2, 3] as const).map((uIdx) => {
+                                          const uKind = myLoadout.retinues[slot][uIdx];
+                                          const uSpec = TW_UNITS[uKind];
+                                          const catMeta = TW_UNIT_CAT_META[uSpec.category];
+                                          const pickingThis =
+                                            twPickingUnit?.genSlot === slot &&
+                                            twPickingUnit?.unitIdx === uIdx;
+
+                                          return (
+                                            <button
+                                              key={uIdx}
+                                              type="button"
+                                              className={`tw-ab-unit-slot${pickingThis ? ' on' : ''}`}
+                                              onClick={() => {
+                                                setTwOpenGenSlot(null);
+                                                setTwPickingUnit((prev) =>
+                                                  prev &&
+                                                  prev.genSlot === slot &&
+                                                  prev.unitIdx === uIdx
+                                                    ? null
+                                                    : { genSlot: slot, unitIdx: uIdx },
+                                                );
+                                              }}
+                                              title={`${uSpec.vnName} (${uSpec.enName}) · ${catMeta.vn}\nChi phí: ${uSpec.cost} Lượng${uSpec.vanguardDeploy ? ' · 🌲 Tiên Phong (bố trận sát tiền tuyến)' : ''}\n${uSpec.desc}\nNhấp để đổi binh chủng ô #${uIdx + 1}`}
+                                            >
+                                              <div className="tw-ab-unit-thumb-wrap">
+                                                <img
+                                                  src={uSpec.unitCard}
+                                                  alt={uSpec.vnName}
+                                                  className="tw-ab-unit-thumb"
+                                                  onError={(e: SyntheticEvent<HTMLImageElement>) => {
+                                                    const img = e.currentTarget;
+                                                    if (img.dataset.fb === '1') return;
+                                                    img.dataset.fb = '1';
+                                                    img.src = makeTwUnitFallbackSvg(catMeta.glyph);
+                                                  }}
+                                                />
+                                                {uSpec.vanguardDeploy && (
+                                                  <span
+                                                    className="tw-ab-vanguard-tag"
+                                                    title="Quân Tiên Phong: Có thể bố trận phục kích trong Rừng Thông tiền tuyến!"
+                                                  >
+                                                    🌲 Tiên Phong
+                                                  </span>
+                                                )}
+                                              </div>
+                                              <div className="tw-ab-unit-body">
+                                                <span className="tw-ab-unit-name">
+                                                  {catMeta.glyph} {uSpec.vnName}
+                                                </span>
+                                                <span className="tw-ab-unit-cost">
+                                                  💰 {uSpec.cost} Lượng
+                                                </span>
+                                              </div>
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              {twPickingUnit !== null && (() => {
+                                const { genSlot, unitIdx } = twPickingUnit;
+                                const curGenId = myLoadout.generals[genSlot];
+                                const curGen = TW_GENERALS[curGenId];
+                                const curKind = myLoadout.retinues[genSlot][unitIdx];
+                                const curSpec = TW_UNITS[curKind];
+                                const allowedKinds = twAllowedUnitsForGeneral(myFaction, curGenId);
+                                const availForSlot = TW_BATTLE_FUNDS - totalCost + curSpec.cost;
+
+                                return (
+                                  <div className="tw-ab-unit-drawer">
+                                    <div className="tw-ab-drawer-head">
+                                      <span>
+                                        Chiêu mộ Ô #{unitIdx + 1} dưới trướng{' '}
+                                        <b>{curGen.vnName}</b> · Ngân quỹ khả dụng cho ô này:{' '}
+                                        <b>{availForSlot.toLocaleString('vi-VN')} Lượng</b>
+                                      </span>
+                                      <button
+                                        type="button"
+                                        className="ghost small"
+                                        onClick={() => setTwPickingUnit(null)}
+                                      >
+                                        Đóng ✕
+                                      </button>
+                                    </div>
+                                    <div className="tw-ab-drawer-grid">
+                                      {allowedKinds.map((candKind) => {
+                                        const candSpec = TW_UNITS[candKind];
+                                        const catMeta = TW_UNIT_CAT_META[candSpec.category];
+                                        const isPicked = candKind === curKind;
+                                        const exceedsBudget = candSpec.cost > availForSlot;
+
+                                        return (
+                                          <button
+                                            key={candKind}
+                                            type="button"
+                                            className={`tw-ab-unit-choice${isPicked ? ' on' : ''}`}
+                                            disabled={exceedsBudget}
+                                            onClick={() =>
+                                              handlePickRetinueUnit(genSlot, unitIdx, candKind)
+                                            }
+                                            title={`${candSpec.vnName} (${candSpec.enName}) — ${candSpec.cost} Lượng\n${candSpec.desc}${exceedsBudget ? '\n⚠️ Vượt quá Ngân quỹ Chiến trận 12.500 Lượng!' : ''}`}
+                                          >
+                                            <img
+                                              src={candSpec.unitCard}
+                                              alt={candSpec.vnName}
+                                              className="tw-ab-choice-img"
+                                              onError={(e: SyntheticEvent<HTMLImageElement>) => {
+                                                const img = e.currentTarget;
+                                                if (img.dataset.fb === '1') return;
+                                                img.dataset.fb = '1';
+                                                img.src = makeTwUnitFallbackSvg(catMeta.glyph);
+                                              }}
+                                            />
+                                            <div className="tw-ab-choice-meta">
+                                              <div className="tw-ab-choice-top">
+                                                <img
+                                                  src={`/database-total-war/ui/cls_${candSpec.category}.png`}
+                                                  alt={catMeta.vn}
+                                                  width={14}
+                                                  height={14}
+                                                  onError={(e: SyntheticEvent<HTMLImageElement>) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                  }}
+                                                />
+                                                <span>{catMeta.glyph}</span>
+                                                <b>{candSpec.vnName}</b>
+                                              </div>
+                                              <div className="tw-ab-choice-sub">
+                                                <span
+                                                  className={`tw-ab-choice-cost${
+                                                    exceedsBudget ? ' over' : ''
+                                                  }`}
+                                                >
+                                                  {candSpec.cost} Lượng
+                                                </span>
+                                                {candSpec.vanguardDeploy && (
+                                                  <span className="tw-ab-vanguard-inline">
+                                                    🌲 Tiên Phong
+                                                  </span>
+                                                )}
+                                              </div>
+                                              <small className="muted">
+                                                Công {candSpec.meleeAtk} · Thủ {candSpec.meleeDef}
+                                                {candSpec.range > 0
+                                                  ? ` · Tầm ${candSpec.range}`
+                                                  : ` · Xung ${candSpec.chargeBonus}`}
+                                              </small>
+                                            </div>
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </>
+                          )}
+                        </div>
+                      </>
+                    );
+                  })()}
+
+                  {twCfg.mode === 'historical_2teams' && (
+                    <div>
+                      <span className="muted small">
+                        Chọn Liên Minh {!spectating && me ? '· cùng Liên Minh hợp lực công địch, chia đều hũ chiến thắng' : '(vào bàn chơi để chọn Liên Minh)'}
+                      </span>
+                      {!spectating && me && (
+                        <div className="bet-chips thap-team-chips">
+                          {TW_COALITION_LABELS.map((label, t) => (
+                            <button
+                              key={t}
+                              type="button"
+                              className={`bet-chip thap-team-pick${twTeamOf(meId) === t ? ' on' : ''}`}
+                              style={{ borderColor: TW_TEAM_COLORS[t] }}
+                              onClick={() => emit('tw:team', { team: t })}
+                            >
+                              <i style={{ background: TW_TEAM_COLORS[t] }} /> {label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {twBots > 0 && (
+                        <p className="muted small">
+                          Chư hầu Máy AI dự kiến gia nhập:{' '}
+                          {twBotPreviews.map((bot, i) => (
+                            <span key={i} className="thap-seat-team" style={{ borderColor: TW_TEAM_COLORS[bot.team] }}>
+                              <i style={{ background: TW_TEAM_COLORS[bot.team] }} /> {TW_FACTIONS[bot.faction].emblemText} {bot.botName} → {TW_COALITION_LABELS[bot.team]}
+                            </span>
+                          ))}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
-
-                {thapCfg.mode === 'teams' && thapBots > 0 && (
-                  <div className="cfg-bot-teams small muted">
-                    Máy vào:{' '}
-                    {thapBotTeams.map((t, i) => (
-                      <span key={i} className="thap-seat-team" style={{ borderColor: THAP_TEAM_COLORS[t] }}>
-                        <i style={{ background: THAP_TEAM_COLORS[t] }} /> {THAP_TEAM_NAMES[t]}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="cfg-tags">
-                  <span>16 binh chủng gốc</span>
-                  <span>Lương hiệp mỗi {THAP_ROUND_S}s</span>
-                  <span>Pha Lê {THAP_BASE.hp} HP · max {THAP_MAX_POP} quân</span>
-                </div>
-
-                <details className="cfg-details">
-                  <summary>Xem cơ chế triệu hồi &amp; điều binh</summary>
-                  <ul className="rule-summary-list">
-                    <li>Khởi đầu {THAP_START_GOLD} vàng, lương hiệp {THAP_START_ROUND_INCOME} vàng (đợt đầu sau {THAP_FIRST_ROUND_S}s).</li>
-                    <li>Chọn lính để Cổng tự xuất và cộng thêm Lương Hiệp; 3 lệnh: Tấn Công · Phòng Thủ · Tập Kết.</li>
-                  </ul>
-                </details>
+                <ul className="rule-summary-list">
+                  <li>
+                    <b>Dàn trận RTS chuẩn Total War (Giữ &amp; Kéo Chuột Phải):</b> Mỗi Chư Hầu chỉ huy <b>3 Danh Tướng + 12 trung đoàn bộ tùy</b>; giữ &amp; kéo chuột phải trên mặt đất để tùy biến bề ngang hàng quân và góc xoay mặt từng binh sĩ, hoặc nhấp chuột phải vào địch để xung phong công kích.
+                  </li>
+                  <li>
+                    <b>Phục kích Rừng Thông &amp; Địa hình Thủy Mặc:</b> Ẩn quân trong <b>Rừng Thông / Rừng Trúc</b> để tàng hình phục kích và được tán rừng <b>chắn 45% sát thương tên đạn</b>; chiếm <b>Đồi Cao</b> gia tăng tầm bắn cung pháo và uy lực xung kích đổ dốc.
+                  </li>
+                  <li>
+                    <b>Thương Lâm Phản Xung Kích &amp; Tương Khắc Binh Chủng:</b> Bộ binh trường thương dựng <b>Thương Lâm (Spearwall)</b> đứng trụ sẽ <b>phản ngược sát thương xung kích (Charge Reflect)</b> bẻ gãy Thiết Kỵ; <b>Thuẫn Tường</b> chắn mưa tên trực diện, còn <b>Phong Thỉ Chùy</b> giúp kỵ binh xuyên phá sườn và hậu tuyến.
+                  </li>
+                  <li>
+                    <b>Đơn Đấu Võ Tướng 1v1 &amp; Tuyệt Kỹ Ngũ Hành:</b>{' '}
+                    {twCfg.romanceMode ? (
+                      <>Chế độ <b>⚡ Diễn Nghĩa</b> cho phép Danh Tướng <b>Thách Đấu 1v1 (phím V)</b> mở võ đài sinh tử giữa vạn quân (trảm tướng địch gây sụp đổ sĩ khí diện rộng) và thi triển <b>Tuyệt Kỹ Ngũ Hành (phím Q)</b>.</>
+                    ) : (
+                      <>Chế độ <b>📜 Chính Sử</b> đặt Danh Tướng trong đội hình Cấm Vệ thực chiến, thắng bại quyết định bởi kỷ luật trận pháp, bọc sườn và giữ vững sĩ khí đại quân.</>
+                    )}
+                  </li>
+                  <li>
+                    <b>Đài Hiệu Lệnh, Sĩ Khí Tan Vỡ &amp; Hũ Xu Chiến Thắng:</b> Đánh tan tác làm toàn quân địch <b>vỡ trận tháo chạy (Rout/Shattered)</b> hoặc kiểm soát các <b>Đài Hiệu Lệnh</b> đến hết <b>{twCfg.durationMin} phút</b> để thắng trận. Người / Liên Minh thắng chia đều hũ xu (nếu Máy AI thắng thì hoàn tiền cược).
+                  </li>
+                </ul>
               </>
             ) : gameMode === 'link_duel' ? (
               <>
@@ -810,7 +1758,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                 {online < modeInfo.minPlayers ? (
                   `Cần ít nhất ${modeInfo.minPlayers} người`
                 ) : !deckOk ? (
-                  isThap ? thapProblem : isBansung ? bansungProblem : gameMode === 'ant_empire' ? 'Cần ≥ 2 đế chế' : gameMode === 'link_duel' ? `Cần 1–${LINK_MAX_PLAYERS} người` : 'Luật chưa hợp lệ'
+                  isThap ? thapProblem : isBansung ? bansungProblem : isTw ? twProblem : gameMode === 'ant_empire' ? 'Cần ≥ 2 đế chế' : gameMode === 'link_duel' ? `Cần 1–${LINK_MAX_PLAYERS} người` : 'Luật chưa hợp lệ'
                 ) : poor.length > 0 ? (
                   'Có người thiếu xu'
                 ) : awaitingReady.length > 0 ? (
@@ -865,14 +1813,130 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
           }}
         />
       )}
-
-      {miragineGuideOpen && (
-        <Modal title="Miragine War – Bảng 16 Binh Chủng Nguyên Bản" onClose={() => setMiragineGuideOpen(false)} width={760}>
-          <div className="miragine-menu-modal">
-            <div className="miragine-menu-hero">
-              <img src="/database-miraginewar/ui/title_bg.jpg" alt="Miragine War" className="miragine-title-img" />
+      <MiragineTutorialModal open={miragineGuideOpen} onClose={() => setMiragineGuideOpen(false)} />
+      {twGuideOpen && (
+        <Modal
+          title={
+            <span className="modal-title-icon">
+              <BookOpen size={19} /> Cẩm Nang Tam Quốc Toàn Chiến – 6 Thế Lực &amp; Ngũ Hành
+            </span>
+          }
+          onClose={() => setTwGuideOpen(false)}
+          width={860}
+        >
+          <div className="tw-guide-modal">
+            <div>
+              <h3>1. Sáu Thế Lực Chư Hầu &amp; Bộ Tùy Danh Tướng</h3>
+              <p className="muted small" style={{ marginBottom: 8 }}>
+                Mỗi Chư Hầu xuất trận cùng 3 Danh Tướng Huyền Thoại và 12 trung đoàn tinh binh (4 trung đoàn bộ tùy / tướng).
+              </p>
+              <div className="tw-guide-grid">
+                {TW_SEAT_FACTIONS.map((fid) => {
+                  const f = TW_FACTIONS[fid];
+                  const lead = TW_GENERALS[f.defaultGenerals[0]];
+                  return (
+                    <div key={fid} className="tw-guide-card" style={{ borderLeft: `4px solid ${f.color}` }}>
+                      <div className="mode-card-head" style={{ marginBottom: 6 }}>
+                        <img
+                          src={lead.tokenPortrait}
+                          alt={lead.vnName}
+                          width={36}
+                          height={36}
+                          style={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            border: `2px solid ${f.color}`,
+                            flexShrink: 0,
+                          }}
+                        />
+                        <div>
+                          <b>【{f.emblemText}】 {f.vnName} ({f.name})</b>
+                          <div className="muted small">Chủ công: {f.leaderName}</div>
+                        </div>
+                      </div>
+                      <p className="small" style={{ marginBottom: 4 }}>{f.desc}</p>
+                      <p className="small" style={{ marginBottom: 4 }}>
+                        <b>3 Tướng xuất trận:</b>{' '}
+                        {f.defaultGenerals
+                          .map((gid) => `${TW_GENERALS[gid].vnName} (${TW_GENERALS[gid].skill.vnName})`)
+                          .join(' · ')}
+                      </p>
+                      <p className="muted small"><b>Đặc trưng thế lực:</b> {f.bonusDesc}</p>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            <img src="/database-miraginewar/ui/tutorial_bg.jpg" alt="Miragine War Unit Guide" className="miragine-tutorial-img" />
+
+            <div>
+              <h3>2. Hệ Ngũ Hành Tướng Lĩnh (Wu Xing – 5 Hệ Tướng)</h3>
+              <div className="tw-guide-grid">
+                {TW_GENERAL_CLASSES.map((cid) => {
+                  const c = TW_CLASSES[cid];
+                  return (
+                    <div key={cid} className="tw-guide-card" style={{ borderLeft: `4px solid ${c.color}` }}>
+                      <div className="mode-card-head" style={{ marginBottom: 4 }}>
+                        <img
+                          src={TW_CLASS_ELEMENT_ICON[cid]}
+                          alt={c.element}
+                          width={26}
+                          height={26}
+                          style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }}
+                        />
+                        <div>
+                          <b>Hệ {c.element} · {c.vnName}</b>
+                          <div className="muted small">{c.enName} · Hào quang {c.auraRadius}</div>
+                        </div>
+                      </div>
+                      <p className="small">{c.auraDesc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <h3>3. Sáu Trận Hình Chiến Thuật (Tactical Formations)</h3>
+              <div className="tw-guide-grid">
+                {TW_FORMATION_IDS.map((fmtId) => {
+                  const fmt = TW_FORMATIONS[fmtId];
+                  return (
+                    <div key={fmtId} className="tw-guide-card">
+                      <div className="mode-card-head" style={{ marginBottom: 4 }}>
+                        <img
+                          src={`/database-total-war/ui/fmt_${fmtId}.png`}
+                          alt={fmt.vnName}
+                          width={26}
+                          height={26}
+                          style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }}
+                        />
+                        <div>
+                          <b>{fmt.vnName}</b>
+                          <div className="muted small">{fmt.enName}</div>
+                        </div>
+                      </div>
+                      <p className="small">{fmt.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="tw-guide-card">
+              <h3>4. Thao Tác Điều Binh Tốc Chiến</h3>
+              <ul className="rule-summary-list">
+                <li><b>Chuột trái / Kéo khung:</b> Chọn trung đoàn (nhấp đúp chọn toàn bộ binh chủng cùng loại; giữ Shift chọn gộp; <b>Ctrl+1..9</b> lưu đạo quân).</li>
+                <li><b>Giữ &amp; Kéo Chuột Phải:</b> Kéo vạch dàn quân trực quan trên mặt đất để định chiều rộng chiến tuyến và hướng mặt đội hình.</li>
+                <li><b>Phím tắt chiến thuật:</b> <b>Space</b> (xem tầm bắn &amp; hướng hành quân / nhấp đúp về Chủ Tướng) · <b>Q</b> (Tuyệt kỹ Danh Tướng) · <b>V</b> (Thách Đấu 1v1) · <b>G</b> (Giữ vị trí) · <b>F</b> (Tự bắn) · <b>K</b> (Du kích) · <b>H</b> (Dừng quân).</li>
+              </ul>
+            </div>
+          </div>
+          <div className="modal-actions">
+            <button type="button" className="primary big" onClick={() => setTwGuideOpen(false)}>
+              Đã rõ binh pháp
+            </button>
           </div>
         </Modal>
       )}

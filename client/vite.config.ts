@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { cpSync, createReadStream, existsSync, realpathSync, statSync } from 'node:fs';
-import { extname, resolve, sep } from 'node:path';
+import { basename, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // Domain public trỏ qua cloudflared tunnel; thêm domain khác qua ALLOWED_HOSTS=a.com,b.com
@@ -21,6 +21,8 @@ const MIRAGINE_DIR = fileURLToPath(new URL('../database-miraginewar', import.met
 const DIST_MIRAGINE_DIR = fileURLToPath(new URL('./dist/database-miraginewar', import.meta.url));
 const BANSUNG_DIR = fileURLToPath(new URL('../database-ban-sung', import.meta.url));
 const DIST_BANSUNG_DIR = fileURLToPath(new URL('./dist/database-ban-sung', import.meta.url));
+const TOTAL_WAR_DIR = fileURLToPath(new URL('../database-total-war', import.meta.url));
+const DIST_TOTAL_WAR_DIR = fileURLToPath(new URL('./dist/database-total-war', import.meta.url));
 
 const STATIC_MIME_BY_EXT: Readonly<Record<string, string>> = {
   '.png': 'image/png',
@@ -185,14 +187,56 @@ function databasePikachuPlugin(): Plugin {
   });
 }
 
+/** Serve Miragine War runtime assets in dev/preview and copy runtime files (excluding raw frames/) on build. */
 function databaseMiragineWarPlugin(): Plugin {
-  return databaseStaticPlugin({
+  const MIRAGINE_PREFIX = MIRAGINE_DIR.endsWith(sep) ? MIRAGINE_DIR : `${MIRAGINE_DIR}${sep}`;
+  const FRAMES_DIR = join(MIRAGINE_DIR, 'frames');
+  const FRAMES_PREFIX = `${FRAMES_DIR}${sep}`;
+  const serveMiragine = (middlewares: { use: (route: string, fn: (req: any, res: any, next: () => void) => void) => void }) => {
+    middlewares.use('/database-miraginewar', (req, res, next) => {
+      let rel = '';
+      try {
+        rel = decodeURIComponent((req.url || '').split('?')[0]).replace(/^\/+/, '');
+      } catch {
+        res.statusCode = 400;
+        res.end('Bad Request');
+        return;
+      }
+      const file = resolve(MIRAGINE_DIR, rel);
+      if ((file !== MIRAGINE_DIR && !file.startsWith(MIRAGINE_PREFIX)) || !existsSync(file) || !statSync(file).isFile()) {
+        return next();
+      }
+      const lower = file.toLowerCase();
+      if (lower.endsWith('.png')) res.setHeader('Content-Type', 'image/png');
+      else if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) res.setHeader('Content-Type', 'image/jpeg');
+      else if (lower.endsWith('.mp3')) res.setHeader('Content-Type', 'audio/mpeg');
+      else if (lower.endsWith('.json')) res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, max-age=604800');
+      const stream = createReadStream(file);
+      stream.on('error', () => {
+        if (!res.headersSent) res.statusCode = 500;
+        res.end();
+      });
+      stream.pipe(res);
+    });
+  };
+  return {
     name: 'database-miraginewar-static',
-    route: '/database-miraginewar',
-    srcDir: MIRAGINE_DIR,
-    distDir: DIST_MIRAGINE_DIR,
-    allowedExts: new Set(['.png', '.jpg', '.jpeg', '.mp3', '.json']),
-  });
+    configureServer(server) {
+      serveMiragine(server.middlewares);
+    },
+    configurePreviewServer(server) {
+      serveMiragine(server.middlewares);
+    },
+    closeBundle() {
+      if (existsSync(MIRAGINE_DIR)) {
+        cpSync(MIRAGINE_DIR, DIST_MIRAGINE_DIR, {
+          recursive: true,
+          filter: (src) => src !== FRAMES_DIR && !src.startsWith(FRAMES_PREFIX),
+        });
+      }
+    },
+  };
 }
 
 function databaseBanSungPlugin(): Plugin {
@@ -205,6 +249,62 @@ function databaseBanSungPlugin(): Plugin {
     failClosed: true,
     isAllowedJson: (relPath) => relPath === 'manifest.json' || relPath.startsWith('normalized/'),
   });
+}
+
+function databaseTotalWarPlugin(): Plugin {
+  const rootPrefix = TOTAL_WAR_DIR.endsWith(sep) ? TOTAL_WAR_DIR : TOTAL_WAR_DIR + sep;
+  const serveTotalWar = (middlewares: { use: (route: string, fn: (req: any, res: any, next: () => void) => void) => void }) => {
+    middlewares.use('/database-total-war', (req, res, next) => {
+      let rel = '';
+      try {
+        rel = decodeURIComponent((req.url || '').split('?')[0]).replace(/^\/+/, '');
+      } catch {
+        return next();
+      }
+      const file = resolve(TOTAL_WAR_DIR, rel);
+      if ((file !== TOTAL_WAR_DIR && !file.startsWith(rootPrefix)) || !existsSync(file) || !statSync(file).isFile()) {
+        return next();
+      }
+      const lower = file.toLowerCase();
+      if (lower.endsWith('.png')) res.setHeader('Content-Type', 'image/png');
+      else if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) res.setHeader('Content-Type', 'image/jpeg');
+      else if (lower.endsWith('.svg')) res.setHeader('Content-Type', 'image/svg+xml');
+      else if (lower.endsWith('.mp3')) res.setHeader('Content-Type', 'audio/mpeg');
+      else if (lower.endsWith('.wav')) res.setHeader('Content-Type', 'audio/wav');
+      else if (lower.endsWith('.ogg')) res.setHeader('Content-Type', 'audio/ogg');
+      else if (lower.endsWith('.json')) res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      else if (lower.endsWith('.xml')) res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+      else if (lower.endsWith('.js')) res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+      else if (lower.endsWith('.md') || lower.endsWith('.txt')) res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, max-age=604800');
+      const stream = createReadStream(file);
+      stream.on('error', () => {
+        if (!res.headersSent) res.statusCode = 500;
+        res.end();
+      });
+      stream.pipe(res);
+    });
+  };
+  return {
+    name: 'database-total-war-static',
+    configureServer(server) {
+      serveTotalWar(server.middlewares);
+    },
+    configurePreviewServer(server) {
+      serveTotalWar(server.middlewares);
+    },
+    closeBundle() {
+      if (existsSync(TOTAL_WAR_DIR)) {
+        cpSync(TOTAL_WAR_DIR, join(DIST_TOTAL_WAR_DIR), {
+          recursive: true,
+          filter: (src: string) => {
+            const name = basename(src);
+            return name !== '.git' && name !== 'opensource';
+          },
+        });
+      }
+    },
+  };
 }
 
 export default defineConfig(({ mode }) => {
@@ -224,7 +324,7 @@ export default defineConfig(({ mode }) => {
   };
 
   return {
-    plugins: [react(), databasePikachuPlugin(), databaseMiragineWarPlugin(), databaseBanSungPlugin()],
+    plugins: [react(), databasePikachuPlugin(), databaseMiragineWarPlugin(), databaseBanSungPlugin(), databaseTotalWarPlugin()],
     // Ảnh lá bài lấy thẳng từ thư mục database/ ở gốc project
     publicDir: fileURLToPath(new URL('../database', import.meta.url)),
     server: {

@@ -1,6 +1,6 @@
 import { useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from 'react';
 import { ArrowRight, Eye, Plus, Sliders, Sparkles, Users } from 'lucide-react';
-import { BANSUNG_STATIC_ROOT, GAME_MODES, type GameMode, type RoomRules } from '../../../shared/src';
+import { BANSUNG_STATIC_ROOT, GAME_MODES, TW_MAX_PLAYERS, type GameMode, type RoomRules } from '../../../shared/src';
 import Backdrop3D from './Backdrop3D';
 import CardView from './CardView';
 import RoomSettings, { getSavedRoomRules } from './RoomSettings';
@@ -17,6 +17,7 @@ interface GameMeta {
 const HUB_GAME_ORDER: readonly GameMode[] = [
   'bansung',
   'thap_hung',
+  'total_war',
   'exploding_kittens',
   'tien_len',
   'blackjack_21',
@@ -56,6 +57,18 @@ const HUB_META: Record<GameMode, GameMeta> = {
       <div className="gcard-art-photo">
         <img src="/database-miraginewar/ui/title_bg.jpg" alt="" />
         <span className="gcard-photo-badge">⚔️ 16 Lính</span>
+      </div>
+    ),
+  },
+  total_war: {
+    title: 'Tam Quốc Toàn Chiến',
+    tag: 'Chiến thuật',
+    blurb: 'Điều binh thời gian thực, 1–8 Chư Hầu',
+    accent: '#dc2626',
+    art: () => (
+      <div className="gcard-art-emblem">
+        <span className="gcard-big-emoji">🐉</span>
+        <span className="gcard-sub-pill">Tam Quốc</span>
       </div>
     ),
   },
@@ -265,7 +278,9 @@ export default function Home({
         maxPlayers:
           mode === 'tien_len'
             ? 4
-            : mode === 'bansung'
+            : mode === 'total_war'
+              ? TW_MAX_PLAYERS
+              : mode === 'bansung'
               ? Math.max(4, Math.min(10, GAME_MODES.bansung.maxPlayers))
               : mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'thap_hung' || mode === 'exploding_kittens' || mode === 'link_duel' || mode === 'loto'
                 ? GAME_MODES[mode].maxPlayers
@@ -283,7 +298,7 @@ export default function Home({
         <header className="hub-header">
           <div className="hub-brand-block">
             <span className="hub-eyebrow">
-              <Sparkles size={13} /> 8 Trò Chơi Online · Chơi Chung Mọi Thiết Bị
+              <Sparkles size={13} /> 9 Trò Chơi Online · Chơi Chung Mọi Thiết Bị
             </span>
             <h1 className="hub-title">
               Arena <span>Hub</span>
