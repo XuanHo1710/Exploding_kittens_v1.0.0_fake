@@ -1,6 +1,6 @@
-import { Injectable, MiddlewareConsumer, Module, NestMiddleware, NestModule } from '@nestjs/common';
+import { Injectable, Logger, MiddlewareConsumer, Module, NestMiddleware, NestModule, OnModuleInit } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { promises, realpathSync } from 'fs';
+import { existsSync, promises, realpathSync } from 'fs';
 import { extname, join, resolve, sep } from 'path';
 import { GameGateway } from './game/game.gateway';
 import { RoomsService } from './game/rooms.service';
@@ -159,6 +159,30 @@ export class BanSungStaticGuard implements NestMiddleware {
     await guardBanSungStaticRequest(req, res, next);
   }
 }
+const REPO_UP_CANDIDATES: readonly string[][] = [
+  ['..', '..', '..', '..'],
+  ['..', '..', '..'],
+  ['..', '..'],
+];
+
+/** Resolve a repository-root path across dev (ts-node/watch) and compiled dist/ layouts. */
+function resolveRepoPath(...segments: string[]): string {
+  for (const up of REPO_UP_CANDIDATES) {
+    const candidate = resolve(__dirname, ...up, ...segments);
+    if (existsSync(candidate)) return candidate;
+  }
+  for (const base of [process.cwd(), resolve(process.cwd(), '..')]) {
+    const candidate = resolve(base, ...segments);
+    if (existsSync(candidate)) return candidate;
+  }
+  const fallbackRoot = REPO_UP_CANDIDATES
+    .map((up) => resolve(__dirname, ...up))
+    .find((root) => existsSync(join(root, 'server', 'package.json')))
+    ?? resolve(__dirname, '..', '..', '..', '..');
+  return join(fallbackRoot, ...segments);
+}
+
+const miragineDir = resolveRepoPath('database-miraginewar');
 
 @Module({
   imports: [
@@ -166,9 +190,11 @@ export class BanSungStaticGuard implements NestMiddleware {
       // Ảnh avatar người chơi đã tải lên
       { rootPath: AVATAR_DIR, serveRoot: '/avatars', serveStaticOptions: { maxAge: '7d', fallthrough: false } },
       // Ảnh Pikachu 1-1 từ thư mục database-pikachu/ ở gốc project
-      { rootPath: join(__dirname, '..', '..', '..', '..', 'database-pikachu'), serveRoot: '/database-pikachu', serveStaticOptions: { maxAge: '7d', fallthrough: false } },
+      { rootPath: resolveRepoPath('database-pikachu'), serveRoot: '/database-pikachu', serveStaticOptions: { maxAge: '7d', fallthrough: false } },
       // Tài nguyên nhân vật, hoạt ảnh, âm thanh Miragine War 100% từ thư mục database-miraginewar/ ở gốc project
-      { rootPath: join(__dirname, '..', '..', '..', '..', 'database-miraginewar'), serveRoot: '/database-miraginewar', serveStaticOptions: { maxAge: '7d', fallthrough: false } },
+      { rootPath: miragineDir, serveRoot: '/database-miraginewar', serveStaticOptions: { maxAge: '7d', fallthrough: false } },
+      // Tài nguyên bản đồ, tướng lĩnh, quân đoàn, âm thanh Tam Quốc Toàn Chiến từ thư mục database-total-war/ ở gốc project
+      { rootPath: resolveRepoPath('database-total-war'), serveRoot: '/database-total-war', serveStaticOptions: { maxAge: '7d', fallthrough: false } },
       // Tài nguyên nhân vật, vũ khí, hiệu ứng, âm thanh Bắn Súng Co-op từ thư mục database-ban-sung/ ở gốc project
       {
         rootPath: BAN_SUNG_ROOT,
@@ -177,8 +203,16 @@ export class BanSungStaticGuard implements NestMiddleware {
       },
       // Bản build của client (client/dist) được server phục vụ luôn, chỉ cần chạy 1 tiến trình
       {
-        rootPath: join(__dirname, '..', '..', '..', '..', 'client', 'dist'),
-        exclude: ['/api/{*path}', '/avatars/{*path}', '/database-pikachu/{*path}', '/database-miraginewar/{*path}', '/database-ban-sung/{*path}'],
+        rootPath: resolveRepoPath('client', 'dist'),
+        exclude: [
+          '/api/{*path}',
+          '/avatars/{*path}',
+          '/database-pikachu/{*path}',
+          '/database-miraginewar/{*path}',
+          '/database-total-war/{*path}',
+          '/database-ban-sung/{*path}',
+          '/uploads/{*path}',
+        ],
       },
     ),
   ],
@@ -188,8 +222,18 @@ export class BanSungStaticGuard implements NestMiddleware {
     DbService, AccountsService, RoomsService, GameGateway, BanSungStaticGuard,
   ],
 })
-export class AppModule implements NestModule {
+export class AppModule implements NestModule, OnModuleInit {
+  private readonly logger = new Logger(AppModule.name);
+
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(BanSungStaticGuard).forRoutes(BAN_SUNG_STATIC_PREFIX, `${BAN_SUNG_STATIC_PREFIX}/{*path}`);
+  }
+
+  /** Warn visibly at startup if Miragine War runtime assets are missing. */
+  onModuleInit(): void {
+    const mappingPath = join(miragineDir, 'mapping.json');
+    if (!existsSync(mappingPath)) {
+      this.logger.warn(`Miragine War assets missing: ${mappingPath} not found`);
+    }
   }
 }

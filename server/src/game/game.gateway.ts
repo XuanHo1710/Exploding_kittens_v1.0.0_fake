@@ -20,6 +20,7 @@ import {
   type LinkCommand,
   type PlayRequest,
   type ThapCommand,
+  type TwCommand,
 } from '../../../shared/src';
 import { GameError, GameKickError } from './game';
 import {
@@ -351,23 +352,74 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return this.handle(c, (me) => this.rooms.setLinkConfig(me.playerId, body?.config));
   }
 
-  // --- Thập Hùng Tranh Bá ---
+  // --- Miragine War (Thập Hùng) ---
   @SubscribeMessage('thap:cmd')
   thapCmd(@ConnectedSocket() c: Socket, @MessageBody() body: ThapCommand) {
     return this.handle(c, (me) => {
-      if (!body || typeof body !== 'object' || typeof body.t !== 'string') throw new GameError('Lệnh không hợp lệ.');
-      this.game(me).thapCommand(me.playerId, body);
+      const cmd = (body && typeof body === 'object' && 'cmd' in body ? (body as { cmd?: unknown }).cmd : body) as ThapCommand;
+      if (!cmd || typeof cmd !== 'object' || typeof cmd.t !== 'string') throw new GameError('Lệnh không hợp lệ.');
+      this.game(me).thapCommand(me.playerId, cmd);
     });
   }
 
   @SubscribeMessage('thap:config')
-  thapConfig(@ConnectedSocket() c: Socket, @MessageBody() body: { config: unknown }) {
-    return this.handle(c, (me) => this.rooms.setThapConfig(me.playerId, body?.config));
+  thapConfig(@ConnectedSocket() c: Socket, @MessageBody() body: { config?: unknown }) {
+    return this.handle(c, (me) => {
+      const cfg = body && typeof body === 'object' && 'config' in body ? body.config : body;
+      return this.rooms.setThapConfig(me.playerId, cfg);
+    });
   }
 
-  @SubscribeMessage('thap:team')
-  thapTeam(@ConnectedSocket() c: Socket, @MessageBody() body: { team?: unknown }) {
-    return this.handle(c, (me) => this.rooms.setThapTeam(me.playerId, body?.team));
+  @SubscribeMessage('thap:start')
+  thapStart(@ConnectedSocket() c: Socket) {
+    return this.handle(c, (me) => this.rooms.startGame(me.playerId));
+  }
+
+  @SubscribeMessage('thap:rematch')
+  thapRematch(@ConnectedSocket() c: Socket) {
+    return this.handle(c, (me) => this.rooms.restartGame(me.playerId));
+  }
+
+  // --- Tam Quốc Toàn Chiến ---
+  @SubscribeMessage('tw:cmd')
+  twCmd(@ConnectedSocket() c: Socket, @MessageBody() body: TwCommand) {
+    return this.handle(c, (me) => {
+      const cmd = (body && typeof body === 'object' && 'cmd' in body ? (body as { cmd?: unknown }).cmd : body) as TwCommand;
+      if (!cmd || typeof cmd !== 'object' || typeof cmd.t !== 'string') throw new GameError('Lệnh không hợp lệ.');
+      return this.rooms.twCommand(me.playerId, cmd);
+    });
+  }
+
+  @SubscribeMessage('tw:config')
+  twConfig(@ConnectedSocket() c: Socket, @MessageBody() body: { config?: unknown }) {
+    return this.handle(c, (me) => {
+      const cfg = body && typeof body === 'object' && 'config' in body ? body.config : body;
+      return this.rooms.setTwConfig(me.playerId, cfg);
+    });
+  }
+
+  @SubscribeMessage('tw:faction')
+  twFaction(@ConnectedSocket() c: Socket, @MessageBody() body: { faction?: unknown }) {
+    return this.handle(c, (me) => {
+      const faction = body && typeof body === 'object' && 'faction' in body ? body.faction : body;
+      return this.rooms.setTwFaction(me.playerId, faction);
+    });
+  }
+
+  @SubscribeMessage('tw:team')
+  twTeam(@ConnectedSocket() c: Socket, @MessageBody() body: { team?: unknown }) {
+    return this.handle(c, (me) => {
+      const team = body && typeof body === 'object' && 'team' in body ? body.team : body;
+      return this.rooms.setTwTeam(me.playerId, team);
+    });
+  }
+
+  @SubscribeMessage('tw:loadout')
+  twLoadout(@ConnectedSocket() c: Socket, @MessageBody() body: { loadout?: unknown }) {
+    return this.handle(c, (me) => {
+      const loadout = body && typeof body === 'object' && 'loadout' in body ? body.loadout : body;
+      return this.rooms.setTwLoadout(me.playerId, loadout);
+    });
   }
 
   // --- Bắn Súng Co-op ---

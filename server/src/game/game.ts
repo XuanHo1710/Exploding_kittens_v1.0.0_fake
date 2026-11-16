@@ -70,12 +70,12 @@ import {
   type LinkState,
   DEFAULT_THAP_CONFIG,
   THAP_BOT_LABEL,
-  THAP_BOT_NAMES,
   THAP_COLORS,
+  THAP_LANE_Y_MAX,
+  THAP_LANE_Y_MIN,
+  THAP_MAX_PLAYERS,
   THAP_MODE_LABEL,
-  assignThapTeams,
   normalizeThapConfig,
-  normalizeThapTeam,
   type ThapCommand,
   type ThapConfig,
   type ThapFrame,
@@ -90,11 +90,34 @@ import {
   type BansungGameMode,
   type BansungHeroId,
   type BansungRoomView,
+  DEFAULT_TW_CONFIG,
+  TW_BOT_NAMES,
+  TW_COLORS,
+  TW_FACTIONS,
+  TW_FACTION_IDS,
+  TW_MAPS,
+  TW_MAX_PLAYERS,
+  TW_MODE_LABEL,
+  TW_TEAM_NAMES,
+  assignTwTeams,
+  normalizeTwConfig,
+  normalizeTwFaction,
+  normalizeTwLoadout,
+  normalizeTwTeam,
+  twLoadoutCost,
+  TW_GENERALS,
+  type TwArmyLoadout,
+  type TwCommand,
+  type TwConfig,
+  type TwFactionId,
+  type TwFrame,
+  type TwRoomView,
 } from '../../../shared/src';
 import { AntWorld } from './ants/world';
-import { ThapWorld } from './thap/world';
+import { ThapWorld, type ThapInit } from './thap/world';
 import { BansungWorld, type BansungInit } from './bansung/world';
 import { validateBansungConfig, validateBansungHero } from './bansung/security';
+import { TwWorld, type TwSeatInit } from './tw/world';
 import { LinkDuel } from './link/duel';
 
 export class GameError extends Error {}
@@ -173,6 +196,8 @@ export interface GameHooks {
   thapFrame(game: Game, playerId: string, frame: ThapFrame): void;
   /** Bắn Súng Co-op: gửi khung hình riêng cho từng người */
   bansungFrame?(game: Game, playerId: string, frame: BansungFrame): void;
+  /** Tam Quốc Toàn Chiến: gửi khung hình riêng cho từng người */
+  twFrame?(game: Game, playerId: string, frame: TwFrame): void;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -241,11 +266,16 @@ export class Game {
   antsConfig: AntsConfig = { ...DEFAULT_ANTS_CONFIG };
   private ants?: AntWorld;
 
-  // --- Trạng thái Thập Hùng Tranh Bá ---
+  // --- Trạng thái Miragine War (thap_hung) ---
   thapConfig: ThapConfig = { ...DEFAULT_THAP_CONFIG };
   private thap?: ThapWorld;
-  /** đội từng người chọn ở phòng chờ (chế độ Lập đội) */
-  private thapTeams = new Map<string, number>();
+
+  // --- Trạng thái Tam Quốc Toàn Chiến ---
+  twConfig: TwConfig = { ...DEFAULT_TW_CONFIG };
+  private tw?: TwWorld;
+  private twFactions = new Map<string, TwFactionId>();
+  private twTeams = new Map<string, number>();
+  private twLoadouts = new Map<string, TwArmyLoadout>();
 
   // --- Trạng thái Nối Thú Đại Chiến ---
   linkConfig: LinkConfig = { ...DEFAULT_LINK_CONFIG };
@@ -308,7 +338,22 @@ export class Game {
     if (this.gameMode === resolved) return;
     this.run(() => {
       this.gameMode = resolved;
-      this.roomRules.maxPlayers = Math.min(Math.max(2, this.players.length, resolved === 'tien_len' || resolved === 'bansung' ? 4 : resolved === 'blackjack_21' || resolved === 'ant_empire' || resolved === 'link_duel' || resolved === 'loto' || resolved === 'thap_hung' ? 10 : this.roomRules.maxPlayers), GAME_MODES[resolved].maxPlayers);
+      this.roomRules.maxPlayers = Math.min(
+        Math.max(
+          2,
+          this.players.length,
+          resolved === 'tien_len' || resolved === 'bansung'
+            ? 4
+            : resolved === 'total_war'
+              ? TW_MAX_PLAYERS
+              : resolved === 'thap_hung'
+                ? THAP_MAX_PLAYERS
+                : resolved === 'blackjack_21' || resolved === 'ant_empire' || resolved === 'link_duel' || resolved === 'loto'
+                  ? 10
+                  : this.roomRules.maxPlayers,
+        ),
+        GAME_MODES[resolved].maxPlayers,
+      );
       if (resolved === 'bansung') this.bansungConfig = normalizeBansungConfig(this.bansungConfig, this.players.length);
       this.invalidateReady();
       this.addLog(`🎮 Chủ phòng đổi sang chế độ: ${GAME_MODES[resolved].emoji} ${GAME_MODES[resolved].name}.`);
@@ -366,14 +411,33 @@ export class Game {
       if (players.length + cfg.bots < 2) throw new GameError('Cần ít nhất 2 đế chế: thêm máy hoặc chờ thêm người.');
     }
     if (this.gameMode === 'thap_hung') {
-      const cfg = normalizeThapConfig(this.thapConfig, players.length);
-      if (players.length + cfg.bots < 2) throw new GameError('Cần ít nhất 2 phe: thêm máy hoặc chờ thêm người.');
-      if (cfg.mode === 'coop' && cfg.bots < 1) throw new GameError('Chế độ Cùng đánh máy cần ít nhất 1 máy.');
-      if (cfg.mode === 'teams' && new Set(assignThapTeams(players.map((p) => this.thapTeamOf(p.id)), cfg.bots, 'teams')).size < 2) {
-        throw new GameError('Cần ít nhất 2 đội.');
+      if (players.length > THAP_MAX_PLAYERS) {
+        throw new GameError(`Chế độ ${modeCfg.shortName} tối đa ${THAP_MAX_PLAYERS} người.`);
       }
-      // Chốt đội mặc định (xen kẽ theo ghế) đúng như phòng chờ đang hiển thị, trước khi bỏ người rớt mạng / xáo ghế
-      if (cfg.mode === 'teams') for (const p of this.players) if (!this.thapTeams.has(p.id)) this.thapTeams.set(p.id, this.thapTeamOf(p.id));
+      const cfg = normalizeThapConfig(this.thapConfig, players.length);
+      if (players.length + cfg.bots < 2) {
+        throw new GameError('Cần ít nhất 2 phe: thêm AI hoặc chờ thêm người.');
+      }
+    }
+    if (this.gameMode === 'total_war') {
+      const cfg = normalizeTwConfig(this.twConfig, players.length);
+      if (players.length + cfg.bots < 2) {
+        throw new GameError('Cần ít nhất 2 thế lực Chư Hầu (thêm người hoặc thêm Máy AI) để khai chiến.');
+      }
+      const humanTeams = players.map((p) => this.twTeamOf(p.id));
+      if (cfg.mode === 'historical_2teams' && cfg.bots === 0 && new Set(humanTeams).size < 2) {
+        throw new GameError('Cần ít nhất 2 Liên Minh đối địch để khai chiến (hãy đổi Liên Minh hoặc thêm Máy AI).');
+      }
+      const teams = assignTwTeams(humanTeams, cfg.bots, cfg.mode);
+      if (new Set(teams).size < 2) {
+        throw new GameError('Cần ít nhất 2 Liên Minh đối địch để khai chiến (hãy đổi Liên Minh hoặc thêm Máy AI).');
+      }
+      if (cfg.mode === 'historical_2teams') {
+        for (const p of this.players) if (!this.twTeams.has(p.id)) this.twTeams.set(p.id, this.twTeamOf(p.id));
+      }
+      this.players.forEach((p, idx) => {
+        if (!this.twFactions.has(p.id)) this.twFactions.set(p.id, this.twFactionOf(p.id, idx));
+      });
     }
     if (this.gameMode === 'bansung') {
       if (players.length > GAME_MODES.bansung.maxPlayers) {
@@ -597,6 +661,10 @@ export class Game {
       this.winnerIds = [];
       this.payouts = {};
       this.log = [];
+      this.thap?.stop();
+      this.thap = undefined;
+      this.tw?.stop();
+      this.tw = undefined;
 
       if (this.gameMode === 'blackjack_21') {
         this.startBlackjack();
@@ -620,6 +688,10 @@ export class Game {
       }
       if (this.gameMode === 'bansung') {
         this.startBansung();
+        return;
+      }
+      if (this.gameMode === 'total_war') {
+        this.startTw();
         return;
       }
       if (this.gameMode === 'loto') {
@@ -655,6 +727,10 @@ export class Game {
       this.addLog(`Bắt đầu! ${n} người, mỗi người ${this.roomRules.handSize} lá thường và ${this.roomRules.defusesPerPlayer} Gỡ Bom, ${bombs} Mèo Nổ trong chồng bài.`);
       this.startTurn(this.roomRules.firstPlayer === 'host' ? this.players.findIndex((p) => p.id === this.hostId) : randomInt(n), 1);
     });
+    if (this.gameMode === 'thap_hung') {
+      // Phát tick-0 sau khi hooks.changed đã gửi state (phase='playing') để client không reset đè mất tick-0.
+      this.thap?.start();
+    }
   }
 
   restart(byId: string) {
@@ -682,6 +758,8 @@ export class Game {
       this.bansung?.stop();
       this.bansung = undefined;
       this.bansungEndFramePending = false;
+      this.tw?.stop();
+      this.tw = undefined;
       this.link?.stop();
       this.link = undefined;
       this.stopLoto();
@@ -1453,7 +1531,7 @@ export class Game {
       })),
       spectators: this.spectators.map((x) => ({ id: x.id, name: x.name, avatar: x.avatar, connected: x.connected })),
       hand: this.player(id)?.hand ?? [],
-      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' && this.gameMode !== 'link_duel' && this.gameMode !== 'loto' && this.gameMode !== 'thap_hung' && this.gameMode !== 'bansung' ? this.current()?.id : undefined,
+      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' && this.gameMode !== 'link_duel' && this.gameMode !== 'loto' && this.gameMode !== 'thap_hung' && this.gameMode !== 'total_war' && this.gameMode !== 'bansung' ? this.current()?.id : undefined,
       turnsRemaining: this.turnsRemaining,
       direction: this.direction,
       turnDeadline: this.phase === 'playing' ? this.turnDeadline : undefined,
@@ -1500,6 +1578,7 @@ export class Game {
       loto: this.gameMode === 'loto' ? this.lotoView(id) : undefined,
       thap: this.gameMode === 'thap_hung' ? this.thapView(id) : undefined,
       bansung: this.gameMode === 'bansung' ? this.bansungView(id) : undefined,
+      tw: this.gameMode === 'total_war' ? this.twView(id) : undefined,
       payouts: Object.keys(this.payouts).length ? this.payouts : undefined,
     };
   }
@@ -1602,42 +1681,26 @@ export class Game {
     };
   }
 
-  // ---------- THẬP HÙNG TRANH BÁ ----------
+  // ---------- MIRAGINE WAR (THẬP HÙNG) ----------
 
   setThapConfig(byId: string, raw: unknown) {
     this.requireLobbyHost(byId);
-    if (this.gameMode !== 'thap_hung') throw new GameError('Không phải chế độ Thập Hùng Tranh Bá.');
+    if (this.gameMode !== 'thap_hung') throw new GameError('Không phải chế độ Miragine War.');
     const next = normalizeThapConfig(raw, this.players.length);
     if (JSON.stringify(next) === JSON.stringify(this.thapConfig)) return;
     this.run(() => {
       this.thapConfig = next;
       this.invalidateReady();
-      this.addLog(`🏰 Chủ phòng chỉnh: ${THAP_MODE_LABEL[next.mode]}, ${next.bots} máy (${THAP_BOT_LABEL[next.botLevel]}), ${next.minutes ? `${next.minutes} phút` : 'không giới hạn thời gian'}.`);
-    });
-  }
-
-  /** Đội của 1 người ở phòng chờ: chưa chọn thì xen kẽ theo ghế (Rồng, Hổ, Rồng, Hổ…) */
-  private thapTeamOf(playerId: string) {
-    const t = this.thapTeams.get(playerId);
-    if (t !== undefined) return t;
-    return Math.max(0, this.players.findIndex((p) => p.id === playerId)) % 2;
-  }
-
-  /** Người chơi tự chọn đội (chế độ Lập đội) – chỉ ở phòng chờ */
-  setThapTeam(playerId: string, raw: unknown) {
-    if (this.gameMode !== 'thap_hung') throw new GameError('Không phải chế độ Thập Hùng Tranh Bá.');
-    if (this.phase !== 'lobby') throw new GameError('Chỉ chọn đội trong phòng chờ.');
-    if (this.thapConfig.mode !== 'teams') throw new GameError('Chỉ chọn đội ở chế độ Lập đội.');
-    if (!this.player(playerId)) throw new GameError('Bạn đang xem, vào bàn chơi để chọn đội nhé.');
-    const team = normalizeThapTeam(raw);
-    if (this.thapTeams.get(playerId) === team) return;
-    this.run(() => {
-      this.thapTeams.set(playerId, team);
+      this.addLog(
+        `⚔️ Chủ phòng chỉnh: ${THAP_MODE_LABEL[next.mode]}${next.bots ? ` (AI ${THAP_BOT_LABEL[next.botLevel]})` : ''}, ${next.minutes ? `${next.minutes} phút` : 'không giới hạn thời gian'}.`,
+      );
     });
   }
 
   thapCommand(playerId: string, cmd: ThapCommand) {
-    if (this.gameMode !== 'thap_hung' || this.phase !== 'playing' || !this.thap) throw new GameError('Trận Thập Hùng Tranh Bá chưa bắt đầu.');
+    if (this.gameMode !== 'thap_hung' || this.phase !== 'playing' || !this.thap) {
+      throw new GameError('Trận Miragine War chưa bắt đầu.');
+    }
     const s = this.thap.sideById(playerId);
     if (!s) throw new GameError('Bạn đang xem trận này.');
     const err = this.thap.command(s.idx, cmd);
@@ -1647,15 +1710,32 @@ export class Game {
   private startThap() {
     const cfg = normalizeThapConfig(this.thapConfig, this.players.length);
     this.thapConfig = cfg;
-    // lấy đội trước khi xáo ghế (đội mặc định tính theo ghế)
-    const picked = new Map(this.players.map((p) => [p.id, this.thapTeamOf(p.id)]));
-    shuffle(this.players);
-    const teams = assignThapTeams(this.players.map((p) => picked.get(p.id) ?? 0), cfg.bots, cfg.mode);
-    const botNames = shuffle([...THAP_BOT_NAMES]);
-    const inits = [
-      ...this.players.map((p) => ({ id: p.id, name: p.name, bot: false })),
-      ...Array.from({ length: cfg.bots }, (_, i) => ({ id: `bot:thap${i}`, name: `🤖 ${botNames[i % botNames.length]}`, bot: true })),
-    ].map((x, i) => ({ ...x, color: THAP_COLORS[i % THAP_COLORS.length], team: teams[i] ?? i }));
+    const p1 = this.players[0];
+    const p2 = this.players[1];
+    const inits: ThapInit[] = [
+      {
+        id: p1.id,
+        name: p1.name,
+        color: THAP_COLORS[0],
+        team: 0,
+        bot: false,
+      },
+      p2
+        ? {
+            id: p2.id,
+            name: p2.name,
+            color: THAP_COLORS[1],
+            team: 1,
+            bot: false,
+          }
+        : {
+            id: 'bot:thap0',
+            name: `🤖 AI ${THAP_BOT_LABEL[cfg.botLevel]}`,
+            color: THAP_COLORS[1],
+            team: 1,
+            bot: true,
+          },
+    ];
     for (const p of this.players) {
       p.alive = true;
       p.hand = [];
@@ -1665,10 +1745,10 @@ export class Game {
       changed: () => this.safe(() => this.run(() => this.syncThap())),
     });
     this.phase = 'playing';
+    const modeSummary = cfg.mode === 'pvp' ? '1v1 PvP' : `Solo vs AI (${THAP_BOT_LABEL[cfg.botLevel]})`;
     this.addLog(
-      `🏰 Thập Hùng Tranh Bá bắt đầu! ${inits.length} Thành – ${THAP_MODE_LABEL[cfg.mode]}${cfg.bots ? ` (${cfg.bots} máy – ${THAP_BOT_LABEL[cfg.botLevel]})` : ''}${cfg.minutes ? `, ${cfg.minutes} phút` : ''}. Phá Thành địch để xưng bá!`,
+      `⚔️ Miragine War — ${modeSummary}${cfg.minutes ? `, ${cfg.minutes} phút` : ''}. Phá hủy Pha Lê Chính của đối phương để chiến thắng!`,
     );
-    this.thap.start();
   }
 
   /** Đồng bộ kết quả mô phỏng (phe bị loại, hết trận) vào trạng thái phòng */
@@ -1691,17 +1771,25 @@ export class Game {
       this.winnerId = ids[0];
       this.winnerIds = ids;
       if (ids.length > 1 && this.pot > 0) {
-        // cả đội thắng: chia đều hũ (phần lẻ cho người đầu)
         const share = Math.floor(this.pot / ids.length);
         ids.forEach((id, i) => (this.payouts[id] = share + (i === 0 ? this.pot - share * ids.length : 0)));
         this.addLog(`🤝 ${ids.length} người cùng đội thắng – chia đều hũ ${this.pot} xu.`);
       } else if (!ids.length && this.pot > 0) {
-        // máy thắng / không ai thắng: hoàn cược cho người còn ở lại
+        // máy thắng / hòa hết giờ: hoàn cược cho người còn ở lại
         for (const p of this.players) if (!p.left) this.payouts[p.id] = this.bet;
         this.addLog('💰 Không có người chơi nào thắng nên hoàn lại tiền cược.');
       }
-      this.sendThapFrames();
     }
+  }
+
+  /** Gửi riêng 1 ảnh chụp `full: true` của ván Miragine War cho người vừa xem hoặc kết nối lại. */
+  sendThapSnapshotTo(playerId: string) {
+    if (this.gameMode !== 'thap_hung' || !this.thap || (this.phase !== 'playing' && this.phase !== 'ended')) return;
+    const p = this.player(playerId);
+    const isSpec = !!this.spectator(playerId);
+    if (!p && !isSpec) return;
+    const s = p && !p.left ? this.thap.sideById(p.id) : undefined;
+    this.hooks.thapFrame(this, playerId, this.thap.frameFor(s?.alive ? s.idx : undefined, true));
   }
 
   private sendThapFrames() {
@@ -1718,17 +1806,15 @@ export class Game {
   private thapView(id: string): ThapRoomView {
     const w = this.thap;
     if (!w) {
-      if (this.thapConfig.mode !== 'teams') return { config: this.thapConfig };
-      const teams: Record<string, number> = {};
-      for (const p of this.players) teams[p.id] = this.thapTeamOf(p.id);
-      return { config: this.thapConfig, teams };
+      return { config: normalizeThapConfig(this.thapConfig, this.players.length) };
     }
     return {
       config: this.thapConfig,
       mapW: w.W,
       mapH: w.H,
       bases: w.baseList(),
-      mines: w.mineList(),
+      doors: w.doorList(),
+      lane: { yMin: THAP_LANE_Y_MIN, yMax: THAP_LANE_Y_MAX },
       players: w.publicInfo(),
       myIdx: w.sideById(id)?.idx,
       startedAt: w.startedAt,
@@ -1987,6 +2073,299 @@ export class Game {
     };
   }
 
+  // ---------- TAM QUỐC TOÀN CHIẾN ----------
+
+  private static readonly DEFAULT_TW_SEAT_FACTIONS: readonly TwFactionId[] = [
+    'jin',
+    'yuan',
+    'wei',
+    'shu',
+    'wu',
+    'lubu',
+  ];
+
+  private static readonly TW_FACTION_BOT_NAME: Record<TwFactionId, string> = {
+    wei: '🤖 Tào Mạnh Đức',
+    shu: '🤖 Lưu Huyền Đức',
+    wu: '🤖 Tôn Văn Đài',
+    yuan: '🤖 Viên Bản Sơ',
+    lubu: '🤖 Lữ Phụng Tiên',
+    jin: '🤖 Tư Mã Tương An',
+  };
+
+  setTwConfig(byId: string, raw: unknown) {
+    this.requireLobbyHost(byId);
+    if (this.gameMode !== 'total_war') throw new GameError('Không phải chế độ Tam Quốc Toàn Chiến.');
+    const next = normalizeTwConfig(raw, this.players.length);
+    if (JSON.stringify(next) === JSON.stringify(this.twConfig)) return;
+    this.run(() => {
+      this.twConfig = next;
+      this.invalidateReady();
+      const diffLabel =
+        next.botDifficulty === 'easy'
+          ? 'Dễ'
+          : next.botDifficulty === 'hard'
+            ? 'Khó'
+            : 'Chuẩn';
+      this.addLog(
+        `🐉 Chủ phòng chỉnh chiến dịch: ${TW_MAPS[next.mapId].vnName} · ${TW_MODE_LABEL[next.mode]} · Quy mô ${next.armyScale === 'grand' ? 'Đại Quân' : 'Tiêu Chuẩn'} · ${next.bots} Máy AI${next.bots > 0 ? ` (${diffLabel})` : ''} · ${next.durationMin} phút.`,
+      );
+    });
+  }
+
+  private twFactionOf(playerId: string, fallbackIdx?: number): TwFactionId {
+    const picked = this.twFactions.get(playerId);
+    if (picked) return picked;
+    const seatIdx = fallbackIdx ?? Math.max(0, this.players.findIndex((p) => p.id === playerId));
+    return Game.DEFAULT_TW_SEAT_FACTIONS[seatIdx % Game.DEFAULT_TW_SEAT_FACTIONS.length];
+  }
+
+  private twTeamOf(playerId: string): number {
+    const t = this.twTeams.get(playerId);
+    if (t !== undefined) return t % 2;
+    return Math.max(0, this.players.findIndex((p) => p.id === playerId)) % 2;
+  }
+
+  setTwFaction(playerId: string, raw: unknown) {
+    if (this.gameMode !== 'total_war') throw new GameError('Không phải chế độ Tam Quốc Toàn Chiến.');
+    if (this.phase !== 'lobby') throw new GameError('Chỉ chọn thế lực Chư Hầu trong phòng chờ.');
+    const p = this.player(playerId);
+    if (!p) throw new GameError('Bạn đang xem, vào bàn chơi để chọn thế lực nhé.');
+    const seatIdx = Math.max(0, this.players.findIndex((x) => x.id === playerId));
+    const faction = normalizeTwFaction(raw, seatIdx);
+    if (this.twFactions.get(playerId) === faction) return;
+    this.run(() => {
+      this.twFactions.set(playerId, faction);
+      // Đổi thế lực Chư Hầu -> đặt lại đội hình lịch sử của thế lực mới
+      this.twLoadouts.delete(playerId);
+      const spec = TW_FACTIONS[faction];
+      this.addLog(`🚩 ${p.name} giương đại kỳ thế lực 【${spec.emblemText}】 ${spec.vnName} (${spec.leaderName}).`);
+    });
+  }
+
+  setTwLoadout(playerId: string, raw: unknown) {
+    if (this.gameMode !== 'total_war') throw new GameError('Không phải chế độ Tam Quốc Toàn Chiến.');
+    if (this.phase !== 'lobby') throw new GameError('Chỉ chiêu mộ đội hình trong phòng chờ.');
+    const p = this.player(playerId);
+    if (!p) throw new GameError('Bạn đang xem, vào bàn chơi để chiêu mộ đội hình nhé.');
+    const seatIdx = Math.max(0, this.players.findIndex((x) => x.id === playerId));
+    const faction = this.twFactionOf(playerId, seatIdx);
+    const normalized = normalizeTwLoadout(raw, faction);
+    const prev = this.twLoadouts.get(playerId);
+    if (prev && JSON.stringify(prev) === JSON.stringify(normalized)) return;
+    this.run(() => {
+      this.twLoadouts.set(playerId, normalized);
+      const genNames = normalized.generals.map((gid) => TW_GENERALS[gid].vnName).join(' · ');
+      const cost = twLoadoutCost(normalized);
+      this.addLog(`⚔️ ${p.name} điểm binh xuất trận: [${genNames}] (${cost.toLocaleString('vi-VN')} Lượng).`);
+    });
+  }
+
+  setTwTeam(playerId: string, raw: unknown) {
+    if (this.gameMode !== 'total_war') throw new GameError('Không phải chế độ Tam Quốc Toàn Chiến.');
+    if (this.phase !== 'lobby') throw new GameError('Chỉ chọn Liên Minh trong phòng chờ.');
+    if (this.twConfig.mode !== 'historical_2teams') {
+      throw new GameError('Chỉ chọn Liên Minh ở chế độ Lịch Sử Đối Kháng (2 Liên Minh).');
+    }
+    const p = this.player(playerId);
+    if (!p) throw new GameError('Bạn đang xem, vào bàn chơi để chọn Liên Minh nhé.');
+    const team = normalizeTwTeam(raw) % 2;
+    if (this.twTeams.has(playerId) && this.twTeams.get(playerId) === team) return;
+    this.run(() => {
+      this.twTeams.set(playerId, team);
+      this.addLog(`🤝 ${p.name} gia nhập ${TW_TEAM_NAMES[team] ?? `Liên Minh ${team + 1}`}.`);
+    });
+  }
+
+  twCommand(playerId: string, cmd: TwCommand) {
+    if (this.gameMode !== 'total_war' || this.phase !== 'playing' || !this.tw) {
+      throw new GameError('Trận Tam Quốc Toàn Chiến chưa bắt đầu.');
+    }
+    const s = this.tw.sideById(playerId);
+    if (!s) throw new GameError('Bạn đang xem trận này.');
+    const err = this.tw.command(playerId, cmd);
+    if (err) throw new GameError(err);
+    const logs = this.tw.drainLogs();
+    const aliveChanged = this.tw.sides.some((side) => {
+      if (side.bot) return false;
+      const p = this.player(side.id);
+      return p && p.alive !== side.alive;
+    });
+    if (logs.length > 0 || aliveChanged || (this.tw.result && this.phase === 'playing')) {
+      this.run(() => {
+        for (const line of logs) this.addLog(line);
+        this.syncTw();
+      });
+    }
+  }
+
+  private startTw() {
+    const active = this.players.slice(0, TW_MAX_PLAYERS);
+    const cfg = normalizeTwConfig(this.twConfig, active.length);
+    this.twConfig = cfg;
+    const teams = assignTwTeams(active.map((p) => this.twTeamOf(p.id)), cfg.bots, cfg.mode);
+
+    const usedFactions = new Set<TwFactionId>();
+    const usedColors = new Set<string>();
+    const usedBotNames = new Set<string>();
+    const pickSeatColor = (faction: TwFactionId, seatIdx: number): string => {
+      const preferred = TW_FACTIONS[faction].color;
+      if (!usedColors.has(preferred)) {
+        usedColors.add(preferred);
+        return preferred;
+      }
+      const unused = TW_COLORS.find((c) => !usedColors.has(c)) ?? TW_COLORS[seatIdx % TW_COLORS.length];
+      usedColors.add(unused);
+      return unused;
+    };
+
+    const seats: TwSeatInit[] = [];
+    active.forEach((p, i) => {
+      const faction = this.twFactionOf(p.id, i);
+      usedFactions.add(faction);
+      seats.push({
+        id: p.id,
+        name: p.name,
+        faction,
+        color: pickSeatColor(faction, i),
+        team: teams[i] ?? i,
+        bot: false,
+        loadout: this.twLoadouts.get(p.id),
+      });
+    });
+
+    const botFactionRotation: TwFactionId[] = ['yuan', ...TW_FACTION_IDS.filter((f) => f !== 'yuan')];
+    for (let b = 0; b < cfg.bots; b++) {
+      const seatIdx = active.length + b;
+      const faction =
+        botFactionRotation.find((f) => !usedFactions.has(f)) ??
+        TW_FACTION_IDS[seatIdx % TW_FACTION_IDS.length];
+      usedFactions.add(faction);
+
+      const preferredBotName = Game.TW_FACTION_BOT_NAME[faction];
+      const botName =
+        !usedBotNames.has(preferredBotName)
+          ? preferredBotName
+          : TW_BOT_NAMES.find((n) => !usedBotNames.has(n)) ?? TW_BOT_NAMES[b % TW_BOT_NAMES.length];
+      usedBotNames.add(botName);
+
+      seats.push({
+        id: `bot:tw${b}`,
+        name: botName,
+        faction,
+        color: pickSeatColor(faction, seatIdx),
+        team: teams[seatIdx] ?? seatIdx,
+        bot: true,
+      });
+    }
+
+    for (const p of this.players) {
+      p.alive = true;
+      p.hand = [];
+    }
+
+    this.tw = new TwWorld(seats, cfg, {
+      tick: () => this.onTwTick(),
+      changed: () => this.safe(() => this.run(() => this.syncTw())),
+    });
+    this.phase = 'playing';
+    const mapSpec = TW_MAPS[cfg.mapId];
+    this.addLog(
+      `🐉 Tam Quốc Toàn Chiến khai màn tại 【${mapSpec.vnName} (${mapSpec.vnSeasonYear})】! ${seats.length} Chư Hầu – ${TW_MODE_LABEL[cfg.mode]}${cfg.bots ? ` (${cfg.bots} Máy AI)` : ''}, ${cfg.durationMin} phút.`,
+    );
+    this.tw.start();
+    this.syncTw();
+    this.sendTwFrames();
+  }
+
+  private onTwTick() {
+    this.sendTwFrames();
+  }
+
+  private syncTw() {
+    const w = this.tw;
+    if (!w) return;
+    for (const line of w.drainLogs()) this.addLog(line);
+    for (const s of w.sides) {
+      const p = s.bot ? undefined : this.player(s.id);
+      if (p) p.alive = s.alive;
+    }
+    if (w.result && this.phase === 'playing') {
+      this.phase = 'ended';
+      const ids: string[] = [];
+      for (const i of w.result.winnerIdxs) {
+        const s = w.sides[i];
+        const p = s && !s.bot ? this.player(s.id) : undefined;
+        if (p && !p.left) ids.push(p.id);
+      }
+      this.winnerId = ids[0];
+      this.winnerIds = ids;
+      if (ids.length > 1 && this.pot > 0) {
+        // cả Liên Minh thắng: chia đều hũ (phần lẻ cho người đầu)
+        const share = Math.floor(this.pot / ids.length);
+        ids.forEach((id, i) => (this.payouts[id] = share + (i === 0 ? this.pot - share * ids.length : 0)));
+        this.addLog(`🤝 ${ids.length} người cùng Liên Minh thắng trận – chia đều chiến lợi phẩm ${this.pot} xu.`);
+      } else if (!ids.length && this.pot > 0) {
+        // máy thắng / không ai thắng: hoàn cược cho người còn ở lại
+        for (const p of this.players) if (!p.left) this.payouts[p.id] = this.bet;
+        this.addLog('💰 Không có người chơi nào thắng trận nên hoàn lại tiền cược.');
+      }
+      this.sendTwFrames();
+    }
+  }
+
+  private sendTwFrames() {
+    const w = this.tw;
+    if (!w) return;
+    for (const p of this.players) {
+      if (p.left || !p.connected) continue;
+      const side = w.sideById(p.id);
+      this.hooks.twFrame?.(this, p.id, w.frameFor(side?.idx));
+    }
+    for (const s of this.spectators) {
+      if (s.connected) this.hooks.twFrame?.(this, s.id, w.frameFor(undefined));
+    }
+  }
+
+  private twView(viewerId: string): TwRoomView {
+    const w = this.tw;
+    const factions: Record<string, TwFactionId> = {};
+    const teams: Record<string, number> = {};
+    let loadouts: Record<string, TwArmyLoadout> | undefined;
+    this.players.forEach((p, idx) => {
+      const side = w?.sideById(p.id);
+      factions[p.id] = side ? side.faction : this.twFactionOf(p.id, idx);
+      teams[p.id] = side ? side.team : (this.twConfig.mode === 'ffa' ? idx : this.twTeamOf(p.id));
+      const ld = this.twLoadouts.get(p.id);
+      if (ld) {
+        if (!loadouts) loadouts = {};
+        loadouts[p.id] = ld;
+      }
+    });
+    if (!w) {
+      return {
+        config: normalizeTwConfig(this.twConfig, this.players.length),
+        factions,
+        teams,
+        ...(loadouts ? { loadouts } : {}),
+      };
+    }
+    return {
+      config: w.config,
+      factions,
+      teams,
+      ...(loadouts ? { loadouts } : {}),
+      mapId: w.map.id,
+      mapW: w.W,
+      mapH: w.H,
+      players: w.publicInfo(),
+      myIdx: w.sideById(viewerId)?.idx,
+      startedAt: w.startedAt,
+      endsAt: w.endsAt,
+      result: w.result,
+    };
+  }
+
   // ---------- LÔ TÔ CÂN ĐỒ ----------
 
   /** Mức cược của 1 người khi bắt đầu ván: Lô Tô theo số tờ mua (50 xu/tờ), chế độ khác theo mức của phòng */
@@ -2218,6 +2597,8 @@ export class Game {
     this.thap?.stop();
     this.bansung?.stop();
     this.bansungEndFramePending = false;
+    this.tw?.stop();
+    this.tw = undefined;
     this.link?.stop();
     this.stopLoto();
   }
@@ -2794,9 +3175,18 @@ export class Game {
       return;
     }
     if (this.gameMode === 'thap_hung') {
-      // Rời trận = bỏ cuộc: Thành đổ ở nhịp mô phỏng kế tiếp, kết quả xử lý trong syncThap
+      // Rời trận = bỏ cuộc: Pha Lê sụp đổ và đồng bộ kết thúc trận ngay
       const s = this.thap?.sideById(p.id);
-      if (s) this.thap!.resign(s.idx);
+      if (s && this.thap) {
+        this.thap.resign(s.idx);
+        this.syncThap();
+      }
+      return;
+    }
+    if (this.gameMode === 'total_war') {
+      // Rời trận = hạ đại kỳ xin hàng, cập nhật kết quả & chia hũ ngay trong syncTw
+      this.tw?.resign(p.id);
+      this.syncTw();
       return;
     }
     if (this.gameMode === 'ant_empire') {

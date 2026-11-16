@@ -15,6 +15,7 @@ import {
   type Emote,
   type GameMode,
   type RoomRules,
+  type TwCommand,
 } from '../../../shared/src';
 import { RateLimiter } from '../rate-limit';
 import { AccountsService } from '../store/accounts.service';
@@ -68,8 +69,14 @@ export class RoomsService {
       this.server.to(`p:${playerId}`).volatile.emit('ants:frame', frame);
     },
     thapFrame: (game, playerId, frame) => {
+      if (!this.server || this.playerRoom.get(playerId) !== game.code) return;
+      const target = this.server.to(`p:${playerId}`);
+      (frame.tick === 0 || frame.full ? target : (target.volatile ?? target)).emit('thap:frame', frame);
+    },
+    twFrame: (game, playerId, frame) => {
       if (this.playerRoom.get(playerId) !== game.code) return;
-      this.server.to(`p:${playerId}`).volatile.emit('thap:frame', frame);
+      const target = this.server.to(`p:${playerId}`);
+      (target.volatile ?? target).emit('tw:frame', frame);
     },
     bansungFrame: (game, playerId, frame) => {
       if (this.playerRoom.get(playerId) !== game.code) return;
@@ -430,8 +437,39 @@ export class RoomsService {
     this.readyRoom(playerId).setThapConfig(playerId, raw);
   }
 
-  setThapTeam(playerId: string, raw: unknown) {
-    this.readyRoom(playerId).setThapTeam(playerId, raw);
+  setTwConfig(playerId: string, raw: unknown) {
+    const game = this.roomOf(playerId);
+    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
+    this.assertReady(game);
+    game.setTwConfig(playerId, raw);
+  }
+
+  setTwFaction(playerId: string, raw: unknown) {
+    const game = this.roomOf(playerId);
+    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
+    this.assertReady(game);
+    game.setTwFaction(playerId, raw);
+  }
+
+  setTwTeam(playerId: string, raw: unknown) {
+    const game = this.roomOf(playerId);
+    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
+    this.assertReady(game);
+    game.setTwTeam(playerId, raw);
+  }
+
+  setTwLoadout(playerId: string, raw: unknown) {
+    const game = this.roomOf(playerId);
+    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
+    this.assertReady(game);
+    game.setTwLoadout(playerId, raw);
+  }
+
+  twCommand(playerId: string, cmd: TwCommand) {
+    const game = this.roomOf(playerId);
+    if (!game) throw new GameError('Bạn chưa ở trong phòng nào.');
+    this.assertReady(game);
+    game.twCommand(playerId, cmd);
   }
 
   setLinkConfig(playerId: string, raw: unknown) {
@@ -493,6 +531,7 @@ export class RoomsService {
       throw error;
     }
     this.sendChatHistory(playerId);
+    game.sendThapSnapshotTo(playerId);
     if (prev && prev !== game) {
       prev.removePlayer(playerId);
       this.cleanup(prev);
@@ -516,6 +555,7 @@ export class RoomsService {
       throw error;
     }
     this.sendChatHistory(playerId);
+    game.sendThapSnapshotTo(playerId);
     if (prev && prev !== game) {
       prev.removePlayer(playerId);
       this.cleanup(prev);
@@ -548,9 +588,12 @@ export class RoomsService {
   connected(playerId: string, name: string, avatar?: string) {
     const game = this.roomOf(playerId);
     if (!game) return false;
+    let deferred = false;
     if (game.spectator(playerId)) game.setConnected(playerId, true);
-    else if (this.starting.has(game) || this.refunds.has(game)) this.deferConnection(game, playerId, true);
-    else {
+    else if (this.starting.has(game) || this.refunds.has(game)) {
+      this.deferConnection(game, playerId, true);
+      deferred = true;
+    } else {
       try {
         game.addPlayer(playerId, name, avatar);
       } catch {
@@ -560,6 +603,7 @@ export class RoomsService {
       }
     }
     this.sendChatHistory(playerId);
+    if (!deferred) game.sendThapSnapshotTo(playerId);
     return true;
   }
 
