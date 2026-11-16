@@ -6,6 +6,7 @@ Game Mèo Nổ chơi qua trình duyệt cho 2–10 người. Mỗi phòng có th
 - `server/`: NestJS + Socket.IO (giữ luật chơi, xáo bài, chia bài)
 - `shared/`: danh sách lá bài, số lượng, kiểu dữ liệu dùng chung
 - `database/`: ảnh lá bài. Map tên file ↔ loại lá trong `client/src/cardImages.ts`
+- `database-total-war/`: kho dữ liệu lịch sử & RTS mã nguồn mở (`0ADMods/han_china`, `IMRZ/twtk-interactive-map`, `Mugen87/yuka` kèm `SOURCES.md`), chân dung danh tướng, thẻ bài Thủy Mặc, sprite sheet 6 trạng thái, địa hình và âm thanh của Tam Quốc Toàn Chiến
 - `design/`: trang mẫu thiết kế lá bài
 
 Người chơi đăng ký/đăng nhập bằng tên và PIN. Trình duyệt lưu ID cùng token đăng nhập trong localStorage.
@@ -83,31 +84,44 @@ Chủ phòng chỉnh số máy, độ khó và thời gian trận trong phòng c
 | Cách máy chơi | `server/src/game/ants/bot.ts` |
 | Hình vẽ kiến / trụ / đạn / bản đồ | `client/src/ants/render.ts` |
 
-## ⚔️🔮 Miragine War (Solo 10 Người / Co-op / Lập Đội trên bản đồ rộng)
+## ⚔️🔮 Miragine War (Solo Cổ Điển 1P vs AI / 1v1)
 
-Chọn **Miragine War (Solo 10 Người)** khi tạo phòng. Tối đa 10 phe (người + máy) cùng chiến đấu thời gian thực trên bản đồ rộng, sáng toàn bộ, sử dụng **100% tài nguyên đồ họa, sprite sheet, công trình, đạn phép, âm thanh và thông số lính trích xuất từ Miragine War gốc** trong thư mục `database-miraginewar/*`:
+Chọn **Miragine War** khi tạo phòng để chơi bản tái hiện **100% nguyên bản Miragine War** trên chiến trường `2040×800`, sử dụng toàn bộ đồ họa, sprite sheet, công trình, đạn phép, âm thanh và thông số lính trích xuất từ bản gốc trong thư mục `database-miraginewar/*`:
 
 - **Chế độ chơi:**
-  - **Solo 10 người (Hỗn chiến):** Mỗi người một phe (tối đa 10 người/máy trong phòng), tất cả cùng đánh nhau tự do.
-  - **Co-op 10 người (Cùng đánh máy):** Tất cả người chơi hợp lực chung 1 liên quân chống lại toàn bộ máy.
-  - **Lập đội (Chia phe):** Tự chọn 1 trong 5 đội ở phòng chờ; máy tự vào đội ít người nhất.
-- **Vàng & Lương Hiệp 30 giây:** Khởi đầu 300 vàng, thu đều mỗi giây (`6 + 2 × cấp Kho Lương` + mỗi **Mỏ Vàng** đang giữ `+4/s`, Mỏ Lớn giữa bản đồ `+9/s`) **cộng thêm Lương Hiệp mỗi 30 giây** chuẩn Miragine War (khởi đầu `+100 vàng/30s`, mỗi lần mua lính được cộng thêm `+incomeBonus` từ `+4` đến `+160` vàng/30s).
-- **16 Binh Chủng Nguyên Bản Miragine War (Lưới 2×8):**
-  `Newbie (Tân Binh)`, `Veteran (Cựu Binh)`, `Zombie (Xác Sống)`, `Samurai (Võ Sĩ)`, `Sword Man (Kiếm Sĩ)`, `Ninja`, `Novice (Pháp Đồ)`, `Heavy Sword Man (Trọng Kiếm)`, `Monk (Võ Tăng)`, `Vampire (Ma Cà Rồng)`, `Cavalry (Kỵ Binh)`, `Immortal (Bất Tử Quân)`, `Mage (Đại Pháp Sư)`, `Iron Knight (Thiết Kỵ Sĩ)`, `Dread Lord (Chúa Tể Hắc Ám)`, `High Lord (Thánh Chiến Vương)`.
-- **Hệ thống Giáp Nhẹ (`Light`) / Giáp Nặng (`Armored`) & Giáp Trừ Thẳng:** Công thức sát thương chuẩn 100% Miragine War: `damage[victim.armorTypeID] - victim.armor`. Giới hạn dân số 60. Bật **↻ tự mua** một loại lính để tự xuất quân liên tục.
-- **Lệnh Điều Khiển Đạo Quân:**
-  - **🎯 Hành Quân Tấn Công Chỉ Định (`T`):** Chọn 1 Thành địch trong danh sách (hoặc bấm nút `🎯 Đánh` trên bảng xếp hạng, hoặc chạm thẳng vào Thành địch trên bản đồ) để toàn quân hành quân tấn công tổng lực vào đúng mục tiêu đó.
-  - **🛡️ Phòng Thủ (`P`):** Rút toàn bộ đạo quân về giữ quanh Pha Lê Thành.
-  - **⚔️ Tự Hành Quân (`H`):** Tự đi chiếm Mỏ Vàng gần nhất rồi đánh Thành địch gần nhất.
-  - **🚩 Tập Kết (`R`):** Chạm bản đồ để cắm cờ tập kết quân.
-- **Pha Lê Chính (`A_crystal.png` / `B_crystal.png` + `door.png`):** 3500 máu, 100 sát thương bảo vệ tầm gần. Pha Lê vỡ = bị loại.
+  - **Solo Cổ Điển (1P vs AI):** Phe Đỏ (Trái) đấu với Máy Phe Xanh (Phải) với 3 mức độ `Dễ / Thường / Khó` (AI phản công theo bảng khắc chế nguyên bản Method 481).
+  - **Đấu Đôi (1v1 PvP):** 2 người chơi đối đầu trực tiếp Trái vs Phải + hỗ trợ khán giả theo dõi.
+- **Kinh tế & Nhịp xuất quân (100% nguyên bản):**
+  - Khởi đầu **0 vàng**, nhận `+100 vàng/đợt` (đợt đầu sau **6 giây**, các đợt tiếp theo mỗi **30 giây**).
+  - Tự động xuất quân từ Cổng (`door.png`) theo đơn vị đang chọn con trỏ (`cursor_p1.png`) khi hết đồng hồ đếm ngược, tối đa **60 dân số**, mỗi lính triệu hồi cộng thêm `incomeBonus` vào lương đợt sau (tối đa **8000 vàng/đợt**).
+- **Điều khiển:**
+  - Di chuyển con trỏ chọn lính trên lưới 2×8 bằng **`W A S D`** hoặc **Phím mũi tên**, phím tắt nhanh **`1–0, Q, E, F, G, V, B`**, hoặc click chuột; kéo bản đồ / thanh cuộn ngang / **`[ ]`** để quan sát chiến trường `2040×800`.
+- **Chiến đấu & Pha Lê Chính:**
+  - 16 binh chủng nguyên bản (`Newbie`, `Veteran`, `Zombie`, `Samurai`, `Sword Man`, `Ninja`, `Novice`, `Heavy Sword Man`, `Monk`, `Vampire`, `Cavalry`, `Immortal`, `Mage`, `Iron Knight`, `Dread Lord`, `High Lord`) với hệ thống Giáp Nhẹ (`Light`) / Giáp Nặng (`Armored`), Giáp trừ thẳng (`damage[armorTypeID] - armor`), độ trễ vung đòn `delayAttack`, và Pha Lê Chính (`A_crystal.png` bắn Cầu Lửa / `B_crystal.png` bắn Cầu Sét, 3500 máu, 100 sát thương, tầm 600).
 
 | Muốn đổi | Sửa ở |
 |---|---|
 | Kho đồ họa, sprite sheet, chân dung, âm thanh gốc Miragine War | `database-miraginewar/*`, `database-miraginewar/mapping.json` |
-| 16 binh chủng, Giáp Nhẹ/Nặng, lương 30s, bản đồ 10 người | `shared/src/thap.ts` |
-| Luật mô phỏng, lệnh Hành Quân Tấn Công Chỉ Định / Phòng Thủ | `server/src/game/thap/world.ts`, `server/src/game/thap/bot.ts` |
-| Nạp sprite sheet & vẽ Pha Lê / 16 lính / đạn phép / âm thanh | `client/src/thap/sprites.ts`, `client/src/thap/render.ts`, `client/src/thap/sound.ts`, `client/src/components/ThapBoard.tsx` |
+| Thông số 16 binh chủng, Giáp Nhẹ/Nặng, kinh tế & hằng số chiến trường `2040×800` | `shared/src/thap/*` |
+| Mô phỏng đợt quân 30s, chiến đấu, Pha Lê & AI khắc chế (Method 481) | `server/src/game/thap/*` |
+| Nạp sprite sheet, âm thanh, vẽ canvas chiến trường & giao diện/HUD điều khiển | `client/src/thap/*`, `client/src/components/thap/*`, `client/src/components/ThapBoard.tsx` |
+
+## 🐉⚔️ Tam Quốc Toàn Chiến (Total War: Three Kingdoms)
+
+Chọn **Tam Quốc Toàn Chiến (Total War: Three Kingdoms)** (`gameMode: 'total_war'`) khi tạo phòng. Tối đa **8 Chư hầu** (người + AI Warlords) điều binh khiển tướng đại quân thời gian thực (Server mô phỏng quyết định **15 Hz** · Client nội suy **60 FPS 2.5D Canvas** kèm giao diện Thủy Mặc) trên 4 chiến trường lịch sử rộng `3200×2200` (**Bình Nguyên – Thu 196**, **Quan Độ – Thu 200**, **Trường Bản – Hạ 208**, **Xích Bích – Đông 208**):
+
+- **6 Thế lực & Hệ Ngũ Hành Tướng Lĩnh:** Chọn 1 trong 6 chư hầu (**Tào Ngụy `魏`**, **Thục Hán `蜀`**, **Đông Ngô `吳`**, **Viên Thiệu `袁`**, **Lữ Bố `呂`**, **Tư Mã Tấn `晉`**) chơi theo **Lịch Sử Đối Kháng (2 Liên Minh)** hoặc **Quần Hùng Trục Lộc (Hỗn Chiến)**. Mỗi đạo quân có **3 Danh tướng** (trong 12 danh tướng: *Tào Tháo, Hạ Hầu Đôn, Lưu Bị, Quan Vũ, Trương Phi, Triệu Vân, Gia Cát Lượng, Tôn Kiên, Chu Du, Lữ Bố, Viên Thiệu, Tư Mã Tương An*) thuộc **5 hệ Ngũ Hành** (*Hỏa Tiên Phong, Mộc Dũng Tướng, Kim Hộ Vệ, Thổ Thống Soái, Thủy Mưu Sĩ*), mỗi vị dẫn **4 Trung đoàn Bộ tùy**.
+- **Chế độ Diễn Nghĩa (Romance Mode) – Đơn Đấu 1v1 & Khẩu Chiến:** Bật *Romance Mode* để danh tướng tung tuyệt kỹ võ học, thách **Đơn Đấu 1v1 (Single Duel)** trong vòng tròn danh dự (`duel_ring.png`) gây chấn động sĩ khí toàn quân khi hạ tướng địch, kèm **30 cặp đối thoại khiêu khích song ngữ** trên đỉnh màn hình (gồm cả màn khẩu chiến kinh điển giữa *Tư Mã Tương An* và *Viên Thiệu*).
+- **18 Binh chủng & 6 Trận hình Chiến thuật:** Đủ 4 nhánh *Bộ binh Trường Thương/Kích* (khắc kỵ binh), *Bộ binh Đao Kiếm Khiên* (chắn tên tới 60%), *Cung Nỏ & Pháo Đá Uy Viễn* (tầm 680) và *Thiết Kỵ Xung Kích*. Chuyển đổi linh hoạt **6 Trận hình**: **Trận Ngang (`line`)**, **Thuẫn Tường (`shieldwall`, +30% chắn tên)**, **Thương Lâm (`spearwall`, phản ngược sát thương xung kích kỵ binh)**, **Phong Thỉ Chùy (`wedge`, +35% lực húc)**, **Viên Trận (`circle`, chống bọc hậu 360°)** và **Tản Trận (`loose`, giảm sát thương pháo đá/mưa tên)**.
+- **Địa hình, Sĩ khí & Điều khiển RTS:** Giấu quân phục kích vô hình trong **Rừng Thông** (+45% tán cây chắn tên), chiếm **Đồi Cao** (+20% tầm bắn & +25% xung kích đổ dốc), chặn địch lội **Sông Cạn / Đầm Lầy**; đánh tạt sườn – bọc hậu làm sụp đổ **Sĩ khí (Morale)** khiến quân địch vỡ trận tháo chạy (`Routing`). Kéo chuột trái quét chọn quân, **giữ kéo chuột phải** để dàn bề rộng hàng quân & xoay hướng mặt trận.
+- **Kho tài nguyên độc lập `/database-total-war/`:** Đóng gói dữ liệu lịch sử & RTS mã nguồn mở (`0ADMods/han_china`, `IMRZ/twtk-interactive-map`, `Mugen87/yuka` kèm `opensource/SOURCES.md`), chân dung danh tướng (`portraits/`), 18 thẻ bài bộ tùy Thủy Mặc dáng cao (`units/`), spritesheet hoạt ảnh 6 trạng thái (`sheets/`), bề mặt địa hình (`terrains/`) và 12 tệp âm thanh chiến trường (`audio/`). Xem đặc tả chi tiết tại [specs/004-total-war-three-kingdoms/spec.md](specs/004-total-war-three-kingdoms/spec.md).
+
+| Muốn đổi | Sửa ở |
+|---|---|
+| Kho tài nguyên mở, chân dung, thẻ Thủy Mặc, sprite 6 trạng thái, âm thanh | `database-total-war/*`, `database-total-war/opensource/SOURCES.md` |
+| 6 thế lực, 5 hệ Ngũ Hành, 12 danh tướng, 18 binh chủng, 6 trận hình, 4 bản đồ | `shared/src/tw.ts` |
+| Mô phỏng chiến trường 15 Hz, Đơn Đấu 1v1, ẩn phục kích rừng, AI Chư hầu | `server/src/game/tw/world.ts`, `server/src/game/tw/combat.ts`, `server/src/game/tw/formations.ts`, `server/src/game/tw/duel.ts`, `server/src/game/tw/terrain.ts`, `server/src/game/tw/bot.ts` |
+| Canvas 2.5D 60 FPS, điều khiển kéo đội hình, khẩu chiến & HUD Thủy Mặc | `client/src/tw/*`, `client/src/components/TwBoard.tsx` |
 
 ## 🎱 Lô Tô Cân Đồ (1–10 người)
 
