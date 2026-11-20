@@ -1,0 +1,281 @@
+{
+  "schemaVersion": "1.0.0",
+  "catalog": "animals",
+  "game": "Eldoria: Forgotten Wilds",
+  "lastUpdated": "2026-11-19",
+  "totalCount": 6,
+  "mvpCount": 2,
+  "descriptionVi": "Danh mục chuẩn 6 loài động vật chăn nuôi (2 loài MVP và 4 loài hậu MVP bao gồm 1 linh thú huyền ảo) của Eldoria: Forgotten Wilds. Tiến trình đói, trưởng thành và sản xuất được tính toán hoàn toàn theo server timestamp với giới hạn offline tối đa 24 giờ (ASM-008); động vật không chết vĩnh viễn khi bị bỏ đói mà chỉ tạm ngừng sản xuất và giảm Hạnh phúc.",
+  "rules": {
+    "offlineCapHours": 24,
+    "maxHealth": 100,
+    "permanentDeathAllowed": false,
+    "starvationBehavior": "PAUSE_PRODUCTION_AND_DECAY_HAPPINESS",
+    "favoriteFeedHappinessBonus": 15,
+    "dailyPettingHappinessBonus": 10,
+    "standardFeedHappinessBonus": 6,
+    "growthStageOrder": ["BABY", "ADULT"],
+    "growthStageSemanticsVi": "growthStageHours.BABY là số giờ thời gian thực cần thiết để con non trưởng thành sang giai đoạn ADULT và bắt đầu chu kỳ tạo sản phẩm; ADULT là giai đoạn trưởng thành duy trì lâu dài (giá trị 0).",
+    "serverAuthoritativeValidation": "Mọi thao tác cho ăn, vuốt ve và thu hoạch sản phẩm được xử lý nguyên tử tại server kèm kiểm tra quyền sở hữu và sức chứa chuồng trại."
+  },
+  "animals": [
+    {
+      "id": "anm_meadow_chicken",
+      "name": "Meadow Chicken",
+      "species": "CHICKEN",
+      "isFantasy": false,
+      "mvp": true,
+      "requiredBuildingId": "bld_chicken_coop",
+      "requiredBuildingMinLevel": 1,
+      "upgradedBuildingId": null,
+      "purchasePriceGold": 150,
+      "unlockLevel": 1,
+      "growthStageHours": {
+        "BABY": 6,
+        "ADULT": 0
+      },
+      "maxHappiness": 100,
+      "hungerDecayPerHour": 4.0,
+      "favoriteFeedItemId": "mat_sunwheat_grain",
+      "productionCycleMinutes": 48,
+      "produceItemId": "mat_fresh_egg",
+      "produceQtyMin": 1,
+      "produceQtyMax": 2,
+      "qualityScalingByHappiness": {
+        "LOW_0_39": {
+          "NORMAL": 0.90,
+          "SILVER": 0.10,
+          "GOLD": 0.00
+        },
+        "MEDIUM_40_79": {
+          "NORMAL": 0.65,
+          "SILVER": 0.27,
+          "GOLD": 0.08
+        },
+        "HIGH_80_100": {
+          "NORMAL": 0.35,
+          "SILVER": 0.43,
+          "GOLD": 0.22
+        }
+      },
+      "offlineCapHours": 24,
+      "spriteKey": "spr_anm_meadow_chicken",
+      "descriptionVi": "Giống gà đồng cỏ hiền lành dễ nuôi tại Chicken Coop, đẻ trứng tươi đều đặn để chế biến các món ăn hồi Stamina và tăng phòng thủ giai đoạn đầu."
+    },
+    {
+      "id": "anm_clover_cow",
+      "name": "Clover Cow",
+      "species": "COW",
+      "isFantasy": false,
+      "mvp": true,
+      "requiredBuildingId": "bld_farm_plot",
+      "requiredBuildingMinLevel": 2,
+      "upgradedBuildingId": "bld_barn",
+      "purchasePriceGold": 450,
+      "unlockLevel": 5,
+      "growthStageHours": {
+        "BABY": 12,
+        "ADULT": 0
+      },
+      "maxHappiness": 100,
+      "hungerDecayPerHour": 4.2,
+      "favoriteFeedItemId": "mat_fiber_hemp",
+      "productionCycleMinutes": 72,
+      "produceItemId": "mat_fresh_milk",
+      "produceQtyMin": 1,
+      "produceQtyMax": 2,
+      "qualityScalingByHappiness": {
+        "LOW_0_39": {
+          "NORMAL": 0.90,
+          "SILVER": 0.10,
+          "GOLD": 0.00
+        },
+        "MEDIUM_40_79": {
+          "NORMAL": 0.62,
+          "SILVER": 0.28,
+          "GOLD": 0.10
+        },
+        "HIGH_80_100": {
+          "NORMAL": 0.32,
+          "SILVER": 0.44,
+          "GOLD": 0.24
+        }
+      },
+      "offlineCapHours": 24,
+      "spriteKey": "spr_anm_clover_cow",
+      "descriptionVi": "Giống bò sữa ôn hòa có thể chăn thả khởi đầu tại Bãi Chăn Thả của Homestead Farm Plot cấp 2 ngay trong MVP, và chuyển sang Livestock Barn ở giai đoạn mở rộng để tăng sức chứa đàn và vắt sữa tự động."
+    },
+    {
+      "id": "anm_cloud_sheep",
+      "name": "Cloud Sheep",
+      "species": "SHEEP",
+      "isFantasy": false,
+      "mvp": false,
+      "requiredBuildingId": "bld_barn",
+      "requiredBuildingMinLevel": 1,
+      "upgradedBuildingId": null,
+      "purchasePriceGold": 650,
+      "unlockLevel": 12,
+      "growthStageHours": {
+        "BABY": 14,
+        "ADULT": 0
+      },
+      "maxHappiness": 100,
+      "hungerDecayPerHour": 3.8,
+      "favoriteFeedItemId": "mat_fiber_hemp",
+      "productionCycleMinutes": 96,
+      "produceItemId": "mat_soft_wool",
+      "produceQtyMin": 2,
+      "produceQtyMax": 3,
+      "qualityScalingByHappiness": {
+        "LOW_0_39": {
+          "NORMAL": 0.88,
+          "SILVER": 0.12,
+          "GOLD": 0.00
+        },
+        "MEDIUM_40_79": {
+          "NORMAL": 0.60,
+          "SILVER": 0.30,
+          "GOLD": 0.10
+        },
+        "HIGH_80_100": {
+          "NORMAL": 0.30,
+          "SILVER": 0.45,
+          "GOLD": 0.25
+        }
+      },
+      "offlineCapHours": 24,
+      "spriteKey": "spr_anm_cloud_sheep",
+      "descriptionVi": "Cừu lông xốp trắng như mây, cung cấp len mềm (mat_soft_wool) thiết yếu cho nghề may giáp vải, nâng cấp nhà ở và lót áo kháng lạnh tại Frostbound Highlands."
+    },
+    {
+      "id": "anm_bristle_pig",
+      "name": "Bristle Pig",
+      "species": "PIG",
+      "isFantasy": false,
+      "mvp": false,
+      "requiredBuildingId": "bld_barn",
+      "requiredBuildingMinLevel": 2,
+      "upgradedBuildingId": null,
+      "purchasePriceGold": 900,
+      "unlockLevel": 18,
+      "growthStageHours": {
+        "BABY": 18,
+        "ADULT": 0
+      },
+      "maxHappiness": 100,
+      "hungerDecayPerHour": 4.5,
+      "favoriteFeedItemId": "mat_golden_carrot",
+      "productionCycleMinutes": 120,
+      "produceItemId": "mat_truffle_mushroom",
+      "produceQtyMin": 1,
+      "produceQtyMax": 2,
+      "qualityScalingByHappiness": {
+        "LOW_0_39": {
+          "NORMAL": 0.85,
+          "SILVER": 0.15,
+          "GOLD": 0.00
+        },
+        "MEDIUM_40_79": {
+          "NORMAL": 0.56,
+          "SILVER": 0.32,
+          "GOLD": 0.12
+        },
+        "HIGH_80_100": {
+          "NORMAL": 0.25,
+          "SILVER": 0.45,
+          "GOLD": 0.30
+        }
+      },
+      "offlineCapHours": 24,
+      "spriteKey": "spr_anm_bristle_pig",
+      "descriptionVi": "Heo rừng thuần hóa sở hữu khứu giác nhạy bén chuyên đánh hơi nấm cục Truffle quý (mat_truffle_mushroom), nguyên liệu ẩm thực thượng hạng tăng chỉ số toàn đội."
+    },
+    {
+      "id": "anm_ridge_goat",
+      "name": "Ridge Goat",
+      "species": "GOAT",
+      "isFantasy": false,
+      "mvp": false,
+      "requiredBuildingId": "bld_barn",
+      "requiredBuildingMinLevel": 1,
+      "upgradedBuildingId": null,
+      "purchasePriceGold": 780,
+      "unlockLevel": 15,
+      "growthStageHours": {
+        "BABY": 15,
+        "ADULT": 0
+      },
+      "maxHappiness": 100,
+      "hungerDecayPerHour": 3.5,
+      "favoriteFeedItemId": "mat_wild_berry",
+      "productionCycleMinutes": 60,
+      "produceItemId": "mat_fresh_milk",
+      "produceQtyMin": 2,
+      "produceQtyMax": 3,
+      "qualityScalingByHappiness": {
+        "LOW_0_39": {
+          "NORMAL": 0.85,
+          "SILVER": 0.15,
+          "GOLD": 0.00
+        },
+        "MEDIUM_40_79": {
+          "NORMAL": 0.58,
+          "SILVER": 0.30,
+          "GOLD": 0.12
+        },
+        "HIGH_80_100": {
+          "NORMAL": 0.28,
+          "SILVER": 0.44,
+          "GOLD": 0.28
+        }
+      },
+      "offlineCapHours": 24,
+      "spriteKey": "spr_anm_ridge_goat",
+      "descriptionVi": "Giống dê núi dẻo dai từ triền Ironpeak Mountains, ít đói hơn bò và cho sản lượng sữa tươi nhanh, phẩm chất cao cho dây chuyền chế biến phô mai và tiệc chiến đấu."
+    },
+    {
+      "id": "anm_lunar_moth_hare",
+      "name": "Lunar Silkhare",
+      "species": "FANTASY_SILKHARE",
+      "isFantasy": true,
+      "mvp": false,
+      "requiredBuildingId": "bld_barn",
+      "requiredBuildingMinLevel": 3,
+      "upgradedBuildingId": null,
+      "purchasePriceGold": 2400,
+      "unlockLevel": 30,
+      "growthStageHours": {
+        "BABY": 24,
+        "ADULT": 0
+      },
+      "maxHappiness": 100,
+      "hungerDecayPerHour": 3.0,
+      "favoriteFeedItemId": "mat_moon_herb_leaf",
+      "productionCycleMinutes": 144,
+      "produceItemId": "mat_moon_silk",
+      "produceQtyMin": 1,
+      "produceQtyMax": 2,
+      "qualityScalingByHappiness": {
+        "LOW_0_39": {
+          "NORMAL": 0.82,
+          "SILVER": 0.18,
+          "GOLD": 0.00
+        },
+        "MEDIUM_40_79": {
+          "NORMAL": 0.52,
+          "SILVER": 0.34,
+          "GOLD": 0.14
+        },
+        "HIGH_80_100": {
+          "NORMAL": 0.22,
+          "SILVER": 0.45,
+          "GOLD": 0.33
+        }
+      },
+      "offlineCapHours": 24,
+      "spriteKey": "spr_anm_lunar_moth_hare",
+      "descriptionVi": "Linh thú huyền ảo mang đôi tai bướm đêm phát quang, nhả tơ ánh trăng (mat_moon_silk) dùng may áo choàng phép bậc cao, nâng cấp biệt thự và yên thú cưỡi huyền bí."
+    }
+  ]
+}

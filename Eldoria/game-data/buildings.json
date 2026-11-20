@@ -1,0 +1,1241 @@
+{
+  "schemaVersion": "1.0.0",
+  "catalog": "buildings",
+  "game": "Eldoria: Forgotten Wilds",
+  "lastUpdated": "2026-11-19",
+  "totalCount": 13,
+  "mvpCount": 6,
+  "descriptionVi": "Danh mục chuẩn 13 công trình xây dựng và nâng cấp lãnh địa (6 công trình MVP và 7 công trình hậu MVP, thỏa mãn đầy đủ cả Mục 13 và Mục 16 theo ASM-012). Mọi vị trí đặt công trình sử dụng lưới 32x32 px (grid snapping), tách biệt collision footprint với interactionPoints và bắt buộc server xác thực quyền sở hữu, không đè đường đi bắt buộc, spawn point hoặc vùng nhiệm vụ.",
+  "rules": {
+    "baseTileSizePx": 32,
+    "gridSnappingRequired": true,
+    "placementValidationRules": [
+      "MUST_BE_INSIDE_ALLOWED_ZONE",
+      "NO_OVERLAP_EXISTING_BUILDING_COLLISION",
+      "NO_BLOCK_MANDATORY_PATH_OR_SPAWN_POINT",
+      "NO_OVERLAP_QUEST_OR_SAFE_ZONE_CORRIDOR",
+      "SERVER_ATOMIC_DEDUCT_GOLD_AND_MATERIALS"
+    ],
+    "blacksmithEnhancementGate": {
+      "level1MaxPlus": 3,
+      "level2MaxPlus": 6,
+      "level3MaxPlus": 8,
+      "level4MaxPlus": 10
+    },
+    "permissionTypes": ["OWNER_ONLY", "PARTY_ACCESS", "GUILD_ACCESS"]
+  },
+  "buildings": [
+    {
+      "id": "bld_player_house",
+      "name": "Player House",
+      "category": "RESIDENTIAL",
+      "mvp": true,
+      "isStarterPrebuilt": true,
+      "maxLevel": 4,
+      "footprintTiles": {
+        "width": 5,
+        "height": 4
+      },
+      "allowedZones": ["zon_player_homestead"],
+      "rotatable": false,
+      "permissions": "OWNER_ONLY",
+      "interactionPoints": [
+        {
+          "x": 2,
+          "y": 4,
+          "action": "ENTER_HOUSE",
+          "labelVi": "Vào trong nhà"
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "action": "REST_BED",
+          "labelVi": "Nghỉ ngơi hồi phục"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "unlockPlayerLevel": 1,
+          "goldCost": 0,
+          "materials": [],
+          "constructionSeconds": 0,
+          "benefitsVi": "Căn nhà gỗ khởi đầu cấp sẵn tại Greenhaven Village; cho phép nghỉ ngơi hồi 60% Stamina, lưu điểm hồi sinh tại nhà và đặt tối đa 5 công trình phụ trong lãnh địa.",
+          "productionCapacity": {
+            "maxHomesteadBuildings": 5,
+            "wellRestedExpBonusPct": 5,
+            "wellRestedDurationMinutes": 20,
+            "staminaRestorePct": 60
+          },
+          "assetVariantKey": "bld_player_house_lv1"
+        },
+        {
+          "level": 2,
+          "unlockPlayerLevel": 5,
+          "goldCost": 350,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 30 },
+            { "itemId": "mat_rough_stone", "qty": 20 },
+            { "itemId": "mat_clay", "qty": 10 }
+          ],
+          "constructionSeconds": 60,
+          "benefitsVi": "Mở rộng nhà gỗ khung đá, hồi 100% Stamina khi nghỉ (hồi chiêu 10 phút), kích hoạt buff Well-Rested +10% EXP trong 30 phút và tăng giới hạn lên 8 công trình phụ.",
+          "productionCapacity": {
+            "maxHomesteadBuildings": 8,
+            "wellRestedExpBonusPct": 10,
+            "wellRestedDurationMinutes": 30,
+            "staminaRestorePct": 100
+          },
+          "assetVariantKey": "bld_player_house_lv2"
+        },
+        {
+          "level": 3,
+          "unlockPlayerLevel": 15,
+          "goldCost": 1200,
+          "materials": [
+            { "itemId": "mat_pine_wood", "qty": 40 },
+            { "itemId": "mat_granite_block", "qty": 25 },
+            { "itemId": "mat_iron_ingot", "qty": 12 },
+            { "itemId": "mat_wolf_pelt", "qty": 8 }
+          ],
+          "constructionSeconds": 180,
+          "benefitsVi": "Biệt thự hai gian ốp đá granite; buff Well-Rested tăng +15% EXP và +5% Max HP trong 45 phút, mở khóa tủ trưng bày bộ giáp và nâng giới hạn lên 11 công trình phụ.",
+          "productionCapacity": {
+            "maxHomesteadBuildings": 11,
+            "wellRestedExpBonusPct": 15,
+            "wellRestedDurationMinutes": 45,
+            "staminaRestorePct": 100
+          },
+          "assetVariantKey": "bld_player_house_lv3"
+        },
+        {
+          "level": 4,
+          "unlockPlayerLevel": 35,
+          "goldCost": 4500,
+          "materials": [
+            { "itemId": "mat_ancient_heartwood", "qty": 35 },
+            { "itemId": "mat_granite_block", "qty": 50 },
+            { "itemId": "mat_steel_ingot", "qty": 20 },
+            { "itemId": "mat_arcane_crystal", "qty": 6 },
+            { "itemId": "mat_moon_silk", "qty": 6 }
+          ],
+          "constructionSeconds": 360,
+          "benefitsVi": "Dinh thự Lãnh địa Eldoria; buff Well-Rested +20% EXP và +8% Max HP/MP trong 60 phút, mở khóa trụ Fast Travel về thẳng lãnh địa và tối đa 13 công trình phụ.",
+          "productionCapacity": {
+            "maxHomesteadBuildings": 13,
+            "wellRestedExpBonusPct": 20,
+            "wellRestedDurationMinutes": 60,
+            "staminaRestorePct": 100
+          },
+          "assetVariantKey": "bld_player_house_lv4"
+        }
+      ],
+      "descriptionVi": "Trung tâm của khu lãnh địa cá nhân tại Greenhaven Village, quyết định quy mô mở rộng căn cứ, buff nghỉ ngơi và điểm hồi sinh an toàn."
+    },
+    {
+      "id": "bld_storage",
+      "name": "Storage Warehouse",
+      "category": "UTILITY",
+      "mvp": true,
+      "isStarterPrebuilt": false,
+      "maxLevel": 4,
+      "footprintTiles": {
+        "width": 3,
+        "height": 2
+      },
+      "allowedZones": ["zon_player_homestead"],
+      "rotatable": true,
+      "permissions": "OWNER_ONLY",
+      "interactionPoints": [
+        {
+          "x": 1,
+          "y": 2,
+          "action": "OPEN_STORAGE",
+          "labelVi": "Mở kho lưu trữ"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "unlockPlayerLevel": 1,
+          "goldCost": 100,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 15 },
+            { "itemId": "mat_rough_stone", "qty": 8 }
+          ],
+          "constructionSeconds": 15,
+          "benefitsVi": "Mở rộng thêm 40 ô kho đồ cố định tại lãnh địa kèm tính năng gộp stack và lọc danh mục.",
+          "productionCapacity": {
+            "storageSlots": 40,
+            "autoCraftPull": false,
+            "accountSharedSlots": 0
+          },
+          "assetVariantKey": "bld_storage_lv1"
+        },
+        {
+          "level": 2,
+          "unlockPlayerLevel": 8,
+          "goldCost": 400,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 30 },
+            { "itemId": "mat_copper_ingot", "qty": 8 },
+            { "itemId": "mat_iron_ingot", "qty": 6 }
+          ],
+          "constructionSeconds": 60,
+          "benefitsVi": "Tăng sức chứa lên 80 ô và kích hoạt tự động rút nguyên liệu từ kho khi chế tạo, nấu ăn hoặc cường hóa trong lãnh địa.",
+          "productionCapacity": {
+            "storageSlots": 80,
+            "autoCraftPull": true,
+            "accountSharedSlots": 0
+          },
+          "assetVariantKey": "bld_storage_lv2"
+        },
+        {
+          "level": 3,
+          "unlockPlayerLevel": 20,
+          "goldCost": 1500,
+          "materials": [
+            { "itemId": "mat_pine_wood", "qty": 40 },
+            { "itemId": "mat_granite_block", "qty": 20 },
+            { "itemId": "mat_steel_ingot", "qty": 12 }
+          ],
+          "constructionSeconds": 180,
+          "benefitsVi": "Tăng sức chứa lên 140 ô, hỗ trợ khóa vật phẩm quý chống bán nhầm và lưu 3 ngăn phân loại theo bộ trang bị.",
+          "productionCapacity": {
+            "storageSlots": 140,
+            "autoCraftPull": true,
+            "accountSharedSlots": 0
+          },
+          "assetVariantKey": "bld_storage_lv3"
+        },
+        {
+          "level": 4,
+          "unlockPlayerLevel": 40,
+          "goldCost": 4800,
+          "materials": [
+            { "itemId": "mat_ancient_heartwood", "qty": 30 },
+            { "itemId": "mat_mythril_ingot", "qty": 10 },
+            { "itemId": "mat_arcane_crystal", "qty": 5 }
+          ],
+          "constructionSeconds": 300,
+          "benefitsVi": "Kho bảo vật tối đa 220 ô kèm 40 ô kho chia sẻ dùng chung giữa các nhân vật trong cùng tài khoản.",
+          "productionCapacity": {
+            "storageSlots": 220,
+            "autoCraftPull": true,
+            "accountSharedSlots": 40
+          },
+          "assetVariantKey": "bld_storage_lv4"
+        }
+      ],
+      "descriptionVi": "Nhà kho gia cố giúp bảo quản nguyên liệu nông sản, quặng và trang bị sưu tầm, đồng thời liên kết trực tiếp với các bàn chế tạo trong căn cứ."
+    },
+    {
+      "id": "bld_farm_plot",
+      "name": "Homestead Farm Plot",
+      "category": "FARMING",
+      "mvp": true,
+      "isStarterPrebuilt": false,
+      "maxLevel": 4,
+      "footprintTiles": {
+        "width": 4,
+        "height": 4
+      },
+      "allowedZones": ["zon_player_homestead", "zon_greenhaven_farmland"],
+      "rotatable": true,
+      "permissions": "PARTY_ACCESS",
+      "interactionPoints": [
+        {
+          "x": 1,
+          "y": 4,
+          "action": "MANAGE_FARM",
+          "labelVi": "Quản lý luống trồng"
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "action": "TOGGLE_IRRIGATION",
+          "labelVi": "Điều khiển tưới tiêu"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "unlockPlayerLevel": 1,
+          "goldCost": 80,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 12 },
+            { "itemId": "mat_rough_stone", "qty": 6 },
+            { "itemId": "mat_fiber_hemp", "qty": 8 }
+          ],
+          "constructionSeconds": 15,
+          "benefitsVi": "Thiết lập 12 ô đất canh tác màu mỡ hỗ trợ cuốc đất, gieo hạt, tưới nước thủ công và bón phân; bạn cùng party có thể phụ tưới nước.",
+          "productionCapacity": {
+            "cropTiles": 12,
+            "autoIrrigation": false,
+            "autoHarvest": false,
+            "starterPastureSlots": 0
+          },
+          "assetVariantKey": "bld_farm_plot_lv1"
+        },
+        {
+          "level": 2,
+          "unlockPlayerLevel": 5,
+          "goldCost": 320,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 24 },
+            { "itemId": "mat_clay", "qty": 16 },
+            { "itemId": "mat_copper_ingot", "qty": 6 }
+          ],
+          "constructionSeconds": 45,
+          "benefitsVi": "Mở rộng 20 ô canh tác, xây mương giữ ẩm giảm 25% hao nước và mở khóa Bãi Chăn Thả Khởi Đầu nuôi tối đa 2 Clover Cow ngay trong MVP.",
+          "productionCapacity": {
+            "cropTiles": 20,
+            "autoIrrigation": false,
+            "autoHarvest": false,
+            "starterPastureSlots": 2
+          },
+          "assetVariantKey": "bld_farm_plot_lv2"
+        },
+        {
+          "level": 3,
+          "unlockPlayerLevel": 15,
+          "goldCost": 1100,
+          "materials": [
+            { "itemId": "mat_pine_wood", "qty": 30 },
+            { "itemId": "mat_granite_block", "qty": 15 },
+            { "itemId": "mat_iron_ingot", "qty": 12 },
+            { "itemId": "mat_slime_gel", "qty": 15 }
+          ],
+          "constructionSeconds": 120,
+          "benefitsVi": "Mở rộng 28 ô canh tác, kích hoạt hệ thống Tưới Tự Động hoạt động cả trong thời gian offline (tối đa 24 giờ) và tăng +5% tỷ lệ nông sản Silver/Gold.",
+          "productionCapacity": {
+            "cropTiles": 28,
+            "autoIrrigation": true,
+            "autoHarvest": false,
+            "starterPastureSlots": 2
+          },
+          "assetVariantKey": "bld_farm_plot_lv3"
+        },
+        {
+          "level": 4,
+          "unlockPlayerLevel": 30,
+          "goldCost": 3600,
+          "materials": [
+            { "itemId": "mat_ancient_heartwood", "qty": 25 },
+            { "itemId": "mat_steel_ingot", "qty": 15 },
+            { "itemId": "mat_arcane_crystal", "qty": 6 },
+            { "itemId": "mat_starlight_dust", "qty": 10 }
+          ],
+          "constructionSeconds": 240,
+          "benefitsVi": "Trang trại kính ma pháp 36 ô: kích hoạt Tự Động Thu Hoạch vào Kho (Auto-Farming), giảm phạt trồng trái mùa và tăng +10% tỷ lệ nông sản Gold.",
+          "productionCapacity": {
+            "cropTiles": 36,
+            "autoIrrigation": true,
+            "autoHarvest": true,
+            "starterPastureSlots": 3
+          },
+          "assetVariantKey": "bld_farm_plot_lv4"
+        }
+      ],
+      "descriptionVi": "Khu ruộng trồng trọt cốt lõi của lãnh địa, tiến hóa từ luống đất thủ công thành nông trại tưới tiêu và thu hoạch tự động, đồng thời cung cấp bãi chăn thả khởi đầu cho bò sữa."
+    },
+    {
+      "id": "bld_chicken_coop",
+      "name": "Chicken Coop",
+      "category": "HUSBANDRY",
+      "mvp": true,
+      "isStarterPrebuilt": false,
+      "maxLevel": 3,
+      "footprintTiles": {
+        "width": 3,
+        "height": 3
+      },
+      "allowedZones": ["zon_player_homestead"],
+      "rotatable": false,
+      "permissions": "PARTY_ACCESS",
+      "interactionPoints": [
+        {
+          "x": 1,
+          "y": 3,
+          "action": "TEND_COOP",
+          "labelVi": "Chăm sóc & cho gà ăn"
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "action": "COLLECT_EGGS",
+          "labelVi": "Thu hoạch trứng tươi"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "unlockPlayerLevel": 2,
+          "goldCost": 180,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 20 },
+            { "itemId": "mat_fiber_hemp", "qty": 12 },
+            { "itemId": "mat_rough_stone", "qty": 8 }
+          ],
+          "constructionSeconds": 30,
+          "benefitsVi": "Chuồng gỗ thoáng khí nuôi tối đa 4 Meadow Chicken với máng thức ăn thủ công.",
+          "productionCapacity": {
+            "animalSlots": 4,
+            "autoFeeder": false,
+            "autoCollector": false,
+            "productionSpeedBonusPct": 0
+          },
+          "assetVariantKey": "bld_chicken_coop_lv1"
+        },
+        {
+          "level": 2,
+          "unlockPlayerLevel": 10,
+          "goldCost": 600,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 35 },
+            { "itemId": "mat_copper_ingot", "qty": 8 },
+            { "itemId": "mat_clay", "qty": 12 }
+          ],
+          "constructionSeconds": 90,
+          "benefitsVi": "Mở rộng sức chứa lên 8 con, bổ sung máng ăn tự động rút hạt ngũ cốc từ Storage và lồng ấp gà con.",
+          "productionCapacity": {
+            "animalSlots": 8,
+            "autoFeeder": true,
+            "autoCollector": false,
+            "productionSpeedBonusPct": 5
+          },
+          "assetVariantKey": "bld_chicken_coop_lv2"
+        },
+        {
+          "level": 3,
+          "unlockPlayerLevel": 22,
+          "goldCost": 1800,
+          "materials": [
+            { "itemId": "mat_pine_wood", "qty": 40 },
+            { "itemId": "mat_iron_ingot", "qty": 12 },
+            { "itemId": "mat_soft_wool", "qty": 10 }
+          ],
+          "constructionSeconds": 180,
+          "benefitsVi": "Chuồng gia cầm hạng sang nuôi 12 con, kích hoạt khay gom trứng tự động và tăng +10% tốc độ đẻ trứng.",
+          "productionCapacity": {
+            "animalSlots": 12,
+            "autoFeeder": true,
+            "autoCollector": true,
+            "productionSpeedBonusPct": 10
+          },
+          "assetVariantKey": "bld_chicken_coop_lv3"
+        }
+      ],
+      "descriptionVi": "Chuồng nuôi gia cầm khởi đầu cung cấp nguồn trứng tươi liên tục cho nhà bếp và dòng thu nhập ổn định mỗi ngày."
+    },
+    {
+      "id": "bld_blacksmith",
+      "name": "Blacksmith Forge",
+      "category": "CRAFTING",
+      "mvp": true,
+      "isStarterPrebuilt": false,
+      "maxLevel": 4,
+      "footprintTiles": {
+        "width": 4,
+        "height": 3
+      },
+      "allowedZones": ["zon_player_homestead"],
+      "rotatable": false,
+      "permissions": "OWNER_ONLY",
+      "interactionPoints": [
+        {
+          "x": 1,
+          "y": 3,
+          "action": "ENHANCE_WEAPON",
+          "labelVi": "Cường hóa vũ khí (+1 đến +10)"
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "action": "FORGE_GEAR",
+          "labelVi": "Rèn & sửa chữa trang bị"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "unlockPlayerLevel": 3,
+          "goldCost": 250,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 20 },
+            { "itemId": "mat_rough_stone", "qty": 25 },
+            { "itemId": "mat_copper_ore", "qty": 15 },
+            { "itemId": "mat_coal", "qty": 10 }
+          ],
+          "constructionSeconds": 45,
+          "benefitsVi": "Mở khóa rèn vũ khí/giáp cơ bản, sửa chữa độ bền và mở khóa cường hóa vũ khí chắc chắn từ +1 đến +3.",
+          "productionCapacity": {
+            "maxEnhancementLevel": 3,
+            "forgeQueueSlots": 2,
+            "repairCostDiscountPct": 0
+          },
+          "assetVariantKey": "bld_blacksmith_lv1"
+        },
+        {
+          "level": 2,
+          "unlockPlayerLevel": 8,
+          "goldCost": 750,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 30 },
+            { "itemId": "mat_rough_stone", "qty": 35 },
+            { "itemId": "mat_copper_ingot", "qty": 12 },
+            { "itemId": "mat_iron_ingot", "qty": 10 },
+            { "itemId": "mat_coal", "qty": 20 }
+          ],
+          "constructionSeconds": 120,
+          "benefitsVi": "Mở khóa rèn trang bị bậc Sắt và Tinh anh, phân rã trang bị thừa thu hồi phôi và mở khóa cường hóa vũ khí từ +4 đến +6 (giảm 10% phí sửa đồ).",
+          "productionCapacity": {
+            "maxEnhancementLevel": 6,
+            "forgeQueueSlots": 4,
+            "repairCostDiscountPct": 10
+          },
+          "assetVariantKey": "bld_blacksmith_lv2"
+        },
+        {
+          "level": 3,
+          "unlockPlayerLevel": 15,
+          "goldCost": 2000,
+          "materials": [
+            { "itemId": "mat_pine_wood", "qty": 35 },
+            { "itemId": "mat_granite_block", "qty": 30 },
+            { "itemId": "mat_iron_ingot", "qty": 20 },
+            { "itemId": "mat_wolf_pelt", "qty": 12 },
+            { "itemId": "mat_thornback_heart", "qty": 1 }
+          ],
+          "constructionSeconds": 240,
+          "benefitsVi": "Lò Rèn Dũng Sĩ: mở khóa chế tạo trang bị hầm ngục, khảm ngọc cơ bản và mở khóa cường hóa vũ khí từ +7 đến +8 (giảm 20% phí sửa đồ).",
+          "productionCapacity": {
+            "maxEnhancementLevel": 8,
+            "forgeQueueSlots": 6,
+            "repairCostDiscountPct": 20
+          },
+          "assetVariantKey": "bld_blacksmith_lv3"
+        },
+        {
+          "level": 4,
+          "unlockPlayerLevel": 20,
+          "goldCost": 5000,
+          "materials": [
+            { "itemId": "mat_pine_wood", "qty": 45 },
+            { "itemId": "mat_granite_block", "qty": 45 },
+            { "itemId": "mat_steel_ingot", "qty": 18 },
+            { "itemId": "mat_starlight_dust", "qty": 12 },
+            { "itemId": "mat_thornback_heart", "qty": 3 }
+          ],
+          "constructionSeconds": 360,
+          "benefitsVi": "Lò Rèn Huyền Thoại: mở khóa mốc cường hóa tối đa từ +9 đến +10 (100% thành công trong MVP, không vỡ đồ), hàng đợi 8 món và giảm 30% phí sửa đồ.",
+          "productionCapacity": {
+            "maxEnhancementLevel": 10,
+            "forgeQueueSlots": 8,
+            "repairCostDiscountPct": 30
+          },
+          "assetVariantKey": "bld_blacksmith_lv4"
+        }
+      ],
+      "descriptionVi": "Công trình chế tác trọng tâm liên kết trực tiếp Housing với tiến trình chiến đấu: từng cấp nâng cấp mở khóa các bậc cường hóa vũ khí +1..+3, +4..+6, +7..+8 và mốc tối đa +9..+10."
+    },
+    {
+      "id": "bld_kitchen",
+      "name": "Homestead Kitchen",
+      "category": "CRAFTING",
+      "mvp": true,
+      "isStarterPrebuilt": false,
+      "maxLevel": 3,
+      "footprintTiles": {
+        "width": 3,
+        "height": 3
+      },
+      "allowedZones": ["zon_player_homestead"],
+      "rotatable": false,
+      "permissions": "PARTY_ACCESS",
+      "interactionPoints": [
+        {
+          "x": 1,
+          "y": 3,
+          "action": "OPEN_COOKING",
+          "labelVi": "Nấu món ăn & tiệc buff"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "unlockPlayerLevel": 2,
+          "goldCost": 150,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 18 },
+            { "itemId": "mat_rough_stone", "qty": 15 },
+            { "itemId": "mat_clay", "qty": 10 }
+          ],
+          "constructionSeconds": 30,
+          "benefitsVi": "Mở khóa chế biến các món ăn hồi Hunger/Stamina và món buff chiến đấu bậc 1 từ nông sản và trứng sữa.",
+          "productionCapacity": {
+            "cookQueueSlots": 2,
+            "buffDurationBonusPct": 0,
+            "doublePortionChance": 0.0,
+            "partyFeastUnlocked": false
+          },
+          "assetVariantKey": "bld_kitchen_lv1"
+        },
+        {
+          "level": 2,
+          "unlockPlayerLevel": 10,
+          "goldCost": 650,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 28 },
+            { "itemId": "mat_copper_ingot", "qty": 10 },
+            { "itemId": "mat_iron_ingot", "qty": 8 },
+            { "itemId": "mat_coal", "qty": 15 }
+          ],
+          "constructionSeconds": 90,
+          "benefitsVi": "Mở khóa thực đơn buff nguyên tố bậc 2, tăng +15% thời lượng buff thức ăn và 8% cơ hội nhận thêm 1 khẩu phần.",
+          "productionCapacity": {
+            "cookQueueSlots": 4,
+            "buffDurationBonusPct": 15,
+            "doublePortionChance": 0.08,
+            "partyFeastUnlocked": false
+          },
+          "assetVariantKey": "bld_kitchen_lv2"
+        },
+        {
+          "level": 3,
+          "unlockPlayerLevel": 20,
+          "goldCost": 1900,
+          "materials": [
+            { "itemId": "mat_pine_wood", "qty": 35 },
+            { "itemId": "mat_granite_block", "qty": 25 },
+            { "itemId": "mat_steel_ingot", "qty": 10 },
+            { "itemId": "mat_spore_cap_dust", "qty": 10 }
+          ],
+          "constructionSeconds": 180,
+          "benefitsVi": "Bếp Trưởng Lãnh Địa: mở khóa Bàn Tiệc Tổ Đội (buff toàn bộ party 4 người), tăng +25% thời lượng buff và 15% cơ hội nấu được khẩu phần đôi.",
+          "productionCapacity": {
+            "cookQueueSlots": 6,
+            "buffDurationBonusPct": 25,
+            "doublePortionChance": 0.15,
+            "partyFeastUnlocked": true
+          },
+          "assetVariantKey": "bld_kitchen_lv3"
+        }
+      ],
+      "descriptionVi": "Khu bếp ấm cúng chuyển hóa trực tiếp thành quả trồng trọt, chăn nuôi và câu cá thành thức ăn sinh tồn và buff chiến đấu thực chất cho các trận đánh boss."
+    },
+    {
+      "id": "bld_barn",
+      "name": "Livestock Barn",
+      "category": "HUSBANDRY",
+      "mvp": false,
+      "isStarterPrebuilt": false,
+      "maxLevel": 3,
+      "footprintTiles": {
+        "width": 5,
+        "height": 4
+      },
+      "allowedZones": ["zon_player_homestead"],
+      "rotatable": false,
+      "permissions": "PARTY_ACCESS",
+      "interactionPoints": [
+        {
+          "x": 2,
+          "y": 4,
+          "action": "MANAGE_BARN",
+          "labelVi": "Quản lý chuồng gia súc"
+        },
+        {
+          "x": 3,
+          "y": 4,
+          "action": "COLLECT_PRODUCE",
+          "labelVi": "Thu hoạch sữa, len & tơ"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "unlockPlayerLevel": 12,
+          "goldCost": 900,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 45 },
+            { "itemId": "mat_pine_wood", "qty": 25 },
+            { "itemId": "mat_rough_stone", "qty": 30 },
+            { "itemId": "mat_iron_ingot", "qty": 10 }
+          ],
+          "constructionSeconds": 120,
+          "benefitsVi": "Chuồng lớn nuôi tối đa 4 gia súc lớn gồm Clover Cow, Cloud Sheep và Ridge Goat với kho cỏ tích hợp.",
+          "productionCapacity": {
+            "animalSlots": 4,
+            "autoFeeder": false,
+            "autoCollector": false,
+            "fantasyAnimalSupported": false
+          },
+          "assetVariantKey": "bld_barn_lv1"
+        },
+        {
+          "level": 2,
+          "unlockPlayerLevel": 18,
+          "goldCost": 2200,
+          "materials": [
+            { "itemId": "mat_pine_wood", "qty": 50 },
+            { "itemId": "mat_granite_block", "qty": 35 },
+            { "itemId": "mat_steel_ingot", "qty": 12 },
+            { "itemId": "mat_soft_wool", "qty": 12 }
+          ],
+          "constructionSeconds": 240,
+          "benefitsVi": "Mở rộng sức chứa 8 con, mở khóa nuôi Bristle Pig săn nấm Truffle và kích hoạt máng cỏ tự động rút thức ăn từ Storage.",
+          "productionCapacity": {
+            "animalSlots": 8,
+            "autoFeeder": true,
+            "autoCollector": false,
+            "fantasyAnimalSupported": false
+          },
+          "assetVariantKey": "bld_barn_lv2"
+        },
+        {
+          "level": 3,
+          "unlockPlayerLevel": 30,
+          "goldCost": 5200,
+          "materials": [
+            { "itemId": "mat_ancient_heartwood", "qty": 30 },
+            { "itemId": "mat_granite_block", "qty": 50 },
+            { "itemId": "mat_steel_ingot", "qty": 20 },
+            { "itemId": "mat_arcane_crystal", "qty": 8 }
+          ],
+          "constructionSeconds": 360,
+          "benefitsVi": "Chuồng Linh Thú cao cấp chứa tối đa 12 con, mở khóa nuôi Lunar Silkhare, kích hoạt thu gom sản phẩm tự động và +15% tốc độ hồi Hạnh phúc.",
+          "productionCapacity": {
+            "animalSlots": 12,
+            "autoFeeder": true,
+            "autoCollector": true,
+            "fantasyAnimalSupported": true
+          },
+          "assetVariantKey": "bld_barn_lv3"
+        }
+      ],
+      "descriptionVi": "Công trình chăn nuôi quy mô lớn dành cho bò, cừu, dê, heo săn nấm và linh thú huyền ảo, đóng góp nguyên liệu len, nấm cục và tơ ánh trăng cho nền kinh tế."
+    },
+    {
+      "id": "bld_workshop",
+      "name": "Artisan Workshop",
+      "category": "CRAFTING",
+      "mvp": false,
+      "isStarterPrebuilt": false,
+      "maxLevel": 3,
+      "footprintTiles": {
+        "width": 4,
+        "height": 3
+      },
+      "allowedZones": ["zon_player_homestead"],
+      "rotatable": true,
+      "permissions": "OWNER_ONLY",
+      "interactionPoints": [
+        {
+          "x": 1,
+          "y": 3,
+          "action": "OPEN_WORKSHOP",
+          "labelVi": "Chế tác thủ công & phụ kiện"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "unlockPlayerLevel": 10,
+          "goldCost": 600,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 35 },
+            { "itemId": "mat_copper_ingot", "qty": 12 },
+            { "itemId": "mat_fiber_hemp", "qty": 20 },
+            { "itemId": "mat_wolf_pelt", "qty": 8 }
+          ],
+          "constructionSeconds": 90,
+          "benefitsVi": "Mở khóa chế tạo công cụ khai thác nâng cấp, ống tưới tiêu, nội thất trang trí và giáp da/vải bậc trung.",
+          "productionCapacity": {
+            "craftQueueSlots": 3,
+            "materialSavePct": 5,
+            "accessoryTierUnlocked": 1
+          },
+          "assetVariantKey": "bld_workshop_lv1"
+        },
+        {
+          "level": 2,
+          "unlockPlayerLevel": 22,
+          "goldCost": 1800,
+          "materials": [
+            { "itemId": "mat_pine_wood", "qty": 40 },
+            { "itemId": "mat_iron_ingot", "qty": 16 },
+            { "itemId": "mat_soft_wool", "qty": 15 },
+            { "itemId": "mat_prism_scale", "qty": 2 }
+          ],
+          "constructionSeconds": 180,
+          "benefitsVi": "Mở khóa chế tác trang sức (Ring, Necklace, Accessory) và khung khảm ngọc; giảm 10% nguyên liệu chế tác gỗ/vải.",
+          "productionCapacity": {
+            "craftQueueSlots": 5,
+            "materialSavePct": 10,
+            "accessoryTierUnlocked": 2
+          },
+          "assetVariantKey": "bld_workshop_lv2"
+        },
+        {
+          "level": 3,
+          "unlockPlayerLevel": 38,
+          "goldCost": 4600,
+          "materials": [
+            { "itemId": "mat_ancient_heartwood", "qty": 35 },
+            { "itemId": "mat_mythril_ingot", "qty": 12 },
+            { "itemId": "mat_moon_silk", "qty": 12 },
+            { "itemId": "mat_arcane_crystal", "qty": 8 }
+          ],
+          "constructionSeconds": 300,
+          "benefitsVi": "Xưởng Đại Nghệ Nhân: chế tác mô-đun tự động hóa nông trại, phụ kiện cao cấp và +10% xác suất nhận dòng chỉ số phụ bậc cao.",
+          "productionCapacity": {
+            "craftQueueSlots": 8,
+            "materialSavePct": 15,
+            "accessoryTierUnlocked": 3
+          },
+          "assetVariantKey": "bld_workshop_lv3"
+        }
+      ],
+      "descriptionVi": "Xưởng chế tác tổng hợp phục vụ nghề mộc, may mặc, làm công cụ và kim hoàn, kết nối đầu ra gỗ, len và tơ ánh trăng vào sức mạnh trang bị."
+    },
+    {
+      "id": "bld_furnace",
+      "name": "Smelting Furnace",
+      "category": "PROCESSING",
+      "mvp": false,
+      "isStarterPrebuilt": false,
+      "maxLevel": 3,
+      "footprintTiles": {
+        "width": 3,
+        "height": 3
+      },
+      "allowedZones": ["zon_player_homestead"],
+      "rotatable": true,
+      "permissions": "OWNER_ONLY",
+      "interactionPoints": [
+        {
+          "x": 1,
+          "y": 3,
+          "action": "OPEN_SMELTING",
+          "labelVi": "Nung luyện quặng & hợp kim"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "unlockPlayerLevel": 10,
+          "goldCost": 550,
+          "materials": [
+            { "itemId": "mat_rough_stone", "qty": 40 },
+            { "itemId": "mat_clay", "qty": 25 },
+            { "itemId": "mat_copper_ore", "qty": 20 },
+            { "itemId": "mat_coal", "qty": 15 }
+          ],
+          "constructionSeconds": 75,
+          "benefitsVi": "Nung luyện đồng thời 3 mẻ quặng Đồng, Sắt và Bạc ngay tại nhà nhanh hơn 20% so với lò công cộng và miễn phí thuê lò.",
+          "productionCapacity": {
+            "parallelSmeltSlots": 3,
+            "smeltSpeedBonusPct": 20,
+            "bonusIngotChance": 0.0
+          },
+          "assetVariantKey": "bld_furnace_lv1"
+        },
+        {
+          "level": 2,
+          "unlockPlayerLevel": 22,
+          "goldCost": 1700,
+          "materials": [
+            { "itemId": "mat_granite_block", "qty": 35 },
+            { "itemId": "mat_iron_ingot", "qty": 18 },
+            { "itemId": "mat_coal", "qty": 35 },
+            { "itemId": "mat_cinder_core", "qty": 2 }
+          ],
+          "constructionSeconds": 180,
+          "benefitsVi": "Lò Cao Nhiệt: nung luyện 5 mẻ song song, mở khóa luyện Steel Ingot hàng loạt và tiết kiệm 15% lượng than tiêu hao.",
+          "productionCapacity": {
+            "parallelSmeltSlots": 5,
+            "smeltSpeedBonusPct": 35,
+            "bonusIngotChance": 0.06
+          },
+          "assetVariantKey": "bld_furnace_lv2"
+        },
+        {
+          "level": 3,
+          "unlockPlayerLevel": 40,
+          "goldCost": 4800,
+          "materials": [
+            { "itemId": "mat_granite_block", "qty": 55 },
+            { "itemId": "mat_steel_ingot", "qty": 22 },
+            { "itemId": "mat_obsidian_shard", "qty": 18 },
+            { "itemId": "mat_cinder_core", "qty": 4 }
+          ],
+          "constructionSeconds": 300,
+          "benefitsVi": "Lò Cổ Ngữ Huyền Thiết: luyện 8 mẻ song song bao gồm Mythril Ingot và tinh thể ma pháp, kèm 12% tỷ lệ ra thêm 1 thỏi thưởng.",
+          "productionCapacity": {
+            "parallelSmeltSlots": 8,
+            "smeltSpeedBonusPct": 50,
+            "bonusIngotChance": 0.12
+          },
+          "assetVariantKey": "bld_furnace_lv3"
+        }
+      ],
+      "descriptionVi": "Lò luyện kim chuyên dụng tăng mạnh hiệu suất tinh chế quặng từ các mỏ Ironpeak Mountains và Crystal Caverns thành phôi kim loại cao cấp."
+    },
+    {
+      "id": "bld_alchemy_lab",
+      "name": "Alchemy Laboratory",
+      "category": "CRAFTING",
+      "mvp": false,
+      "isStarterPrebuilt": false,
+      "maxLevel": 3,
+      "footprintTiles": {
+        "width": 3,
+        "height": 3
+      },
+      "allowedZones": ["zon_player_homestead"],
+      "rotatable": false,
+      "permissions": "OWNER_ONLY",
+      "interactionPoints": [
+        {
+          "x": 1,
+          "y": 3,
+          "action": "OPEN_ALCHEMY",
+          "labelVi": "Pha chế thuốc & phân bón"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "unlockPlayerLevel": 12,
+          "goldCost": 750,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 25 },
+            { "itemId": "mat_clay", "qty": 20 },
+            { "itemId": "mat_slime_gel", "qty": 15 },
+            { "itemId": "mat_moon_herb_leaf", "qty": 15 }
+          ],
+          "constructionSeconds": 90,
+          "benefitsVi": "Mở khóa pha chế bình hồi HP/MP bậc trung, thuốc giải độc và phân bón tăng tốc sinh trưởng nông trại.",
+          "productionCapacity": {
+            "brewQueueSlots": 2,
+            "doublePotionChance": 0.05,
+            "elixirTierUnlocked": 1
+          },
+          "assetVariantKey": "bld_alchemy_lab_lv1"
+        },
+        {
+          "level": 2,
+          "unlockPlayerLevel": 26,
+          "goldCost": 2100,
+          "materials": [
+            { "itemId": "mat_pine_wood", "qty": 30 },
+            { "itemId": "mat_silver_ore", "qty": 18 },
+            { "itemId": "mat_spore_cap_dust", "qty": 16 },
+            { "itemId": "mat_arcane_crystal", "qty": 6 }
+          ],
+          "constructionSeconds": 210,
+          "benefitsVi": "Mở khóa thuốc kháng nguyên tố (Fire, Frost, Lightning, Shadow) và phân bón cao cấp tăng tỷ lệ nông sản Gold.",
+          "productionCapacity": {
+            "brewQueueSlots": 4,
+            "doublePotionChance": 0.10,
+            "elixirTierUnlocked": 2
+          },
+          "assetVariantKey": "bld_alchemy_lab_lv2"
+        },
+        {
+          "level": 3,
+          "unlockPlayerLevel": 45,
+          "goldCost": 5400,
+          "materials": [
+            { "itemId": "mat_ancient_heartwood", "qty": 25 },
+            { "itemId": "mat_starlight_dust", "qty": 20 },
+            { "itemId": "mat_rime_essence", "qty": 3 },
+            { "itemId": "mat_void_crystal", "qty": 6 }
+          ],
+          "constructionSeconds": 360,
+          "benefitsVi": "Phòng Giả Kim Thượng Cổ: pha chế linh dược đột kích Boss bậc cao, chuyển hóa bụi tinh tú và 15% xác suất nhân đôi thành phẩm.",
+          "productionCapacity": {
+            "brewQueueSlots": 6,
+            "doublePotionChance": 0.15,
+            "elixirTierUnlocked": 3
+          },
+          "assetVariantKey": "bld_alchemy_lab_lv3"
+        }
+      ],
+      "descriptionVi": "Phòng thí nghiệm giả kim chuyển hóa thảo mộc, tinh chất quái vật và tinh thể ma pháp thành dược phẩm chiến đấu và phân bón nông nghiệp."
+    },
+    {
+      "id": "bld_training_ground",
+      "name": "Training Ground",
+      "category": "COMBAT_UTILITY",
+      "mvp": false,
+      "isStarterPrebuilt": false,
+      "maxLevel": 3,
+      "footprintTiles": {
+        "width": 5,
+        "height": 4
+      },
+      "allowedZones": ["zon_player_homestead"],
+      "rotatable": true,
+      "permissions": "PARTY_ACCESS",
+      "interactionPoints": [
+        {
+          "x": 2,
+          "y": 4,
+          "action": "START_TRAINING",
+          "labelVi": "Luyện combo & thử DPS"
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "action": "INSPECT_DPS_DUMMY",
+          "labelVi": "Cấu hình bù nhìn mục tiêu"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "unlockPlayerLevel": 12,
+          "goldCost": 800,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 35 },
+            { "itemId": "mat_rough_stone", "qty": 25 },
+            { "itemId": "mat_fiber_hemp", "qty": 20 },
+            { "itemId": "mat_iron_ingot", "qty": 8 }
+          ],
+          "constructionSeconds": 90,
+          "benefitsVi": "Đặt bù nhìn đo DPS xác thực bởi server, luyện combo không hao độ bền vũ khí và đặt lại hồi chiêu trong vùng luyện tập.",
+          "productionCapacity": {
+            "trainingDummies": 2,
+            "skillMasteryExpBonusPct": 0,
+            "bossTelegraphDrill": false
+          },
+          "assetVariantKey": "bld_training_ground_lv1"
+        },
+        {
+          "level": 2,
+          "unlockPlayerLevel": 25,
+          "goldCost": 2200,
+          "materials": [
+            { "itemId": "mat_pine_wood", "qty": 40 },
+            { "itemId": "mat_granite_block", "qty": 30 },
+            { "itemId": "mat_steel_ingot", "qty": 12 },
+            { "itemId": "mat_wolf_pelt", "qty": 16 }
+          ],
+          "constructionSeconds": 180,
+          "benefitsVi": "Thêm bù nhìn mô phỏng kháng nguyên tố và thanh Stagger/Break boss; tập luyện 5 phút nhận buff +5% Skill Mastery EXP trong 60 phút.",
+          "productionCapacity": {
+            "trainingDummies": 4,
+            "skillMasteryExpBonusPct": 5,
+            "bossTelegraphDrill": false
+          },
+          "assetVariantKey": "bld_training_ground_lv2"
+        },
+        {
+          "level": 3,
+          "unlockPlayerLevel": 42,
+          "goldCost": 5000,
+          "materials": [
+            { "itemId": "mat_ancient_heartwood", "qty": 30 },
+            { "itemId": "mat_granite_block", "qty": 45 },
+            { "itemId": "mat_mythril_ingot", "qty": 10 },
+            { "itemId": "mat_prism_scale", "qty": 3 }
+          ],
+          "constructionSeconds": 300,
+          "benefitsVi": "Đấu trường mô phỏng bài tập Dodge/Parry theo telegraph boss; nhận buff +10% Skill Mastery EXP và chuyển đổi bộ Talent preset ngay tại nhà.",
+          "productionCapacity": {
+            "trainingDummies": 6,
+            "skillMasteryExpBonusPct": 10,
+            "bossTelegraphDrill": true
+          },
+          "assetVariantKey": "bld_training_ground_lv3"
+        }
+      ],
+      "descriptionVi": "Thao trường luyện võ cho phép người chơi và đồng đội thử nghiệm phản ứng nguyên tố, đo DPS thực tế và mài giũa kỹ năng né đòn, phản đòn."
+    },
+    {
+      "id": "bld_stable",
+      "name": "Mount Stable",
+      "category": "MOBILITY",
+      "mvp": false,
+      "isStarterPrebuilt": false,
+      "maxLevel": 3,
+      "footprintTiles": {
+        "width": 4,
+        "height": 3
+      },
+      "allowedZones": ["zon_player_homestead"],
+      "rotatable": false,
+      "permissions": "OWNER_ONLY",
+      "interactionPoints": [
+        {
+          "x": 2,
+          "y": 3,
+          "action": "MANAGE_MOUNTS",
+          "labelVi": "Quản lý thú cưỡi & yên cương"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "unlockPlayerLevel": 16,
+          "goldCost": 1200,
+          "materials": [
+            { "itemId": "mat_oak_wood", "qty": 40 },
+            { "itemId": "mat_pine_wood", "qty": 25 },
+            { "itemId": "mat_fiber_hemp", "qty": 25 },
+            { "itemId": "mat_iron_ingot", "qty": 12 }
+          ],
+          "constructionSeconds": 120,
+          "benefitsVi": "Mở khóa nuôi và triệu hồi tối đa 2 Thú Cưỡi cơ bản (+25% tốc độ di chuyển ngoài chiến đấu) giúp thám hiểm các vùng đất xa nhanh hơn.",
+          "productionCapacity": {
+            "mountSlots": 2,
+            "mountSpeedBonusPct": 25,
+            "saddlebagSlots": 0
+          },
+          "assetVariantKey": "bld_stable_lv1"
+        },
+        {
+          "level": 2,
+          "unlockPlayerLevel": 30,
+          "goldCost": 2800,
+          "materials": [
+            { "itemId": "mat_pine_wood", "qty": 50 },
+            { "itemId": "mat_steel_ingot", "qty": 15 },
+            { "itemId": "mat_soft_wool", "qty": 15 },
+            { "itemId": "mat_wolf_pelt", "qty": 15 }
+          ],
+          "constructionSeconds": 240,
+          "benefitsVi": "Chứa tối đa 4 Thú Cưỡi (+35% tốc độ di chuyển) và trang bị túi yên mở rộng thêm 12 ô hành lý khi khai khoáng hoặc đi rừng.",
+          "productionCapacity": {
+            "mountSlots": 4,
+            "mountSpeedBonusPct": 35,
+            "saddlebagSlots": 12
+          },
+          "assetVariantKey": "bld_stable_lv2"
+        },
+        {
+          "level": 3,
+          "unlockPlayerLevel": 48,
+          "goldCost": 6000,
+          "materials": [
+            { "itemId": "mat_ancient_heartwood", "qty": 35 },
+            { "itemId": "mat_mythril_ingot", "qty": 12 },
+            { "itemId": "mat_moon_silk", "qty": 12 },
+            { "itemId": "mat_rime_essence", "qty": 3 }
+          ],
+          "constructionSeconds": 360,
+          "benefitsVi": "Chuồng Hoàng Gia chứa tối đa 6 Thú Cưỡi kể cả Thú Cưỡi Huyền Bí (+45% tốc độ di chuyển), giảm 30% Stamina khi phi nước đại và +20 ô túi yên.",
+          "productionCapacity": {
+            "mountSlots": 6,
+            "mountSpeedBonusPct": 45,
+            "saddlebagSlots": 20
+          },
+          "assetVariantKey": "bld_stable_lv3"
+        }
+      ],
+      "descriptionVi": "Chuồng thú cưỡi cải thiện tốc độ di chuyển đường dài và sức chở nguyên liệu khi người chơi mở rộng phiêu lưu qua 8 vùng đất của Eldoria."
+    },
+    {
+      "id": "bld_guild_hall",
+      "name": "Guild Hall",
+      "category": "SOCIAL",
+      "mvp": false,
+      "isStarterPrebuilt": false,
+      "maxLevel": 3,
+      "footprintTiles": {
+        "width": 7,
+        "height": 6
+      },
+      "allowedZones": ["zon_guild_sanctuary"],
+      "rotatable": false,
+      "permissions": "GUILD_ACCESS",
+      "interactionPoints": [
+        {
+          "x": 3,
+          "y": 6,
+          "action": "ENTER_GUILD_HALL",
+          "labelVi": "Vào sảnh hội quán"
+        },
+        {
+          "x": 1,
+          "y": 6,
+          "action": "OPEN_GUILD_BOARD",
+          "labelVi": "Bảng nhiệm vụ bang hội"
+        },
+        {
+          "x": 5,
+          "y": 6,
+          "action": "OPEN_GUILD_VAULT",
+          "labelVi": "Kho chung bang hội"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "unlockPlayerLevel": 25,
+          "goldCost": 5000,
+          "materials": [
+            { "itemId": "mat_pine_wood", "qty": 100 },
+            { "itemId": "mat_granite_block", "qty": 80 },
+            { "itemId": "mat_steel_ingot", "qty": 30 },
+            { "itemId": "mat_thornback_heart", "qty": 5 }
+          ],
+          "constructionSeconds": 600,
+          "benefitsVi": "Trụ sở bang hội chứa tối đa 20 thành viên, mở khóa bảng nhiệm vụ tuần bang hội và kho chung 60 ô có phân quyền rút gửi minh bạch.",
+          "productionCapacity": {
+            "maxGuildMembers": 20,
+            "guildVaultSlots": 60,
+            "guildPartyBonusPct": 0,
+            "raidStagingPortal": false
+          },
+          "assetVariantKey": "bld_guild_hall_lv1"
+        },
+        {
+          "level": 2,
+          "unlockPlayerLevel": 45,
+          "goldCost": 12000,
+          "materials": [
+            { "itemId": "mat_ancient_heartwood", "qty": 80 },
+            { "itemId": "mat_granite_block", "qty": 120 },
+            { "itemId": "mat_mythril_ingot", "qty": 25 },
+            { "itemId": "mat_cinder_core", "qty": 5 },
+            { "itemId": "mat_prism_scale", "qty": 5 }
+          ],
+          "constructionSeconds": 1200,
+          "benefitsVi": "Mở rộng 35 thành viên và kho bang hội 120 ô, kích hoạt Cổng Tập Kết Đột Kích (Raid Staging Portal) và buff +5% Gold/EXP khi lập party cùng bang.",
+          "productionCapacity": {
+            "maxGuildMembers": 35,
+            "guildVaultSlots": 120,
+            "guildPartyBonusPct": 5,
+            "raidStagingPortal": true
+          },
+          "assetVariantKey": "bld_guild_hall_lv2"
+        },
+        {
+          "level": 3,
+          "unlockPlayerLevel": 70,
+          "goldCost": 25000,
+          "materials": [
+            { "itemId": "mat_ancient_heartwood", "qty": 140 },
+            { "itemId": "mat_obsidian_shard", "qty": 60 },
+            { "itemId": "mat_void_crystal", "qty": 25 },
+            { "itemId": "mat_rime_essence", "qty": 6 },
+            { "itemId": "mat_eclipse_shard", "qty": 4 }
+          ],
+          "constructionSeconds": 1800,
+          "benefitsVi": "Pháo Đài Bang Hội chứa tối đa 50 thành viên, kho chung 200 ô, buff +8% sát thương PvE lên Boss tuần và giảm 15% chi phí sửa trang bị cho thành viên.",
+          "productionCapacity": {
+            "maxGuildMembers": 50,
+            "guildVaultSlots": 200,
+            "guildPartyBonusPct": 8,
+            "raidStagingPortal": true
+          },
+          "assetVariantKey": "bld_guild_hall_lv3"
+        }
+      ],
+      "descriptionVi": "Đại sảnh cộng đồng dành cho tính năng Guild & Raid giai đoạn mở rộng, nơi các thành viên tập kết lập đội, chia sẻ kho tài nguyên và nhận nhiệm vụ tổ đội."
+    }
+  ]
+}

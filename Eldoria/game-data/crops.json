@@ -1,0 +1,983 @@
+{
+  "schemaVersion": "1.0.0",
+  "catalog": "crops",
+  "game": "Eldoria: Forgotten Wilds",
+  "lastUpdated": "2026-11-19",
+  "totalCount": 15,
+  "mvpCount": 5,
+  "descriptionVi": "Danh mục chuẩn 15 loại cây trồng (5 cây MVP và 10 cây hậu MVP) cho hệ thống nông trại của Eldoria: Forgotten Wilds. Thời gian sinh trưởng tính bằng phút thời gian thực theo quy ước 1 ngày trong game = 24 phút thời gian thực (ASM-007) và giới hạn mô phỏng offline tối đa 24 giờ theo đồng hồ server (ASM-008).",
+  "rules": {
+    "inGameDayRealMinutes": 24,
+    "daysPerSeason": 14,
+    "offlineCapHours": 24,
+    "qualityTiers": ["NORMAL", "SILVER", "GOLD"],
+    "qualitySellPriceMultiplier": {
+      "NORMAL": 1.0,
+      "SILVER": 1.35,
+      "GOLD": 1.85
+    },
+    "rainAutoWatersSoil": true,
+    "unwateredGrowthPenalty": "PAUSED_UNTIL_WATERED",
+    "witherOnSeasonChange": true,
+    "greenhouseMitigatesOffSeasonAtFarmPlotLv4": true,
+    "serverAuthoritativeValidation": "Server tính tiến trình sinh trưởng bằng chênh lệch server timestamp, không dùng đồng hồ client."
+  },
+  "crops": [
+    {
+      "id": "crp_sunwheat",
+      "name": "Sunwheat",
+      "mvp": true,
+      "unlockFarmingLevel": 1,
+      "recommendedRegionId": "reg_greenhaven_village",
+      "seedItemId": "sed_sunwheat",
+      "harvestItemId": "mat_sunwheat_grain",
+      "harvestNotesVi": "Thu hoạch trực tiếp hạt lúa mì mặt trời chuẩn (mat_sunwheat_grain) để xay bột nấu bánh và làm thức ăn ưa thích cho Meadow Chicken.",
+      "yieldMin": 2,
+      "yieldMax": 4,
+      "seasons": ["SPRING", "SUMMER", "AUTUMN"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt giống vừa gieo",
+          "durationMinutes": 3,
+          "spriteKey": "spr_crp_sunwheat_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Mầm xanh",
+          "durationMinutes": 4,
+          "spriteKey": "spr_crp_sunwheat_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "GROWING",
+          "labelVi": "Trổ bông non",
+          "durationMinutes": 5,
+          "spriteKey": "spr_crp_sunwheat_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "MATURE",
+          "labelVi": "Chín vàng sẵn sàng gặt",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_sunwheat_stage_3"
+        }
+      ],
+      "totalGrowthMinutes": 12,
+      "waterIntervalMinutes": 6,
+      "regrowMinutes": null,
+      "qualityRates": {
+        "NORMAL": 0.72,
+        "SILVER": 0.20,
+        "GOLD": 0.08
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.25,
+        "silverQualityBonus": 0.10,
+        "goldQualityBonus": 0.06,
+        "extraYieldChance": 0.20
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 12,
+      "descriptionVi": "Giống ngũ cốc khởi đầu sinh trưởng nhanh tại Greenhaven Village, cung cấp nguyên liệu cốt lõi cho bánh mì hồi Stamina và thức ăn gia cầm."
+    },
+    {
+      "id": "crp_berry_bush",
+      "name": "Wild Berry Bush",
+      "mvp": true,
+      "unlockFarmingLevel": 1,
+      "recommendedRegionId": "reg_greenhaven_village",
+      "seedItemId": "sed_berry_bush",
+      "harvestItemId": "mat_wild_berry",
+      "harvestNotesVi": "Thu hoạch trực tiếp quả mọng rừng (mat_wild_berry); bụi cây giữ gốc và tự ra quả trở lại sau mỗi chu kỳ tái sinh.",
+      "yieldMin": 3,
+      "yieldMax": 5,
+      "seasons": ["SPRING", "SUMMER"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt mầm bụi quả",
+          "durationMinutes": 4,
+          "spriteKey": "spr_crp_berry_bush_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Chồi thân gỗ nhỏ",
+          "durationMinutes": 6,
+          "spriteKey": "spr_crp_berry_bush_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "BUDDING",
+          "labelVi": "Bụi tán rậm",
+          "durationMinutes": 7,
+          "spriteKey": "spr_crp_berry_bush_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "FLOWERING",
+          "labelVi": "Nở hoa trắng",
+          "durationMinutes": 7,
+          "spriteKey": "spr_crp_berry_bush_stage_3"
+        },
+        {
+          "stage": 4,
+          "name": "MATURE",
+          "labelVi": "Sai trĩu quả mọng",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_berry_bush_stage_4"
+        }
+      ],
+      "totalGrowthMinutes": 24,
+      "waterIntervalMinutes": 8,
+      "regrowMinutes": 12,
+      "qualityRates": {
+        "NORMAL": 0.70,
+        "SILVER": 0.22,
+        "GOLD": 0.08
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.20,
+        "silverQualityBonus": 0.10,
+        "goldQualityBonus": 0.07,
+        "extraYieldChance": 0.25
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 18,
+      "descriptionVi": "Bụi quả mọng đa vụ phổ biến quanh bìa Whispering Forest, rất thích hợp cho người chơi mới cần nguồn hồi Hunger ổn định và nguyên liệu mứt trái cây."
+    },
+    {
+      "id": "crp_moon_herb",
+      "name": "Moon Herb",
+      "mvp": true,
+      "unlockFarmingLevel": 3,
+      "recommendedRegionId": "reg_whispering_forest",
+      "seedItemId": "sed_moon_herb",
+      "harvestItemId": "mat_moon_herb_leaf",
+      "harvestNotesVi": "Thu hoạch trực tiếp lá Nguyệt Thảo phát sáng nhẹ (mat_moon_herb_leaf), nguyên liệu chính cho súp thảo mộc hồi MP và dược phẩm giả kim.",
+      "yieldMin": 2,
+      "yieldMax": 3,
+      "seasons": ["SPRING", "AUTUMN", "WINTER"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt bào tử ánh trăng",
+          "durationMinutes": 8,
+          "spriteKey": "spr_crp_moon_herb_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Lá non viền bạc",
+          "durationMinutes": 12,
+          "spriteKey": "spr_crp_moon_herb_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "GROWING",
+          "labelVi": "Khóm lá phát quang",
+          "durationMinutes": 16,
+          "spriteKey": "spr_crp_moon_herb_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "MATURE",
+          "labelVi": "Nguyệt Thảo trưởng thành",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_moon_herb_stage_3"
+        }
+      ],
+      "totalGrowthMinutes": 36,
+      "waterIntervalMinutes": 12,
+      "regrowMinutes": null,
+      "qualityRates": {
+        "NORMAL": 0.68,
+        "SILVER": 0.22,
+        "GOLD": 0.10
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.25,
+        "silverQualityBonus": 0.12,
+        "goldQualityBonus": 0.08,
+        "extraYieldChance": 0.20
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 24,
+      "descriptionVi": "Loại thảo dược ưa ẩm và ánh trăng, giúp chế biến món ăn hồi phục MP nhanh cùng các bình thuốc phục vụ thám hiểm hầm ngục."
+    },
+    {
+      "id": "crp_golden_carrot",
+      "name": "Golden Carrot",
+      "mvp": true,
+      "unlockFarmingLevel": 5,
+      "recommendedRegionId": "reg_greenhaven_village",
+      "seedItemId": "sed_golden_carrot",
+      "harvestItemId": "mat_golden_carrot",
+      "harvestNotesVi": "Thu hoạch trực tiếp củ Cà Rốt Hoàng Kim (mat_golden_carrot) giàu năng lượng dùng nấu món hầm tăng HP tối đa và DEF.",
+      "yieldMin": 2,
+      "yieldMax": 4,
+      "seasons": ["SPRING", "AUTUMN"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt củ gieo luống",
+          "durationMinutes": 10,
+          "spriteKey": "spr_crp_golden_carrot_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Ngọn lá xanh non",
+          "durationMinutes": 16,
+          "spriteKey": "spr_crp_golden_carrot_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "GROWING",
+          "labelVi": "Phát triển củ ngầm",
+          "durationMinutes": 22,
+          "spriteKey": "spr_crp_golden_carrot_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "MATURE",
+          "labelVi": "Lộ đầu củ ánh kim",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_golden_carrot_stage_3"
+        }
+      ],
+      "totalGrowthMinutes": 48,
+      "waterIntervalMinutes": 12,
+      "regrowMinutes": null,
+      "qualityRates": {
+        "NORMAL": 0.65,
+        "SILVER": 0.25,
+        "GOLD": 0.10
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.25,
+        "silverQualityBonus": 0.12,
+        "goldQualityBonus": 0.08,
+        "extraYieldChance": 0.25
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 30,
+      "descriptionVi": "Giống củ dinh dưỡng cao mang sắc vàng ấm, là nguyên liệu quan trọng để chế biến món hầm tăng sức chống chịu trước khi vào dungeon Mossroot Hollow."
+    },
+    {
+      "id": "crp_ember_pepper",
+      "name": "Ember Pepper",
+      "mvp": true,
+      "unlockFarmingLevel": 8,
+      "recommendedRegionId": "reg_whispering_forest",
+      "seedItemId": "sed_ember_pepper",
+      "harvestItemId": "mat_ember_pepper",
+      "harvestNotesVi": "Thu hoạch trực tiếp trái Ớt Hồng Viêm (mat_ember_pepper), tạo gia vị tăng ATK và sát thương Fire cho đội hình săn boss.",
+      "yieldMin": 2,
+      "yieldMax": 3,
+      "seasons": ["SUMMER", "AUTUMN"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt ớt đỏ thẫm",
+          "durationMinutes": 10,
+          "spriteKey": "spr_crp_ember_pepper_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Cây con lá đậm",
+          "durationMinutes": 14,
+          "spriteKey": "spr_crp_ember_pepper_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "GROWING",
+          "labelVi": "Phân cành khỏe",
+          "durationMinutes": 18,
+          "spriteKey": "spr_crp_ember_pepper_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "FLOWERING",
+          "labelVi": "Đậu trái xanh viền cam",
+          "durationMinutes": 18,
+          "spriteKey": "spr_crp_ember_pepper_stage_3"
+        },
+        {
+          "stage": 4,
+          "name": "MATURE",
+          "labelVi": "Trái ớt rực lửa chín đỏ",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_ember_pepper_stage_4"
+        }
+      ],
+      "totalGrowthMinutes": 60,
+      "waterIntervalMinutes": 15,
+      "regrowMinutes": 24,
+      "qualityRates": {
+        "NORMAL": 0.64,
+        "SILVER": 0.25,
+        "GOLD": 0.11
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.20,
+        "silverQualityBonus": 0.12,
+        "goldQualityBonus": 0.09,
+        "extraYieldChance": 0.20
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 38,
+      "descriptionVi": "Loại ớt mang nhiệt nguyên tố giúp nấu các món cay tăng chỉ số tấn công, có khả năng tái thu hoạch nhiều lần trong mùa Hè và Thu."
+    },
+    {
+      "id": "crp_frost_turnip",
+      "name": "Frost Turnip",
+      "mvp": false,
+      "unlockFarmingLevel": 10,
+      "recommendedRegionId": "reg_frostbound_highlands",
+      "seedItemId": "sed_frost_turnip",
+      "harvestItemId": "mat_frost_turnip",
+      "harvestNotesVi": "Thu hoạch trực tiếp củ Cải Sương Giá (mat_frost_turnip) dùng chế biến món kháng Frost và hồi phục tốc độ di chuyển trong mùa đông.",
+      "yieldMin": 2,
+      "yieldMax": 4,
+      "seasons": ["AUTUMN", "WINTER"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt chịu lạnh",
+          "durationMinutes": 10,
+          "spriteKey": "spr_crp_frost_turnip_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Mầm phủ sương trắng",
+          "durationMinutes": 16,
+          "spriteKey": "spr_crp_frost_turnip_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "GROWING",
+          "labelVi": "Củ lớn ánh lam nhạt",
+          "durationMinutes": 22,
+          "spriteKey": "spr_crp_frost_turnip_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "MATURE",
+          "labelVi": "Củ cải băng kết tinh",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_frost_turnip_stage_3"
+        }
+      ],
+      "totalGrowthMinutes": 48,
+      "waterIntervalMinutes": 16,
+      "regrowMinutes": null,
+      "qualityRates": {
+        "NORMAL": 0.65,
+        "SILVER": 0.24,
+        "GOLD": 0.11
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.25,
+        "silverQualityBonus": 0.12,
+        "goldQualityBonus": 0.08,
+        "extraYieldChance": 0.25
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 36,
+      "descriptionVi": "Giống củ hiếm sống khỏe giữa trời tuyết mùa Đông, duy trì dòng thu nhập nông trại xuyên suốt bốn mùa và cung cấp nguyên liệu kháng băng."
+    },
+    {
+      "id": "crp_clover_hay",
+      "name": "Clover Hay",
+      "mvp": false,
+      "unlockFarmingLevel": 6,
+      "recommendedRegionId": "reg_greenhaven_village",
+      "seedItemId": "sed_clover_hay",
+      "harvestItemId": "mat_fiber_hemp",
+      "harvestNotesVi": "Cỏ Ba Lá Khô sau khi cắt và phơi tạo ra bó sợi thực vật khô chuẩn hóa (mat_fiber_hemp), dùng trực tiếp làm thức ăn cho Bò/Cừu và nguyên liệu thủ công.",
+      "yieldMin": 3,
+      "yieldMax": 6,
+      "seasons": ["SPRING", "SUMMER", "AUTUMN"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt cỏ gieo dày",
+          "durationMinutes": 4,
+          "spriteKey": "spr_crp_clover_hay_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Thảm cỏ non",
+          "durationMinutes": 6,
+          "spriteKey": "spr_crp_clover_hay_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "GROWING",
+          "labelVi": "Bụi cỏ ba lá cao",
+          "durationMinutes": 8,
+          "spriteKey": "spr_crp_clover_hay_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "MATURE",
+          "labelVi": "Cỏ dày sẵn sàng cắt",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_clover_hay_stage_3"
+        }
+      ],
+      "totalGrowthMinutes": 18,
+      "waterIntervalMinutes": 9,
+      "regrowMinutes": 12,
+      "qualityRates": {
+        "NORMAL": 0.75,
+        "SILVER": 0.18,
+        "GOLD": 0.07
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.30,
+        "silverQualityBonus": 0.08,
+        "goldQualityBonus": 0.05,
+        "extraYieldChance": 0.30
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 16,
+      "descriptionVi": "Giống cỏ nuôi gia súc thu hoạch nhiều lần với sản lượng sợi thực vật dồi dào, giúp trang trại tự chủ hoàn toàn nguồn thức ăn cho chuồng Barn."
+    },
+    {
+      "id": "crp_silver_pumpkin",
+      "name": "Silver Pumpkin",
+      "mvp": false,
+      "unlockFarmingLevel": 14,
+      "recommendedRegionId": "reg_ironpeak_mountains",
+      "seedItemId": "sed_silver_pumpkin",
+      "harvestItemId": "mat_golden_carrot",
+      "harvestNotesVi": "Bí Ngô Ánh Bạc được sơ chế thành khối củ quả dinh dưỡng cao cấp quy đổi chuẩn về nhóm nguyên liệu củ hoàng kim (mat_golden_carrot) với năng suất vượt trội cho tiệc tổ đội.",
+      "yieldMin": 3,
+      "yieldMax": 5,
+      "seasons": ["AUTUMN"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt bí vỏ bạc",
+          "durationMinutes": 16,
+          "spriteKey": "spr_crp_silver_pumpkin_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Dây leo phủ đất",
+          "durationMinutes": 24,
+          "spriteKey": "spr_crp_silver_pumpkin_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "GROWING",
+          "labelVi": "Hoa bí lớn rực sáng",
+          "durationMinutes": 28,
+          "spriteKey": "spr_crp_silver_pumpkin_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "RIPENING",
+          "labelVi": "Quả bí tròn ánh kim",
+          "durationMinutes": 28,
+          "spriteKey": "spr_crp_silver_pumpkin_stage_3"
+        },
+        {
+          "stage": 4,
+          "name": "MATURE",
+          "labelVi": "Bí Ngô Ánh Bạc khổng lồ",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_silver_pumpkin_stage_4"
+        }
+      ],
+      "totalGrowthMinutes": 96,
+      "waterIntervalMinutes": 16,
+      "regrowMinutes": null,
+      "qualityRates": {
+        "NORMAL": 0.60,
+        "SILVER": 0.27,
+        "GOLD": 0.13
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.25,
+        "silverQualityBonus": 0.12,
+        "goldQualityBonus": 0.10,
+        "extraYieldChance": 0.25
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 55,
+      "descriptionVi": "Nông sản đặc sản mùa Thu cho giá trị bán và sản lượng dinh dưỡng cao, là nguồn nguyên liệu chủ lực để nấu các món tiệc tăng sinh lực toàn party."
+    },
+    {
+      "id": "crp_storm_radish",
+      "name": "Storm Radish",
+      "mvp": false,
+      "unlockFarmingLevel": 12,
+      "recommendedRegionId": "reg_ironpeak_mountains",
+      "seedItemId": "sed_storm_radish",
+      "harvestItemId": "mat_ember_pepper",
+      "harvestNotesVi": "Củ Cải Bão Tố tích điện nhẹ và có vị cay nồng kích thích phản xạ, được chuẩn hóa vào nhóm gia vị nguyên tố (mat_ember_pepper) cho món ăn tăng tốc đánh và chí mạng.",
+      "yieldMin": 2,
+      "yieldMax": 4,
+      "seasons": ["SPRING", "SUMMER"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt tích điện",
+          "durationMinutes": 12,
+          "spriteKey": "spr_crp_storm_radish_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Lá răng cưa xanh tím",
+          "durationMinutes": 18,
+          "spriteKey": "spr_crp_storm_radish_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "GROWING",
+          "labelVi": "Củ phát tia tĩnh điện",
+          "durationMinutes": 24,
+          "spriteKey": "spr_crp_storm_radish_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "MATURE",
+          "labelVi": "Củ Cải Bão Tố chín rộ",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_storm_radish_stage_3"
+        }
+      ],
+      "totalGrowthMinutes": 54,
+      "waterIntervalMinutes": 14,
+      "regrowMinutes": null,
+      "qualityRates": {
+        "NORMAL": 0.62,
+        "SILVER": 0.26,
+        "GOLD": 0.12
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.25,
+        "silverQualityBonus": 0.12,
+        "goldQualityBonus": 0.09,
+        "extraYieldChance": 0.20
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 42,
+      "descriptionVi": "Loại củ sinh trưởng mạnh hơn trong ngày mưa bão (weather STORM), mang lại nguồn gia vị kích thích tốc độ cho các món ăn chiến đấu mùa Xuân và Hè."
+    },
+    {
+      "id": "crp_crimson_tomato",
+      "name": "Crimson Tomato",
+      "mvp": false,
+      "unlockFarmingLevel": 10,
+      "recommendedRegionId": "reg_whispering_forest",
+      "seedItemId": "sed_crimson_tomato",
+      "harvestItemId": "mat_wild_berry",
+      "harvestNotesVi": "Cà Chua Huyết Ngọc cho trái mọng đậm vị, quy đổi chuẩn về nhóm quả mọng ẩm thực (mat_wild_berry) với sản lượng tái thu hoạch cao suốt mùa Hè và Thu.",
+      "yieldMin": 3,
+      "yieldMax": 5,
+      "seasons": ["SUMMER", "AUTUMN"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt giống cà chua",
+          "durationMinutes": 8,
+          "spriteKey": "spr_crp_crimson_tomato_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Thân non leo cọc",
+          "durationMinutes": 10,
+          "spriteKey": "spr_crp_crimson_tomato_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "GROWING",
+          "labelVi": "Tán lá sum suê",
+          "durationMinutes": 11,
+          "spriteKey": "spr_crp_crimson_tomato_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "FLOWERING",
+          "labelVi": "Kết chùm quả xanh",
+          "durationMinutes": 11,
+          "spriteKey": "spr_crp_crimson_tomato_stage_3"
+        },
+        {
+          "stage": 4,
+          "name": "MATURE",
+          "labelVi": "Chùm trái đỏ rực",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_crimson_tomato_stage_4"
+        }
+      ],
+      "totalGrowthMinutes": 40,
+      "waterIntervalMinutes": 10,
+      "regrowMinutes": 16,
+      "qualityRates": {
+        "NORMAL": 0.66,
+        "SILVER": 0.24,
+        "GOLD": 0.10
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.20,
+        "silverQualityBonus": 0.11,
+        "goldQualityBonus": 0.08,
+        "extraYieldChance": 0.25
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 32,
+      "descriptionVi": "Giống cà chua giàn leo sai quả, thay thế hoàn hảo bụi quả mọng vào mùa Thu nhờ chu kỳ tái thu hoạch ngắn và tỷ lệ phẩm chất Silver ổn định."
+    },
+    {
+      "id": "crp_honey_melon",
+      "name": "Honey Melon",
+      "mvp": false,
+      "unlockFarmingLevel": 16,
+      "recommendedRegionId": "reg_crystal_caverns",
+      "seedItemId": "sed_honey_melon",
+      "harvestItemId": "mat_starlight_melon",
+      "harvestNotesVi": "Dưa Mật Nắng cho phần thịt quả ngọt thanh giàu tinh chất phục hồi, chuẩn hóa vào nhóm trái cây cao cấp (mat_starlight_melon) cho thực đơn hồi MP và giảm hồi chiêu.",
+      "yieldMin": 1,
+      "yieldMax": 3,
+      "seasons": ["SUMMER"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt dưa màu mật",
+          "durationMinutes": 12,
+          "spriteKey": "spr_crp_honey_melon_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Dây dưa non",
+          "durationMinutes": 18,
+          "spriteKey": "spr_crp_honey_melon_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "GROWING",
+          "labelVi": "Hoa vàng nở rộ",
+          "durationMinutes": 20,
+          "spriteKey": "spr_crp_honey_melon_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "RIPENING",
+          "labelVi": "Trái dưa căng mật",
+          "durationMinutes": 22,
+          "spriteKey": "spr_crp_honey_melon_stage_3"
+        },
+        {
+          "stage": 4,
+          "name": "MATURE",
+          "labelVi": "Dưa Mật Nắng chín thơm",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_honey_melon_stage_4"
+        }
+      ],
+      "totalGrowthMinutes": 72,
+      "waterIntervalMinutes": 12,
+      "regrowMinutes": null,
+      "qualityRates": {
+        "NORMAL": 0.60,
+        "SILVER": 0.27,
+        "GOLD": 0.13
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.25,
+        "silverQualityBonus": 0.12,
+        "goldQualityBonus": 0.10,
+        "extraYieldChance": 0.20
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 52,
+      "descriptionVi": "Trái cây đặc sản mùa Hè có giá trị thương mại cao và là nguồn nguyên liệu thay thế hiệu quả trước khi người chơi mở khóa giống Starlight Melon."
+    },
+    {
+      "id": "crp_shadow_garlic",
+      "name": "Shadow Garlic",
+      "mvp": false,
+      "unlockFarmingLevel": 18,
+      "recommendedRegionId": "reg_forgotten_ruins",
+      "seedItemId": "sed_shadow_garlic",
+      "harvestItemId": "mat_moon_herb_leaf",
+      "harvestNotesVi": "Tỏi Bóng Đêm sau thu hoạch được chiết tinh chất thảo dược âm tính chuẩn hóa về nhóm thảo mộc (mat_moon_herb_leaf) dùng pha thuốc giải nguyền và kháng Shadow.",
+      "yieldMin": 2,
+      "yieldMax": 4,
+      "seasons": ["AUTUMN", "WINTER"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Tép tỏi tím sẫm",
+          "durationMinutes": 12,
+          "spriteKey": "spr_crp_shadow_garlic_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Chồi xanh viền tím",
+          "durationMinutes": 20,
+          "spriteKey": "spr_crp_shadow_garlic_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "GROWING",
+          "labelVi": "Thân lá dậy hương",
+          "durationMinutes": 28,
+          "spriteKey": "spr_crp_shadow_garlic_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "MATURE",
+          "labelVi": "Củ Tỏi Bóng Đêm già",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_shadow_garlic_stage_3"
+        }
+      ],
+      "totalGrowthMinutes": 60,
+      "waterIntervalMinutes": 15,
+      "regrowMinutes": null,
+      "qualityRates": {
+        "NORMAL": 0.60,
+        "SILVER": 0.28,
+        "GOLD": 0.12
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.25,
+        "silverQualityBonus": 0.13,
+        "goldQualityBonus": 0.09,
+        "extraYieldChance": 0.25
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 48,
+      "descriptionVi": "Giống cây củ chịu rét tìm thấy quanh tàn tích Forgotten Ruins, được giới giả kim ưa chuộng nhờ sản lượng thảo dược cao vào hai mùa lạnh."
+    },
+    {
+      "id": "crp_crystal_lotus",
+      "name": "Crystal Lotus",
+      "mvp": false,
+      "unlockFarmingLevel": 20,
+      "recommendedRegionId": "reg_crystal_caverns",
+      "seedItemId": "sed_crystal_lotus",
+      "harvestItemId": "mat_arcane_crystal",
+      "harvestNotesVi": "Liên Hoa Pha Lê kết tinh ma lực từ nguồn nước tưới thành tinh thể ma pháp thực thụ (mat_arcane_crystal), giúp nông dân bậc cao đóng góp trực tiếp vào chế tạo vũ khí phép và công trình.",
+      "yieldMin": 1,
+      "yieldMax": 2,
+      "seasons": ["SPRING", "WINTER"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt sen trong suốt",
+          "durationMinutes": 20,
+          "spriteKey": "spr_crp_crystal_lotus_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Đài lá pha lê non",
+          "durationMinutes": 30,
+          "spriteKey": "spr_crp_crystal_lotus_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "BUDDING",
+          "labelVi": "Nụ hoa tụ linh khí",
+          "durationMinutes": 35,
+          "spriteKey": "spr_crp_crystal_lotus_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "BLOOMING",
+          "labelVi": "Cánh hoa phản chiếu ánh lam",
+          "durationMinutes": 35,
+          "spriteKey": "spr_crp_crystal_lotus_stage_3"
+        },
+        {
+          "stage": 4,
+          "name": "MATURE",
+          "labelVi": "Liên Hoa kết tinh hoàn chỉnh",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_crystal_lotus_stage_4"
+        }
+      ],
+      "totalGrowthMinutes": 120,
+      "waterIntervalMinutes": 12,
+      "regrowMinutes": 48,
+      "qualityRates": {
+        "NORMAL": 0.58,
+        "SILVER": 0.28,
+        "GOLD": 0.14
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.20,
+        "silverQualityBonus": 0.12,
+        "goldQualityBonus": 0.10,
+        "extraYieldChance": 0.15
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 80,
+      "descriptionVi": "Loài hoa bán tinh thể quý hiếm đòi hỏi chế độ tưới tiêu đều đặn, cho phép chuyển hóa công sức làm vườn thành tinh thể ma pháp phục vụ giả kim và nâng cấp căn cứ."
+    },
+    {
+      "id": "crp_ash_chili",
+      "name": "Ash Chili",
+      "mvp": false,
+      "unlockFarmingLevel": 22,
+      "recommendedRegionId": "reg_ember_wasteland",
+      "seedItemId": "sed_ash_chili",
+      "harvestItemId": "mat_ember_pepper",
+      "harvestNotesVi": "Ớt Tro Núi Lửa là biến thể nhiệt độ cao cho năng suất gia vị lửa lớn (mat_ember_pepper) cùng tỷ lệ phẩm chất Gold cao cho các món tiệc raid cuối game.",
+      "yieldMin": 3,
+      "yieldMax": 5,
+      "seasons": ["SUMMER"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt ớt đen ánh than",
+          "durationMinutes": 14,
+          "spriteKey": "spr_crp_ash_chili_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Thân cây phủ tro xám",
+          "durationMinutes": 20,
+          "spriteKey": "spr_crp_ash_chili_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "GROWING",
+          "labelVi": "Bụi ớt chịu nhiệt",
+          "durationMinutes": 25,
+          "spriteKey": "spr_crp_ash_chili_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "FLOWERING",
+          "labelVi": "Nở hoa đỏ rực",
+          "durationMinutes": 25,
+          "spriteKey": "spr_crp_ash_chili_stage_3"
+        },
+        {
+          "stage": 4,
+          "name": "MATURE",
+          "labelVi": "Ớt Tro chín bỏng tay",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_ash_chili_stage_4"
+        }
+      ],
+      "totalGrowthMinutes": 84,
+      "waterIntervalMinutes": 14,
+      "regrowMinutes": 30,
+      "qualityRates": {
+        "NORMAL": 0.56,
+        "SILVER": 0.29,
+        "GOLD": 0.15
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.20,
+        "silverQualityBonus": 0.12,
+        "goldQualityBonus": 0.11,
+        "extraYieldChance": 0.25
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 68,
+      "descriptionVi": "Giống ớt núi lửa có nguồn gốc từ Ember Wasteland, sinh trưởng tối ưu trong thời tiết nắng nóng và cung cấp sản lượng gia vị tấn công vượt trội."
+    },
+    {
+      "id": "crp_starlight_melon",
+      "name": "Starlight Melon",
+      "mvp": false,
+      "unlockFarmingLevel": 25,
+      "recommendedRegionId": "reg_abyssal_kingdom",
+      "seedItemId": "sed_starlight_melon",
+      "harvestItemId": "mat_starlight_melon",
+      "harvestNotesVi": "Thu hoạch trực tiếp Dưa Ánh Sao nguyên bản (mat_starlight_melon), nguyên liệu ẩm thực thượng hạng giúp tạo món tiệc cộng toàn diện ATK, DEF và giảm hồi chiêu.",
+      "yieldMin": 1,
+      "yieldMax": 2,
+      "seasons": ["SPRING", "SUMMER", "AUTUMN", "WINTER"],
+      "growthStages": [
+        {
+          "stage": 0,
+          "name": "SEED",
+          "labelVi": "Hạt tinh tú phát sáng",
+          "durationMinutes": 24,
+          "spriteKey": "spr_crp_starlight_melon_stage_0"
+        },
+        {
+          "stage": 1,
+          "name": "SPROUT",
+          "labelVi": "Dây leo ánh ngân hà",
+          "durationMinutes": 36,
+          "spriteKey": "spr_crp_starlight_melon_stage_1"
+        },
+        {
+          "stage": 2,
+          "name": "GROWING",
+          "labelVi": "Hoa tinh tú năm cánh",
+          "durationMinutes": 42,
+          "spriteKey": "spr_crp_starlight_melon_stage_2"
+        },
+        {
+          "stage": 3,
+          "name": "RIPENING",
+          "labelVi": "Trái dưa tụ tinh quang",
+          "durationMinutes": 42,
+          "spriteKey": "spr_crp_starlight_melon_stage_3"
+        },
+        {
+          "stage": 4,
+          "name": "MATURE",
+          "labelVi": "Dưa Ánh Sao hoàn mỹ",
+          "durationMinutes": 0,
+          "spriteKey": "spr_crp_starlight_melon_stage_4"
+        }
+      ],
+      "totalGrowthMinutes": 144,
+      "waterIntervalMinutes": 18,
+      "regrowMinutes": null,
+      "qualityRates": {
+        "NORMAL": 0.55,
+        "SILVER": 0.30,
+        "GOLD": 0.15
+      },
+      "fertilizerBonus": {
+        "growthSpeedMultiplier": 1.25,
+        "silverQualityBonus": 0.12,
+        "goldQualityBonus": 0.12,
+        "extraYieldChance": 0.20
+      },
+      "irrigationCompatible": true,
+      "farmingExp": 100,
+      "descriptionVi": "Giống cây huyền thoại thích nghi bốn mùa, kết tinh ánh sao đêm thành loại trái cây quý nhất Eldoria phục vụ ẩm thực raid endgame và giao thương cao cấp."
+    }
+  ]
+}

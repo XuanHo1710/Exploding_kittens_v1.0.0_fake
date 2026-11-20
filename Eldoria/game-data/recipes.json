@@ -1,0 +1,1002 @@
+{
+  "schemaVersion": "1.0.0",
+  "catalog": "recipes",
+  "game": "Eldoria: Forgotten Wilds",
+  "lastUpdated": "2026-11-19",
+  "totalCount": 36,
+  "mvpCount": 22,
+  "descriptionVi": "Danh mục chuẩn 36 công thức chế tạo, luyện kim, tinh chế, nấu ăn và giả kim (22 công thức MVP và 14 công thức hậu MVP) của Eldoria: Forgotten Wilds. Mọi giao dịch chế tạo được thực thi nguyên tử trên NestJS server kèm idempotencyKey và ghi sổ CurrencyLedger JSON cục bộ (Constitution Principle I & II).",
+  "rules": {
+    "serverAuthoritativeExecution": true,
+    "atomicWalRequired": true,
+    "autoPullFromStorageAtLevel": 2,
+    "autoPullStorageBuildingId": "bld_storage",
+    "publicStationFeeMultiplier": 1.0,
+    "homesteadFurnaceSpeedBonusPct": 20,
+    "maxBatchCountPerRequest": 50,
+    "categories": [
+      "SMELTING",
+      "REFINING",
+      "COOKING",
+      "ALCHEMY",
+      "WEAPON_FORGING",
+      "ARMOR_CRAFTING",
+      "ACCESSORY_CRAFTING",
+      "UTILITY"
+    ],
+    "notesVi": "Trong MVP, người chơi có thể nung Đồng, Sắt, Thép và tinh chế Đá Granite tại bld_blacksmith (hoặc lò công cộng của npc_smith_garrik với bậc cơ bản) trước khi mở khóa bld_furnace, bld_workshop và bld_alchemy_lab ở các cột mốc hậu MVP để tăng tốc và nhận tỷ lệ thưởng sản lượng."
+  },
+  "recipes": [
+    {
+      "id": "rcp_smelt_copper_ingot",
+      "name": "Smelt Copper Ingot",
+      "category": "SMELTING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 1,
+      "altStationBuildingIds": ["bld_furnace"],
+      "publicStationNpcId": "npc_smith_garrik",
+      "mvp": true,
+      "craftTimeSeconds": 5,
+      "goldCost": 15,
+      "ingredients": [
+        { "itemId": "mat_copper_ore", "qty": 3 },
+        { "itemId": "mat_coal", "qty": 1 }
+      ],
+      "outputItemId": "mat_copper_ingot",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "DEFAULT",
+        "value": null,
+        "descriptionVi": "Mở sẵn ngay từ đầu để người chơi luyện thỏi đồng đầu tiên phục vụ cường hóa +1 và +2."
+      },
+      "expReward": 15,
+      "craftingTokenReward": 0,
+      "descriptionVi": "Nung chảy quặng đồng thô cùng than đá thành thỏi đồng tinh luyện dùng cho xây dựng, công cụ và cường hóa vũ khí +1..+2."
+    },
+    {
+      "id": "rcp_smelt_iron_ingot",
+      "name": "Smelt Iron Ingot",
+      "category": "SMELTING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 1,
+      "altStationBuildingIds": ["bld_furnace"],
+      "publicStationNpcId": "npc_smith_garrik",
+      "mvp": true,
+      "craftTimeSeconds": 8,
+      "goldCost": 35,
+      "ingredients": [
+        { "itemId": "mat_iron_ore", "qty": 3 },
+        { "itemId": "mat_coal", "qty": 2 }
+      ],
+      "outputItemId": "mat_iron_ingot",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 3,
+        "descriptionVi": "Mở khóa khi nhân vật đạt cấp 3 hoặc hoàn thành luyện đồng cơ bản."
+      },
+      "expReward": 28,
+      "craftingTokenReward": 0,
+      "descriptionVi": "Luyện quặng sắt thành thỏi sắt chắc chắn — vật liệu xương sống cho vũ khí Whispering Forest và cường hóa +3..+5."
+    },
+    {
+      "id": "rcp_smelt_steel_ingot",
+      "name": "Smelt Steel Ingot",
+      "category": "SMELTING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 2,
+      "altStationBuildingIds": ["bld_furnace"],
+      "publicStationNpcId": null,
+      "mvp": true,
+      "craftTimeSeconds": 12,
+      "goldCost": 80,
+      "ingredients": [
+        { "itemId": "mat_iron_ingot", "qty": 2 },
+        { "itemId": "mat_coal", "qty": 3 },
+        { "itemId": "mat_rough_stone", "qty": 2 }
+      ],
+      "outputItemId": "mat_steel_ingot",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 10,
+        "descriptionVi": "Mở khóa ở cấp 10 khi xây dựng bld_blacksmith Lv 2 (hoặc bld_furnace Lv 2 ở hậu MVP)."
+      },
+      "expReward": 55,
+      "craftingTokenReward": 1,
+      "descriptionVi": "Tôi luyện sắt tinh khiết với than nhiệt cao và đá trợ dung thành thỏi thép chịu lực, thiết yếu cho cường hóa +6..+10 và Lò Rèn cấp 4."
+    },
+    {
+      "id": "rcp_refine_granite_block",
+      "name": "Refine Granite Block",
+      "category": "REFINING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 2,
+      "altStationBuildingIds": ["bld_workshop"],
+      "publicStationNpcId": null,
+      "mvp": true,
+      "craftTimeSeconds": 10,
+      "goldCost": 40,
+      "ingredients": [
+        { "itemId": "mat_rough_stone", "qty": 6 },
+        { "itemId": "mat_clay", "qty": 2 }
+      ],
+      "outputItemId": "mat_granite_block",
+      "outputQty": 2,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 12,
+        "descriptionVi": "Mở khóa ở cấp 12 để chế tác khối đá xây dựng Lò Rèn Lv 3–4, Bếp Lv 3 và Trang Trại Lv 3 ngay trong MVP."
+      },
+      "expReward": 35,
+      "craftingTokenReward": 0,
+      "descriptionVi": "Đẽo gọt đá thô kết hợp vữa đất sét sông nung nén thành khối đá granite xây dựng bền vững cho công trình lãnh địa bậc cao."
+    },
+    {
+      "id": "rcp_smelt_mythril_ingot",
+      "name": "Smelt Mythril Ingot",
+      "category": "SMELTING",
+      "stationBuildingId": "bld_furnace",
+      "stationLevelReq": 3,
+      "altStationBuildingIds": ["bld_blacksmith"],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 20,
+      "goldCost": 280,
+      "ingredients": [
+        { "itemId": "mat_mythril_ore", "qty": 3 },
+        { "itemId": "mat_coal", "qty": 5 },
+        { "itemId": "mat_arcane_crystal", "qty": 1 }
+      ],
+      "outputItemId": "mat_mythril_ingot",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 42,
+        "descriptionVi": "Mở khóa từ cấp 42 với Lò Cao Nhiệt Cổ Ngữ cấp 3."
+      },
+      "expReward": 160,
+      "craftingTokenReward": 2,
+      "descriptionVi": "Nung chảy quặng Mythril bằng nhiệt ma pháp từ tinh thể Arcane tạo ra kim loại nhẹ nhưng cứng vượt trội cho trang bị vùng Lv 50+."
+    },
+    {
+      "id": "rcp_refine_starlight_dust",
+      "name": "Transmute Starlight Dust",
+      "category": "REFINING",
+      "stationBuildingId": "bld_alchemy_lab",
+      "stationLevelReq": 3,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 18,
+      "goldCost": 320,
+      "ingredients": [
+        { "itemId": "mat_arcane_crystal", "qty": 2 },
+        { "itemId": "mat_ancient_relic_frag", "qty": 2 }
+      ],
+      "outputItemId": "mat_starlight_dust",
+      "outputQty": 3,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 45,
+        "descriptionVi": "Mở khóa tại Phòng Giả Kim cấp 3 để chuyển hóa tinh thể vùng sâu thành Bụi Tinh Tú phục vụ cường hóa +7..+10."
+      },
+      "expReward": 180,
+      "craftingTokenReward": 2,
+      "descriptionVi": "Nghiền mịn tinh thể ma pháp và mảnh di vật cổ trong dung dịch giả kim để tinh chế Bụi Tinh Tú thuần khiết."
+    },
+    {
+      "id": "rcp_cook_herb_stew",
+      "name": "Cook Greenhaven Herb Stew",
+      "category": "COOKING",
+      "stationBuildingId": "bld_kitchen",
+      "stationLevelReq": 1,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": true,
+      "craftTimeSeconds": 6,
+      "goldCost": 20,
+      "ingredients": [
+        { "itemId": "mat_sunwheat_grain", "qty": 2 },
+        { "itemId": "mat_wild_berry", "qty": 2 },
+        { "itemId": "mat_moon_herb_leaf", "qty": 1 }
+      ],
+      "outputItemId": "csm_herb_stew",
+      "outputQty": 2,
+      "unlockCondition": {
+        "type": "DEFAULT",
+        "value": null,
+        "descriptionVi": "Mở sẵn ngay khi xây dựng bld_kitchen Lv 1 trong chuỗi Onboarding."
+      },
+      "expReward": 20,
+      "craftingTokenReward": 0,
+      "descriptionVi": "Món súp thảo mộc nóng hổi đặc sản Greenhaven giúp hồi độ no, hồi phục Stamina và tái tạo HP ổn định ngoài trận."
+    },
+    {
+      "id": "rcp_cook_berry_pie",
+      "name": "Bake Wild Berry Pie",
+      "category": "COOKING",
+      "stationBuildingId": "bld_kitchen",
+      "stationLevelReq": 1,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": true,
+      "craftTimeSeconds": 8,
+      "goldCost": 35,
+      "ingredients": [
+        { "itemId": "mat_wild_berry", "qty": 4 },
+        { "itemId": "mat_sunwheat_grain", "qty": 2 },
+        { "itemId": "mat_fresh_egg", "qty": 1 }
+      ],
+      "outputItemId": "csm_berry_pie",
+      "outputQty": 2,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 3,
+        "descriptionVi": "Mở khóa từ cấp 3 khi kết hợp nông sản và trứng gà tươi từ Chuồng Gà."
+      },
+      "expReward": 32,
+      "craftingTokenReward": 0,
+      "descriptionVi": "Bánh nướng nhân dâu rừng thơm lừng giúp tăng tốc độ hồi Stamina và tốc độ di chuyển khi khai thác hoặc chạy rừng."
+    },
+    {
+      "id": "rcp_cook_golden_roast",
+      "name": "Cook Golden Carrot Roast",
+      "category": "COOKING",
+      "stationBuildingId": "bld_kitchen",
+      "stationLevelReq": 2,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": true,
+      "craftTimeSeconds": 12,
+      "goldCost": 75,
+      "ingredients": [
+        { "itemId": "mat_golden_carrot", "qty": 3 },
+        { "itemId": "mat_fresh_milk", "qty": 2 },
+        { "itemId": "mat_boar_tusk", "qty": 1 }
+      ],
+      "outputItemId": "csm_golden_roast",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 8,
+        "descriptionVi": "Mở khóa tại bld_kitchen Lv 2; là món buff chiến đấu chủ lực trước khi vào hầm ngục."
+      },
+      "expReward": 60,
+      "craftingTokenReward": 1,
+      "descriptionVi": "Thịt nướng hầm cà rốt vàng béo ngậy cung cấp buff tấn công và phòng thủ toàn diện (+10% ATK, +8% DEF) cho trận đánh Elite và Boss."
+    },
+    {
+      "id": "rcp_cook_ember_curry",
+      "name": "Cook Ember Pepper Curry",
+      "category": "COOKING",
+      "stationBuildingId": "bld_kitchen",
+      "stationLevelReq": 2,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": true,
+      "craftTimeSeconds": 14,
+      "goldCost": 95,
+      "ingredients": [
+        { "itemId": "mat_ember_pepper", "qty": 2 },
+        { "itemId": "mat_golden_carrot", "qty": 2 },
+        { "itemId": "mat_fresh_milk", "qty": 2 },
+        { "itemId": "mat_fresh_egg", "qty": 2 }
+      ],
+      "outputItemId": "csm_ember_curry",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 12,
+        "descriptionVi": "Mở khóa tại bld_kitchen Lv 2 sau khi thu hoạch Ớt Than Hồng."
+      },
+      "expReward": 75,
+      "craftingTokenReward": 1,
+      "descriptionVi": "Cà ri cay nồng rực lửa tăng mạnh Tỷ lệ Chí mạng (+8%) và Sát thương Lửa (+10%), đặc trị boss_thornback_elder và boss_boreas_frostking."
+    },
+    {
+      "id": "rcp_brew_hp_potion_small",
+      "name": "Brew Small Healing Potion",
+      "category": "ALCHEMY",
+      "stationBuildingId": "bld_kitchen",
+      "stationLevelReq": 1,
+      "altStationBuildingIds": ["bld_alchemy_lab"],
+      "publicStationNpcId": "npc_village_herbalist",
+      "mvp": true,
+      "craftTimeSeconds": 6,
+      "goldCost": 25,
+      "ingredients": [
+        { "itemId": "mat_wild_berry", "qty": 3 },
+        { "itemId": "mat_slime_gel", "qty": 2 }
+      ],
+      "outputItemId": "csm_hp_potion_small",
+      "outputQty": 3,
+      "unlockCondition": {
+        "type": "DEFAULT",
+        "value": null,
+        "descriptionVi": "Mở sẵn ngay từ đầu tại Bếp hoặc quầy Dược sĩ Greenhaven."
+      },
+      "expReward": 18,
+      "craftingTokenReward": 0,
+      "descriptionVi": "Chiết xuất dịch quả dâu rừng cùng chất kết dính từ Slime Gel tạo bình thuốc hồi HP nhanh cho tân thủ."
+    },
+    {
+      "id": "rcp_brew_mp_potion_small",
+      "name": "Brew Small Mana Potion",
+      "category": "ALCHEMY",
+      "stationBuildingId": "bld_kitchen",
+      "stationLevelReq": 1,
+      "altStationBuildingIds": ["bld_alchemy_lab"],
+      "publicStationNpcId": "npc_village_herbalist",
+      "mvp": true,
+      "craftTimeSeconds": 6,
+      "goldCost": 30,
+      "ingredients": [
+        { "itemId": "mat_moon_herb_leaf", "qty": 2 },
+        { "itemId": "mat_spore_cap_dust", "qty": 2 }
+      ],
+      "outputItemId": "csm_mp_potion_small",
+      "outputQty": 3,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 3,
+        "descriptionVi": "Mở khóa từ cấp 3 để hỗ trợ hồi MP cho chuỗi kỹ năng Active."
+      },
+      "expReward": 22,
+      "craftingTokenReward": 0,
+      "descriptionVi": "Hãm lá Thảo Nguyệt cùng phấn nấm phát sáng giúp bổ sung nhanh lượng Mana tiêu hao trong giao tranh dài hơi."
+    },
+    {
+      "id": "rcp_brew_stamina_tonic",
+      "name": "Brew Swiftwing Stamina Tonic",
+      "category": "ALCHEMY",
+      "stationBuildingId": "bld_kitchen",
+      "stationLevelReq": 1,
+      "altStationBuildingIds": ["bld_alchemy_lab"],
+      "publicStationNpcId": "npc_village_herbalist",
+      "mvp": true,
+      "craftTimeSeconds": 8,
+      "goldCost": 40,
+      "ingredients": [
+        { "itemId": "mat_sunwheat_grain", "qty": 2 },
+        { "itemId": "mat_fresh_egg", "qty": 1 },
+        { "itemId": "mat_bat_wing", "qty": 1 }
+      ],
+      "outputItemId": "csm_stamina_tonic",
+      "outputQty": 2,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 6,
+        "descriptionVi": "Mở khóa từ cấp 6 hỗ trợ né đòn liên tục và khai khoáng đường dài."
+      },
+      "expReward": 30,
+      "craftingTokenReward": 0,
+      "descriptionVi": "Thức uống tăng lực giúp hồi tức thì Stamina và giảm hao thể lực khi dodge hoặc chạy nước rút."
+    },
+    {
+      "id": "rcp_brew_hp_potion_med",
+      "name": "Brew Medium Healing Potion",
+      "category": "ALCHEMY",
+      "stationBuildingId": "bld_kitchen",
+      "stationLevelReq": 2,
+      "altStationBuildingIds": ["bld_alchemy_lab"],
+      "publicStationNpcId": "npc_village_herbalist",
+      "mvp": true,
+      "craftTimeSeconds": 10,
+      "goldCost": 65,
+      "ingredients": [
+        { "itemId": "mat_moon_herb_leaf", "qty": 3 },
+        { "itemId": "mat_golden_carrot", "qty": 2 },
+        { "itemId": "mat_spore_cap_dust", "qty": 2 }
+      ],
+      "outputItemId": "csm_hp_potion_med",
+      "outputQty": 2,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 10,
+        "descriptionVi": "Mở khóa từ cấp 10 tại bld_kitchen Lv 2 hoặc bld_alchemy_lab Lv 1."
+      },
+      "expReward": 48,
+      "craftingTokenReward": 1,
+      "descriptionVi": "Bình dược liệu cô đặc hồi lượng lớn HP, thiết yếu cho các trận đột kích dng_mossroot_hollow và săn Elite."
+    },
+    {
+      "id": "rcp_brew_revive_feather",
+      "name": "Craft Dawnlight Revive Feather",
+      "category": "ALCHEMY",
+      "stationBuildingId": "bld_kitchen",
+      "stationLevelReq": 2,
+      "altStationBuildingIds": ["bld_alchemy_lab"],
+      "publicStationNpcId": "npc_village_herbalist",
+      "mvp": true,
+      "craftTimeSeconds": 15,
+      "goldCost": 150,
+      "ingredients": [
+        { "itemId": "mat_starlight_dust", "qty": 2 },
+        { "itemId": "mat_shaman_totem", "qty": 1 },
+        { "itemId": "mat_fresh_egg", "qty": 3 }
+      ],
+      "outputItemId": "csm_revive_feather",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 12,
+        "descriptionVi": "Mở khóa ở cấp 12 để tổ đội chuẩn bị vật phẩm hồi sinh đồng đội trong phòng Boss."
+      },
+      "expReward": 85,
+      "craftingTokenReward": 1,
+      "descriptionVi": "Lông vũ thấm bụi tinh tú cho phép hồi sinh đồng đội đã gục ngã trong Co-op Boss Raid với 50% HP."
+    },
+    {
+      "id": "rcp_craft_fertilizer_basic",
+      "name": "Mix Basic Organic Fertilizer",
+      "category": "UTILITY",
+      "stationBuildingId": "bld_farm_plot",
+      "stationLevelReq": 1,
+      "altStationBuildingIds": ["bld_alchemy_lab"],
+      "publicStationNpcId": null,
+      "mvp": true,
+      "craftTimeSeconds": 5,
+      "goldCost": 20,
+      "ingredients": [
+        { "itemId": "mat_fiber_hemp", "qty": 4 },
+        { "itemId": "mat_slime_gel", "qty": 2 },
+        { "itemId": "mat_clay", "qty": 2 }
+      ],
+      "outputItemId": "csm_fertilizer_basic",
+      "outputQty": 4,
+      "unlockCondition": {
+        "type": "DEFAULT",
+        "value": null,
+        "descriptionVi": "Mở sẵn khi xây dựng ô canh tác bld_farm_plot Lv 1."
+      },
+      "expReward": 16,
+      "craftingTokenReward": 0,
+      "descriptionVi": "Ủ sợi thực vật cùng bùn sông và dịch Slime giữ ẩm thành phân hữu cơ giúp rút ngắn thời gian chín và nâng chất lượng nông sản."
+    },
+    {
+      "id": "rcp_craft_repair_kit",
+      "name": "Assemble Field Repair Kit",
+      "category": "UTILITY",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 1,
+      "altStationBuildingIds": ["bld_workshop"],
+      "publicStationNpcId": "npc_smith_garrik",
+      "mvp": true,
+      "craftTimeSeconds": 6,
+      "goldCost": 35,
+      "ingredients": [
+        { "itemId": "mat_copper_ingot", "qty": 1 },
+        { "itemId": "mat_oak_wood", "qty": 3 },
+        { "itemId": "mat_fiber_hemp", "qty": 2 }
+      ],
+      "outputItemId": "csm_repair_kit",
+      "outputQty": 2,
+      "unlockCondition": {
+        "type": "DEFAULT",
+        "value": null,
+        "descriptionVi": "Mở sẵn tại Lò Rèn để sửa độ bền trang bị ngay tại thực địa."
+      },
+      "expReward": 24,
+      "craftingTokenReward": 0,
+      "descriptionVi": "Bộ dụng cụ mài và dây buộc chắc chắn giúp phục hồi 60% độ bền trang bị ngay giữa chuyến thám hiểm không cần quay về làng."
+    },
+    {
+      "id": "rcp_craft_fertilizer_rich",
+      "name": "Distill Rich Starlight Fertilizer",
+      "category": "ALCHEMY",
+      "stationBuildingId": "bld_alchemy_lab",
+      "stationLevelReq": 2,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 12,
+      "goldCost": 180,
+      "ingredients": [
+        { "itemId": "mat_starlight_dust", "qty": 2 },
+        { "itemId": "mat_truffle_mushroom", "qty": 2 },
+        { "itemId": "mat_spore_cap_dust", "qty": 4 }
+      ],
+      "outputItemId": "csm_fertilizer_rich",
+      "outputQty": 3,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 26,
+        "descriptionVi": "Mở khóa tại bld_alchemy_lab Lv 2 để tối ưu hóa nông sản hạng GOLD."
+      },
+      "expReward": 95,
+      "craftingTokenReward": 1,
+      "descriptionVi": "Phân bón tinh hoa kết hợp nấm Truffle và Bụi Tinh Tú giúp tăng mạnh xác suất thu hoạch nông sản phẩm chất GOLD."
+    },
+    {
+      "id": "rcp_forge_iron_longsword",
+      "name": "Forge Iron Longsword",
+      "category": "WEAPON_FORGING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 1,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": "npc_smith_garrik",
+      "mvp": true,
+      "craftTimeSeconds": 12,
+      "goldCost": 120,
+      "ingredients": [
+        { "itemId": "mat_iron_ingot", "qty": 4 },
+        { "itemId": "mat_oak_wood", "qty": 3 },
+        { "itemId": "mat_goblin_tooth", "qty": 2 }
+      ],
+      "outputItemId": "wpn_iron_longsword",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "DEFAULT",
+        "value": null,
+        "descriptionVi": "Mở sẵn tại bld_blacksmith Lv 1 cho người chơi tập rèn vũ khí sắt đầu tiên."
+      },
+      "expReward": 50,
+      "craftingTokenReward": 1,
+      "descriptionVi": "Rèn thanh trường kiếm sắt cân bằng, sắc bén và tương thích hoàn hảo với lối đánh cận chiến của Warrior."
+    },
+    {
+      "id": "rcp_forge_wolf_fang_dagger",
+      "name": "Forge Wolf Fang Dagger",
+      "category": "WEAPON_FORGING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 2,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": true,
+      "craftTimeSeconds": 18,
+      "goldCost": 320,
+      "ingredients": [
+        { "itemId": "mat_iron_ingot", "qty": 5 },
+        { "itemId": "mat_alpha_fang", "qty": 2 },
+        { "itemId": "mat_wolf_pelt", "qty": 4 }
+      ],
+      "outputItemId": "wpn_wolf_fang_dagger",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 8,
+        "descriptionVi": "Mở khóa ở cấp 8 tại bld_blacksmith Lv 2."
+      },
+      "expReward": 110,
+      "craftingTokenReward": 2,
+      "descriptionVi": "Chế tác cặp dao găm mài từ răng nanh Sói Đầu Đàn cho tốc độ đánh nhanh và tỷ lệ chí mạng cao."
+    },
+    {
+      "id": "rcp_forge_mossroot_pike",
+      "name": "Forge Mossroot Pike",
+      "category": "WEAPON_FORGING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 2,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": true,
+      "craftTimeSeconds": 20,
+      "goldCost": 380,
+      "ingredients": [
+        { "itemId": "mat_iron_ingot", "qty": 6 },
+        { "itemId": "mat_pine_wood", "qty": 6 },
+        { "itemId": "mat_crawler_chitin", "qty": 5 }
+      ],
+      "outputItemId": "wpn_mossroot_pike",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 10,
+        "descriptionVi": "Mở khóa ở cấp 10 sau khi thu thập giáp xác từ dng_mossroot_hollow."
+      },
+      "expReward": 125,
+      "craftingTokenReward": 2,
+      "descriptionVi": "Trường thương cán thông gia cố bằng vỏ giáp Root Crawler cho tầm đâm xa và khả năng phá thế kẻ địch tốt."
+    },
+    {
+      "id": "rcp_forge_elderwood_cleaver",
+      "name": "Forge Elderwood Cleaver",
+      "category": "WEAPON_FORGING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 3,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": true,
+      "craftTimeSeconds": 30,
+      "goldCost": 950,
+      "ingredients": [
+        { "itemId": "mat_steel_ingot", "qty": 8 },
+        { "itemId": "mat_thornback_heart", "qty": 2 },
+        { "itemId": "mat_pine_wood", "qty": 10 },
+        { "itemId": "mat_starlight_dust", "qty": 4 }
+      ],
+      "outputItemId": "wpn_elderwood_cleaver",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "BOSS_CLEAR",
+        "value": "boss_thornback_elder",
+        "descriptionVi": "Mở khóa sau lần đầu đánh bại boss_thornback_elder trong dng_mossroot_hollow."
+      },
+      "expReward": 260,
+      "craftingTokenReward": 4,
+      "descriptionVi": "Đại kiếm Epic khắc cổ ngữ Rừng Rậm bằng Lõi Thornback Elder, là vũ khí chế tác đỉnh cao của giai đoạn MVP."
+    },
+    {
+      "id": "rcp_forge_crimson_vanguard_blade",
+      "name": "Forge Crimson Vanguard Blade",
+      "category": "WEAPON_FORGING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 3,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 30,
+      "goldCost": 1200,
+      "ingredients": [
+        { "itemId": "mat_steel_ingot", "qty": 10 },
+        { "itemId": "mat_silver_ore", "qty": 6 },
+        { "itemId": "mat_cinder_core", "qty": 1 }
+      ],
+      "outputItemId": "wpn_crimson_vanguard_blade",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 20,
+        "descriptionVi": "Mở khóa khi tiến vào reg_ironpeak_mountains (cấp 20)."
+      },
+      "expReward": 320,
+      "craftingTokenReward": 4,
+      "descriptionVi": "Kiếm lửa đặc trưng nâng cấp của Kael Ironbound, tôi qua lõi tro núi sắt tạo luồng kiếm khí nóng rực."
+    },
+    {
+      "id": "rcp_forge_galeweaver_longbow",
+      "name": "Craft Galeweaver Longbow",
+      "category": "WEAPON_FORGING",
+      "stationBuildingId": "bld_workshop",
+      "stationLevelReq": 2,
+      "altStationBuildingIds": ["bld_blacksmith"],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 28,
+      "goldCost": 1100,
+      "ingredients": [
+        { "itemId": "mat_pine_wood", "qty": 16 },
+        { "itemId": "mat_steel_ingot", "qty": 5 },
+        { "itemId": "mat_soft_wool", "qty": 8 },
+        { "itemId": "mat_bat_wing", "qty": 6 }
+      ],
+      "outputItemId": "wpn_galeweaver_longbow",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 22,
+        "descriptionVi": "Mở khóa ở cấp 22 tại Xưởng Nghệ Nhân cấp 2."
+      },
+      "expReward": 300,
+      "craftingTokenReward": 4,
+      "descriptionVi": "Trường cung dệt gió đặc trưng của Lyra Galeweaver với cánh cung đàn hồi giúp mũi tên xuyên gió xa và chính xác."
+    },
+    {
+      "id": "rcp_forge_forgelord_waraxe",
+      "name": "Forge Forgelord Waraxe",
+      "category": "WEAPON_FORGING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 3,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 35,
+      "goldCost": 1850,
+      "ingredients": [
+        { "itemId": "mat_steel_ingot", "qty": 14 },
+        { "itemId": "mat_cinder_core", "qty": 2 },
+        { "itemId": "mat_granite_block", "qty": 10 }
+      ],
+      "outputItemId": "wpn_forgelord_waraxe",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "BOSS_CLEAR",
+        "value": "boss_ignis_forgelord",
+        "descriptionVi": "Mở khóa sau khi hạ gục boss_ignis_forgelord tại dng_slag_foundry."
+      },
+      "expReward": 440,
+      "craftingTokenReward": 5,
+      "descriptionVi": "Chiến phủ rực lửa mô phỏng vũ khí của Chúa Tể Lò Rèn, gây sát thương phá giáp và thiêu đốt mạnh mẽ."
+    },
+    {
+      "id": "rcp_forge_crystal_conduit_staff",
+      "name": "Craft Crystal Conduit Staff",
+      "category": "WEAPON_FORGING",
+      "stationBuildingId": "bld_workshop",
+      "stationLevelReq": 2,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 40,
+      "goldCost": 2400,
+      "ingredients": [
+        { "itemId": "mat_arcane_crystal", "qty": 6 },
+        { "itemId": "mat_silver_ore", "qty": 8 },
+        { "itemId": "mat_prism_scale", "qty": 2 }
+      ],
+      "outputItemId": "wpn_crystal_conduit_staff",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 38,
+        "descriptionVi": "Mở khóa ở cấp 38 khi khám phá Hang Động Pha Lê."
+      },
+      "expReward": 560,
+      "craftingTokenReward": 6,
+      "descriptionVi": "Quyền trượng khảm lõi tinh thể cộng hưởng từ Crystal Caverns giúp khuếch đại sát thương phép và giảm tiêu hao Mana."
+    },
+    {
+      "id": "rcp_forge_runic_ruin_saber",
+      "name": "Forge Runic Ruin Saber",
+      "category": "WEAPON_FORGING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 4,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 45,
+      "goldCost": 4200,
+      "ingredients": [
+        { "itemId": "mat_mythril_ingot", "qty": 8 },
+        { "itemId": "mat_ancient_relic_frag", "qty": 10 },
+        { "itemId": "mat_shadow_thread", "qty": 4 }
+      ],
+      "outputItemId": "wpn_runic_ruin_saber",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 50,
+        "descriptionVi": "Mở khóa ở cấp 50 tại Lò Rèn cấp 4."
+      },
+      "expReward": 850,
+      "craftingTokenReward": 8,
+      "descriptionVi": "Thanh kiếm cổ ngữ rèn từ Mythril và mảnh di vật Forgotten Ruins, mang sức mạnh xuyên giáp và tốc độ chém vượt trội."
+    },
+    {
+      "id": "rcp_forge_bloodforge_colossus",
+      "name": "Forge Bloodforge Colossus",
+      "category": "WEAPON_FORGING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 4,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 60,
+      "goldCost": 8500,
+      "ingredients": [
+        { "itemId": "mat_mythril_ingot", "qty": 14 },
+        { "itemId": "mat_dragon_scale", "qty": 6 },
+        { "itemId": "mat_obsidian_shard", "qty": 12 },
+        { "itemId": "mat_cinder_core", "qty": 3 }
+      ],
+      "outputItemId": "wpn_bloodforge_colossus",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 75,
+        "descriptionVi": "Mở khóa ở cấp 75 khi chinh phục vùng Ember Wasteland."
+      },
+      "expReward": 1500,
+      "craftingTokenReward": 12,
+      "descriptionVi": "Cự kiếm Huyền Thoại đặc trưng của Torvald Bloodforge, rèn từ vảy rồng lửa và hắc diện thạch rực cháy."
+    },
+    {
+      "id": "rcp_craft_hunter_tunic",
+      "name": "Sew Whispering Hunter Tunic",
+      "category": "ARMOR_CRAFTING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 1,
+      "altStationBuildingIds": ["bld_workshop"],
+      "publicStationNpcId": "npc_village_tailor",
+      "mvp": true,
+      "craftTimeSeconds": 12,
+      "goldCost": 160,
+      "ingredients": [
+        { "itemId": "mat_wolf_pelt", "qty": 4 },
+        { "itemId": "mat_fiber_hemp", "qty": 8 },
+        { "itemId": "mat_copper_ingot", "qty": 2 }
+      ],
+      "outputItemId": "eqp_hunter_tunic",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 5,
+        "descriptionVi": "Mở khóa ở cấp 5 giúp thay thế áo vải tân thủ khi tiến vào Whispering Forest."
+      },
+      "expReward": 60,
+      "craftingTokenReward": 1,
+      "descriptionVi": "Áo giáp da sói nhẹ nhàng may từ sợi gai và khóa đồng giúp tăng phòng thủ cùng độ linh hoạt trong rừng rậm."
+    },
+    {
+      "id": "rcp_craft_copper_vitality_ring",
+      "name": "Craft Copper Vitality Ring",
+      "category": "ACCESSORY_CRAFTING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 1,
+      "altStationBuildingIds": ["bld_workshop"],
+      "publicStationNpcId": "npc_smith_garrik",
+      "mvp": true,
+      "craftTimeSeconds": 10,
+      "goldCost": 140,
+      "ingredients": [
+        { "itemId": "mat_copper_ingot", "qty": 3 },
+        { "itemId": "mat_slime_gel", "qty": 3 },
+        { "itemId": "mat_monster_bone", "qty": 2 }
+      ],
+      "outputItemId": "eqp_copper_vitality_ring",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 5,
+        "descriptionVi": "Mở khóa ở cấp 5 để lấp ô nhẫn đầu tiên cho nhân vật."
+      },
+      "expReward": 52,
+      "craftingTokenReward": 1,
+      "descriptionVi": "Chiếc nhẫn đồng chạm xương quái giúp gia tăng Max HP và khả năng hồi phục sinh lực sớm trong MVP."
+    },
+    {
+      "id": "rcp_craft_mossroot_breastplate",
+      "name": "Forge Mossroot Guard Breastplate",
+      "category": "ARMOR_CRAFTING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 2,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": true,
+      "craftTimeSeconds": 22,
+      "goldCost": 480,
+      "ingredients": [
+        { "itemId": "mat_iron_ingot", "qty": 8 },
+        { "itemId": "mat_crawler_chitin", "qty": 6 },
+        { "itemId": "mat_boar_tusk", "qty": 4 }
+      ],
+      "outputItemId": "eqp_mossroot_breastplate",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 10,
+        "descriptionVi": "Mở khóa ở cấp 10 để người chơi có thể chủ động hoàn thiện bộ 4 mảnh set_mossroot_guard mà không phụ thuộc hoàn toàn vào RNG rơi đồ."
+      },
+      "expReward": 155,
+      "craftingTokenReward": 2,
+      "descriptionVi": "Giáp ngực bộ Mossroot Guard ghép từ sắt tinh luyện và mai giáp Root Crawler, tăng mạnh DEF và kháng Địa."
+    },
+    {
+      "id": "rcp_craft_ironpeak_cuirass",
+      "name": "Forge Ironpeak Forge Cuirass",
+      "category": "ARMOR_CRAFTING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 3,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 32,
+      "goldCost": 1400,
+      "ingredients": [
+        { "itemId": "mat_steel_ingot", "qty": 12 },
+        { "itemId": "mat_granite_block", "qty": 8 },
+        { "itemId": "mat_cinder_core", "qty": 1 }
+      ],
+      "outputItemId": "eqp_ironpeak_cuirass",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 25,
+        "descriptionVi": "Mở khóa ở cấp 25 tại Lò Rèn cấp 3."
+      },
+      "expReward": 380,
+      "craftingTokenReward": 4,
+      "descriptionVi": "Giáp ngực thép núi lửa chịu nhiệt cao thuộc bộ Ironpeak Forge, tăng kháng Lửa và độ bền vượt trội."
+    },
+    {
+      "id": "rcp_craft_crystal_vestment",
+      "name": "Weave Crystal Arcanist Vestment",
+      "category": "ARMOR_CRAFTING",
+      "stationBuildingId": "bld_workshop",
+      "stationLevelReq": 2,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 38,
+      "goldCost": 2600,
+      "ingredients": [
+        { "itemId": "mat_arcane_crystal", "qty": 6 },
+        { "itemId": "mat_soft_wool", "qty": 12 },
+        { "itemId": "mat_prism_scale", "qty": 2 }
+      ],
+      "outputItemId": "eqp_crystal_vestment",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 40,
+        "descriptionVi": "Mở khóa ở cấp 40 kết hợp len mây chăn nuôi với tinh thể vùng sâu."
+      },
+      "expReward": 620,
+      "craftingTokenReward": 6,
+      "descriptionVi": "Áo choàng pháp sư dệt từ len mây mềm mại khảm vảy lăng kính giúp tăng INT, Max MP và giảm hồi chiêu."
+    },
+    {
+      "id": "rcp_craft_ancient_relic_medallion",
+      "name": "Craft Ancient Relic Medallion",
+      "category": "ACCESSORY_CRAFTING",
+      "stationBuildingId": "bld_workshop",
+      "stationLevelReq": 3,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 40,
+      "goldCost": 3800,
+      "ingredients": [
+        { "itemId": "mat_ancient_relic_frag", "qty": 10 },
+        { "itemId": "mat_mythril_ingot", "qty": 4 },
+        { "itemId": "mat_shadow_thread", "qty": 5 }
+      ],
+      "outputItemId": "eqp_ancient_relic_medallion",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "PLAYER_LEVEL",
+        "value": 52,
+        "descriptionVi": "Mở khóa ở cấp 52 tại Xưởng Đại Nghệ Nhân cấp 3."
+      },
+      "expReward": 780,
+      "craftingTokenReward": 8,
+      "descriptionVi": "Mặt dây chuyền phục chế từ di vật cổ đại Eldoria giúp tăng sát thương kỹ năng và kháng nguyên tố Bóng Tối."
+    },
+    {
+      "id": "rcp_craft_frostbound_hauberk",
+      "name": "Forge Frostbound Warden Hauberk",
+      "category": "ARMOR_CRAFTING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 4,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 50,
+      "goldCost": 6200,
+      "ingredients": [
+        { "itemId": "mat_mythril_ingot", "qty": 12 },
+        { "itemId": "mat_rime_essence", "qty": 2 },
+        { "itemId": "mat_moon_silk", "qty": 6 }
+      ],
+      "outputItemId": "eqp_frostbound_hauberk",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "BOSS_CLEAR",
+        "value": "boss_boreas_frostking",
+        "descriptionVi": "Mở khóa sau khi chinh phục boss_boreas_frostking tại dng_glacial_citadel."
+      },
+      "expReward": 1150,
+      "craftingTokenReward": 10,
+      "descriptionVi": "Áo giáp hộ vệ băng giá dệt lót tơ Nguyệt Linh và giáp lưới Mythril, chịu được gió lạnh cực hạn và đòn đánh nguyên tố Băng."
+    },
+    {
+      "id": "rcp_craft_abyssal_mantle",
+      "name": "Forge Abyssal Sovereign Mantle",
+      "category": "ARMOR_CRAFTING",
+      "stationBuildingId": "bld_blacksmith",
+      "stationLevelReq": 4,
+      "altStationBuildingIds": [],
+      "publicStationNpcId": null,
+      "mvp": false,
+      "craftTimeSeconds": 65,
+      "goldCost": 14500,
+      "ingredients": [
+        { "itemId": "mat_void_crystal", "qty": 8 },
+        { "itemId": "mat_eclipse_shard", "qty": 2 },
+        { "itemId": "mat_moon_silk", "qty": 10 },
+        { "itemId": "mat_dragon_scale", "qty": 4 }
+      ],
+      "outputItemId": "eqp_abyssal_mantle",
+      "outputQty": 1,
+      "unlockCondition": {
+        "type": "BOSS_CLEAR",
+        "value": "boss_malakor_abyss",
+        "descriptionVi": "Mở khóa sau khi hạ gục boss_malakor_abyss tại dng_eclipse_throne."
+      },
+      "expReward": 2400,
+      "craftingTokenReward": 18,
+      "descriptionVi": "Áo choàng giáp Mythic tối thượng của Vực Thẳm kết tinh từ mảnh Nhật Thực, pha lê Hư Không, tơ Nguyệt Linh và vảy rồng lửa."
+    }
+  ]
+}

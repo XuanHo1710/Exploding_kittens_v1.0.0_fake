@@ -1,0 +1,1364 @@
+{
+  "schemaVersion": "1.0.0",
+  "catalog": "loot-tables",
+  "game": "Eldoria: Forgotten Wilds",
+  "lastUpdated": "2026-11-19",
+  "totalCount": 62,
+  "mvpCount": 18,
+  "descriptionVi": "Danh mục chuẩn 62 bảng rơi vật phẩm (Loot Tables) bao phủ 100% thực thể chiến đấu và thu thập trong Eldoria: Forgotten Wilds — gồm 30 quái thường, 8 quái Tinh Anh, 5 Boss nhiều giai đoạn, 14 điểm khai thác tài nguyên (Resource Nodes) và 5 rương thưởng hoàn thành Hầm Ngục. Mọi phép quay rơi đồ được thực thi hoàn toàn bằng CSPRNG trên NestJS server theo quy tắc PERSONAL_INSTANCED chống cướp đồ (Constitution Principle II).",
+  "rules": {
+    "serverAuthoritativeRng": true,
+    "lootOwnershipDefault": "PERSONAL_INSTANCED",
+    "independentDropChanceRange": "(0, 1]",
+    "exclusivePoolWeightSumTarget": 1.0,
+    "luckStatDropBonusCap": 0.25,
+    "rollOrderVi": "1) Cấp goldDrop trong khoảng [min, max] khớp tuyệt đối monsters.json/bosses.json; 2) Cấp toàn bộ guaranteedEntries (dropChance = 1.0); 3) Quay độc lập từng mục trong independentEntries theo dropChance; 4) Với mỗi exclusivePool, kiểm tra rollChance rồi chọn ngẫu nhiên theo trọng số weight (tổng weight = 1.000000)."
+  },
+  "lootTables": [
+    {
+      "id": "ltb_mob_moss_slime",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_moss_slime",
+      "regionId": "reg_greenhaven_village",
+      "mvp": true,
+      "goldDrop": { "min": 6, "max": 12 },
+      "guaranteedEntries": [
+        { "itemId": "mat_slime_gel", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_wild_berry", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.25 },
+        { "itemId": "sed_sunwheat", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.12 },
+        { "itemId": "csm_hp_potion_small", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.08 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Moss Slime tại rìa đồng ruộng Greenhaven; nguồn ổn định cho Slime Gel pha thuốc và phân bón."
+    },
+    {
+      "id": "ltb_mob_forest_goblin",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_forest_goblin",
+      "regionId": "reg_whispering_forest",
+      "mvp": true,
+      "goldDrop": { "min": 11, "max": 19 },
+      "guaranteedEntries": [
+        { "itemId": "mat_goblin_tooth", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "csm_hp_potion_small", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.22 },
+        { "itemId": "mat_oak_wood", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.30 },
+        { "itemId": "eqp_hunter_tunic", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.03 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Forest Goblin gồm răng Goblin cho cường hóa +3 và bình hồi máu nhỏ."
+    },
+    {
+      "id": "ltb_mob_timber_wolf",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_timber_wolf",
+      "regionId": "reg_whispering_forest",
+      "mvp": true,
+      "goldDrop": { "min": 16, "max": 26 },
+      "guaranteedEntries": [
+        { "itemId": "mat_wolf_pelt", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_monster_bone", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.55 },
+        { "itemId": "eqp_hunter_tunic", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.04 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Timber Wolf cung cấp da sói cho giáp thợ săn và cường hóa +4 cùng xương quái."
+    },
+    {
+      "id": "ltb_mob_spore_cap",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_spore_cap",
+      "regionId": "reg_whispering_forest",
+      "mvp": true,
+      "goldDrop": { "min": 20, "max": 34 },
+      "guaranteedEntries": [
+        { "itemId": "mat_spore_cap_dust", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "csm_mp_potion_small", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.25 },
+        { "itemId": "mat_moon_herb_leaf", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.30 },
+        { "itemId": "sed_moon_herb", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.10 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Spore Cap gồm phấn nấm cho cường hóa +5, bình hồi Mana và lá Thảo Nguyệt."
+    },
+    {
+      "id": "ltb_mob_briar_boar",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_briar_boar",
+      "regionId": "reg_whispering_forest",
+      "mvp": true,
+      "goldDrop": { "min": 26, "max": 42 },
+      "guaranteedEntries": [
+        { "itemId": "mat_boar_tusk", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_monster_bone", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.60 },
+        { "itemId": "eqp_hunter_tunic", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.05 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Briar Boar cung cấp nanh lợn rừng cho món Golden Carrot Roast và cường hóa +5."
+    },
+    {
+      "id": "ltb_mob_hollow_bat",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_hollow_bat",
+      "regionId": "reg_whispering_forest",
+      "mvp": true,
+      "goldDrop": { "min": 30, "max": 48 },
+      "guaranteedEntries": [
+        { "itemId": "mat_bat_wing", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "csm_stamina_tonic", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.14 },
+        { "itemId": "mat_iron_ore", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.25 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Hollow Bat quanh cửa hang Mossroot cung cấp cánh dơi chế thuốc Stamina."
+    },
+    {
+      "id": "ltb_mob_root_crawler",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_root_crawler",
+      "regionId": "reg_whispering_forest",
+      "mvp": true,
+      "goldDrop": { "min": 36, "max": 56 },
+      "guaranteedEntries": [
+        { "itemId": "mat_crawler_chitin", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_iron_ore", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.18 },
+        { "itemId": "eqp_mossroot_gauntlets", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.04 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Root Crawler gồm vỏ giáp cứng cho cường hóa +6 và bộ giáp Mossroot Guard."
+    },
+    {
+      "id": "ltb_mob_goblin_shaman",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_goblin_shaman",
+      "regionId": "reg_whispering_forest",
+      "mvp": true,
+      "goldDrop": { "min": 40, "max": 62 },
+      "guaranteedEntries": [
+        { "itemId": "mat_shaman_totem", "qtyMin": 1, "qtyMax": 1, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.22 },
+        { "itemId": "csm_hp_potion_med", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.20 },
+        { "itemId": "sed_ember_pepper", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.10 },
+        { "itemId": "eqp_mossroot_greaves", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.04 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Goblin Shaman gồm vật tổ pháp sư cho cường hóa +6, lông hồi sinh và Bụi Tinh Tú."
+    },
+    {
+      "id": "ltb_mob_stone_golem",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_stone_golem",
+      "regionId": "reg_ironpeak_mountains",
+      "mvp": false,
+      "goldDrop": { "min": 50, "max": 78 },
+      "guaranteedEntries": [
+        { "itemId": "mat_granite_block", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_iron_ore", "qtyMin": 2, "qtyMax": 3, "dropChance": 0.50 },
+        { "itemId": "mat_steel_ingot", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.16 },
+        { "itemId": "eqp_ironpeak_helm", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.04 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Stone Golem tại Ironpeak Mountains rơi khối Granite, quặng sắt và mảnh giáp Ironpeak."
+    },
+    {
+      "id": "ltb_mob_ironhide_kobold",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_ironhide_kobold",
+      "regionId": "reg_ironpeak_mountains",
+      "mvp": false,
+      "goldDrop": { "min": 60, "max": 92 },
+      "guaranteedEntries": [
+        { "itemId": "mat_iron_ore", "qtyMin": 2, "qtyMax": 4, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_silver_ore", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 },
+        { "itemId": "mat_coal", "qtyMin": 2, "qtyMax": 3, "dropChance": 0.45 },
+        { "itemId": "wpn_tidebreaker_halberd", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.04 },
+        { "itemId": "eqp_ironpeak_bracers", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.04 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm thợ mỏ Ironhide Kobold gồm quặng sắt, bạc, than đá và vũ khí vùng núi."
+    },
+    {
+      "id": "ltb_mob_cinder_drake",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_cinder_drake",
+      "regionId": "reg_ironpeak_mountains",
+      "mvp": false,
+      "goldDrop": { "min": 74, "max": 114 },
+      "guaranteedEntries": [
+        { "itemId": "mat_steel_ingot", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "sed_storm_radish", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.14 },
+        { "itemId": "wpn_crimson_vanguard_blade", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.03 },
+        { "itemId": "wpn_galeweaver_longbow", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.03 },
+        { "itemId": "eqp_ironpeak_sabatons", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.04 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Cinder Drake cung cấp thép tinh luyện và cơ hội rơi vũ khí đặc trưng bậc Rare."
+    },
+    {
+      "id": "ltb_mob_slag_elemental",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_slag_elemental",
+      "regionId": "reg_ironpeak_mountains",
+      "mvp": false,
+      "goldDrop": { "min": 88, "max": 136 },
+      "guaranteedEntries": [
+        { "itemId": "mat_coal", "qtyMin": 3, "qtyMax": 5, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_steel_ingot", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.45 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.25 },
+        { "itemId": "wpn_ironpeak_greatsword", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.04 },
+        { "itemId": "eqp_ironpeak_forge_amulet", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.04 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Slag Elemental vùng miệng lò gồm than nhiệt cao, thỏi thép và bùa lò rèn."
+    },
+    {
+      "id": "ltb_mob_quartz_beetle",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_quartz_beetle",
+      "regionId": "reg_crystal_caverns",
+      "mvp": false,
+      "goldDrop": { "min": 106, "max": 164 },
+      "guaranteedEntries": [
+        { "itemId": "mat_arcane_crystal", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_silver_ore", "qtyMin": 2, "qtyMax": 3, "dropChance": 0.45 },
+        { "itemId": "wpn_crystal_stiletto", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.04 },
+        { "itemId": "eqp_crystal_circlet", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.03 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Quartz Beetle cung cấp Arcane Crystal, bạc và mảnh bộ Crystal Arcanist."
+    },
+    {
+      "id": "ltb_mob_cavern_hydroid",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_cavern_hydroid",
+      "regionId": "reg_crystal_caverns",
+      "mvp": false,
+      "goldDrop": { "min": 124, "max": 192 },
+      "guaranteedEntries": [
+        { "itemId": "mat_arcane_crystal", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "csm_hp_potion_med", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.30 },
+        { "itemId": "sed_crystal_lotus", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.08 },
+        { "itemId": "eqp_crystal_handwraps", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.03 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Cavern Hydroid gần hồ ngầm rơi tinh thể, hạt sen pha lê và găng tay pháp sư."
+    },
+    {
+      "id": "ltb_mob_amethyst_stalker",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_amethyst_stalker",
+      "regionId": "reg_crystal_caverns",
+      "mvp": false,
+      "goldDrop": { "min": 144, "max": 222 },
+      "guaranteedEntries": [
+        { "itemId": "mat_arcane_crystal", "qtyMin": 1, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.30 },
+        { "itemId": "wpn_crystal_stiletto", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.05 },
+        { "itemId": "eqp_crystal_slippers", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.04 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Amethyst Stalker rơi dao găm pha lê, Bụi Tinh Tú và giày Crystal Arcanist."
+    },
+    {
+      "id": "ltb_mob_voltaic_jelly",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_voltaic_jelly",
+      "regionId": "reg_crystal_caverns",
+      "mvp": false,
+      "goldDrop": { "min": 165, "max": 252 },
+      "guaranteedEntries": [
+        { "itemId": "mat_arcane_crystal", "qtyMin": 2, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 1, "qtyMax": 3, "dropChance": 0.35 },
+        { "itemId": "wpn_crystal_conduit_staff", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.05 },
+        { "itemId": "sed_crystal_lotus", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.10 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Voltaic Jelly tích tụ điện tích tinh thể, có cơ hội rơi trượng Crystal Conduit Staff."
+    },
+    {
+      "id": "ltb_mob_ruin_sentinel",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_ruin_sentinel",
+      "regionId": "reg_forgotten_ruins",
+      "mvp": false,
+      "goldDrop": { "min": 182, "max": 280 },
+      "guaranteedEntries": [
+        { "itemId": "mat_ancient_relic_frag", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_mythril_ore", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.30 },
+        { "itemId": "wpn_runic_ruin_saber", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.03 },
+        { "itemId": "wpn_obsidian_crusher_gauntlet", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.03 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm vệ binh đá Ruin Sentinel chứa mảnh di vật cổ, quặng Mythril và vũ khí phế tích."
+    },
+    {
+      "id": "ltb_mob_cursed_acolyte",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_cursed_acolyte",
+      "regionId": "reg_forgotten_ruins",
+      "mvp": false,
+      "goldDrop": { "min": 204, "max": 312 },
+      "guaranteedEntries": [
+        { "itemId": "mat_ancient_relic_frag", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_shadow_thread", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 },
+        { "itemId": "sed_shadow_garlic", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.14 },
+        { "itemId": "eqp_ancient_relic_medallion", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.03 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Cursed Acolyte rơi chỉ tơ bóng tối, hạt tỏi bóng đêm và dây chuyền di vật cổ."
+    },
+    {
+      "id": "ltb_mob_sandstone_gargoyle",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_sandstone_gargoyle",
+      "regionId": "reg_forgotten_ruins",
+      "mvp": false,
+      "goldDrop": { "min": 230, "max": 348 },
+      "guaranteedEntries": [
+        { "itemId": "mat_ancient_relic_frag", "qtyMin": 2, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_obsidian_shard", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 },
+        { "itemId": "wpn_relic_repeater_crossbow", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.03 },
+        { "itemId": "eqp_ruin_seeker_compass", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.03 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Sandstone Gargoyle gồm mảnh di vật, mảnh Obsidian và la bàn tầm di."
+    },
+    {
+      "id": "ltb_mob_astral_wraith",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_astral_wraith",
+      "regionId": "reg_forgotten_ruins",
+      "mvp": false,
+      "goldDrop": { "min": 255, "max": 388 },
+      "guaranteedEntries": [
+        { "itemId": "mat_shadow_thread", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 2, "qtyMax": 3, "dropChance": 0.45 },
+        { "itemId": "wpn_duskveil_twinblade", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.03 },
+        { "itemId": "wpn_voltspire_stormstaff", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.015 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Astral Wraith gồm chỉ tơ bóng tối, Bụi Tinh Tú và tỷ lệ hiếm rơi vũ khí đặc trưng."
+    },
+    {
+      "id": "ltb_mob_frostbite_hound",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_frostbite_hound",
+      "regionId": "reg_frostbound_highlands",
+      "mvp": false,
+      "goldDrop": { "min": 276, "max": 420 },
+      "guaranteedEntries": [
+        { "itemId": "mat_wolf_pelt", "qtyMin": 2, "qtyMax": 4, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_mythril_ore", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 },
+        { "itemId": "sed_frost_turnip", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.16 },
+        { "itemId": "eqp_frostbound_striders", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.025 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Frostbite Hound vùng tuyết gồm da dày chịu lạnh, hạt củ cải băng và giày Frostbound."
+    },
+    {
+      "id": "ltb_mob_glacier_yeti",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_glacier_yeti",
+      "regionId": "reg_frostbound_highlands",
+      "mvp": false,
+      "goldDrop": { "min": 304, "max": 460 },
+      "guaranteedEntries": [
+        { "itemId": "mat_mythril_ore", "qtyMin": 1, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_ancient_heartwood", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.40 },
+        { "itemId": "eqp_frostbound_vambraces", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.03 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Glacier Yeti rơi quặng Mythril, gỗ lõi cổ đại và găng hộ vệ băng giá."
+    },
+    {
+      "id": "ltb_mob_ice_valkyrie_shade",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_ice_valkyrie_shade",
+      "regionId": "reg_frostbound_highlands",
+      "mvp": false,
+      "goldDrop": { "min": 334, "max": 506 },
+      "guaranteedEntries": [
+        { "itemId": "mat_mythril_ore", "qtyMin": 2, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 2, "qtyMax": 4, "dropChance": 0.45 },
+        { "itemId": "eqp_frostbound_vambraces", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.035 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Ice Valkyrie Shade chứa Mythril tinh khiết và Bụi Tinh Tú dồi dào."
+    },
+    {
+      "id": "ltb_mob_blizzard_elemental",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_blizzard_elemental",
+      "regionId": "reg_frostbound_highlands",
+      "mvp": false,
+      "goldDrop": { "min": 366, "max": 552 },
+      "guaranteedEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 2, "qtyMax": 4, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_mythril_ingot", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.25 },
+        { "itemId": "eqp_frostbound_striders", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.035 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Blizzard Elemental kết tinh từ bão tuyết rơi Bụi Tinh Tú và thỏi Mythril."
+    },
+    {
+      "id": "ltb_mob_ash_hound",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_ash_hound",
+      "regionId": "reg_ember_wasteland",
+      "mvp": false,
+      "goldDrop": { "min": 400, "max": 604 },
+      "guaranteedEntries": [
+        { "itemId": "mat_obsidian_shard", "qtyMin": 1, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_dragon_scale", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.18 },
+        { "itemId": "sed_ash_chili", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.14 },
+        { "itemId": "wpn_cinder_rune_wand", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.03 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Ash Hound vùng núi lửa gồm mảnh Obsidian, hạt ớt tro và vảy rồng."
+    },
+    {
+      "id": "ltb_mob_obsidian_brute",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_obsidian_brute",
+      "regionId": "reg_ember_wasteland",
+      "mvp": false,
+      "goldDrop": { "min": 446, "max": 674 },
+      "guaranteedEntries": [
+        { "itemId": "mat_obsidian_shard", "qtyMin": 2, "qtyMax": 4, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_dragon_scale", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.22 },
+        { "itemId": "wpn_embercore_titan_gauntlet", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.015 },
+        { "itemId": "wpn_bloodforge_colossus", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.015 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Obsidian Brute rơi khối hắc diện thạch lớn cùng cơ hội hiếm nhận vũ khí Huyền Thoại."
+    },
+    {
+      "id": "ltb_mob_pyroclast_cultist",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_pyroclast_cultist",
+      "regionId": "reg_ember_wasteland",
+      "mvp": false,
+      "goldDrop": { "min": 495, "max": 745 },
+      "guaranteedEntries": [
+        { "itemId": "mat_obsidian_shard", "qtyMin": 2, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 2, "qtyMax": 4, "dropChance": 0.50 },
+        { "itemId": "wpn_cinder_rune_wand", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.04 },
+        { "itemId": "eqp_cinder_phoenix_feather", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.02 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Pyroclast Cultist rơi đũa cổ ngữ tro tàn và phụ kiện lông phượng hoàng."
+    },
+    {
+      "id": "ltb_mob_void_thrall",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_void_thrall",
+      "regionId": "reg_abyssal_kingdom",
+      "mvp": false,
+      "goldDrop": { "min": 530, "max": 798 },
+      "guaranteedEntries": [
+        { "itemId": "mat_void_crystal", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_shadow_thread", "qtyMin": 2, "qtyMax": 3, "dropChance": 0.50 },
+        { "itemId": "sed_starlight_melon", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.08 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Void Thrall trong Vương Quốc Vực Thẳm rơi pha lê Hư Không và chỉ tơ bóng tối."
+    },
+    {
+      "id": "ltb_mob_abyssal_knight",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_abyssal_knight",
+      "regionId": "reg_abyssal_kingdom",
+      "mvp": false,
+      "goldDrop": { "min": 568, "max": 852 },
+      "guaranteedEntries": [
+        { "itemId": "mat_void_crystal", "qtyMin": 1, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_mythril_ingot", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 },
+        { "itemId": "wpn_phantom_eclipse_kris", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.025 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Abyssal Knight gồm pha lê Hư Không, thỏi Mythril và đoản kiếm Nhật Thực."
+    },
+    {
+      "id": "ltb_mob_eclipse_weaver",
+      "sourceType": "MONSTER",
+      "sourceId": "mob_eclipse_weaver",
+      "regionId": "reg_abyssal_kingdom",
+      "mvp": false,
+      "goldDrop": { "min": 600, "max": 900 },
+      "guaranteedEntries": [
+        { "itemId": "mat_void_crystal", "qtyMin": 2, "qtyMax": 3, "dropChance": 1.0 },
+        { "itemId": "mat_shadow_thread", "qtyMin": 2, "qtyMax": 4, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 3, "qtyMax": 5, "dropChance": 0.65 },
+        { "itemId": "sed_starlight_melon", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.12 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Chiến lợi phẩm Eclipse Weaver — nguồn farm endgame ổn định cho Void Crystal và Shadowsilk Thread."
+    },
+    {
+      "id": "ltb_mob_elite_alpha_direwolf",
+      "sourceType": "ELITE",
+      "sourceId": "mob_elite_alpha_direwolf",
+      "regionId": "reg_whispering_forest",
+      "mvp": true,
+      "goldDrop": { "min": 135, "max": 210 },
+      "guaranteedEntries": [
+        { "itemId": "mat_alpha_fang", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 },
+        { "itemId": "mat_wolf_pelt", "qtyMin": 3, "qtyMax": 5, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 1, "qtyMax": 3, "dropChance": 0.75 },
+        { "itemId": "csm_hp_potion_med", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.50 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_alpha_direwolf_gear",
+          "rollChance": 0.45,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "wpn_wolf_fang_dagger", "qtyMin": 1, "qtyMax": 1, "weight": 0.5 },
+            { "itemId": "eqp_direwolf_fang_pendant", "qtyMin": 1, "qtyMax": 1, "weight": 0.5 }
+          ]
+        }
+      ],
+      "descriptionVi": "Bảng rơi đồ Quái Tinh Anh MVP Alpha Direwolf — nguồn chính cho Alpha Fang (+7..+8), Wolf Fang Dagger và Direwolf Fang Pendant."
+    },
+    {
+      "id": "ltb_mob_elite_briar_stag",
+      "sourceType": "ELITE",
+      "sourceId": "mob_elite_briar_stag",
+      "regionId": "reg_whispering_forest",
+      "mvp": false,
+      "goldDrop": { "min": 180, "max": 275 },
+      "guaranteedEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 2, "qtyMax": 4, "dropChance": 1.0 },
+        { "itemId": "mat_pine_wood", "qtyMin": 5, "qtyMax": 8, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_moon_herb_leaf", "qtyMin": 3, "qtyMax": 5, "dropChance": 0.70 },
+        { "itemId": "sed_ember_pepper", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_briar_stag_gear",
+          "rollChance": 0.45,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "wpn_mossroot_pike", "qtyMin": 1, "qtyMax": 1, "weight": 0.5 },
+            { "itemId": "wpn_thornbark_bulwark", "qtyMin": 1, "qtyMax": 1, "weight": 0.5 }
+          ]
+        }
+      ],
+      "descriptionVi": "Bảng rơi đồ Quái Tinh Anh Briar Stag ở hồ sương Whispering Forest."
+    },
+    {
+      "id": "ltb_mob_elite_magma_colossus",
+      "sourceType": "ELITE",
+      "sourceId": "mob_elite_magma_colossus",
+      "regionId": "reg_ironpeak_mountains",
+      "mvp": false,
+      "goldDrop": { "min": 360, "max": 540 },
+      "guaranteedEntries": [
+        { "itemId": "mat_steel_ingot", "qtyMin": 3, "qtyMax": 5, "dropChance": 1.0 },
+        { "itemId": "mat_granite_block", "qtyMin": 4, "qtyMax": 6, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 2, "qtyMax": 4, "dropChance": 0.75 },
+        { "itemId": "mat_cinder_core", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.25 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_magma_colossus_gear",
+          "rollChance": 0.50,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "wpn_ironpeak_greatsword", "qtyMin": 1, "qtyMax": 1, "weight": 0.35 },
+            { "itemId": "wpn_crimson_vanguard_blade", "qtyMin": 1, "qtyMax": 1, "weight": 0.35 },
+            { "itemId": "eqp_ironpeak_forge_amulet", "qtyMin": 1, "qtyMax": 1, "weight": 0.30 }
+          ]
+        }
+      ],
+      "descriptionVi": "Bảng rơi đồ Quái Tinh Anh Magma Colossus bảo vệ đường vào Slag Foundry."
+    },
+    {
+      "id": "ltb_mob_elite_crystal_matriarch",
+      "sourceType": "ELITE",
+      "sourceId": "mob_elite_crystal_matriarch",
+      "regionId": "reg_crystal_caverns",
+      "mvp": false,
+      "goldDrop": { "min": 680, "max": 1020 },
+      "guaranteedEntries": [
+        { "itemId": "mat_arcane_crystal", "qtyMin": 4, "qtyMax": 6, "dropChance": 1.0 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 3, "qtyMax": 5, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "sed_crystal_lotus", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.40 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_crystal_matriarch_gear",
+          "rollChance": 0.55,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "wpn_crystal_conduit_staff", "qtyMin": 1, "qtyMax": 1, "weight": 0.30 },
+            { "itemId": "eqp_crystal_circlet", "qtyMin": 1, "qtyMax": 1, "weight": 0.35 },
+            { "itemId": "eqp_crystal_handwraps", "qtyMin": 1, "qtyMax": 1, "weight": 0.35 }
+          ]
+        }
+      ],
+      "descriptionVi": "Bảng rơi đồ Quái Tinh Anh Crystal Matriarch trong Hang Động Pha Lê."
+    },
+    {
+      "id": "ltb_mob_elite_sunstone_warden",
+      "sourceType": "ELITE",
+      "sourceId": "mob_elite_sunstone_warden",
+      "regionId": "reg_forgotten_ruins",
+      "mvp": false,
+      "goldDrop": { "min": 1080, "max": 1620 },
+      "guaranteedEntries": [
+        { "itemId": "mat_ancient_relic_frag", "qtyMin": 4, "qtyMax": 7, "dropChance": 1.0 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 4, "qtyMax": 6, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_shadow_thread", "qtyMin": 2, "qtyMax": 4, "dropChance": 0.65 },
+        { "itemId": "mat_mythril_ingot", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.45 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_sunstone_warden_gear",
+          "rollChance": 0.60,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "wpn_runic_ruin_saber", "qtyMin": 1, "qtyMax": 1, "weight": 0.25 },
+            { "itemId": "wpn_duskveil_twinblade", "qtyMin": 1, "qtyMax": 1, "weight": 0.25 },
+            { "itemId": "wpn_relic_repeater_crossbow", "qtyMin": 1, "qtyMax": 1, "weight": 0.20 },
+            { "itemId": "eqp_ancient_relic_medallion", "qtyMin": 1, "qtyMax": 1, "weight": 0.15 },
+            { "itemId": "wpn_voltspire_stormstaff", "qtyMin": 1, "qtyMax": 1, "weight": 0.15 }
+          ]
+        }
+      ],
+      "descriptionVi": "Bảng rơi đồ Quái Tinh Anh Sunstone Warden canh giữ phong ấn Forgotten Ruins."
+    },
+    {
+      "id": "ltb_mob_elite_permafrost_mammoth",
+      "sourceType": "ELITE",
+      "sourceId": "mob_elite_permafrost_mammoth",
+      "regionId": "reg_frostbound_highlands",
+      "mvp": false,
+      "goldDrop": { "min": 1520, "max": 2280 },
+      "guaranteedEntries": [
+        { "itemId": "mat_mythril_ingot", "qtyMin": 2, "qtyMax": 4, "dropChance": 1.0 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 4, "qtyMax": 7, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_ancient_heartwood", "qtyMin": 3, "qtyMax": 5, "dropChance": 0.65 },
+        { "itemId": "mat_rime_essence", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.25 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_permafrost_mammoth_gear",
+          "rollChance": 0.60,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "eqp_frostbound_vambraces", "qtyMin": 1, "qtyMax": 1, "weight": 0.40 },
+            { "itemId": "eqp_frostbound_striders", "qtyMin": 1, "qtyMax": 1, "weight": 0.40 },
+            { "itemId": "wpn_glacier_lance", "qtyMin": 1, "qtyMax": 1, "weight": 0.20 }
+          ]
+        }
+      ],
+      "descriptionVi": "Bảng rơi đồ Quái Tinh Anh Permafrost Mammoth trên Cao Nguyên Băng Giá."
+    },
+    {
+      "id": "ltb_mob_elite_cinder_wyvern",
+      "sourceType": "ELITE",
+      "sourceId": "mob_elite_cinder_wyvern",
+      "regionId": "reg_ember_wasteland",
+      "mvp": false,
+      "goldDrop": { "min": 2120, "max": 3180 },
+      "guaranteedEntries": [
+        { "itemId": "mat_dragon_scale", "qtyMin": 2, "qtyMax": 4, "dropChance": 1.0 },
+        { "itemId": "mat_obsidian_shard", "qtyMin": 4, "qtyMax": 7, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 5, "qtyMax": 8, "dropChance": 0.80 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_cinder_wyvern_gear",
+          "rollChance": 0.65,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "wpn_solaris_eclipse_blade", "qtyMin": 1, "qtyMax": 1, "weight": 0.16 },
+            { "itemId": "wpn_bloodforge_colossus", "qtyMin": 1, "qtyMax": 1, "weight": 0.16 },
+            { "itemId": "wpn_dragonspine_partisan", "qtyMin": 1, "qtyMax": 1, "weight": 0.16 },
+            { "itemId": "wpn_tempest_horizon_bow", "qtyMin": 1, "qtyMax": 1, "weight": 0.16 },
+            { "itemId": "wpn_embercore_titan_gauntlet", "qtyMin": 1, "qtyMax": 1, "weight": 0.12 },
+            { "itemId": "eqp_dragonscale_talisman", "qtyMin": 1, "qtyMax": 1, "weight": 0.12 },
+            { "itemId": "eqp_cinder_phoenix_feather", "qtyMin": 1, "qtyMax": 1, "weight": 0.12 }
+          ]
+        }
+      ],
+      "descriptionVi": "Bảng rơi đồ Quái Tinh Anh Cinder Wyvern — nguồn chính farm Ember Dragon Scale và vũ khí Huyền Thoại vùng Ember Wasteland."
+    },
+    {
+      "id": "ltb_mob_elite_dread_harbinger",
+      "sourceType": "ELITE",
+      "sourceId": "mob_elite_dread_harbinger",
+      "regionId": "reg_abyssal_kingdom",
+      "mvp": false,
+      "goldDrop": { "min": 2650, "max": 3980 },
+      "guaranteedEntries": [
+        { "itemId": "mat_void_crystal", "qtyMin": 3, "qtyMax": 5, "dropChance": 1.0 },
+        { "itemId": "mat_shadow_thread", "qtyMin": 3, "qtyMax": 5, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 6, "qtyMax": 10, "dropChance": 0.85 },
+        { "itemId": "sed_starlight_melon", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.25 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_dread_harbinger_gear",
+          "rollChance": 0.65,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "wpn_phantom_eclipse_kris", "qtyMin": 1, "qtyMax": 1, "weight": 0.50 },
+            { "itemId": "eqp_abyssal_claws", "qtyMin": 1, "qtyMax": 1, "weight": 0.25 },
+            { "itemId": "eqp_abyssal_treads", "qtyMin": 1, "qtyMax": 1, "weight": 0.25 }
+          ]
+        }
+      ],
+      "descriptionVi": "Bảng rơi đồ Quái Tinh Anh Dread Harbinger trước ngưỡng cửa Ngai Vàng Nhật Thực."
+    },
+    {
+      "id": "ltb_boss_thornback_elder",
+      "sourceType": "BOSS",
+      "sourceId": "boss_thornback_elder",
+      "regionId": "reg_whispering_forest",
+      "mvp": true,
+      "goldDrop": { "min": 450, "max": 680 },
+      "guaranteedEntries": [
+        { "itemId": "mat_thornback_heart", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 3, "qtyMax": 5, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "csm_hp_potion_med", "qtyMin": 2, "qtyMax": 3, "dropChance": 0.60 },
+        { "itemId": "csm_revive_feather", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.35 },
+        { "itemId": "sed_ember_pepper", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.25 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_thornback_boss_gear",
+          "rollChance": 1.0,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "eqp_mossroot_helm", "qtyMin": 1, "qtyMax": 1, "weight": 0.28 },
+            { "itemId": "eqp_mossroot_breastplate", "qtyMin": 1, "qtyMax": 1, "weight": 0.28 },
+            { "itemId": "wpn_thornbark_bulwark", "qtyMin": 1, "qtyMax": 1, "weight": 0.20 },
+            { "itemId": "wpn_elderwood_cleaver", "qtyMin": 1, "qtyMax": 1, "weight": 0.12 },
+            { "itemId": "eqp_thornback_heart_charm", "qtyMin": 1, "qtyMax": 1, "weight": 0.09 },
+            { "itemId": "wpn_starbloom_scepter", "qtyMin": 1, "qtyMax": 1, "weight": 0.03 }
+          ]
+        }
+      ],
+      "descriptionVi": "Bảng rơi đồ Boss MVP Thornback Elder trong dng_mossroot_hollow: bảo đảm Lõi Cổ Thụ (cường hóa +8..+10 & Lò Rèn Lv 3–4) cùng 1 trang bị hiếm bảo đảm mỗi lượt hạ."
+    },
+    {
+      "id": "ltb_boss_ignis_forgelord",
+      "sourceType": "BOSS",
+      "sourceId": "boss_ignis_forgelord",
+      "regionId": "reg_ironpeak_mountains",
+      "mvp": false,
+      "goldDrop": { "min": 1250, "max": 1850 },
+      "guaranteedEntries": [
+        { "itemId": "mat_cinder_core", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 },
+        { "itemId": "mat_steel_ingot", "qtyMin": 3, "qtyMax": 5, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 4, "qtyMax": 7, "dropChance": 0.75 },
+        { "itemId": "csm_revive_feather", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.40 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_ignis_boss_gear",
+          "rollChance": 1.0,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "eqp_ironpeak_cuirass", "qtyMin": 1, "qtyMax": 1, "weight": 0.34 },
+            { "itemId": "eqp_forgelord_ember_ring", "qtyMin": 1, "qtyMax": 1, "weight": 0.30 },
+            { "itemId": "wpn_forgelord_waraxe", "qtyMin": 1, "qtyMax": 1, "weight": 0.18 },
+            { "itemId": "wpn_stoneheart_aegis", "qtyMin": 1, "qtyMax": 1, "weight": 0.18 }
+          ]
+        }
+      ],
+      "descriptionVi": "Bảng rơi đồ Boss Ignis Forgelord tại dng_slag_foundry với Cinder Core và vũ khí khiên đặc trưng."
+    },
+    {
+      "id": "ltb_boss_prism_leviathan",
+      "sourceType": "BOSS",
+      "sourceId": "boss_prism_leviathan",
+      "regionId": "reg_crystal_caverns",
+      "mvp": false,
+      "goldDrop": { "min": 3200, "max": 4600 },
+      "guaranteedEntries": [
+        { "itemId": "mat_prism_scale", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 },
+        { "itemId": "mat_arcane_crystal", "qtyMin": 4, "qtyMax": 7, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 5, "qtyMax": 9, "dropChance": 0.80 },
+        { "itemId": "sed_crystal_lotus", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_prism_boss_gear",
+          "rollChance": 1.0,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "eqp_crystal_vestment", "qtyMin": 1, "qtyMax": 1, "weight": 0.30 },
+            { "itemId": "eqp_prism_resonance_ring", "qtyMin": 1, "qtyMax": 1, "weight": 0.28 },
+            { "itemId": "wpn_prism_recurve_bow", "qtyMin": 1, "qtyMax": 1, "weight": 0.21 },
+            { "itemId": "wpn_glaciersong_wand", "qtyMin": 1, "qtyMax": 1, "weight": 0.21 }
+          ]
+        }
+      ],
+      "descriptionVi": "Bảng rơi đồ Boss Prism Leviathan trong dng_prism_sanctum gồm Prism Scale và bộ trang bị pha lê Epic."
+    },
+    {
+      "id": "ltb_boss_boreas_frostking",
+      "sourceType": "BOSS",
+      "sourceId": "boss_boreas_frostking",
+      "regionId": "reg_frostbound_highlands",
+      "mvp": false,
+      "goldDrop": { "min": 6800, "max": 9600 },
+      "guaranteedEntries": [
+        { "itemId": "mat_rime_essence", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 },
+        { "itemId": "mat_mythril_ingot", "qtyMin": 3, "qtyMax": 5, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 6, "qtyMax": 10, "dropChance": 0.85 },
+        { "itemId": "csm_revive_feather", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.45 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_boreas_boss_gear",
+          "rollChance": 1.0,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "wpn_glacier_lance", "qtyMin": 1, "qtyMax": 1, "weight": 0.28 },
+            { "itemId": "eqp_frostbound_greathelm", "qtyMin": 1, "qtyMax": 1, "weight": 0.18 },
+            { "itemId": "eqp_frostbound_hauberk", "qtyMin": 1, "qtyMax": 1, "weight": 0.18 },
+            { "itemId": "eqp_rimeheart_signet", "qtyMin": 1, "qtyMax": 1, "weight": 0.14 },
+            { "itemId": "wpn_frostbite_greataxe", "qtyMin": 1, "qtyMax": 1, "weight": 0.11 },
+            { "itemId": "wpn_boreal_bastion_shield", "qtyMin": 1, "qtyMax": 1, "weight": 0.11 }
+          ]
+        }
+      ],
+      "descriptionVi": "Bảng rơi đồ Boss Boreas Frostking trong dng_glacial_citadel gồm Rime Essence và bộ trang bị Legendary."
+    },
+    {
+      "id": "ltb_boss_malakor_abyss",
+      "sourceType": "BOSS",
+      "sourceId": "boss_malakor_abyss",
+      "regionId": "reg_abyssal_kingdom",
+      "mvp": false,
+      "goldDrop": { "min": 14500, "max": 21000 },
+      "guaranteedEntries": [
+        { "itemId": "mat_eclipse_shard", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 },
+        { "itemId": "mat_void_crystal", "qtyMin": 4, "qtyMax": 7, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 8, "qtyMax": 14, "dropChance": 0.90 },
+        { "itemId": "eqp_crown_of_forgotten_wilds", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.04 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_malakor_mythic_weapons",
+          "rollChance": 0.45,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "wpn_abyssal_sovereign_claymore", "qtyMin": 1, "qtyMax": 1, "weight": 0.25 },
+            { "itemId": "wpn_astralforge_starbow", "qtyMin": 1, "qtyMax": 1, "weight": 0.25 },
+            { "itemId": "wpn_celestial_dawn_staff", "qtyMin": 1, "qtyMax": 1, "weight": 0.25 },
+            { "itemId": "wpn_umbramancer_void_wand", "qtyMin": 1, "qtyMax": 1, "weight": 0.25 }
+          ]
+        },
+        {
+          "poolId": "pool_malakor_mythic_armor",
+          "rollChance": 1.0,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "eqp_abyssal_crown", "qtyMin": 1, "qtyMax": 1, "weight": 0.20 },
+            { "itemId": "eqp_abyssal_mantle", "qtyMin": 1, "qtyMax": 1, "weight": 0.20 },
+            { "itemId": "eqp_abyssal_claws", "qtyMin": 1, "qtyMax": 1, "weight": 0.20 },
+            { "itemId": "eqp_abyssal_treads", "qtyMin": 1, "qtyMax": 1, "weight": 0.20 },
+            { "itemId": "eqp_eclipse_void_band", "qtyMin": 1, "qtyMax": 1, "weight": 0.10 },
+            { "itemId": "eqp_abyssal_star_choker", "qtyMin": 1, "qtyMax": 1, "weight": 0.10 }
+          ]
+        }
+      ],
+      "descriptionVi": "Bảng rơi đồ Boss cuối Malakor, Sovereign of the Abyss trong dng_eclipse_throne — nguồn rơi toàn bộ vũ khí và giáp Mythic Endgame."
+    },
+    {
+      "id": "ltb_node_oak_tree",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_oak_tree",
+      "regionId": "reg_greenhaven_village",
+      "mvp": true,
+      "goldDrop": { "min": 0, "max": 0 },
+      "guaranteedEntries": [
+        { "itemId": "mat_oak_wood", "qtyMin": 2, "qtyMax": 4, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_fiber_hemp", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 },
+        { "itemId": "mat_wild_berry", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.20 },
+        { "itemId": "sed_berry_bush", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.08 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Điểm khai thác cây Sồi tại Greenhaven Village và rìa Whispering Forest."
+    },
+    {
+      "id": "ltb_node_pine_tree",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_pine_tree",
+      "regionId": "reg_whispering_forest",
+      "mvp": true,
+      "goldDrop": { "min": 0, "max": 0 },
+      "guaranteedEntries": [
+        { "itemId": "mat_pine_wood", "qtyMin": 2, "qtyMax": 4, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_oak_wood", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.25 },
+        { "itemId": "mat_fiber_hemp", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.30 },
+        { "itemId": "sed_berry_bush", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.10 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Điểm khai thác cây Thông trong Whispering Forest và chân núi Ironpeak."
+    },
+    {
+      "id": "ltb_node_stone",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_stone",
+      "regionId": "reg_greenhaven_village",
+      "mvp": true,
+      "goldDrop": { "min": 0, "max": 0 },
+      "guaranteedEntries": [
+        { "itemId": "mat_rough_stone", "qtyMin": 2, "qtyMax": 5, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_coal", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 },
+        { "itemId": "mat_clay", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.28 },
+        { "itemId": "mat_copper_ore", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.20 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Mỏ đá thô ven đường và bãi đá sỏi cung cấp đá xây dựng, than đá và đất sét."
+    },
+    {
+      "id": "ltb_node_copper_vein",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_copper_vein",
+      "regionId": "reg_greenhaven_village",
+      "mvp": true,
+      "goldDrop": { "min": 0, "max": 0 },
+      "guaranteedEntries": [
+        { "itemId": "mat_copper_ore", "qtyMin": 2, "qtyMax": 4, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_coal", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.45 },
+        { "itemId": "mat_rough_stone", "qtyMin": 1, "qtyMax": 3, "dropChance": 0.50 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Mạch quặng Đồng phân bố quanh suối Greenhaven và cửa rừng Whispering Forest."
+    },
+    {
+      "id": "ltb_node_iron_vein",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_iron_vein",
+      "regionId": "reg_whispering_forest",
+      "mvp": true,
+      "goldDrop": { "min": 0, "max": 0 },
+      "guaranteedEntries": [
+        { "itemId": "mat_iron_ore", "qtyMin": 2, "qtyMax": 4, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_coal", "qtyMin": 1, "qtyMax": 3, "dropChance": 0.50 },
+        { "itemId": "mat_rough_stone", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Mạch quặng Sắt trong lõi Whispering Forest và hầm mỏ Ironpeak Mountains."
+    },
+    {
+      "id": "ltb_node_silver_vein",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_silver_vein",
+      "regionId": "reg_ironpeak_mountains",
+      "mvp": false,
+      "goldDrop": { "min": 0, "max": 0 },
+      "guaranteedEntries": [
+        { "itemId": "mat_silver_ore", "qtyMin": 2, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_iron_ore", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.40 },
+        { "itemId": "mat_coal", "qtyMin": 2, "qtyMax": 3, "dropChance": 0.45 },
+        { "itemId": "mat_granite_block", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.25 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Mạch quặng Bạc tinh khiết tại Ironpeak Mountains và tầng trên Crystal Caverns."
+    },
+    {
+      "id": "ltb_node_mythril_vein",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_mythril_vein",
+      "regionId": "reg_frostbound_highlands",
+      "mvp": false,
+      "goldDrop": { "min": 0, "max": 0 },
+      "guaranteedEntries": [
+        { "itemId": "mat_mythril_ore", "qtyMin": 1, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_silver_ore", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 },
+        { "itemId": "mat_arcane_crystal", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.15 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Mạch quặng Mythril quý hiếm tại Forgotten Ruins và Frostbound Highlands."
+    },
+    {
+      "id": "ltb_node_herb_patch",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_herb_patch",
+      "regionId": "reg_whispering_forest",
+      "mvp": true,
+      "goldDrop": { "min": 0, "max": 0 },
+      "guaranteedEntries": [
+        { "itemId": "mat_wild_berry", "qtyMin": 1, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_moon_herb_leaf", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.55 },
+        { "itemId": "mat_fiber_hemp", "qtyMin": 1, "qtyMax": 3, "dropChance": 0.60 },
+        { "itemId": "sed_sunwheat", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.20 },
+        { "itemId": "sed_berry_bush", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.18 },
+        { "itemId": "sed_moon_herb", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.14 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Bụi thảo dược và dây gai hoang dã tại Greenhaven và Whispering Forest."
+    },
+    {
+      "id": "ltb_node_fishing_spot",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_fishing_spot",
+      "regionId": "reg_greenhaven_village",
+      "mvp": true,
+      "goldDrop": { "min": 12, "max": 30 },
+      "guaranteedEntries": [
+        { "itemId": "mat_clay", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_slime_gel", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.45 },
+        { "itemId": "mat_wild_berry", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 },
+        { "itemId": "sed_moon_herb", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.12 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.08 },
+        { "itemId": "eqp_copper_vitality_ring", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.02 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Điểm câu cá ven suối và hồ Greenhaven: sản lượng cá trong MVP được quy đổi trực tiếp thành Gold bán tại chợ làng kèm nguyên liệu ven sông và cơ hội vớt rương chìm chứa Bụi Tinh Tú hoặc Nhẫn Đồng."
+    },
+    {
+      "id": "ltb_node_ancient_heartwood",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_ancient_heartwood",
+      "regionId": "reg_forgotten_ruins",
+      "mvp": false,
+      "goldDrop": { "min": 0, "max": 0 },
+      "guaranteedEntries": [
+        { "itemId": "mat_ancient_heartwood", "qtyMin": 2, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_pine_wood", "qtyMin": 2, "qtyMax": 4, "dropChance": 0.40 },
+        { "itemId": "mat_ancient_relic_frag", "qtyMin": 1, "qtyMax": 1, "dropChance": 0.15 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Cổ thụ nghìn năm tại Forgotten Ruins và Frostbound Highlands cung cấp Ancient Heartwood cho công trình Lv 3–4."
+    },
+    {
+      "id": "ltb_node_granite_outcrop",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_granite_outcrop",
+      "regionId": "reg_ironpeak_mountains",
+      "mvp": false,
+      "goldDrop": { "min": 0, "max": 0 },
+      "guaranteedEntries": [
+        { "itemId": "mat_granite_block", "qtyMin": 2, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_rough_stone", "qtyMin": 2, "qtyMax": 4, "dropChance": 0.50 },
+        { "itemId": "mat_coal", "qtyMin": 1, "qtyMax": 3, "dropChance": 0.35 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Vách đá hoa cương nguyên khối trên sườn núi Ironpeak."
+    },
+    {
+      "id": "ltb_node_arcane_crystal_vein",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_arcane_crystal_vein",
+      "regionId": "reg_crystal_caverns",
+      "mvp": false,
+      "goldDrop": { "min": 0, "max": 0 },
+      "guaranteedEntries": [
+        { "itemId": "mat_arcane_crystal", "qtyMin": 1, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_silver_ore", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.25 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Cụm tinh thể ma pháp phát sáng trong Crystal Caverns."
+    },
+    {
+      "id": "ltb_node_obsidian_vein",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_obsidian_vein",
+      "regionId": "reg_ember_wasteland",
+      "mvp": false,
+      "goldDrop": { "min": 0, "max": 0 },
+      "guaranteedEntries": [
+        { "itemId": "mat_obsidian_shard", "qtyMin": 2, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_coal", "qtyMin": 2, "qtyMax": 4, "dropChance": 0.50 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.20 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Mạch hắc diện thạch hình thành từ dung nham nguội tại Ember Wasteland."
+    },
+    {
+      "id": "ltb_node_void_crystal_vein",
+      "sourceType": "RESOURCE_NODE",
+      "sourceId": "node_void_crystal_vein",
+      "regionId": "reg_abyssal_kingdom",
+      "mvp": false,
+      "goldDrop": { "min": 0, "max": 0 },
+      "guaranteedEntries": [
+        { "itemId": "mat_void_crystal", "qtyMin": 1, "qtyMax": 2, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_obsidian_shard", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.40 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 2, "qtyMax": 3, "dropChance": 0.30 }
+      ],
+      "exclusivePools": [],
+      "descriptionVi": "Mạch pha lê Hư Không nằm dọc các vết rách không gian trong Abyssal Kingdom."
+    },
+    {
+      "id": "ltb_chest_mossroot_clear",
+      "sourceType": "DUNGEON_CHEST",
+      "sourceId": "dng_mossroot_hollow",
+      "regionId": "reg_whispering_forest",
+      "mvp": true,
+      "goldDrop": { "min": 220, "max": 360 },
+      "guaranteedEntries": [
+        { "itemId": "mat_starlight_dust", "qtyMin": 2, "qtyMax": 4, "dropChance": 1.0 },
+        { "itemId": "csm_hp_potion_med", "qtyMin": 2, "qtyMax": 3, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_iron_ore", "qtyMin": 4, "qtyMax": 7, "dropChance": 0.70 },
+        { "itemId": "mat_crawler_chitin", "qtyMin": 2, "qtyMax": 4, "dropChance": 0.55 },
+        { "itemId": "mat_shaman_totem", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.45 },
+        { "itemId": "sed_ember_pepper", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.30 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_mossroot_chest_gear",
+          "rollChance": 1.0,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "eqp_mossroot_gauntlets", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "eqp_mossroot_greaves", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "eqp_mossroot_helm", "qtyMin": 1, "qtyMax": 1, "weight": 0.16 },
+            { "itemId": "eqp_mossroot_breastplate", "qtyMin": 1, "qtyMax": 1, "weight": 0.16 },
+            { "itemId": "wpn_mossroot_pike", "qtyMin": 1, "qtyMax": 1, "weight": 0.12 },
+            { "itemId": "wpn_thornbark_bulwark", "qtyMin": 1, "qtyMax": 1, "weight": 0.12 }
+          ]
+        }
+      ],
+      "descriptionVi": "Rương kho báu xuất hiện cho từng thành viên Party sau khi dọn sạch hầm ngục MVP dng_mossroot_hollow."
+    },
+    {
+      "id": "ltb_chest_slag_foundry_clear",
+      "sourceType": "DUNGEON_CHEST",
+      "sourceId": "dng_slag_foundry",
+      "regionId": "reg_ironpeak_mountains",
+      "mvp": false,
+      "goldDrop": { "min": 650, "max": 980 },
+      "guaranteedEntries": [
+        { "itemId": "mat_steel_ingot", "qtyMin": 3, "qtyMax": 5, "dropChance": 1.0 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 3, "qtyMax": 5, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "mat_silver_ore", "qtyMin": 4, "qtyMax": 7, "dropChance": 0.65 },
+        { "itemId": "sed_storm_radish", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.30 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_slag_chest_gear",
+          "rollChance": 1.0,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "eqp_ironpeak_helm", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "eqp_ironpeak_cuirass", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "eqp_ironpeak_bracers", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "eqp_ironpeak_sabatons", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "wpn_forgelord_waraxe", "qtyMin": 1, "qtyMax": 1, "weight": 0.06 },
+            { "itemId": "wpn_stoneheart_aegis", "qtyMin": 1, "qtyMax": 1, "weight": 0.06 }
+          ]
+        }
+      ],
+      "descriptionVi": "Rương kho báu hoàn thành hầm ngục dng_slag_foundry tại Ironpeak Mountains."
+    },
+    {
+      "id": "ltb_chest_prism_sanctum_clear",
+      "sourceType": "DUNGEON_CHEST",
+      "sourceId": "dng_prism_sanctum",
+      "regionId": "reg_crystal_caverns",
+      "mvp": false,
+      "goldDrop": { "min": 1600, "max": 2300 },
+      "guaranteedEntries": [
+        { "itemId": "mat_arcane_crystal", "qtyMin": 4, "qtyMax": 6, "dropChance": 1.0 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 4, "qtyMax": 7, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "sed_crystal_lotus", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_prism_chest_gear",
+          "rollChance": 1.0,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "eqp_crystal_circlet", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "eqp_crystal_vestment", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "eqp_crystal_handwraps", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "eqp_crystal_slippers", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "wpn_prism_recurve_bow", "qtyMin": 1, "qtyMax": 1, "weight": 0.06 },
+            { "itemId": "wpn_glaciersong_wand", "qtyMin": 1, "qtyMax": 1, "weight": 0.06 }
+          ]
+        }
+      ],
+      "descriptionVi": "Rương kho báu hoàn thành hầm ngục dng_prism_sanctum tại Crystal Caverns."
+    },
+    {
+      "id": "ltb_chest_glacial_citadel_clear",
+      "sourceType": "DUNGEON_CHEST",
+      "sourceId": "dng_glacial_citadel",
+      "regionId": "reg_frostbound_highlands",
+      "mvp": false,
+      "goldDrop": { "min": 3400, "max": 4800 },
+      "guaranteedEntries": [
+        { "itemId": "mat_mythril_ingot", "qtyMin": 3, "qtyMax": 5, "dropChance": 1.0 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 5, "qtyMax": 9, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "sed_frost_turnip", "qtyMin": 2, "qtyMax": 3, "dropChance": 0.40 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_glacial_chest_gear",
+          "rollChance": 1.0,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "eqp_frostbound_greathelm", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "eqp_frostbound_hauberk", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "eqp_frostbound_vambraces", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "eqp_frostbound_striders", "qtyMin": 1, "qtyMax": 1, "weight": 0.22 },
+            { "itemId": "wpn_frostbite_greataxe", "qtyMin": 1, "qtyMax": 1, "weight": 0.06 },
+            { "itemId": "wpn_boreal_bastion_shield", "qtyMin": 1, "qtyMax": 1, "weight": 0.06 }
+          ]
+        }
+      ],
+      "descriptionVi": "Rương kho báu hoàn thành hầm ngục dng_glacial_citadel tại Frostbound Highlands."
+    },
+    {
+      "id": "ltb_chest_eclipse_throne_clear",
+      "sourceType": "DUNGEON_CHEST",
+      "sourceId": "dng_eclipse_throne",
+      "regionId": "reg_abyssal_kingdom",
+      "mvp": false,
+      "goldDrop": { "min": 7200, "max": 10500 },
+      "guaranteedEntries": [
+        { "itemId": "mat_void_crystal", "qtyMin": 3, "qtyMax": 6, "dropChance": 1.0 },
+        { "itemId": "mat_starlight_dust", "qtyMin": 7, "qtyMax": 12, "dropChance": 1.0 }
+      ],
+      "independentEntries": [
+        { "itemId": "sed_starlight_melon", "qtyMin": 1, "qtyMax": 2, "dropChance": 0.35 }
+      ],
+      "exclusivePools": [
+        {
+          "poolId": "pool_eclipse_chest_gear",
+          "rollChance": 1.0,
+          "rolls": 1,
+          "entries": [
+            { "itemId": "eqp_abyssal_crown", "qtyMin": 1, "qtyMax": 1, "weight": 0.20 },
+            { "itemId": "eqp_abyssal_mantle", "qtyMin": 1, "qtyMax": 1, "weight": 0.20 },
+            { "itemId": "eqp_abyssal_claws", "qtyMin": 1, "qtyMax": 1, "weight": 0.20 },
+            { "itemId": "eqp_abyssal_treads", "qtyMin": 1, "qtyMax": 1, "weight": 0.20 },
+            { "itemId": "eqp_eclipse_void_band", "qtyMin": 1, "qtyMax": 1, "weight": 0.10 },
+            { "itemId": "eqp_abyssal_star_choker", "qtyMin": 1, "qtyMax": 1, "weight": 0.10 }
+          ]
+        }
+      ],
+      "descriptionVi": "Rương kho báu tối thượng sau khi chinh phục hầm ngục cuối dng_eclipse_throne."
+    }
+  ]
+}

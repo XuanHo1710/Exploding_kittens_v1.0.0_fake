@@ -1,0 +1,1655 @@
+{
+  "schemaVersion": "1.0.0",
+  "catalog": "quests",
+  "game": "Eldoria: Forgotten Wilds",
+  "lastUpdated": "2026-11-19",
+  "totalCount": 30,
+  "mvpCount": 12,
+  "descriptionVi": "Danh mục chuẩn đúng 30 nhiệm vụ (12 nhiệm vụ MVP và 18 nhiệm vụ hậu MVP) phủ kín toàn bộ 8 khu vực của Eldoria: Forgotten Wilds. Chuỗi 12 nhiệm vụ MVP dẫn dắt người chơi qua onboarding bằng hành động (không tường chữ): chặt gỗ → thu hoạch & gieo Sunwheat → hạ Moss Slime → xây Bếp & nấu Herb Stew → luyện đồng & cường hóa +1 → quay Gacha nội tệ đầu tiên → xây Lò Rèn & Chuồng Gà → thám hiểm Whispering Forest → săn Alpha Direwolf → tích đủ 1.600+ STARLIGHT_SHARD cho 10-pull đầu tiên → lập Party hạ boss_thornback_elder trong dng_mossroot_hollow.",
+  "rules": {
+    "acyclicPrereqDagRequired": true,
+    "serverAuthoritativeProgressTracking": true,
+    "idempotentRewardClaimRequired": true,
+    "overflowClaimBoxOnInventoryFull": true,
+    "maxActiveTrackedOnHud": 1,
+    "mvpTotalQuestStarlightShards": 2400,
+    "notesVi": "Mọi phần thưởng nhiệm vụ được cấp nguyên tử thông qua WAL JSON và ghi sổ CurrencyLedger. Nhân vật không thể nhận lặp thưởng nhiệm vụ đã ở trạng thái CLAIMED."
+  },
+  "quests": [
+    {
+      "id": "qst_001_first_harvest",
+      "titleEn": "First Harvest at Greenhaven",
+      "titleVi": "Vụ Mùa Đầu Tiên Tại Greenhaven",
+      "type": "ONBOARDING",
+      "mvp": true,
+      "regionId": "reg_greenhaven_village",
+      "giverNpcId": "npc_elder_rowan",
+      "turnInNpcId": "npc_elder_rowan",
+      "prereqQuestIds": [],
+      "minLevel": 1,
+      "onboardingStepRef": "OB-1..OB-3",
+      "summaryVi": "Bước ra khỏi căn nhà gỗ khởi đầu, chặt gỗ sồi quanh sân, thu hoạch luống Sunwheat chín sẵn và gieo vụ mùa mới.",
+      "dialogueStartVi": "Chào mừng tới Greenhaven! Hãy chặt vài khúc gỗ sồi và thu hoạch luống lúa mì chín kia trước khi sương sớm tan nhé.",
+      "dialogueCompleteVi": "Rất khéo tay! Mảnh đất này sẽ sớm hồi sinh dưới bàn tay của ngươi.",
+      "objectives": [
+        {
+          "objectiveId": "obj_001_oak",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_oak_wood",
+          "requiredQty": 3,
+          "descriptionVi": "Chặt 3 Gỗ Sồi (Oak Wood) gần hàng rào sân nhà"
+        },
+        {
+          "objectiveId": "obj_001_harvest",
+          "type": "HARVEST_CROP",
+          "targetType": "CROP",
+          "targetId": "crp_sunwheat",
+          "requiredQty": 3,
+          "descriptionVi": "Thu hoạch 3 luống Lúa Mì Mặt Trời (Sunwheat) đã chín"
+        },
+        {
+          "objectiveId": "obj_001_plant",
+          "type": "PLANT_CROP",
+          "targetType": "CROP",
+          "targetId": "crp_sunwheat",
+          "requiredQty": 2,
+          "descriptionVi": "Gieo và tưới nước 2 hạt Sunwheat xuống ô đất trống"
+        }
+      ],
+      "rewards": {
+        "exp": 60,
+        "gold": 150,
+        "starlightShard": 160,
+        "craftingToken": 0,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "sed_sunwheat", "qty": 4 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_002_slime_at_the_fence",
+      "titleEn": "Slimes at the Fence",
+      "titleVi": "Bầy Slime Quấy Phá Hàng Rào",
+      "type": "ONBOARDING",
+      "mvp": true,
+      "regionId": "reg_greenhaven_village",
+      "giverNpcId": "npc_elder_rowan",
+      "turnInNpcId": "npc_elder_rowan",
+      "prereqQuestIds": ["qst_001_first_harvest"],
+      "minLevel": 1,
+      "onboardingStepRef": "OB-4",
+      "summaryVi": "Đánh đuổi bầy Moss Slime đang tràn vào rìa ruộng lúa mì và thu nhặt Slime Gel rơi ra.",
+      "dialogueStartVi": "Cẩn thận! Bầy Moss Slime bị mùi lúa mới thu hút đang nhảy qua hàng rào. Hãy thử vũ khí và nhớ né khi thấy vòng đỏ!",
+      "dialogueCompleteVi": "Tuyệt lắm! Đừng vứt Slime Gel đi — thảo dược sư và bếp ăn rất cần chúng đấy.",
+      "objectives": [
+        {
+          "objectiveId": "obj_002_slime",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_moss_slime",
+          "requiredQty": 3,
+          "descriptionVi": "Đánh bại 3 Moss Slime tại rìa đồng ruộng Greenhaven"
+        },
+        {
+          "objectiveId": "obj_002_gel",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_slime_gel",
+          "requiredQty": 2,
+          "descriptionVi": "Thu thập 2 Slime Gel từ bầy Slime"
+        }
+      ],
+      "rewards": {
+        "exp": 95,
+        "gold": 180,
+        "starlightShard": 160,
+        "craftingToken": 0,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "csm_hp_potion_small", "qty": 3 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_003_hearth_and_stew",
+      "titleEn": "Warm Hearth, Warm Stew",
+      "titleVi": "Bếp Lửa Ấm & Nồi Súp Thảo Mộc",
+      "type": "ONBOARDING",
+      "mvp": true,
+      "regionId": "reg_greenhaven_village",
+      "giverNpcId": "npc_village_herbalist",
+      "turnInNpcId": "npc_village_herbalist",
+      "prereqQuestIds": ["qst_002_slime_at_the_fence"],
+      "minLevel": 2,
+      "onboardingStepRef": "OB-5",
+      "summaryVi": "Dựng Bếp Gia Đình trên lãnh địa bằng chế độ xây dựng và nấu nồi Greenhaven Herb Stew đầu tiên.",
+      "dialogueStartVi": "Chiến đấu với cái bụng rỗng rất nguy hiểm. Hãy đặt một căn bếp nhỏ trên đất nhà ngươi rồi nấu nồi Herb Stew nóng hổi xem!",
+      "dialogueCompleteVi": "Thơm nức mũi rồi đấy! Nhớ ăn trước khi đi xa để giữ Stamina và buff hồi máu nhé.",
+      "objectives": [
+        {
+          "objectiveId": "obj_003_kitchen",
+          "type": "BUILD_STRUCTURE",
+          "targetType": "BUILDING",
+          "targetId": "bld_kitchen",
+          "requiredQty": 1,
+          "requiredLevel": 1,
+          "descriptionVi": "Xây dựng Bếp Lãnh Địa (Homestead Kitchen) cấp 1"
+        },
+        {
+          "objectiveId": "obj_003_stew",
+          "type": "CRAFT_RECIPE",
+          "targetType": "RECIPE",
+          "targetId": "rcp_cook_herb_stew",
+          "requiredQty": 1,
+          "descriptionVi": "Nấu 1 mẻ Greenhaven Herb Stew tại Bếp"
+        }
+      ],
+      "rewards": {
+        "exp": 120,
+        "gold": 200,
+        "starlightShard": 160,
+        "craftingToken": 2,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "sed_golden_carrot", "qty": 3 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_004_sparks_of_the_forge",
+      "titleEn": "Sparks of the Forge",
+      "titleVi": "Tia Lửa Đầu Tiên Từ Lò Rèn",
+      "type": "ONBOARDING",
+      "mvp": true,
+      "regionId": "reg_greenhaven_village",
+      "giverNpcId": "npc_smith_garrik",
+      "turnInNpcId": "npc_smith_garrik",
+      "prereqQuestIds": ["qst_003_hearth_and_stew"],
+      "minLevel": 2,
+      "onboardingStepRef": "OB-6",
+      "summaryVi": "Đào quặng đồng ven suối, nung thành Copper Ingot tại lò của thợ rèn Garrik và cường hóa vũ khí lên +1.",
+      "dialogueStartVi": "Vũ khí cùn không đánh nổi quái rừng đâu! Đem quặng đồng tới lò ta luyện phôi, rồi ta chỉ cho cách cường hóa chắc chắn 100% lên +1.",
+      "dialogueCompleteVi": "Thấy lưỡi thép sáng lên chưa? Lò của ta chỉ chịu được đến +2, muốn lên cao hơn hãy tự dựng Lò Rèn ở lãnh địa!",
+      "objectives": [
+        {
+          "objectiveId": "obj_004_copper",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_copper_ore",
+          "requiredQty": 4,
+          "descriptionVi": "Đào 4 Quặng Đồng (Copper Ore) quanh Greenhaven"
+        },
+        {
+          "objectiveId": "obj_004_smelt",
+          "type": "CRAFT_RECIPE",
+          "targetType": "RECIPE",
+          "targetId": "rcp_smelt_copper_ingot",
+          "requiredQty": 2,
+          "descriptionVi": "Luyện 2 Thỏi Đồng (Copper Ingot)"
+        },
+        {
+          "objectiveId": "obj_004_enhance",
+          "type": "ENHANCE_WEAPON",
+          "targetType": "WEAPON_ENHANCEMENT",
+          "targetId": "ANY_WEAPON",
+          "requiredQty": 1,
+          "requiredLevel": 1,
+          "descriptionVi": "Cường hóa vũ khí khởi đầu lên mức +1"
+        }
+      ],
+      "rewards": {
+        "exp": 160,
+        "gold": 260,
+        "starlightShard": 320,
+        "craftingToken": 3,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "csm_repair_kit", "qty": 2 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_005_starlight_calling",
+      "titleEn": "The Starlight Calling",
+      "titleVi": "Tiếng Gọi Từ Đền Ánh Sao",
+      "type": "ONBOARDING",
+      "mvp": true,
+      "regionId": "reg_greenhaven_village",
+      "giverNpcId": "npc_elder_rowan",
+      "turnInNpcId": "npc_elder_rowan",
+      "prereqQuestIds": ["qst_004_sparks_of_the_forge"],
+      "minLevel": 3,
+      "onboardingStepRef": "OB-7",
+      "summaryVi": "Thử thực hiện lượt triệu hồi đầu tiên bằng STARLIGHT_SHARD thưởng nhiệm vụ tại Đền Ánh Sao rồi nhận giấy thông hành vào rừng.",
+      "dialogueStartVi": "Đền Ánh Sao ở quảng trường phản hồi với Mảnh Tinh Tú ngươi vừa kiếm được. Hãy thử triệu hồi một lần và quay lại nhận lệnh thông hành!",
+      "dialogueCompleteVi": "Cổng Đông hướng sang Whispering Forest đã mở cho ngươi. Hãy luôn giữ cảnh giác và kết bạn cùng các nhà thám hiểm khác!",
+      "objectives": [
+        {
+          "objectiveId": "obj_005_pull",
+          "type": "GACHA_PULL",
+          "targetType": "BANNER",
+          "targetId": "bnr_perm_heroes",
+          "requiredQty": 1,
+          "descriptionVi": "Thực hiện 1 lượt triệu hồi bằng STARLIGHT_SHARD trên bnr_perm_heroes"
+        },
+        {
+          "objectiveId": "obj_005_report",
+          "type": "TALK_NPC",
+          "targetType": "NPC",
+          "targetId": "npc_elder_rowan",
+          "requiredQty": 1,
+          "descriptionVi": "Báo cáo với Trưởng Làng Rowan tại quảng trường Greenhaven"
+        }
+      ],
+      "rewards": {
+        "exp": 150,
+        "gold": 220,
+        "starlightShard": 160,
+        "craftingToken": 0,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "wpn_woodcutter_handaxe", "qty": 1 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": "reg_whispering_forest"
+      }
+    },
+    {
+      "id": "qst_006_homestead_blacksmith",
+      "titleEn": "Forge of Your Own",
+      "titleVi": "Xây Dựng Lò Rèn Của Riêng Mình",
+      "type": "CRAFTING",
+      "mvp": true,
+      "regionId": "reg_greenhaven_village",
+      "giverNpcId": "npc_smith_garrik",
+      "turnInNpcId": "npc_smith_garrik",
+      "prereqQuestIds": ["qst_004_sparks_of_the_forge"],
+      "minLevel": 3,
+      "onboardingStepRef": null,
+      "summaryVi": "Dựng Lò Rèn cấp 1 ngay trên lãnh địa cá nhân, luyện thỏi sắt và cường hóa vũ khí lên +2.",
+      "dialogueStartVi": "Đã đến lúc ngươi có đe và búa của riêng mình. Dựng Lò Rèn trên sân nhà, luyện thử thép sắt và nâng vũ khí lên +2 đi!",
+      "dialogueCompleteVi": "Lửa lò cháy đẹp lắm! Từ giờ ngươi có thể tự rèn giáp, luyện phôi và mở rộng tới tận +10 khi nâng cấp lò.",
+      "objectives": [
+        {
+          "objectiveId": "obj_006_build_smith",
+          "type": "BUILD_STRUCTURE",
+          "targetType": "BUILDING",
+          "targetId": "bld_blacksmith",
+          "requiredQty": 1,
+          "requiredLevel": 1,
+          "descriptionVi": "Xây dựng Lò Rèn (Blacksmith Forge) cấp 1 tại lãnh địa"
+        },
+        {
+          "objectiveId": "obj_006_iron",
+          "type": "CRAFT_RECIPE",
+          "targetType": "RECIPE",
+          "targetId": "rcp_smelt_iron_ingot",
+          "requiredQty": 2,
+          "descriptionVi": "Luyện 2 Thỏi Sắt (Iron Ingot) tại Lò Rèn"
+        },
+        {
+          "objectiveId": "obj_006_enhance2",
+          "type": "ENHANCE_WEAPON",
+          "targetType": "WEAPON_ENHANCEMENT",
+          "targetId": "ANY_WEAPON",
+          "requiredQty": 1,
+          "requiredLevel": 2,
+          "descriptionVi": "Cường hóa một vũ khí đạt mức +2"
+        }
+      ],
+      "rewards": {
+        "exp": 240,
+        "gold": 350,
+        "starlightShard": 160,
+        "craftingToken": 5,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "eqp_copper_vitality_ring", "qty": 1 },
+          { "itemId": "wpn_copper_knuckle_gauntlet", "qty": 1 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_007_feathers_and_fields",
+      "titleEn": "Feathers and Golden Fields",
+      "titleVi": "Chuồng Gà & Cánh Đồng Cà Rốt Vàng",
+      "type": "FARMING",
+      "mvp": true,
+      "regionId": "reg_greenhaven_village",
+      "giverNpcId": "npc_farm_merchant",
+      "turnInNpcId": "npc_farm_merchant",
+      "prereqQuestIds": ["qst_003_hearth_and_stew"],
+      "minLevel": 4,
+      "onboardingStepRef": null,
+      "summaryVi": "Mở rộng luống canh tác, dựng Chuồng Gà nuôi Meadow Chicken, gom trứng tươi và thu hoạch Golden Carrot.",
+      "dialogueStartVi": "Muốn nấu được món buff đánh Boss thì cần trứng tươi và Cà Rốt Vàng! Hãy dựng Chuồng Gà và mở rộng ruộng vườn ngay thôi.",
+      "dialogueCompleteVi": "Trang trại bắt đầu nhộn nhịp rồi đấy! Cầm lấy ít phân bón hữu cơ này để tăng tỷ lệ nông sản bạc và vàng nhé.",
+      "objectives": [
+        {
+          "objectiveId": "obj_007_farm",
+          "type": "BUILD_STRUCTURE",
+          "targetType": "BUILDING",
+          "targetId": "bld_farm_plot",
+          "requiredQty": 1,
+          "requiredLevel": 1,
+          "descriptionVi": "Xây dựng Khu Canh Tác (Homestead Farm Plot) cấp 1"
+        },
+        {
+          "objectiveId": "obj_007_coop",
+          "type": "BUILD_STRUCTURE",
+          "targetType": "BUILDING",
+          "targetId": "bld_chicken_coop",
+          "requiredQty": 1,
+          "requiredLevel": 1,
+          "descriptionVi": "Xây dựng Chuồng Gà (Chicken Coop) cấp 1"
+        },
+        {
+          "objectiveId": "obj_007_chicken",
+          "type": "RAISE_ANIMAL",
+          "targetType": "ANIMAL",
+          "targetId": "anm_meadow_chicken",
+          "requiredQty": 1,
+          "descriptionVi": "Nhận nuôi tối thiểu 1 Meadow Chicken và cho ăn"
+        },
+        {
+          "objectiveId": "obj_007_egg",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_fresh_egg",
+          "requiredQty": 3,
+          "descriptionVi": "Thu gom 3 Trứng Tươi (Fresh Egg)"
+        },
+        {
+          "objectiveId": "obj_007_carrot",
+          "type": "HARVEST_CROP",
+          "targetType": "CROP",
+          "targetId": "crp_golden_carrot",
+          "requiredQty": 3,
+          "descriptionVi": "Thu hoạch 3 Cà Rốt Vàng (Golden Carrot)"
+        }
+      ],
+      "rewards": {
+        "exp": 260,
+        "gold": 380,
+        "starlightShard": 160,
+        "craftingToken": 4,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "csm_fertilizer_basic", "qty": 4 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_008_shadows_in_whispering_woods",
+      "titleEn": "Shadows in Whispering Forest",
+      "titleVi": "Bóng Dáng Trong Rừng Thì Thầm",
+      "type": "MAIN",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "giverNpcId": "npc_ranger_sylvia",
+      "turnInNpcId": "npc_ranger_sylvia",
+      "prereqQuestIds": ["qst_005_starlight_calling"],
+      "minLevel": 4,
+      "onboardingStepRef": "OB-8",
+      "summaryVi": "Tiến vào Rừng Thì Thầm, dẹp bầy Forest Goblin cùng Timber Wolf gần trạm gác và đốn gỗ thông gia cố hàng rào.",
+      "dialogueStartVi": "Tuyến đường gỗ phía Tây đang bị Goblin và Sói Rừng phục kích. Giúp ta dọn quang bìa rừng và mang về vài khúc gỗ thông nhé!",
+      "dialogueCompleteVi": "Tốt lắm, thương đoàn có thể đi lại an toàn hơn rồi. Chiếc áo thợ săn này hợp với ngươi đấy.",
+      "objectives": [
+        {
+          "objectiveId": "obj_008_goblin",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_forest_goblin",
+          "requiredQty": 6,
+          "descriptionVi": "Tiêu diệt 6 Forest Goblin tại Whispering Forest"
+        },
+        {
+          "objectiveId": "obj_008_wolf",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_timber_wolf",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Timber Wolf quanh lối mòn phía Tây"
+        },
+        {
+          "objectiveId": "obj_008_pine",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_pine_wood",
+          "requiredQty": 8,
+          "descriptionVi": "Khai thác 8 Gỗ Thông (Pine Wood)"
+        }
+      ],
+      "rewards": {
+        "exp": 380,
+        "gold": 480,
+        "starlightShard": 160,
+        "craftingToken": 3,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "eqp_hunter_tunic", "qty": 1 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_009_spores_and_tusks",
+      "titleEn": "Spores, Tusks and Iron Veins",
+      "titleVi": "Bào Tử Độc, Nanh Rừng & Mỏ Sắt",
+      "type": "MAIN",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "giverNpcId": "npc_ranger_sylvia",
+      "turnInNpcId": "npc_ranger_sylvia",
+      "prereqQuestIds": ["qst_008_shadows_in_whispering_woods"],
+      "minLevel": 7,
+      "onboardingStepRef": null,
+      "summaryVi": "Đi sâu vào lõi rừng, tiêu diệt Spore Cap và Briar Boar, đào quặng sắt và nấu một phần Golden Carrot Roast để chuẩn bị săn Tinh Anh.",
+      "dialogueStartVi": "Sâu hơn trong rừng là đám Nấm Bào Tử và Lợn Gai hung dữ. Đừng quên nấu một phần Golden Carrot Roast trước khi đối đầu chúng!",
+      "dialogueCompleteVi": "Ngươi tiến bộ rất nhanh! Ta đã lần ra dấu vết của con Alpha Direwolf ở phía Bắc khu rừng.",
+      "objectives": [
+        {
+          "objectiveId": "obj_009_spore",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_spore_cap",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Spore Cap trong vùng rừng ẩm"
+        },
+        {
+          "objectiveId": "obj_009_boar",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_briar_boar",
+          "requiredQty": 4,
+          "descriptionVi": "Tiêu diệt 4 Briar Boar (né cú húc báo đỏ)"
+        },
+        {
+          "objectiveId": "obj_009_iron_ore",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_iron_ore",
+          "requiredQty": 8,
+          "descriptionVi": "Khai thác 8 Quặng Sắt (Iron Ore)"
+        },
+        {
+          "objectiveId": "obj_009_roast",
+          "type": "CRAFT_RECIPE",
+          "targetType": "RECIPE",
+          "targetId": "rcp_cook_golden_roast",
+          "requiredQty": 1,
+          "descriptionVi": "Nấu 1 phần Golden Carrot Roast tại Bếp Lv 2"
+        }
+      ],
+      "rewards": {
+        "exp": 520,
+        "gold": 620,
+        "starlightShard": 160,
+        "craftingToken": 5,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "csm_hp_potion_med", "qty": 3 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_010_fang_of_the_alpha",
+      "titleEn": "Fang of the Alpha Direwolf",
+      "titleVi": "Răng Nanh Của Sói Đầu Đàn",
+      "type": "MAIN",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "giverNpcId": "npc_ranger_sylvia",
+      "turnInNpcId": "npc_ranger_sylvia",
+      "prereqQuestIds": ["qst_009_spores_and_tusks"],
+      "minLevel": 10,
+      "onboardingStepRef": null,
+      "summaryVi": "Hạ gục quái Tinh Anh Alpha Direwolf trong Whispering Forest, mang về răng nanh chứng tích và hoàn tất mốc đủ 1.600 STARLIGHT_SHARD cho lượt 10-pull đầu tiên.",
+      "dialogueStartVi": "Alpha Direwolf thống trị cả bầy sói vùng rừng sâu. Hãy ăn Food Buff, mở khóa kỹ năng Ultimate cấp 10 hoặc gọi thêm đồng đội rồi hạ gục nó!",
+      "dialogueCompleteVi": "Chiến công lẫy lừng! Chừng này Mảnh Tinh Tú thừa sức để ngươi thực hiện lượt triệu hồi 10 lần đầu tiên ở Đền Ánh Sao đấy!",
+      "objectives": [
+        {
+          "objectiveId": "obj_010_alpha",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_elite_alpha_direwolf",
+          "requiredQty": 1,
+          "descriptionVi": "Đánh bại Quái Tinh Anh Alpha Direwolf"
+        },
+        {
+          "objectiveId": "obj_010_fang",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_alpha_fang",
+          "requiredQty": 1,
+          "descriptionVi": "Thu thập 1 Alpha Direwolf Fang"
+        },
+        {
+          "objectiveId": "obj_010_ingot",
+          "type": "CRAFT_RECIPE",
+          "targetType": "RECIPE",
+          "targetId": "rcp_smelt_iron_ingot",
+          "requiredQty": 4,
+          "descriptionVi": "Luyện thêm 4 Thỏi Sắt chuẩn bị vũ khí vào Hầm Ngục"
+        }
+      ],
+      "rewards": {
+        "exp": 850,
+        "gold": 950,
+        "starlightShard": 240,
+        "craftingToken": 6,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "csm_stamina_tonic", "qty": 3 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_011_hollow_scouting",
+      "titleEn": "Scouting Mossroot Hollow",
+      "titleVi": "Trinh Sát Cửa Hang Mossroot Hollow",
+      "type": "MAIN",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "giverNpcId": "npc_ranger_sylvia",
+      "turnInNpcId": "npc_elder_rowan",
+      "prereqQuestIds": ["qst_010_fang_of_the_alpha", "qst_006_homestead_blacksmith"],
+      "minLevel": 12,
+      "onboardingStepRef": null,
+      "summaryVi": "Dọn đường quanh cửa hầm ngục Mossroot Hollow, tiêu diệt dơi hang, bọ rễ và pháp sư Goblin, đồng thời nâng Lò Rèn lên cấp 2.",
+      "dialogueStartVi": "Rễ cây hắc ám đang rỉ ra từ cửa hang Mossroot Hollow. Hãy dọn đám quái gác cổng và nâng Lò Rèn lên cấp 2 để sẵn sàng đối đầu Thủ Lĩnh Hầm Ngục.",
+      "dialogueCompleteVi": "Cửa hang đã thông thoáng! Cầm lấy hai chiếc Lông Vũ Hồi Sinh này và lập tổ đội trước khi tiến vào sào huyệt Thornback Elder.",
+      "objectives": [
+        {
+          "objectiveId": "obj_011_bat",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_hollow_bat",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Hollow Bat gần cửa hầm ngục"
+        },
+        {
+          "objectiveId": "obj_011_crawler",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_root_crawler",
+          "requiredQty": 4,
+          "descriptionVi": "Tiêu diệt 4 Root Crawler"
+        },
+        {
+          "objectiveId": "obj_011_shaman",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_goblin_shaman",
+          "requiredQty": 3,
+          "descriptionVi": "Tiêu diệt 3 Goblin Shaman"
+        },
+        {
+          "objectiveId": "obj_011_smith2",
+          "type": "UPGRADE_STRUCTURE",
+          "targetType": "BUILDING",
+          "targetId": "bld_blacksmith",
+          "requiredQty": 1,
+          "requiredLevel": 2,
+          "descriptionVi": "Nâng cấp Lò Rèn (bld_blacksmith) lên cấp 2"
+        }
+      ],
+      "rewards": {
+        "exp": 1100,
+        "gold": 1200,
+        "starlightShard": 240,
+        "craftingToken": 8,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "csm_revive_feather", "qty": 2 },
+          { "itemId": "sed_ember_pepper", "qty": 2 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_012_heart_of_mossroot",
+      "titleEn": "Heart of the Mossroot Elder",
+      "titleVi": "Trái Tim Cổ Thụ Mossroot",
+      "type": "BOSS",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "giverNpcId": "npc_elder_rowan",
+      "turnInNpcId": "npc_elder_rowan",
+      "prereqQuestIds": ["qst_011_hollow_scouting"],
+      "minLevel": 14,
+      "onboardingStepRef": null,
+      "summaryVi": "Lập Party 2–4 người (hoặc thử thách solo) tiến vào dng_mossroot_hollow hạ gục Boss Thornback Elder qua 3 phase và mở phong ấn hướng lên Núi Đỉnh Sắt.",
+      "dialogueStartVi": "Thornback Elder bị hủ hóa sâu trong Mossroot Hollow. Hãy dụ nó húc vào trụ đá để phá giáp, dùng sát thương Lửa khắc chế và mang trái tim cổ thụ về đây!",
+      "dialogueCompleteVi": "Greenhaven đã được cứu! Phong ấn đường đèo lên Ironpeak Mountains đã mở — huyền thoại của ngươi tại Eldoria mới chỉ bắt đầu!",
+      "objectives": [
+        {
+          "objectiveId": "obj_012_boss",
+          "type": "KILL_BOSS",
+          "targetType": "BOSS",
+          "targetId": "boss_thornback_elder",
+          "requiredQty": 1,
+          "descriptionVi": "Đánh bại Boss Thornback Elder trong hầm ngục dng_mossroot_hollow"
+        },
+        {
+          "objectiveId": "obj_012_heart",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_thornback_heart",
+          "requiredQty": 1,
+          "descriptionVi": "Thu hồi 1 Thornback Elder Heart và trao cho Trưởng Làng Rowan"
+        }
+      ],
+      "rewards": {
+        "exp": 2200,
+        "gold": 2000,
+        "starlightShard": 320,
+        "craftingToken": 10,
+        "bossToken": 5,
+        "items": [
+          { "itemId": "eqp_mossroot_helm", "qty": 1 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": "reg_ironpeak_mountains"
+      }
+    },
+    {
+      "id": "qst_013_ironfist_apprentice",
+      "titleEn": "The Ironfist Artisan",
+      "titleVi": "Đệ Tử Thiết Quyền Của Lò Rèn",
+      "type": "SIDE",
+      "mvp": false,
+      "regionId": "reg_greenhaven_village",
+      "giverNpcId": "npc_smith_garrik",
+      "turnInNpcId": "npc_smith_garrik",
+      "prereqQuestIds": ["qst_006_homestead_blacksmith"],
+      "minLevel": 12,
+      "onboardingStepRef": null,
+      "summaryVi": "Xây dựng Xưởng Nghệ Nhân và rèn vũ khí đạt mốc +4 để chiêu mộ nữ kỹ sư cơ khí Mira Crankbolt vào đội hình.",
+      "dialogueStartVi": "Cô học trò Mira Crankbolt của ta rất nể phục những người biết tự dựng xưởng và rèn binh khí chuẩn mực. Thử nâng vũ khí lên +4 xem!",
+      "dialogueCompleteVi": "Mira đã quyết định đồng hành cùng ngươi! Cặp găng tay cơ khí của cô ấy phá giáp Boss cực kỳ hiệu quả đấy.",
+      "objectives": [
+        {
+          "objectiveId": "obj_013_workshop",
+          "type": "BUILD_STRUCTURE",
+          "targetType": "BUILDING",
+          "targetId": "bld_workshop",
+          "requiredQty": 1,
+          "requiredLevel": 1,
+          "descriptionVi": "Xây dựng Xưởng Nghệ Nhân (Artisan Workshop) cấp 1"
+        },
+        {
+          "objectiveId": "obj_013_enhance4",
+          "type": "ENHANCE_WEAPON",
+          "targetType": "WEAPON_ENHANCEMENT",
+          "targetId": "ANY_WEAPON",
+          "requiredQty": 1,
+          "requiredLevel": 4,
+          "descriptionVi": "Cường hóa một vũ khí lên tối thiểu +4"
+        }
+      ],
+      "rewards": {
+        "exp": 900,
+        "gold": 900,
+        "starlightShard": 160,
+        "craftingToken": 8,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "csm_repair_kit", "qty": 3 }
+        ],
+        "unlockCharacterId": "chr_mira_ironfist",
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_014_tidewarden_oath",
+      "titleEn": "Oath of the Lake Warden",
+      "titleVi": "Lời Thề Hộ Vệ Ven Hồ",
+      "type": "SIDE",
+      "mvp": false,
+      "regionId": "reg_whispering_forest",
+      "giverNpcId": "npc_ranger_sylvia",
+      "turnInNpcId": "npc_ranger_sylvia",
+      "prereqQuestIds": ["qst_012_heart_of_mossroot"],
+      "minLevel": 15,
+      "onboardingStepRef": null,
+      "summaryVi": "Hạ gục Tinh Anh Briar Stag tại hồ sương Whispering Forest và chuẩn bị Cà Ri Ớt Than Hồng để kết giao cùng hiệp sĩ Rowan Mistbreaker.",
+      "dialogueStartVi": "Con Briar Stag điên cuồng đang chặn nguồn nước chảy về hồ Greenhaven. Hiệp sĩ Rowan đang chờ viện binh giúp hạ nó!",
+      "dialogueCompleteVi": "Rowan Mistbreaker cảm phục tinh thần đồng đội của ngươi và xin gia nhập đội hình!",
+      "objectives": [
+        {
+          "objectiveId": "obj_014_stag",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_elite_briar_stag",
+          "requiredQty": 1,
+          "descriptionVi": "Đánh bại Quái Tinh Anh Briar Stag ở rừng sâu"
+        },
+        {
+          "objectiveId": "obj_014_curry",
+          "type": "CRAFT_RECIPE",
+          "targetType": "RECIPE",
+          "targetId": "rcp_cook_ember_curry",
+          "requiredQty": 1,
+          "descriptionVi": "Nấu 1 phần Ember Pepper Curry đãi tiệc sau trận đánh"
+        }
+      ],
+      "rewards": {
+        "exp": 1600,
+        "gold": 1400,
+        "starlightShard": 160,
+        "craftingToken": 6,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "wpn_tidebreaker_halberd", "qty": 1 }
+        ],
+        "unlockCharacterId": "chr_rowan_tidewarden",
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_015_ascent_to_ironpeak",
+      "titleEn": "Ascent to Ironpeak Mountains",
+      "titleVi": "Hành Quân Lên Đỉnh Núi Sắt",
+      "type": "MAIN",
+      "mvp": false,
+      "regionId": "reg_ironpeak_mountains",
+      "giverNpcId": "npc_ironpeak_quartermaster",
+      "turnInNpcId": "npc_ironpeak_quartermaster",
+      "prereqQuestIds": ["qst_012_heart_of_mossroot"],
+      "minLevel": 16,
+      "onboardingStepRef": null,
+      "summaryVi": "Mở chốt tiền đồn tại Ironpeak Mountains, đánh tan Stone Golem và Ironhide Kobold đồng thời khai thác quặng bạc đầu tiên.",
+      "dialogueStartVi": "Chào mừng tới đèo Đỉnh Sắt! Bầy Kobold và Người Đá đang chiếm hầm mỏ bạc. Đẩy lùi chúng để thiết lập trại tiếp tế!",
+      "dialogueCompleteVi": "Đường mỏ đã thông! Đeo chiếc Đai Đèn Thợ Mỏ này vào để khám phá sâu hơn trong lòng núi.",
+      "objectives": [
+        {
+          "objectiveId": "obj_015_golem",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_stone_golem",
+          "requiredQty": 6,
+          "descriptionVi": "Tiêu diệt 6 Stone Golem trên sườn núi Ironpeak"
+        },
+        {
+          "objectiveId": "obj_015_kobold",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_ironhide_kobold",
+          "requiredQty": 6,
+          "descriptionVi": "Tiêu diệt 6 Ironhide Kobold trong hầm mỏ"
+        },
+        {
+          "objectiveId": "obj_015_silver",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_silver_ore",
+          "requiredQty": 6,
+          "descriptionVi": "Khai thác 6 Quặng Bạc (Silver Ore)"
+        }
+      ],
+      "rewards": {
+        "exp": 2400,
+        "gold": 2100,
+        "starlightShard": 160,
+        "craftingToken": 6,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "eqp_miner_lantern_belt", "qty": 1 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_016_mountain_furnace",
+      "titleEn": "Steel and Livestock Expansion",
+      "titleVi": "Lò Cao Nhiệt & Mở Rộng Trang Trại",
+      "type": "CRAFTING",
+      "mvp": false,
+      "regionId": "reg_ironpeak_mountains",
+      "giverNpcId": "npc_ironpeak_quartermaster",
+      "turnInNpcId": "npc_smith_garrik",
+      "prereqQuestIds": ["qst_015_ascent_to_ironpeak"],
+      "minLevel": 20,
+      "onboardingStepRef": null,
+      "summaryVi": "Xây Lò Luyện Kim riêng và Chuồng Gia Súc lớn, luyện hàng loạt Steel Ingot và thu hoạch Bí Ngô Bạc.",
+      "dialogueStartVi": "Để chinh phục lò dung nham Slag Foundry, quân nhu và thép tinh luyện phải dồi dào. Hãy xây Lò Luyện Kim và Chuồng Gia Súc tại lãnh địa!",
+      "dialogueCompleteVi": "Hậu cần vững chắc thế này thì không một pháo đài nào của núi sắt cản nổi ngươi!",
+      "objectives": [
+        {
+          "objectiveId": "obj_016_furnace",
+          "type": "BUILD_STRUCTURE",
+          "targetType": "BUILDING",
+          "targetId": "bld_furnace",
+          "requiredQty": 1,
+          "requiredLevel": 1,
+          "descriptionVi": "Xây dựng Lò Luyện Kim (Smelting Furnace) cấp 1"
+        },
+        {
+          "objectiveId": "obj_016_barn",
+          "type": "BUILD_STRUCTURE",
+          "targetType": "BUILDING",
+          "targetId": "bld_barn",
+          "requiredQty": 1,
+          "requiredLevel": 1,
+          "descriptionVi": "Xây dựng Chuồng Gia Súc (Livestock Barn) cấp 1"
+        },
+        {
+          "objectiveId": "obj_016_steel",
+          "type": "CRAFT_RECIPE",
+          "targetType": "RECIPE",
+          "targetId": "rcp_smelt_steel_ingot",
+          "requiredQty": 5,
+          "descriptionVi": "Luyện 5 Thỏi Thép (Steel Ingot)"
+        },
+        {
+          "objectiveId": "obj_016_pumpkin",
+          "type": "HARVEST_CROP",
+          "targetType": "CROP",
+          "targetId": "crp_silver_pumpkin",
+          "requiredQty": 3,
+          "descriptionVi": "Thu hoạch 3 Bí Ngô Bạc (Silver Pumpkin)"
+        }
+      ],
+      "rewards": {
+        "exp": 3000,
+        "gold": 2600,
+        "starlightShard": 160,
+        "craftingToken": 10,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "sed_storm_radish", "qty": 4 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_017_cinders_and_slag",
+      "titleEn": "Cinders and Molten Slag",
+      "titleVi": "Lửa Than & Cự Nhân Dung Nham",
+      "type": "MAIN",
+      "mvp": false,
+      "regionId": "reg_ironpeak_mountains",
+      "giverNpcId": "npc_ironpeak_quartermaster",
+      "turnInNpcId": "npc_ironpeak_quartermaster",
+      "prereqQuestIds": ["qst_015_ascent_to_ironpeak"],
+      "minLevel": 24,
+      "onboardingStepRef": null,
+      "summaryVi": "Tiến sát vùng miệng lò Slag Foundry, đánh bại Cinder Drake, Slag Elemental và Quái Tinh Anh Magma Colossus.",
+      "dialogueStartVi": "Nhiệt độ quanh miệng lò đang tăng vọt! Một con Magma Colossus cùng bầy Rồng Lửa Nhỏ đang chặn cửa dng_slag_foundry.",
+      "dialogueCompleteVi": "Chiến thắng ấn tượng! Giờ chỉ còn mình Chúa Tể Lò Rèn Ignis Forgelord phía sau cánh cổng thép.",
+      "objectives": [
+        {
+          "objectiveId": "obj_017_drake",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_cinder_drake",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Cinder Drake"
+        },
+        {
+          "objectiveId": "obj_017_slag",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_slag_elemental",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Slag Elemental"
+        },
+        {
+          "objectiveId": "obj_017_colossus",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_elite_magma_colossus",
+          "requiredQty": 1,
+          "descriptionVi": "Hạ gục Quái Tinh Anh Magma Colossus"
+        }
+      ],
+      "rewards": {
+        "exp": 3800,
+        "gold": 3200,
+        "starlightShard": 240,
+        "craftingToken": 8,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "eqp_ironpeak_forge_amulet", "qty": 1 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_018_forgelord_reckoning",
+      "titleEn": "Reckoning of the Forgelord",
+      "titleVi": "Phán Quyết Tại Lò Dung Nham",
+      "type": "BOSS",
+      "mvp": false,
+      "regionId": "reg_ironpeak_mountains",
+      "giverNpcId": "npc_ironpeak_quartermaster",
+      "turnInNpcId": "npc_ironpeak_quartermaster",
+      "prereqQuestIds": ["qst_017_cinders_and_slag"],
+      "minLevel": 28,
+      "onboardingStepRef": null,
+      "summaryVi": "Đột kích hầm ngục dng_slag_foundry đánh bại Boss Ignis Forgelord, chiêu mộ Bram Stoneheart và mở lối xuống Hang Động Pha Lê.",
+      "dialogueStartVi": "Ignis Forgelord đang điên cuồng nung chảy cả mạch núi. Mang sát thương Thủy và đồng đội tới dập tắt ngọn lửa điên loạn đó!",
+      "dialogueCompleteVi": "Lò dung nham đã lặng tiếng! Hiệp sĩ Bram Stoneheart xin gia nhập dưới trướng ngươi, còn cửa thông xuống Crystal Caverns đã hé mở.",
+      "objectives": [
+        {
+          "objectiveId": "obj_018_boss",
+          "type": "KILL_BOSS",
+          "targetType": "BOSS",
+          "targetId": "boss_ignis_forgelord",
+          "requiredQty": 1,
+          "descriptionVi": "Đánh bại Boss Ignis Forgelord trong dng_slag_foundry"
+        },
+        {
+          "objectiveId": "obj_018_core",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_cinder_core",
+          "requiredQty": 1,
+          "descriptionVi": "Thu hồi 1 Forgelord Cinder Core"
+        }
+      ],
+      "rewards": {
+        "exp": 5400,
+        "gold": 4500,
+        "starlightShard": 320,
+        "craftingToken": 12,
+        "bossToken": 8,
+        "items": [],
+        "unlockCharacterId": "chr_bram_bastion",
+        "unlockRegionId": "reg_crystal_caverns"
+      }
+    },
+    {
+      "id": "qst_019_echoes_in_crystal",
+      "titleEn": "Echoes in the Crystal Caverns",
+      "titleVi": "Tiếng Vang Hang Động Pha Lê",
+      "type": "MAIN",
+      "mvp": false,
+      "regionId": "reg_crystal_caverns",
+      "giverNpcId": "npc_cavern_scholar_elara",
+      "turnInNpcId": "npc_cavern_scholar_elara",
+      "prereqQuestIds": ["qst_018_forgelord_reckoning"],
+      "minLevel": 32,
+      "onboardingStepRef": null,
+      "summaryVi": "Khám phá tầng trên Crystal Caverns, đánh bại Quartz Beetle cùng Cavern Hydroid và thu thập tinh thể Arcane.",
+      "dialogueStartVi": "Ánh sáng lăng kính ở đây vừa đẹp vừa chết chóc. Giúp ta dọn đám bọ thạch anh và thu thập vài mẫu Arcane Crystal nhé!",
+      "dialogueCompleteVi": "Mẫu tinh thể hoàn hảo! Mạch ma pháp dưới lòng hang đang dao động dữ dội ở tầng sâu hơn.",
+      "objectives": [
+        {
+          "objectiveId": "obj_019_beetle",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_quartz_beetle",
+          "requiredQty": 6,
+          "descriptionVi": "Tiêu diệt 6 Quartz Beetle"
+        },
+        {
+          "objectiveId": "obj_019_hydroid",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_cavern_hydroid",
+          "requiredQty": 6,
+          "descriptionVi": "Tiêu diệt 6 Cavern Hydroid"
+        },
+        {
+          "objectiveId": "obj_019_crystal",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_arcane_crystal",
+          "requiredQty": 6,
+          "descriptionVi": "Khai thác 6 Arcane Crystal"
+        }
+      ],
+      "rewards": {
+        "exp": 6200,
+        "gold": 4800,
+        "starlightShard": 160,
+        "craftingToken": 8,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "sed_honey_melon", "qty": 3 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_020_alchemist_of_the_deep",
+      "titleEn": "Alchemist of the Deep Veins",
+      "titleVi": "Giả Kim Sư Tầng Hang Sâu",
+      "type": "CRAFTING",
+      "mvp": false,
+      "regionId": "reg_crystal_caverns",
+      "giverNpcId": "npc_cavern_scholar_elara",
+      "turnInNpcId": "npc_cavern_scholar_elara",
+      "prereqQuestIds": ["qst_019_echoes_in_crystal"],
+      "minLevel": 38,
+      "onboardingStepRef": null,
+      "summaryVi": "Nâng Phòng Giả Kim lên cấp 2, đánh đuổi Amethyst Stalker cùng Voltaic Jelly và điều chế phân bón Rich Starlight Fertilizer.",
+      "dialogueStartVi": "Điện tích từ lũ Voltaic Jelly làm hỏng cả thiết bị đo của ta! Dọn chúng đi rồi thử pha chế phân bón tinh tú tại Phòng Giả Kim cấp 2.",
+      "dialogueCompleteVi": "Kỹ thuật giả kim tuyệt vời! Cánh cổng dẫn tới Thánh Điện Lăng Kính đã sẵn sàng đón tổ đội của ngươi.",
+      "objectives": [
+        {
+          "objectiveId": "obj_020_lab",
+          "type": "UPGRADE_STRUCTURE",
+          "targetType": "BUILDING",
+          "targetId": "bld_alchemy_lab",
+          "requiredQty": 1,
+          "requiredLevel": 2,
+          "descriptionVi": "Nâng cấp Phòng Giả Kim (bld_alchemy_lab) lên cấp 2"
+        },
+        {
+          "objectiveId": "obj_020_stalker",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_amethyst_stalker",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Amethyst Stalker"
+        },
+        {
+          "objectiveId": "obj_020_jelly",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_voltaic_jelly",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Voltaic Jelly"
+        },
+        {
+          "objectiveId": "obj_020_fert",
+          "type": "CRAFT_RECIPE",
+          "targetType": "RECIPE",
+          "targetId": "rcp_craft_fertilizer_rich",
+          "requiredQty": 2,
+          "descriptionVi": "Điều chế 2 mẻ Rich Starlight Fertilizer"
+        }
+      ],
+      "rewards": {
+        "exp": 7800,
+        "gold": 5800,
+        "starlightShard": 240,
+        "craftingToken": 12,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "mat_starlight_dust", "qty": 6 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_021_shattered_prism",
+      "titleEn": "The Shattered Prism",
+      "titleVi": "Phá Vỡ Lăng Kính Thủy Quái",
+      "type": "BOSS",
+      "mvp": false,
+      "regionId": "reg_crystal_caverns",
+      "giverNpcId": "npc_cavern_scholar_elara",
+      "turnInNpcId": "npc_cavern_scholar_elara",
+      "prereqQuestIds": ["qst_020_alchemist_of_the_deep"],
+      "minLevel": 45,
+      "onboardingStepRef": null,
+      "summaryVi": "Đánh bại Crystal Matriarch rồi tiến vào dng_prism_sanctum hạ gục Boss Prism Leviathan, mở lối sang Di Tích Lãng Quên.",
+      "dialogueStartVi": "Prism Leviathan khúc xạ tia sáng hủy diệt khắp hồ ngầm. Hãy phá các cột tinh thể phản chiếu bằng nguyên tố Lôi Điện và hạ nó!",
+      "dialogueCompleteVi": "Hang động đã yên bình trở lại! Con đường cổ dẫn lên mặt đất phía Tây — Forgotten Ruins — đã hiện ra!",
+      "objectives": [
+        {
+          "objectiveId": "obj_021_matriarch",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_elite_crystal_matriarch",
+          "requiredQty": 1,
+          "descriptionVi": "Đánh bại Quái Tinh Anh Crystal Matriarch"
+        },
+        {
+          "objectiveId": "obj_021_boss",
+          "type": "KILL_BOSS",
+          "targetType": "BOSS",
+          "targetId": "boss_prism_leviathan",
+          "requiredQty": 1,
+          "descriptionVi": "Đánh bại Boss Prism Leviathan trong dng_prism_sanctum"
+        },
+        {
+          "objectiveId": "obj_021_scale",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_prism_scale",
+          "requiredQty": 1,
+          "descriptionVi": "Thu hồi 1 Prism Leviathan Scale"
+        }
+      ],
+      "rewards": {
+        "exp": 11500,
+        "gold": 8200,
+        "starlightShard": 320,
+        "craftingToken": 14,
+        "bossToken": 12,
+        "items": [],
+        "unlockCharacterId": null,
+        "unlockRegionId": "reg_forgotten_ruins"
+      }
+    },
+    {
+      "id": "qst_022_whispers_of_old_eldoria",
+      "titleEn": "Whispers of Old Eldoria",
+      "titleVi": "Dư Âm Đế Chế Cổ Eldoria",
+      "type": "MAIN",
+      "mvp": false,
+      "regionId": "reg_forgotten_ruins",
+      "giverNpcId": "npc_ruin_warden_kaelen",
+      "turnInNpcId": "npc_ruin_warden_kaelen",
+      "prereqQuestIds": ["qst_021_shattered_prism"],
+      "minLevel": 48,
+      "onboardingStepRef": null,
+      "summaryVi": "Tiến vào Forgotten Ruins, tiêu diệt Ruin Sentinel cùng Cursed Acolyte và thu thập mảnh di vật cổ.",
+      "dialogueStartVi": "Tàn tích này từng là thủ phủ cổ xưa của Eldoria. Đám vệ binh đá và tín đồ nguyền rủa không cho ai lại gần bia ký — giúp ta dọn đường nào!",
+      "dialogueCompleteVi": "Mảnh di vật xác nhận một cổ vật phong ấn đang nằm về phía Bắc. Giữ lấy chiếc La Bàn Tầm Di này!",
+      "objectives": [
+        {
+          "objectiveId": "obj_022_sentinel",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_ruin_sentinel",
+          "requiredQty": 6,
+          "descriptionVi": "Tiêu diệt 6 Ruin Sentinel"
+        },
+        {
+          "objectiveId": "obj_022_acolyte",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_cursed_acolyte",
+          "requiredQty": 6,
+          "descriptionVi": "Tiêu diệt 6 Cursed Acolyte"
+        },
+        {
+          "objectiveId": "obj_022_frag",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_ancient_relic_frag",
+          "requiredQty": 8,
+          "descriptionVi": "Thu thập 8 Ancient Relic Fragment"
+        }
+      ],
+      "rewards": {
+        "exp": 12000,
+        "gold": 8600,
+        "starlightShard": 160,
+        "craftingToken": 10,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "eqp_ruin_seeker_compass", "qty": 1 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_023_gargoyles_and_wraiths",
+      "titleEn": "Gargoyles and Astral Wraiths",
+      "titleVi": "Tượng Đá Hắc Ám & Oan Hồn Tinh Tú",
+      "type": "MAIN",
+      "mvp": false,
+      "regionId": "reg_forgotten_ruins",
+      "giverNpcId": "npc_ruin_warden_kaelen",
+      "turnInNpcId": "npc_ruin_warden_kaelen",
+      "prereqQuestIds": ["qst_022_whispers_of_old_eldoria"],
+      "minLevel": 55,
+      "onboardingStepRef": null,
+      "summaryVi": "Trấn áp Sandstone Gargoyle và Astral Wraith tại nội thành đổ nát, đồng thời thu thập gỗ lõi cổ đại Ancient Heartwood.",
+      "dialogueStartVi": "Tầng trong của phế tích dày đặc tượng quỷ và oan hồn. Nhớ mang về cả Ancient Heartwood để gia cố khí cụ chống rét cho chặng kế tiếp!",
+      "dialogueCompleteVi": "Rất xuất sắc! Chỉ còn thử thách của Sunstone Warden trước khi ta có thể mở cổng lên Cao Nguyên Băng Giá.",
+      "objectives": [
+        {
+          "objectiveId": "obj_023_gargoyle",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_sandstone_gargoyle",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Sandstone Gargoyle"
+        },
+        {
+          "objectiveId": "obj_023_wraith",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_astral_wraith",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Astral Wraith"
+        },
+        {
+          "objectiveId": "obj_023_wood",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_ancient_heartwood",
+          "requiredQty": 10,
+          "descriptionVi": "Thu thập 10 Ancient Heartwood"
+        }
+      ],
+      "rewards": {
+        "exp": 14500,
+        "gold": 9800,
+        "starlightShard": 240,
+        "craftingToken": 12,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "sed_shadow_garlic", "qty": 4 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_024_trial_of_sunstone",
+      "titleEn": "Trial of the Sunstone Warden",
+      "titleVi": "Thử Thách Của Hộ Vệ Thái Dương",
+      "type": "MAIN",
+      "mvp": false,
+      "regionId": "reg_forgotten_ruins",
+      "giverNpcId": "npc_ruin_warden_kaelen",
+      "turnInNpcId": "npc_ruin_warden_kaelen",
+      "prereqQuestIds": ["qst_023_gargoyles_and_wraiths"],
+      "minLevel": 58,
+      "onboardingStepRef": null,
+      "summaryVi": "Vượt qua thử thách của Tinh Anh Sunstone Warden và phục chế mặt dây chuyền cổ đại để mở đường sang Frostbound Highlands.",
+      "dialogueStartVi": "Sunstone Warden bảo vệ chìa khóa mở ải Bắc. Hãy vượt qua bài kiểm tra của nó và phục chế Ancient Relic Medallion!",
+      "dialogueCompleteVi": "Cổ vật đã kích hoạt cổng truyền tống lên Frostbound Highlands! Chuẩn bị món ăn giữ ấm và sát thương Lửa trước khi đi!",
+      "objectives": [
+        {
+          "objectiveId": "obj_024_warden",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_elite_sunstone_warden",
+          "requiredQty": 1,
+          "descriptionVi": "Đánh bại Quái Tinh Anh Sunstone Warden"
+        },
+        {
+          "objectiveId": "obj_024_medallion",
+          "type": "CRAFT_RECIPE",
+          "targetType": "RECIPE",
+          "targetId": "rcp_craft_ancient_relic_medallion",
+          "requiredQty": 1,
+          "descriptionVi": "Chế tác 1 Ancient Relic Medallion tại Xưởng Nghệ Nhân"
+        }
+      ],
+      "rewards": {
+        "exp": 17500,
+        "gold": 11500,
+        "starlightShard": 320,
+        "craftingToken": 16,
+        "bossToken": 0,
+        "items": [],
+        "unlockCharacterId": null,
+        "unlockRegionId": "reg_frostbound_highlands"
+      }
+    },
+    {
+      "id": "qst_025_march_into_permafrost",
+      "titleEn": "March into the Permafrost",
+      "titleVi": "Tiến Vào Vùng Băng Vĩnh Cửu",
+      "type": "MAIN",
+      "mvp": false,
+      "regionId": "reg_frostbound_highlands",
+      "giverNpcId": "npc_frost_captain_sigrid",
+      "turnInNpcId": "npc_frost_captain_sigrid",
+      "prereqQuestIds": ["qst_024_trial_of_sunstone"],
+      "minLevel": 62,
+      "onboardingStepRef": null,
+      "summaryVi": "Thiết lập tiền đồn tại Frostbound Highlands, đánh đuổi Frostbite Hound cùng Glacier Yeti và thu hoạch Củ Cải Băng.",
+      "dialogueStartVi": "Gió tuyết ở đây cắt da cắt thịt! Giúp đội tuần tra đẩy lùi Sói Băng và Yeti, rồi kiểm tra vụ Frost Turnip chịu lạnh nhé.",
+      "dialogueCompleteVi": "Giữ ấm tốt đấy! Cầm vài phần cà ri nóng này để giữ thân nhiệt khi tiến gần pháo đài tuyết.",
+      "objectives": [
+        {
+          "objectiveId": "obj_025_hound",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_frostbite_hound",
+          "requiredQty": 6,
+          "descriptionVi": "Tiêu diệt 6 Frostbite Hound"
+        },
+        {
+          "objectiveId": "obj_025_yeti",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_glacier_yeti",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Glacier Yeti"
+        },
+        {
+          "objectiveId": "obj_025_turnip",
+          "type": "HARVEST_CROP",
+          "targetType": "CROP",
+          "targetId": "crp_frost_turnip",
+          "requiredQty": 4,
+          "descriptionVi": "Thu hoạch 4 Củ Cải Băng (Frost Turnip)"
+        }
+      ],
+      "rewards": {
+        "exp": 19000,
+        "gold": 12500,
+        "starlightShard": 160,
+        "craftingToken": 12,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "csm_ember_curry", "qty": 3 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_026_valkyrie_blizzard",
+      "titleEn": "Through the Valkyrie Blizzard",
+      "titleVi": "Xuyên Qua Bão Tuyết Nữ Thần",
+      "type": "MAIN",
+      "mvp": false,
+      "regionId": "reg_frostbound_highlands",
+      "giverNpcId": "npc_frost_captain_sigrid",
+      "turnInNpcId": "npc_frost_captain_sigrid",
+      "prereqQuestIds": ["qst_025_march_into_permafrost"],
+      "minLevel": 68,
+      "onboardingStepRef": null,
+      "summaryVi": "Đánh tan Ice Valkyrie Shade, Blizzard Elemental, Quái Tinh Anh Permafrost Mammoth và khai thác quặng Mythril.",
+      "dialogueStartVi": "Bão tuyết che phủ tuyến đường tới Thành Trì Băng Giá. Phá vỡ vòng vây của Permafrost Mammoth và thu thập Mythril để rèn giáp mới!",
+      "dialogueCompleteVi": "Con voi ma mút băng đã ngã xuống! Giờ toàn quân có thể tiến thẳng tới cổng dng_glacial_citadel.",
+      "objectives": [
+        {
+          "objectiveId": "obj_026_valkyrie",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_ice_valkyrie_shade",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Ice Valkyrie Shade"
+        },
+        {
+          "objectiveId": "obj_026_blizzard",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_blizzard_elemental",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Blizzard Elemental"
+        },
+        {
+          "objectiveId": "obj_026_mammoth",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_elite_permafrost_mammoth",
+          "requiredQty": 1,
+          "descriptionVi": "Đánh bại Quái Tinh Anh Permafrost Mammoth"
+        },
+        {
+          "objectiveId": "obj_026_mythril",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_mythril_ore",
+          "requiredQty": 10,
+          "descriptionVi": "Khai thác 10 Quặng Mythril (Mythril Ore)"
+        }
+      ],
+      "rewards": {
+        "exp": 23000,
+        "gold": 14800,
+        "starlightShard": 240,
+        "craftingToken": 16,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "mat_mythril_ingot", "qty": 4 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_027_crown_of_winter",
+      "titleEn": "Shattering the Crown of Winter",
+      "titleVi": "Đập Tan Vương Miện Mùa Đông",
+      "type": "BOSS",
+      "mvp": false,
+      "regionId": "reg_frostbound_highlands",
+      "giverNpcId": "npc_frost_captain_sigrid",
+      "turnInNpcId": "npc_frost_captain_sigrid",
+      "prereqQuestIds": ["qst_026_valkyrie_blizzard"],
+      "minLevel": 74,
+      "onboardingStepRef": null,
+      "summaryVi": "Đột kích dng_glacial_citadel đánh bại Boss Boreas Frostking, chiêu mộ Freya Glaciersong và mở lối vào Vùng Đất Tro Tàn.",
+      "dialogueStartVi": "Boreas Frostking giam cầm cả cao nguyên trong mùa đông bất tận. Đứng gần lò sưởi trong phòng Boss để tránh đóng băng và kết liễu hắn!",
+      "dialogueCompleteVi": "Bầu trời Bắc Cực đã hửng nắng! Pháp sư Freya Glaciersong xin theo bước ngươi, còn khe nứt dẫn tới Ember Wasteland đã lộ diện.",
+      "objectives": [
+        {
+          "objectiveId": "obj_027_boss",
+          "type": "KILL_BOSS",
+          "targetType": "BOSS",
+          "targetId": "boss_boreas_frostking",
+          "requiredQty": 1,
+          "descriptionVi": "Đánh bại Boss Boreas Frostking trong dng_glacial_citadel"
+        },
+        {
+          "objectiveId": "obj_027_rime",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_rime_essence",
+          "requiredQty": 1,
+          "descriptionVi": "Thu hồi 1 Boreal Rime Essence"
+        }
+      ],
+      "rewards": {
+        "exp": 30000,
+        "gold": 18500,
+        "starlightShard": 480,
+        "craftingToken": 18,
+        "bossToken": 16,
+        "items": [],
+        "unlockCharacterId": "chr_freya_frostveil",
+        "unlockRegionId": "reg_ember_wasteland"
+      }
+    },
+    {
+      "id": "qst_028_ash_and_obsidian",
+      "titleEn": "Fields of Ash and Obsidian",
+      "titleVi": "Cánh Đồng Tro Tàn & Hắc Diện Thạch",
+      "type": "MAIN",
+      "mvp": false,
+      "regionId": "reg_ember_wasteland",
+      "giverNpcId": "npc_ember_forgemaster_drak",
+      "turnInNpcId": "npc_ember_forgemaster_drak",
+      "prereqQuestIds": ["qst_027_crown_of_winter"],
+      "minLevel": 78,
+      "onboardingStepRef": null,
+      "summaryVi": "Chinh phục vùng núi lửa Ember Wasteland, tiêu diệt Ash Hound, Obsidian Brute, Pyroclast Cultist và khai thác mảnh Obsidian.",
+      "dialogueStartVi": "Đám tà giáo Hỏa Ngục đang kích hoạt mạch núi lửa để mở khe nứt Vực Thẳm. Quét sạch chúng và gom mảnh Obsidian về rèn giáp kháng lửa!",
+      "dialogueCompleteVi": "Hắc diện thạch này đủ cứng để chịu cả hơi thở rồng lửa! Cẩn thận bầu trời — Cinder Wyvern đã đánh hơi thấy ngươi.",
+      "objectives": [
+        {
+          "objectiveId": "obj_028_hound",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_ash_hound",
+          "requiredQty": 6,
+          "descriptionVi": "Tiêu diệt 6 Ash Hound"
+        },
+        {
+          "objectiveId": "obj_028_brute",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_obsidian_brute",
+          "requiredQty": 6,
+          "descriptionVi": "Tiêu diệt 6 Obsidian Brute"
+        },
+        {
+          "objectiveId": "obj_028_cultist",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_pyroclast_cultist",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Pyroclast Cultist"
+        },
+        {
+          "objectiveId": "obj_028_obsidian",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_obsidian_shard",
+          "requiredQty": 10,
+          "descriptionVi": "Khai thác 10 Obsidian Shard"
+        }
+      ],
+      "rewards": {
+        "exp": 34000,
+        "gold": 21000,
+        "starlightShard": 240,
+        "craftingToken": 16,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "sed_ash_chili", "qty": 3 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    },
+    {
+      "id": "qst_029_wings_of_cinder",
+      "titleEn": "Wings of the Cinder Wyvern",
+      "titleVi": "Đôi Cánh Phi Long Tro Tàn",
+      "type": "MAIN",
+      "mvp": false,
+      "regionId": "reg_ember_wasteland",
+      "giverNpcId": "npc_ember_forgemaster_drak",
+      "turnInNpcId": "npc_ember_forgemaster_drak",
+      "prereqQuestIds": ["qst_028_ash_and_obsidian"],
+      "minLevel": 86,
+      "onboardingStepRef": null,
+      "summaryVi": "Hạ gục Quái Tinh Anh Cinder Wyvern, thu thập Vảy Rồng Lửa và hoàn thiện Lò Rèn cấp 4 để mở cánh cổng cuối cùng vào Vương Quốc Vực Thẳm.",
+      "dialogueStartVi": "Trước khi bước qua vết rách vào Abyssal Kingdom, hãy chứng tỏ sức mạnh trước Cinder Wyvern và hoàn thiện Lò Rèn cấp 4 đạt chuẩn vũ khí +10!",
+      "dialogueCompleteVi": "Ngươi đã đạt đến đỉnh cao của thợ rèn lẫn chiến binh. Cổng Nhật Thực dẫn vào Abyssal Kingdom đã mở!",
+      "objectives": [
+        {
+          "objectiveId": "obj_029_wyvern",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_elite_cinder_wyvern",
+          "requiredQty": 1,
+          "descriptionVi": "Đánh bại Quái Tinh Anh Cinder Wyvern"
+        },
+        {
+          "objectiveId": "obj_029_scale",
+          "type": "GATHER_ITEM",
+          "targetType": "ITEM",
+          "targetId": "mat_dragon_scale",
+          "requiredQty": 4,
+          "descriptionVi": "Thu thập 4 Ember Dragon Scale"
+        },
+        {
+          "objectiveId": "obj_029_smith4",
+          "type": "UPGRADE_STRUCTURE",
+          "targetType": "BUILDING",
+          "targetId": "bld_blacksmith",
+          "requiredQty": 1,
+          "requiredLevel": 4,
+          "descriptionVi": "Nâng cấp Lò Rèn (bld_blacksmith) đạt cấp tối đa 4"
+        }
+      ],
+      "rewards": {
+        "exp": 42000,
+        "gold": 26000,
+        "starlightShard": 320,
+        "craftingToken": 20,
+        "bossToken": 0,
+        "items": [
+          { "itemId": "sed_starlight_melon", "qty": 2 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": "reg_abyssal_kingdom"
+      }
+    },
+    {
+      "id": "qst_030_eclipse_of_forgotten_wilds",
+      "titleEn": "Eclipse of the Forgotten Wilds",
+      "titleVi": "Nhật Thực Của Vùng Hoang Dã Lãng Quên",
+      "type": "BOSS",
+      "mvp": false,
+      "regionId": "reg_abyssal_kingdom",
+      "giverNpcId": "npc_abyss_watcher_lyris",
+      "turnInNpcId": "npc_elder_rowan",
+      "prereqQuestIds": ["qst_029_wings_of_cinder"],
+      "minLevel": 95,
+      "onboardingStepRef": null,
+      "summaryVi": "Đánh tan đội quân Vực Thẳm, hạ gục Dread Harbinger rồi dẫn dắt tổ đội tiến vào dng_eclipse_throne kết liễu Boss cuối Malakor, Sovereign of the Abyss.",
+      "dialogueStartVi": "Vận mệnh toàn cõi Eldoria nằm sau Ngai Vàng Nhật Thực. Tập hợp đồng đội tinh nhuệ nhất, phá vỡ bóng tối của Malakor và mang ánh bình minh trở về!",
+      "dialogueCompleteVi": "Malakor đã gục ngã! Toàn bộ 8 vùng đất Eldoria sẽ mãi ghi danh ngươi với Biểu Tượng Huyền Thoại của Vùng Hoang Dã Lãng Quên!",
+      "objectives": [
+        {
+          "objectiveId": "obj_030_thrall",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_void_thrall",
+          "requiredQty": 6,
+          "descriptionVi": "Tiêu diệt 6 Void Thrall"
+        },
+        {
+          "objectiveId": "obj_030_knight",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_abyssal_knight",
+          "requiredQty": 5,
+          "descriptionVi": "Tiêu diệt 5 Abyssal Knight"
+        },
+        {
+          "objectiveId": "obj_030_weaver",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_eclipse_weaver",
+          "requiredQty": 4,
+          "descriptionVi": "Tiêu diệt 4 Eclipse Weaver"
+        },
+        {
+          "objectiveId": "obj_030_harbinger",
+          "type": "KILL_MONSTER",
+          "targetType": "MONSTER",
+          "targetId": "mob_elite_dread_harbinger",
+          "requiredQty": 1,
+          "descriptionVi": "Đánh bại Quái Tinh Anh Dread Harbinger"
+        },
+        {
+          "objectiveId": "obj_030_malakor",
+          "type": "KILL_BOSS",
+          "targetType": "BOSS",
+          "targetId": "boss_malakor_abyss",
+          "requiredQty": 1,
+          "descriptionVi": "Đánh bại Boss tối thượng Malakor, Sovereign of the Abyss tại dng_eclipse_throne"
+        }
+      ],
+      "rewards": {
+        "exp": 65000,
+        "gold": 40000,
+        "starlightShard": 1600,
+        "craftingToken": 30,
+        "bossToken": 25,
+        "items": [
+          { "itemId": "eqp_crown_of_forgotten_wilds", "qty": 1 }
+        ],
+        "unlockCharacterId": null,
+        "unlockRegionId": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,3532 @@
+{
+  "schemaVersion": "1.0.0",
+  "updatedAt": "2026-11-19",
+  "monsters": [
+    {
+      "id": "mob_moss_slime",
+      "name": "Moss Slime",
+      "tier": "REGULAR",
+      "mvp": true,
+      "regionId": "reg_greenhaven_village",
+      "level": 1,
+      "element": "EARTH",
+      "weaknessElement": "FIRE",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 90,
+        "atk": 12,
+        "def": 4,
+        "poise": 35,
+        "moveSpeed": 72,
+        "attackSpeed": 0.85,
+        "critRate": 0.03,
+        "elementalRes": {
+          "FIRE": -0.25,
+          "WATER": 0.1,
+          "EARTH": 0.25,
+          "WIND": 0.0,
+          "LIGHTNING": 0.0,
+          "FROST": 0.0,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 160,
+        "leashDistancePx": 384,
+        "patrolRadiusPx": 96,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "NEAREST"
+      },
+      "attackPatterns": [
+        {
+          "key": "moss_lunge",
+          "damageRatio": 1.0,
+          "telegraphMs": 600,
+          "cooldownMs": 2200,
+          "rangePx": 48,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": null
+        },
+        {
+          "key": "sticky_splatter",
+          "damageRatio": 0.85,
+          "telegraphMs": 800,
+          "cooldownMs": 5500,
+          "rangePx": 112,
+          "hitboxShape": "LINE_PROJECTILE",
+          "statusEffect": {
+            "type": "SLOW",
+            "chance": 0.4,
+            "durationMs": 2500,
+            "value": 0.2
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 25,
+        "goldMin": 6,
+        "goldMax": 12,
+        "lootTableId": "ltb_mob_moss_slime"
+      },
+      "respawnSeconds": 25,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.45,
+        "poisePerExtraPlayer": 0.25
+      },
+      "descriptionVi": "Sinh vật bùn rêu hiền hòa sinh sống quanh bìa đồng cỏ ngoại ô Greenhaven Village. Là mục tiêu huấn luyện chiến đấu đầu tiên giúp người chơi làm quen nhịp combo, né đòn cơ bản và thu thập chất nhờn rêu cho công thức sơ cấp."
+    },
+    {
+      "id": "mob_forest_goblin",
+      "name": "Forest Goblin",
+      "tier": "REGULAR",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "level": 3,
+      "element": "NEUTRAL",
+      "weaknessElement": "FIRE",
+      "spriteSize": "48x64",
+      "stats": {
+        "hp": 155,
+        "atk": 18,
+        "def": 8,
+        "poise": 45,
+        "moveSpeed": 118,
+        "attackSpeed": 1.05,
+        "critRate": 0.06,
+        "elementalRes": {
+          "FIRE": -0.15,
+          "WATER": 0.0,
+          "EARTH": 0.05,
+          "WIND": 0.05,
+          "LIGHTNING": 0.0,
+          "FROST": 0.0,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.1
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 192,
+        "leashDistancePx": 448,
+        "patrolRadiusPx": 128,
+        "fleeHpPercent": 20,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "FLEE",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "NEAREST"
+      },
+      "attackPatterns": [
+        {
+          "key": "rusty_shiv_slash",
+          "damageRatio": 1.0,
+          "telegraphMs": 450,
+          "cooldownMs": 1800,
+          "rangePx": 52,
+          "hitboxShape": "CONE",
+          "statusEffect": null
+        },
+        {
+          "key": "pebble_toss",
+          "damageRatio": 0.8,
+          "telegraphMs": 650,
+          "cooldownMs": 4500,
+          "rangePx": 176,
+          "hitboxShape": "LINE_PROJECTILE",
+          "statusEffect": null
+        }
+      ],
+      "rewards": {
+        "exp": 46,
+        "goldMin": 11,
+        "goldMax": 19,
+        "lootTableId": "ltb_mob_forest_goblin"
+      },
+      "respawnSeconds": 30,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.45,
+        "poisePerExtraPlayer": 0.25
+      },
+      "descriptionVi": "Yêu tinh rừng ranh mãnh thường lập trại nhỏ dọc lối mòn Whispering Forest để cướp bóc nông sản. Chúng tấn công theo nhóm 2–3 cá thể và có xu hướng bỏ chạy gọi đồng bọn khi máu xuống dưới 20%."
+    },
+    {
+      "id": "mob_timber_wolf",
+      "name": "Timber Wolf",
+      "tier": "REGULAR",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "level": 5,
+      "element": "WIND",
+      "weaknessElement": "FIRE",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 230,
+        "atk": 25,
+        "def": 10,
+        "poise": 55,
+        "moveSpeed": 148,
+        "attackSpeed": 1.15,
+        "critRate": 0.1,
+        "elementalRes": {
+          "FIRE": -0.2,
+          "WATER": 0.0,
+          "EARTH": 0.0,
+          "WIND": 0.25,
+          "LIGHTNING": 0.0,
+          "FROST": 0.05,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 224,
+        "leashDistancePx": 512,
+        "patrolRadiusPx": 160,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "LOWEST_HP"
+      },
+      "attackPatterns": [
+        {
+          "key": "fang_bite",
+          "damageRatio": 1.0,
+          "telegraphMs": 420,
+          "cooldownMs": 1700,
+          "rangePx": 56,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "BLEED",
+            "chance": 0.25,
+            "durationMs": 3000,
+            "value": 6
+          }
+        },
+        {
+          "key": "predator_pounce",
+          "damageRatio": 1.35,
+          "telegraphMs": 700,
+          "cooldownMs": 5200,
+          "rangePx": 144,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": null
+        }
+      ],
+      "rewards": {
+        "exp": 72,
+        "goldMin": 16,
+        "goldMax": 26,
+        "lootTableId": "ltb_mob_timber_wolf"
+      },
+      "respawnSeconds": 35,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.45,
+        "poisePerExtraPlayer": 0.25
+      },
+      "descriptionVi": "Sói gỗ nhanh nhẹn săn mồi dưới tán rừng rậm Whispering Forest. Chúng có cú vồ đường thẳng có tín hiệu cúi người rõ ràng, thưởng cho người chơi biết né ngang hoặc parry đúng thời điểm."
+    },
+    {
+      "id": "mob_spore_cap",
+      "name": "Spore Cap",
+      "tier": "REGULAR",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "level": 7,
+      "element": "WATER",
+      "weaknessElement": "FIRE",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 325,
+        "atk": 29,
+        "def": 14,
+        "poise": 68,
+        "moveSpeed": 78,
+        "attackSpeed": 0.85,
+        "critRate": 0.05,
+        "elementalRes": {
+          "FIRE": -0.3,
+          "WATER": 0.3,
+          "EARTH": 0.1,
+          "WIND": 0.0,
+          "LIGHTNING": -0.1,
+          "FROST": 0.0,
+          "LIGHT": 0.0,
+          "SHADOW": 0.05,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 176,
+        "leashDistancePx": 416,
+        "patrolRadiusPx": 96,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "NEAREST"
+      },
+      "attackPatterns": [
+        {
+          "key": "cap_headbutt",
+          "damageRatio": 0.95,
+          "telegraphMs": 550,
+          "cooldownMs": 2200,
+          "rangePx": 52,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": null
+        },
+        {
+          "key": "toxic_spore_burst",
+          "damageRatio": 1.15,
+          "telegraphMs": 950,
+          "cooldownMs": 6000,
+          "rangePx": 96,
+          "hitboxShape": "SELF_AOE",
+          "statusEffect": {
+            "type": "POISON",
+            "chance": 0.65,
+            "durationMs": 4000,
+            "value": 9
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 98,
+        "goldMin": 20,
+        "goldMax": 34,
+        "lootTableId": "ltb_mob_spore_cap"
+      },
+      "respawnSeconds": 35,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.45,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Nấm ẩm khổng lồ mọc quanh vùng đầm lầy và suối sâu trong Whispering Forest. Khi bị tiếp cận, nó phồng mũ nấm báo hiệu trước khi tung đám mây bào tử độc xung quanh, đòi hỏi người chơi rút ngắn nhịp đánh và lui ra ngoài vòng AOE."
+    },
+    {
+      "id": "mob_briar_boar",
+      "name": "Briar Boar",
+      "tier": "REGULAR",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "level": 9,
+      "element": "EARTH",
+      "weaknessElement": "WIND",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 490,
+        "atk": 38,
+        "def": 20,
+        "poise": 95,
+        "moveSpeed": 124,
+        "attackSpeed": 0.9,
+        "critRate": 0.07,
+        "elementalRes": {
+          "FIRE": -0.1,
+          "WATER": 0.0,
+          "EARTH": 0.3,
+          "WIND": -0.25,
+          "LIGHTNING": 0.0,
+          "FROST": 0.0,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.1
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 208,
+        "leashDistancePx": 480,
+        "patrolRadiusPx": 128,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HIGHEST_THREAT"
+      },
+      "attackPatterns": [
+        {
+          "key": "tusk_gore",
+          "damageRatio": 1.05,
+          "telegraphMs": 550,
+          "cooldownMs": 2300,
+          "rangePx": 60,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "KNOCKBACK",
+            "chance": 0.5,
+            "durationMs": 400,
+            "value": 64
+          }
+        },
+        {
+          "key": "bramble_charge",
+          "damageRatio": 1.5,
+          "telegraphMs": 900,
+          "cooldownMs": 6500,
+          "rangePx": 208,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "STUN",
+            "chance": 0.45,
+            "durationMs": 1200,
+            "value": 1
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 128,
+        "goldMin": 26,
+        "goldMax": 42,
+        "lootTableId": "ltb_mob_briar_boar"
+      },
+      "respawnSeconds": 40,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Lợn rừng lưng phủ gai tầm gửi với bộ da dày và sức húc dữ dội. Cú húc đường thẳng Bramble Charge sẽ khiến nó tự choáng nhẹ nếu lao trúng thân cây hoặc vách đá, là nguồn cung da cứng và thịt chất lượng cho nấu ăn."
+    },
+    {
+      "id": "mob_hollow_bat",
+      "name": "Hollow Bat",
+      "tier": "REGULAR",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "level": 11,
+      "element": "SHADOW",
+      "weaknessElement": "LIGHT",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 430,
+        "atk": 44,
+        "def": 16,
+        "poise": 62,
+        "moveSpeed": 156,
+        "attackSpeed": 1.25,
+        "critRate": 0.12,
+        "elementalRes": {
+          "FIRE": 0.0,
+          "WATER": 0.0,
+          "EARTH": 0.0,
+          "WIND": 0.1,
+          "LIGHTNING": -0.1,
+          "FROST": 0.0,
+          "LIGHT": -0.3,
+          "SHADOW": 0.3,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 240,
+        "leashDistancePx": 512,
+        "patrolRadiusPx": 160,
+        "fleeHpPercent": 15,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "FLEE",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "RANGED_FIRST"
+      },
+      "attackPatterns": [
+        {
+          "key": "diving_fang",
+          "damageRatio": 1.0,
+          "telegraphMs": 450,
+          "cooldownMs": 1800,
+          "rangePx": 64,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": null
+        },
+        {
+          "key": "sonic_screech",
+          "damageRatio": 1.15,
+          "telegraphMs": 750,
+          "cooldownMs": 5500,
+          "rangePx": 160,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "BLIND",
+            "chance": 0.35,
+            "durationMs": 2500,
+            "value": 0.25
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 155,
+        "goldMin": 30,
+        "goldMax": 48,
+        "lootTableId": "ltb_mob_hollow_bat"
+      },
+      "respawnSeconds": 40,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.45,
+        "poisePerExtraPlayer": 0.25
+      },
+      "descriptionVi": "Dơi hang kích thước lớn tụ tập quanh cửa hang và bên trong dng_mossroot_hollow. Tốc độ di chuyển cao, hay nhắm vào cung thủ hoặc pháp sư đứng sau, rất sợ các kỹ năng nguyên tố Light."
+    },
+    {
+      "id": "mob_root_crawler",
+      "name": "Root Crawler",
+      "tier": "REGULAR",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "level": 13,
+      "element": "EARTH",
+      "weaknessElement": "FIRE",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 820,
+        "atk": 50,
+        "def": 28,
+        "poise": 115,
+        "moveSpeed": 88,
+        "attackSpeed": 0.85,
+        "critRate": 0.05,
+        "elementalRes": {
+          "FIRE": -0.3,
+          "WATER": 0.15,
+          "EARTH": 0.35,
+          "WIND": 0.0,
+          "LIGHTNING": 0.0,
+          "FROST": -0.1,
+          "LIGHT": 0.0,
+          "SHADOW": 0.05,
+          "NEUTRAL": 0.1
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 192,
+        "leashDistancePx": 448,
+        "patrolRadiusPx": 96,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "NEAREST"
+      },
+      "attackPatterns": [
+        {
+          "key": "vine_lash",
+          "damageRatio": 1.05,
+          "telegraphMs": 600,
+          "cooldownMs": 2400,
+          "rangePx": 80,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": null
+        },
+        {
+          "key": "snaring_roots",
+          "damageRatio": 1.25,
+          "telegraphMs": 950,
+          "cooldownMs": 7000,
+          "rangePx": 160,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "ROOT",
+            "chance": 0.75,
+            "durationMs": 2000,
+            "value": 1
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 188,
+        "goldMin": 36,
+        "goldMax": 56,
+        "lootTableId": "ltb_mob_root_crawler"
+      },
+      "respawnSeconds": 45,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.35
+      },
+      "descriptionVi": "Quái thú hình rết kết từ rễ cổ thụ mục nát tuần tra sâu trong Whispering Forest và dng_mossroot_hollow. Khả năng trói chân từ xa khiến nó đặc biệt nguy hiểm khi đi cùng Goblin Shaman."
+    },
+    {
+      "id": "mob_goblin_shaman",
+      "name": "Goblin Shaman",
+      "tier": "REGULAR",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "level": 14,
+      "element": "LIGHTNING",
+      "weaknessElement": "EARTH",
+      "spriteSize": "48x64",
+      "stats": {
+        "hp": 680,
+        "atk": 62,
+        "def": 20,
+        "poise": 78,
+        "moveSpeed": 106,
+        "attackSpeed": 0.95,
+        "critRate": 0.1,
+        "elementalRes": {
+          "FIRE": 0.0,
+          "WATER": 0.05,
+          "EARTH": -0.25,
+          "WIND": 0.1,
+          "LIGHTNING": 0.3,
+          "FROST": 0.0,
+          "LIGHT": 0.0,
+          "SHADOW": 0.05,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 256,
+        "leashDistancePx": 512,
+        "patrolRadiusPx": 112,
+        "fleeHpPercent": 20,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "FLEE",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HEALER_FIRST"
+      },
+      "attackPatterns": [
+        {
+          "key": "spark_bolt",
+          "damageRatio": 1.0,
+          "telegraphMs": 650,
+          "cooldownMs": 2400,
+          "rangePx": 224,
+          "hitboxShape": "LINE_PROJECTILE",
+          "statusEffect": {
+            "type": "SHOCK",
+            "chance": 0.25,
+            "durationMs": 3000,
+            "value": 0.1
+          }
+        },
+        {
+          "key": "totem_lightning_ring",
+          "damageRatio": 1.4,
+          "telegraphMs": 1100,
+          "cooldownMs": 8000,
+          "rangePx": 208,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "SHOCK",
+            "chance": 0.6,
+            "durationMs": 3500,
+            "value": 0.15
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 210,
+        "goldMin": 40,
+        "goldMax": 62,
+        "lootTableId": "ltb_mob_goblin_shaman"
+      },
+      "respawnSeconds": 45,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.45,
+        "poisePerExtraPlayer": 0.25
+      },
+      "descriptionVi": "Pháp sư bộ tộc yêu tinh cầm trượng sấm thô sơ bảo vệ sâu trong khu rừng và tiền sảnh dng_mossroot_hollow. Cần ưu tiên áp sát ngắt phép vì vòng sét của nó gây sát thương diện rộng khá cao lên tổ đội."
+    },
+    {
+      "id": "mob_stone_golem",
+      "name": "Stone Golem",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_ironpeak_mountains",
+      "level": 17,
+      "element": "EARTH",
+      "weaknessElement": "WIND",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 1480,
+        "atk": 72,
+        "def": 46,
+        "poise": 165,
+        "moveSpeed": 74,
+        "attackSpeed": 0.72,
+        "critRate": 0.04,
+        "elementalRes": {
+          "FIRE": 0.1,
+          "WATER": 0.0,
+          "EARTH": 0.35,
+          "WIND": -0.25,
+          "LIGHTNING": 0.15,
+          "FROST": 0.0,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.15
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 192,
+        "leashDistancePx": 448,
+        "patrolRadiusPx": 96,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HIGHEST_THREAT"
+      },
+      "attackPatterns": [
+        {
+          "key": "granite_slam",
+          "damageRatio": 1.2,
+          "telegraphMs": 850,
+          "cooldownMs": 2900,
+          "rangePx": 72,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "KNOCKBACK",
+            "chance": 0.6,
+            "durationMs": 450,
+            "value": 80
+          }
+        },
+        {
+          "key": "seismic_stomp",
+          "damageRatio": 1.55,
+          "telegraphMs": 1200,
+          "cooldownMs": 7500,
+          "rangePx": 128,
+          "hitboxShape": "SELF_AOE",
+          "statusEffect": {
+            "type": "STUN",
+            "chance": 0.5,
+            "durationMs": 1400,
+            "value": 1
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 275,
+        "goldMin": 50,
+        "goldMax": 78,
+        "lootTableId": "ltb_mob_stone_golem"
+      },
+      "respawnSeconds": 50,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.55,
+        "poisePerExtraPlayer": 0.35
+      },
+      "descriptionVi": "Khối đá sống cổ xưa lang thang trên các sườn đèo sắt của Ironpeak Mountains. Di chuyển chậm nhưng phòng thủ cao và miễn nhiễm đẩy lùi nhẹ, thường rơi đá lõi quý để rèn trang bị bậc trung."
+    },
+    {
+      "id": "mob_ironhide_kobold",
+      "name": "Ironhide Kobold",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_ironpeak_mountains",
+      "level": 20,
+      "element": "NEUTRAL",
+      "weaknessElement": "LIGHTNING",
+      "spriteSize": "48x64",
+      "stats": {
+        "hp": 1420,
+        "atk": 86,
+        "def": 40,
+        "poise": 118,
+        "moveSpeed": 126,
+        "attackSpeed": 1.1,
+        "critRate": 0.09,
+        "elementalRes": {
+          "FIRE": 0.1,
+          "WATER": 0.0,
+          "EARTH": 0.1,
+          "WIND": 0.0,
+          "LIGHTNING": -0.25,
+          "FROST": 0.0,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.2
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 224,
+        "leashDistancePx": 512,
+        "patrolRadiusPx": 144,
+        "fleeHpPercent": 15,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "FLEE",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "NEAREST"
+      },
+      "attackPatterns": [
+        {
+          "key": "pickaxe_cleave",
+          "damageRatio": 1.05,
+          "telegraphMs": 550,
+          "cooldownMs": 2000,
+          "rangePx": 60,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "DEF_DOWN",
+            "chance": 0.3,
+            "durationMs": 4000,
+            "value": 0.15
+          }
+        },
+        {
+          "key": "blasting_ore_toss",
+          "damageRatio": 1.35,
+          "telegraphMs": 950,
+          "cooldownMs": 6200,
+          "rangePx": 192,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "BURN",
+            "chance": 0.4,
+            "durationMs": 3000,
+            "value": 16
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 335,
+        "goldMin": 60,
+        "goldMax": 92,
+        "lootTableId": "ltb_mob_ironhide_kobold"
+      },
+      "respawnSeconds": 45,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Thợ mỏ Kobold mặc giáp sắt thô bảo vệ các mạch quặng tại Ironpeak Mountains. Bộ giáp kim loại khiến chúng kháng đòn vật lý nhưng lại dễ tổn thương trước nguyên tố Lightning."
+    },
+    {
+      "id": "mob_cinder_drake",
+      "name": "Cinder Drake",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_ironpeak_mountains",
+      "level": 24,
+      "element": "FIRE",
+      "weaknessElement": "WATER",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 1920,
+        "atk": 108,
+        "def": 46,
+        "poise": 140,
+        "moveSpeed": 138,
+        "attackSpeed": 1.05,
+        "critRate": 0.11,
+        "elementalRes": {
+          "FIRE": 0.35,
+          "WATER": -0.3,
+          "EARTH": 0.0,
+          "WIND": 0.05,
+          "LIGHTNING": 0.0,
+          "FROST": -0.15,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 240,
+        "leashDistancePx": 544,
+        "patrolRadiusPx": 160,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "LOWEST_HP"
+      },
+      "attackPatterns": [
+        {
+          "key": "ember_claw",
+          "damageRatio": 1.0,
+          "telegraphMs": 500,
+          "cooldownMs": 1900,
+          "rangePx": 64,
+          "hitboxShape": "CONE",
+          "statusEffect": null
+        },
+        {
+          "key": "flame_breath_cone",
+          "damageRatio": 1.45,
+          "telegraphMs": 900,
+          "cooldownMs": 6000,
+          "rangePx": 176,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "BURN",
+            "chance": 0.7,
+            "durationMs": 4000,
+            "value": 24
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 430,
+        "goldMin": 74,
+        "goldMax": 114,
+        "lootTableId": "ltb_mob_cinder_drake"
+      },
+      "respawnSeconds": 50,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Rồng đất non sinh trưởng quanh các khe nham thạch ấm trên đỉnh Ironpeak. Đòn phun lửa hình nón kéo dài buộc người chơi vòng ra sau sườn để tận dụng khoảng hở tấn công."
+    },
+    {
+      "id": "mob_slag_elemental",
+      "name": "Slag Elemental",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_ironpeak_mountains",
+      "level": 28,
+      "element": "FIRE",
+      "weaknessElement": "WATER",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 2580,
+        "atk": 130,
+        "def": 62,
+        "poise": 175,
+        "moveSpeed": 94,
+        "attackSpeed": 0.88,
+        "critRate": 0.08,
+        "elementalRes": {
+          "FIRE": 0.4,
+          "WATER": -0.35,
+          "EARTH": 0.15,
+          "WIND": 0.0,
+          "LIGHTNING": 0.0,
+          "FROST": -0.15,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.05
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 224,
+        "leashDistancePx": 512,
+        "patrolRadiusPx": 112,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HIGHEST_THREAT"
+      },
+      "attackPatterns": [
+        {
+          "key": "molten_fist",
+          "damageRatio": 1.1,
+          "telegraphMs": 650,
+          "cooldownMs": 2300,
+          "rangePx": 68,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "BURN",
+            "chance": 0.5,
+            "durationMs": 3500,
+            "value": 28
+          }
+        },
+        {
+          "key": "slag_eruption",
+          "damageRatio": 1.6,
+          "telegraphMs": 1150,
+          "cooldownMs": 7200,
+          "rangePx": 160,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "BURN",
+            "chance": 0.8,
+            "durationMs": 4500,
+            "value": 32
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 530,
+        "goldMin": 88,
+        "goldMax": 136,
+        "lootTableId": "ltb_mob_slag_elemental"
+      },
+      "respawnSeconds": 55,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.35
+      },
+      "descriptionVi": "Tinh linh xỉ quặng nóng chảy hình thành quanh cửa lò dng_slag_foundry. Rất bền bỉ trước sát thương Hỏa nhưng bị làm nguội và vỡ giáp nhanh khi trúng đòn nguyên tố Thủy."
+    },
+    {
+      "id": "mob_quartz_beetle",
+      "name": "Quartz Beetle",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_crystal_caverns",
+      "level": 32,
+      "element": "EARTH",
+      "weaknessElement": "WIND",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 3620,
+        "atk": 144,
+        "def": 92,
+        "poise": 230,
+        "moveSpeed": 102,
+        "attackSpeed": 0.9,
+        "critRate": 0.06,
+        "elementalRes": {
+          "FIRE": 0.1,
+          "WATER": 0.05,
+          "EARTH": 0.35,
+          "WIND": -0.25,
+          "LIGHTNING": 0.1,
+          "FROST": 0.0,
+          "LIGHT": 0.1,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.15
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 192,
+        "leashDistancePx": 480,
+        "patrolRadiusPx": 128,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "NEAREST"
+      },
+      "attackPatterns": [
+        {
+          "key": "crystal_horn_ram",
+          "damageRatio": 1.15,
+          "telegraphMs": 650,
+          "cooldownMs": 2400,
+          "rangePx": 68,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "KNOCKBACK",
+            "chance": 0.55,
+            "durationMs": 400,
+            "value": 72
+          }
+        },
+        {
+          "key": "shattering_roll",
+          "damageRatio": 1.5,
+          "telegraphMs": 950,
+          "cooldownMs": 6800,
+          "rangePx": 224,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "BLEED",
+            "chance": 0.5,
+            "durationMs": 4000,
+            "value": 32
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 645,
+        "goldMin": 106,
+        "goldMax": 164,
+        "lootTableId": "ltb_mob_quartz_beetle"
+      },
+      "respawnSeconds": 50,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.55,
+        "poisePerExtraPlayer": 0.35
+      },
+      "descriptionVi": "Bọ cánh cứng vỏ thạch anh trong suốt ẩn mình giữa các cụm tinh thể của Crystal Caverns. Vỏ pha lê phản xạ phần nhỏ sát thương vật lý cho tới khi thanh Poise bị phá vỡ."
+    },
+    {
+      "id": "mob_cavern_hydroid",
+      "name": "Cavern Hydroid",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_crystal_caverns",
+      "level": 36,
+      "element": "WATER",
+      "weaknessElement": "LIGHTNING",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 3740,
+        "atk": 172,
+        "def": 76,
+        "poise": 185,
+        "moveSpeed": 112,
+        "attackSpeed": 1.0,
+        "critRate": 0.09,
+        "elementalRes": {
+          "FIRE": 0.2,
+          "WATER": 0.35,
+          "EARTH": 0.0,
+          "WIND": 0.0,
+          "LIGHTNING": -0.35,
+          "FROST": 0.15,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 240,
+        "leashDistancePx": 544,
+        "patrolRadiusPx": 144,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "RANGED_FIRST"
+      },
+      "attackPatterns": [
+        {
+          "key": "aqua_lance",
+          "damageRatio": 1.05,
+          "telegraphMs": 600,
+          "cooldownMs": 2200,
+          "rangePx": 224,
+          "hitboxShape": "LINE_PROJECTILE",
+          "statusEffect": {
+            "type": "SLOW",
+            "chance": 0.4,
+            "durationMs": 3000,
+            "value": 0.25
+          }
+        },
+        {
+          "key": "tidal_vortex",
+          "damageRatio": 1.45,
+          "telegraphMs": 1050,
+          "cooldownMs": 7200,
+          "rangePx": 192,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "CHILL",
+            "chance": 0.6,
+            "durationMs": 3500,
+            "value": 0.2
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 775,
+        "goldMin": 124,
+        "goldMax": 192,
+        "lootTableId": "ltb_mob_cavern_hydroid"
+      },
+      "respawnSeconds": 50,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Sinh vật thủy tinh thể cư ngụ quanh các hồ nước ngầm phát quang trong Crystal Caverns. Dễ dàng bị sốc điện diện rộng nếu tổ đội mang nhân vật hệ Lightning."
+    },
+    {
+      "id": "mob_amethyst_stalker",
+      "name": "Amethyst Stalker",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_crystal_caverns",
+      "level": 40,
+      "element": "SHADOW",
+      "weaknessElement": "LIGHT",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 4180,
+        "atk": 212,
+        "def": 82,
+        "poise": 190,
+        "moveSpeed": 162,
+        "attackSpeed": 1.3,
+        "critRate": 0.16,
+        "elementalRes": {
+          "FIRE": 0.0,
+          "WATER": 0.0,
+          "EARTH": 0.05,
+          "WIND": 0.05,
+          "LIGHTNING": 0.0,
+          "FROST": 0.0,
+          "LIGHT": -0.3,
+          "SHADOW": 0.35,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 256,
+        "leashDistancePx": 576,
+        "patrolRadiusPx": 176,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "LOWEST_HP"
+      },
+      "attackPatterns": [
+        {
+          "key": "shard_rend",
+          "damageRatio": 1.1,
+          "telegraphMs": 420,
+          "cooldownMs": 1750,
+          "rangePx": 60,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "BLEED",
+            "chance": 0.45,
+            "durationMs": 4000,
+            "value": 42
+          }
+        },
+        {
+          "key": "shadow_blink_strike",
+          "damageRatio": 1.6,
+          "telegraphMs": 850,
+          "cooldownMs": 6500,
+          "rangePx": 192,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "DEF_DOWN",
+            "chance": 0.4,
+            "durationMs": 4000,
+            "value": 0.2
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 920,
+        "goldMin": 144,
+        "goldMax": 222,
+        "lootTableId": "ltb_mob_amethyst_stalker"
+      },
+      "respawnSeconds": 55,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.25
+      },
+      "descriptionVi": "Thú săn mồi lưng mọc gai thạch anh tím ẩn nấp trong góc khuất của hang pha lê. Nó đánh dấu bóng tối sau lưng mục tiêu máu thấp trước khi lao xuyên qua trong chớp mắt."
+    },
+    {
+      "id": "mob_voltaic_jelly",
+      "name": "Voltaic Jelly",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_crystal_caverns",
+      "level": 44,
+      "element": "LIGHTNING",
+      "weaknessElement": "EARTH",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 4950,
+        "atk": 236,
+        "def": 94,
+        "poise": 225,
+        "moveSpeed": 108,
+        "attackSpeed": 1.0,
+        "critRate": 0.12,
+        "elementalRes": {
+          "FIRE": 0.0,
+          "WATER": 0.15,
+          "EARTH": -0.35,
+          "WIND": 0.1,
+          "LIGHTNING": 0.4,
+          "FROST": 0.0,
+          "LIGHT": 0.05,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 240,
+        "leashDistancePx": 544,
+        "patrolRadiusPx": 144,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "NEAREST"
+      },
+      "attackPatterns": [
+        {
+          "key": "arc_tentacle",
+          "damageRatio": 1.05,
+          "telegraphMs": 550,
+          "cooldownMs": 2100,
+          "rangePx": 96,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "SHOCK",
+            "chance": 0.4,
+            "durationMs": 3500,
+            "value": 0.15
+          }
+        },
+        {
+          "key": "static_pulse_ring",
+          "damageRatio": 1.55,
+          "telegraphMs": 1050,
+          "cooldownMs": 7000,
+          "rangePx": 144,
+          "hitboxShape": "RING",
+          "statusEffect": {
+            "type": "STUN",
+            "chance": 0.4,
+            "durationMs": 1200,
+            "value": 1
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 1080,
+        "goldMin": 165,
+        "goldMax": 252,
+        "lootTableId": "ltb_mob_voltaic_jelly"
+      },
+      "respawnSeconds": 55,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Sứa điện trôi nổi quanh hành lang dẫn vào dng_prism_sanctum. Vòng xung tĩnh điện của nó tạo vùng an toàn ngay sát tâm và ngoài rìa, khuyến khích người chơi lướt vào sát người để phản công."
+    },
+    {
+      "id": "mob_ruin_sentinel",
+      "name": "Ruin Sentinel",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_forgotten_ruins",
+      "level": 47,
+      "element": "NEUTRAL",
+      "weaknessElement": "LIGHTNING",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 6850,
+        "atk": 248,
+        "def": 148,
+        "poise": 330,
+        "moveSpeed": 86,
+        "attackSpeed": 0.82,
+        "critRate": 0.06,
+        "elementalRes": {
+          "FIRE": 0.1,
+          "WATER": 0.1,
+          "EARTH": 0.15,
+          "WIND": 0.05,
+          "LIGHTNING": -0.3,
+          "FROST": 0.1,
+          "LIGHT": 0.1,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.25
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 224,
+        "leashDistancePx": 512,
+        "patrolRadiusPx": 112,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HIGHEST_THREAT"
+      },
+      "attackPatterns": [
+        {
+          "key": "halberd_sweep",
+          "damageRatio": 1.15,
+          "telegraphMs": 700,
+          "cooldownMs": 2500,
+          "rangePx": 88,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "KNOCKBACK",
+            "chance": 0.5,
+            "durationMs": 450,
+            "value": 72
+          }
+        },
+        {
+          "key": "aegis_shockwave",
+          "damageRatio": 1.6,
+          "telegraphMs": 1150,
+          "cooldownMs": 7500,
+          "rangePx": 176,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "DEF_DOWN",
+            "chance": 0.5,
+            "durationMs": 5000,
+            "value": 0.2
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 1220,
+        "goldMin": 182,
+        "goldMax": 280,
+        "lootTableId": "ltb_mob_ruin_sentinel"
+      },
+      "respawnSeconds": 60,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.55,
+        "poisePerExtraPlayer": 0.35
+      },
+      "descriptionVi": "Tượng giáp cổ ngữ vẫn hoạt động bền bỉ giữa quảng trường đổ nát của Forgotten Ruins. Chuyên dùng kích dài quét rộng phía trước và khiên cổ ngữ làm giảm phòng thủ đối phương."
+    },
+    {
+      "id": "mob_cursed_acolyte",
+      "name": "Cursed Acolyte",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_forgotten_ruins",
+      "level": 51,
+      "element": "SHADOW",
+      "weaknessElement": "LIGHT",
+      "spriteSize": "48x64",
+      "stats": {
+        "hp": 5720,
+        "atk": 298,
+        "def": 112,
+        "poise": 235,
+        "moveSpeed": 110,
+        "attackSpeed": 1.0,
+        "critRate": 0.13,
+        "elementalRes": {
+          "FIRE": 0.0,
+          "WATER": 0.0,
+          "EARTH": 0.0,
+          "WIND": 0.0,
+          "LIGHTNING": 0.05,
+          "FROST": 0.05,
+          "LIGHT": -0.35,
+          "SHADOW": 0.35,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 272,
+        "leashDistancePx": 576,
+        "patrolRadiusPx": 128,
+        "fleeHpPercent": 15,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "FLEE",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HEALER_FIRST"
+      },
+      "attackPatterns": [
+        {
+          "key": "hex_orb",
+          "damageRatio": 1.05,
+          "telegraphMs": 600,
+          "cooldownMs": 2200,
+          "rangePx": 256,
+          "hitboxShape": "LINE_PROJECTILE",
+          "statusEffect": {
+            "type": "CORRUPT",
+            "chance": 0.45,
+            "durationMs": 4500,
+            "value": 48
+          }
+        },
+        {
+          "key": "sigil_of_decay",
+          "damageRatio": 1.5,
+          "telegraphMs": 1100,
+          "cooldownMs": 7800,
+          "rangePx": 240,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "CORRUPT",
+            "chance": 0.8,
+            "durationMs": 5000,
+            "value": 60
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 1390,
+        "goldMin": 204,
+        "goldMax": 312,
+        "lootTableId": "ltb_mob_cursed_acolyte"
+      },
+      "respawnSeconds": 55,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.25
+      },
+      "descriptionVi": "Tín đồ bị lời nguyền ám ảnh lang thang quanh các đền thờ sụp đổ ở Forgotten Ruins. Chuyên gieo ấn chú Hủ Hóa làm suy yếu hồi máu, cần kỹ năng thanh tẩy hoặc áp sát tiêu diệt sớm."
+    },
+    {
+      "id": "mob_sandstone_gargoyle",
+      "name": "Sandstone Gargoyle",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_forgotten_ruins",
+      "level": 55,
+      "element": "EARTH",
+      "weaknessElement": "WIND",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 8450,
+        "atk": 312,
+        "def": 168,
+        "poise": 380,
+        "moveSpeed": 122,
+        "attackSpeed": 0.92,
+        "critRate": 0.08,
+        "elementalRes": {
+          "FIRE": 0.15,
+          "WATER": 0.0,
+          "EARTH": 0.4,
+          "WIND": -0.3,
+          "LIGHTNING": 0.05,
+          "FROST": 0.0,
+          "LIGHT": 0.0,
+          "SHADOW": 0.1,
+          "NEUTRAL": 0.15
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 240,
+        "leashDistancePx": 576,
+        "patrolRadiusPx": 144,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HIGHEST_THREAT"
+      },
+      "attackPatterns": [
+        {
+          "key": "stone_wing_gust",
+          "damageRatio": 1.1,
+          "telegraphMs": 650,
+          "cooldownMs": 2400,
+          "rangePx": 112,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "KNOCKBACK",
+            "chance": 0.65,
+            "durationMs": 450,
+            "value": 96
+          }
+        },
+        {
+          "key": "meteor_dive",
+          "damageRatio": 1.65,
+          "telegraphMs": 1200,
+          "cooldownMs": 8000,
+          "rangePx": 208,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "STUN",
+            "chance": 0.55,
+            "durationMs": 1500,
+            "value": 1
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 1580,
+        "goldMin": 230,
+        "goldMax": 348,
+        "lootTableId": "ltb_mob_sandstone_gargoyle"
+      },
+      "respawnSeconds": 60,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.55,
+        "poisePerExtraPlayer": 0.35
+      },
+      "descriptionVi": "Quỷ đá sa thạch giả dạng tượng trang trí trên các cột cổ trong Forgotten Ruins. Khi người chơi tiến vào tầm phát hiện, nó bung cánh lao xuống đất tạo sóng chấn động mạnh."
+    },
+    {
+      "id": "mob_astral_wraith",
+      "name": "Astral Wraith",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_forgotten_ruins",
+      "level": 59,
+      "element": "LIGHT",
+      "weaknessElement": "SHADOW",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 7980,
+        "atk": 356,
+        "def": 140,
+        "poise": 300,
+        "moveSpeed": 142,
+        "attackSpeed": 1.15,
+        "critRate": 0.14,
+        "elementalRes": {
+          "FIRE": 0.05,
+          "WATER": 0.05,
+          "EARTH": 0.0,
+          "WIND": 0.1,
+          "LIGHTNING": 0.1,
+          "FROST": 0.0,
+          "LIGHT": 0.4,
+          "SHADOW": -0.35,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 272,
+        "leashDistancePx": 608,
+        "patrolRadiusPx": 160,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "RANGED_FIRST"
+      },
+      "attackPatterns": [
+        {
+          "key": "radiant_beam",
+          "damageRatio": 1.15,
+          "telegraphMs": 700,
+          "cooldownMs": 2600,
+          "rangePx": 256,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "BLIND",
+            "chance": 0.35,
+            "durationMs": 2500,
+            "value": 0.3
+          }
+        },
+        {
+          "key": "starfall_ring",
+          "damageRatio": 1.65,
+          "telegraphMs": 1150,
+          "cooldownMs": 7600,
+          "rangePx": 224,
+          "hitboxShape": "RING",
+          "statusEffect": null
+        }
+      ],
+      "rewards": {
+        "exp": 1790,
+        "goldMin": 255,
+        "goldMax": 388,
+        "lootTableId": "ltb_mob_astral_wraith"
+      },
+      "respawnSeconds": 60,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Tàn hồn học giả ánh sao canh giữ thư viện cổ Forgotten Ruins. Phát ra tia sáng xuyên thẳng và vòng tinh tú rực rỡ, rơi tinh thể ánh sáng hiếm dùng cho chế tạo trang sức cấp cao."
+    },
+    {
+      "id": "mob_frostbite_hound",
+      "name": "Frostbite Hound",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_frostbound_highlands",
+      "level": 62,
+      "element": "FROST",
+      "weaknessElement": "FIRE",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 9650,
+        "atk": 382,
+        "def": 158,
+        "poise": 335,
+        "moveSpeed": 164,
+        "attackSpeed": 1.25,
+        "critRate": 0.14,
+        "elementalRes": {
+          "FIRE": -0.35,
+          "WATER": 0.15,
+          "EARTH": 0.0,
+          "WIND": 0.1,
+          "LIGHTNING": 0.0,
+          "FROST": 0.4,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 256,
+        "leashDistancePx": 608,
+        "patrolRadiusPx": 176,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "LOWEST_HP"
+      },
+      "attackPatterns": [
+        {
+          "key": "rime_fang",
+          "damageRatio": 1.05,
+          "telegraphMs": 460,
+          "cooldownMs": 1800,
+          "rangePx": 64,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "CHILL",
+            "chance": 0.55,
+            "durationMs": 3500,
+            "value": 0.25
+          }
+        },
+        {
+          "key": "glacier_leap",
+          "damageRatio": 1.5,
+          "telegraphMs": 800,
+          "cooldownMs": 5800,
+          "rangePx": 192,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "FREEZE",
+            "chance": 0.3,
+            "durationMs": 1500,
+            "value": 1
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 1960,
+        "goldMin": 276,
+        "goldMax": 420,
+        "lootTableId": "ltb_mob_frostbite_hound"
+      },
+      "respawnSeconds": 55,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Chó săn băng giá tuần tra theo bầy trên bình nguyên tuyết Frostbound Highlands. Mỗi cú cắn tích tụ hiệu ứng Lạnh Giá làm chậm tốc độ né tránh nếu người chơi không giữ ấm bằng thức ăn hoặc buff."
+    },
+    {
+      "id": "mob_glacier_yeti",
+      "name": "Glacier Yeti",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_frostbound_highlands",
+      "level": 66,
+      "element": "FROST",
+      "weaknessElement": "FIRE",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 13400,
+        "atk": 418,
+        "def": 212,
+        "poise": 495,
+        "moveSpeed": 96,
+        "attackSpeed": 0.8,
+        "critRate": 0.08,
+        "elementalRes": {
+          "FIRE": -0.3,
+          "WATER": 0.2,
+          "EARTH": 0.1,
+          "WIND": 0.05,
+          "LIGHTNING": 0.0,
+          "FROST": 0.4,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.1
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 224,
+        "leashDistancePx": 544,
+        "patrolRadiusPx": 128,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HIGHEST_THREAT"
+      },
+      "attackPatterns": [
+        {
+          "key": "frost_club_smash",
+          "damageRatio": 1.25,
+          "telegraphMs": 800,
+          "cooldownMs": 2700,
+          "rangePx": 88,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "KNOCKBACK",
+            "chance": 0.7,
+            "durationMs": 500,
+            "value": 96
+          }
+        },
+        {
+          "key": "avalanche_boulder",
+          "damageRatio": 1.65,
+          "telegraphMs": 1150,
+          "cooldownMs": 7400,
+          "rangePx": 240,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "FREEZE",
+            "chance": 0.45,
+            "durationMs": 1800,
+            "value": 1
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 2180,
+        "goldMin": 304,
+        "goldMax": 460,
+        "lootTableId": "ltb_mob_glacier_yeti"
+      },
+      "respawnSeconds": 65,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.55,
+        "poisePerExtraPlayer": 0.35
+      },
+      "descriptionVi": "Người tuyết khổng lồ vác khối băng sắc làm chùy tại vùng núi Frostbound Highlands. Sức chống chịu lớn nhưng động tác vung vũ khí chậm và dễ đọc để phản đòn parry."
+    },
+    {
+      "id": "mob_ice_valkyrie_shade",
+      "name": "Ice Valkyrie Shade",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_frostbound_highlands",
+      "level": 70,
+      "element": "FROST",
+      "weaknessElement": "FIRE",
+      "spriteSize": "48x64",
+      "stats": {
+        "hp": 11900,
+        "atk": 468,
+        "def": 192,
+        "poise": 410,
+        "moveSpeed": 148,
+        "attackSpeed": 1.2,
+        "critRate": 0.15,
+        "elementalRes": {
+          "FIRE": -0.35,
+          "WATER": 0.15,
+          "EARTH": 0.0,
+          "WIND": 0.15,
+          "LIGHTNING": 0.0,
+          "FROST": 0.4,
+          "LIGHT": 0.1,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 256,
+        "leashDistancePx": 608,
+        "patrolRadiusPx": 160,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "LAST_ATTACKER"
+      },
+      "attackPatterns": [
+        {
+          "key": "glacial_spear_thrust",
+          "damageRatio": 1.15,
+          "telegraphMs": 550,
+          "cooldownMs": 2000,
+          "rangePx": 112,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "CHILL",
+            "chance": 0.5,
+            "durationMs": 3500,
+            "value": 0.25
+          }
+        },
+        {
+          "key": "frost_lance_barrage",
+          "damageRatio": 1.6,
+          "telegraphMs": 1000,
+          "cooldownMs": 6800,
+          "rangePx": 256,
+          "hitboxShape": "LINE_PROJECTILE",
+          "statusEffect": {
+            "type": "FREEZE",
+            "chance": 0.4,
+            "durationMs": 1600,
+            "value": 1
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 2410,
+        "goldMin": 334,
+        "goldMax": 506,
+        "lootTableId": "ltb_mob_ice_valkyrie_shade"
+      },
+      "respawnSeconds": 65,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Bóng ma nữ chiến binh băng giáo canh giữ con đường tiến vào dng_glacial_citadel. Đòn đâm giáo tầm xa chuẩn xác, có thể bị hóa giải nhanh bằng nguyên tố Hỏa."
+    },
+    {
+      "id": "mob_blizzard_elemental",
+      "name": "Blizzard Elemental",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_frostbound_highlands",
+      "level": 74,
+      "element": "WIND",
+      "weaknessElement": "EARTH",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 13100,
+        "atk": 495,
+        "def": 198,
+        "poise": 430,
+        "moveSpeed": 136,
+        "attackSpeed": 1.1,
+        "critRate": 0.13,
+        "elementalRes": {
+          "FIRE": -0.1,
+          "WATER": 0.1,
+          "EARTH": -0.35,
+          "WIND": 0.4,
+          "LIGHTNING": 0.05,
+          "FROST": 0.25,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 272,
+        "leashDistancePx": 608,
+        "patrolRadiusPx": 160,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "RANGED_FIRST"
+      },
+      "attackPatterns": [
+        {
+          "key": "gale_razor",
+          "damageRatio": 1.1,
+          "telegraphMs": 550,
+          "cooldownMs": 2100,
+          "rangePx": 224,
+          "hitboxShape": "LINE_PROJECTILE",
+          "statusEffect": null
+        },
+        {
+          "key": "whiteout_cyclone",
+          "damageRatio": 1.65,
+          "telegraphMs": 1150,
+          "cooldownMs": 7800,
+          "rangePx": 160,
+          "hitboxShape": "SELF_AOE",
+          "statusEffect": {
+            "type": "SLOW",
+            "chance": 0.75,
+            "durationMs": 4000,
+            "value": 0.35
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 2650,
+        "goldMin": 366,
+        "goldMax": 552,
+        "lootTableId": "ltb_mob_blizzard_elemental"
+      },
+      "respawnSeconds": 65,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Tinh linh bão tuyết xoáy mạnh giữa các rặng núi cao Frostbound Highlands. Tạo lốc tuyết làm chậm toàn bộ mục tiêu lân cận nhưng nhanh chóng tan rã trước các kỹ năng nguyên tố Thổ."
+    },
+    {
+      "id": "mob_ash_hound",
+      "name": "Ash Hound",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_ember_wasteland",
+      "level": 78,
+      "element": "FIRE",
+      "weaknessElement": "WATER",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 14600,
+        "atk": 556,
+        "def": 222,
+        "poise": 470,
+        "moveSpeed": 168,
+        "attackSpeed": 1.28,
+        "critRate": 0.15,
+        "elementalRes": {
+          "FIRE": 0.4,
+          "WATER": -0.35,
+          "EARTH": 0.05,
+          "WIND": 0.0,
+          "LIGHTNING": 0.0,
+          "FROST": -0.15,
+          "LIGHT": 0.0,
+          "SHADOW": 0.05,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 272,
+        "leashDistancePx": 640,
+        "patrolRadiusPx": 176,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "LOWEST_HP"
+      },
+      "attackPatterns": [
+        {
+          "key": "cinder_maul",
+          "damageRatio": 1.1,
+          "telegraphMs": 450,
+          "cooldownMs": 1750,
+          "rangePx": 64,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "BURN",
+            "chance": 0.6,
+            "durationMs": 4000,
+            "value": 68
+          }
+        },
+        {
+          "key": "blazing_dash",
+          "damageRatio": 1.55,
+          "telegraphMs": 800,
+          "cooldownMs": 5800,
+          "rangePx": 208,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "BURN",
+            "chance": 0.8,
+            "durationMs": 4500,
+            "value": 82
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 2920,
+        "goldMin": 400,
+        "goldMax": 604,
+        "lootTableId": "ltb_mob_ash_hound"
+      },
+      "respawnSeconds": 60,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Săn thú phủ tro tàn cháy âm ỉ rình rập khắp bình nguyên núi lửa Ember Wasteland. Cú lướt bùng lửa để lại vệt cháy ngắn trên mặt đất buộc người chơi liên tục đổi vị trí."
+    },
+    {
+      "id": "mob_obsidian_brute",
+      "name": "Obsidian Brute",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_ember_wasteland",
+      "level": 83,
+      "element": "EARTH",
+      "weaknessElement": "WATER",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 21200,
+        "atk": 592,
+        "def": 318,
+        "poise": 720,
+        "moveSpeed": 92,
+        "attackSpeed": 0.78,
+        "critRate": 0.08,
+        "elementalRes": {
+          "FIRE": 0.25,
+          "WATER": -0.3,
+          "EARTH": 0.4,
+          "WIND": -0.1,
+          "LIGHTNING": 0.05,
+          "FROST": 0.0,
+          "LIGHT": 0.0,
+          "SHADOW": 0.05,
+          "NEUTRAL": 0.15
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 224,
+        "leashDistancePx": 576,
+        "patrolRadiusPx": 128,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HIGHEST_THREAT"
+      },
+      "attackPatterns": [
+        {
+          "key": "basalt_cleave",
+          "damageRatio": 1.25,
+          "telegraphMs": 800,
+          "cooldownMs": 2700,
+          "rangePx": 88,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "DEF_DOWN",
+            "chance": 0.5,
+            "durationMs": 5000,
+            "value": 0.25
+          }
+        },
+        {
+          "key": "magma_fissure",
+          "damageRatio": 1.75,
+          "telegraphMs": 1250,
+          "cooldownMs": 8000,
+          "rangePx": 224,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "STUN",
+            "chance": 0.55,
+            "durationMs": 1600,
+            "value": 1
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 3280,
+        "goldMin": 446,
+        "goldMax": 674,
+        "lootTableId": "ltb_mob_obsidian_brute"
+      },
+      "respawnSeconds": 70,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.55,
+        "poisePerExtraPlayer": 0.35
+      },
+      "descriptionVi": "Chiến binh đá hắc diện thạch đồ sộ canh gác các lò rèn núi lửa cổ tại Ember Wasteland. Lượng giáp và Poise rất cao, là nguồn farm mảnh hắc diện thạch cho vũ khí endgame."
+    },
+    {
+      "id": "mob_pyroclast_cultist",
+      "name": "Pyroclast Cultist",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_ember_wasteland",
+      "level": 88,
+      "element": "FIRE",
+      "weaknessElement": "FROST",
+      "spriteSize": "48x64",
+      "stats": {
+        "hp": 16900,
+        "atk": 678,
+        "def": 248,
+        "poise": 520,
+        "moveSpeed": 116,
+        "attackSpeed": 1.05,
+        "critRate": 0.16,
+        "elementalRes": {
+          "FIRE": 0.45,
+          "WATER": -0.2,
+          "EARTH": 0.05,
+          "WIND": 0.0,
+          "LIGHTNING": 0.0,
+          "FROST": -0.35,
+          "LIGHT": 0.0,
+          "SHADOW": 0.1,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 288,
+        "leashDistancePx": 640,
+        "patrolRadiusPx": 144,
+        "fleeHpPercent": 10,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "FLEE",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HEALER_FIRST"
+      },
+      "attackPatterns": [
+        {
+          "key": "brimstone_bolt",
+          "damageRatio": 1.1,
+          "telegraphMs": 600,
+          "cooldownMs": 2100,
+          "rangePx": 272,
+          "hitboxShape": "LINE_PROJECTILE",
+          "statusEffect": {
+            "type": "BURN",
+            "chance": 0.55,
+            "durationMs": 4000,
+            "value": 92
+          }
+        },
+        {
+          "key": "caldera_pillar",
+          "damageRatio": 1.7,
+          "telegraphMs": 1150,
+          "cooldownMs": 7400,
+          "rangePx": 256,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "BURN",
+            "chance": 0.85,
+            "durationMs": 5000,
+            "value": 110
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 3660,
+        "goldMin": 495,
+        "goldMax": 745,
+        "lootTableId": "ltb_mob_pyroclast_cultist"
+      },
+      "respawnSeconds": 65,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.5,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Tà giáo hỏa ngục triệu hồi cột nham thạch từ xa tại trung tâm Ember Wasteland. Cần phá thế niệm chú nhanh hoặc dùng nguyên tố Băng dập tắt ngọn lửa hắc ám của chúng."
+    },
+    {
+      "id": "mob_void_thrall",
+      "name": "Void Thrall",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_abyssal_kingdom",
+      "level": 92,
+      "element": "SHADOW",
+      "weaknessElement": "LIGHT",
+      "spriteSize": "48x64",
+      "stats": {
+        "hp": 19800,
+        "atk": 690,
+        "def": 278,
+        "poise": 610,
+        "moveSpeed": 134,
+        "attackSpeed": 1.18,
+        "critRate": 0.14,
+        "elementalRes": {
+          "FIRE": 0.05,
+          "WATER": 0.05,
+          "EARTH": 0.05,
+          "WIND": 0.05,
+          "LIGHTNING": 0.05,
+          "FROST": 0.05,
+          "LIGHT": -0.35,
+          "SHADOW": 0.45,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 272,
+        "leashDistancePx": 640,
+        "patrolRadiusPx": 160,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "NEAREST"
+      },
+      "attackPatterns": [
+        {
+          "key": "umbral_claw",
+          "damageRatio": 1.1,
+          "telegraphMs": 500,
+          "cooldownMs": 1850,
+          "rangePx": 68,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "CORRUPT",
+            "chance": 0.5,
+            "durationMs": 4500,
+            "value": 98
+          }
+        },
+        {
+          "key": "rift_tendril",
+          "damageRatio": 1.55,
+          "telegraphMs": 950,
+          "cooldownMs": 6400,
+          "rangePx": 192,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "ROOT",
+            "chance": 0.6,
+            "durationMs": 1800,
+            "value": 1
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 3940,
+        "goldMin": 530,
+        "goldMax": 798,
+        "lootTableId": "ltb_mob_void_thrall"
+      },
+      "respawnSeconds": 65,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.55,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Nô lệ hư không từng là cư dân vương quốc cổ bị bóng tối nuốt chửng tại Abyssal Kingdom. Tấn công hung hãn thành từng tốp và dùng xúc tu bóng tối trói mục tiêu."
+    },
+    {
+      "id": "mob_abyssal_knight",
+      "name": "Abyssal Knight",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_abyssal_kingdom",
+      "level": 96,
+      "element": "SHADOW",
+      "weaknessElement": "LIGHT",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 26800,
+        "atk": 742,
+        "def": 376,
+        "poise": 860,
+        "moveSpeed": 114,
+        "attackSpeed": 0.95,
+        "critRate": 0.12,
+        "elementalRes": {
+          "FIRE": 0.1,
+          "WATER": 0.1,
+          "EARTH": 0.1,
+          "WIND": 0.05,
+          "LIGHTNING": 0.05,
+          "FROST": 0.1,
+          "LIGHT": -0.35,
+          "SHADOW": 0.45,
+          "NEUTRAL": 0.15
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 256,
+        "leashDistancePx": 640,
+        "patrolRadiusPx": 144,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HIGHEST_THREAT"
+      },
+      "attackPatterns": [
+        {
+          "key": "dread_greatsword_arc",
+          "damageRatio": 1.25,
+          "telegraphMs": 720,
+          "cooldownMs": 2400,
+          "rangePx": 96,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "BLEED",
+            "chance": 0.55,
+            "durationMs": 4500,
+            "value": 112
+          }
+        },
+        {
+          "key": "eclipse_wave_slash",
+          "damageRatio": 1.75,
+          "telegraphMs": 1100,
+          "cooldownMs": 7200,
+          "rangePx": 240,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "DEF_DOWN",
+            "chance": 0.65,
+            "durationMs": 5000,
+            "value": 0.25
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 4180,
+        "goldMin": 568,
+        "goldMax": 852,
+        "lootTableId": "ltb_mob_abyssal_knight"
+      },
+      "respawnSeconds": 75,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.55,
+        "poisePerExtraPlayer": 0.35
+      },
+      "descriptionVi": "Kỵ sĩ cận vệ mặc giáp đen vương triều sa ngã canh giữ đại lộ dẫn tới dng_eclipse_throne. Chuyên tung kiếm khí hắc ám tầm trung xuyên giáp và đòi hỏi tank giữ vững vị trí."
+    },
+    {
+      "id": "mob_eclipse_weaver",
+      "name": "Eclipse Weaver",
+      "tier": "REGULAR",
+      "mvp": false,
+      "regionId": "reg_abyssal_kingdom",
+      "level": 99,
+      "element": "SHADOW",
+      "weaknessElement": "LIGHT",
+      "spriteSize": "64x64",
+      "stats": {
+        "hp": 22400,
+        "atk": 798,
+        "def": 310,
+        "poise": 690,
+        "moveSpeed": 124,
+        "attackSpeed": 1.1,
+        "critRate": 0.18,
+        "elementalRes": {
+          "FIRE": 0.1,
+          "WATER": 0.1,
+          "EARTH": 0.05,
+          "WIND": 0.1,
+          "LIGHTNING": 0.1,
+          "FROST": 0.1,
+          "LIGHT": -0.35,
+          "SHADOW": 0.5,
+          "NEUTRAL": 0.0
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 304,
+        "leashDistancePx": 640,
+        "patrolRadiusPx": 160,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HEALER_FIRST"
+      },
+      "attackPatterns": [
+        {
+          "key": "void_needle_volley",
+          "damageRatio": 1.15,
+          "telegraphMs": 600,
+          "cooldownMs": 2200,
+          "rangePx": 288,
+          "hitboxShape": "LINE_PROJECTILE",
+          "statusEffect": {
+            "type": "CORRUPT",
+            "chance": 0.6,
+            "durationMs": 4500,
+            "value": 120
+          }
+        },
+        {
+          "key": "eclipse_collapse",
+          "damageRatio": 1.8,
+          "telegraphMs": 1200,
+          "cooldownMs": 8000,
+          "rangePx": 256,
+          "hitboxShape": "RING",
+          "statusEffect": {
+            "type": "BLIND",
+            "chance": 0.6,
+            "durationMs": 3000,
+            "value": 0.35
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 4420,
+        "goldMin": 600,
+        "goldMax": 900,
+        "lootTableId": "ltb_mob_eclipse_weaver"
+      },
+      "respawnSeconds": 75,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.55,
+        "poisePerExtraPlayer": 0.3
+      },
+      "descriptionVi": "Pháp sư dệt nhật thực tối cao phục vụ Malakor quanh ngoại vi dng_eclipse_throne. Tạo vòng suy sụp ánh sáng và ưu tiên săn mục tiêu hồi máu, là thử thách quái thường khó nhất của Eldoria."
+    },
+    {
+      "id": "mob_elite_alpha_direwolf",
+      "name": "Alpha Direwolf",
+      "tier": "ELITE",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "level": 12,
+      "element": "WIND",
+      "weaknessElement": "FIRE",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 2550,
+        "atk": 64,
+        "def": 28,
+        "poise": 265,
+        "moveSpeed": 162,
+        "attackSpeed": 1.2,
+        "critRate": 0.14,
+        "elementalRes": {
+          "FIRE": -0.25,
+          "WATER": 0.0,
+          "EARTH": 0.05,
+          "WIND": 0.35,
+          "LIGHTNING": 0.0,
+          "FROST": 0.1,
+          "LIGHT": 0.0,
+          "SHADOW": 0.05,
+          "NEUTRAL": 0.05
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 272,
+        "leashDistancePx": 640,
+        "patrolRadiusPx": 192,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HIGHEST_THREAT"
+      },
+      "attackPatterns": [
+        {
+          "key": "savage_double_claw",
+          "damageRatio": 1.15,
+          "telegraphMs": 550,
+          "cooldownMs": 2200,
+          "rangePx": 76,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "BLEED",
+            "chance": 0.5,
+            "durationMs": 4000,
+            "value": 16
+          }
+        },
+        {
+          "key": "gale_pounce_chain",
+          "damageRatio": 1.65,
+          "telegraphMs": 900,
+          "cooldownMs": 6800,
+          "rangePx": 224,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "KNOCKBACK",
+            "chance": 0.7,
+            "durationMs": 450,
+            "value": 80
+          }
+        },
+        {
+          "key": "pack_howl_burst",
+          "damageRatio": 1.35,
+          "telegraphMs": 1250,
+          "cooldownMs": 14000,
+          "rangePx": 160,
+          "hitboxShape": "SELF_AOE",
+          "statusEffect": {
+            "type": "SLOW",
+            "chance": 0.65,
+            "durationMs": 3500,
+            "value": 0.25
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 620,
+        "goldMin": 135,
+        "goldMax": 210,
+        "lootTableId": "ltb_mob_elite_alpha_direwolf"
+      },
+      "respawnSeconds": 300,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.65,
+        "poisePerExtraPlayer": 0.4
+      },
+      "descriptionVi": "Chúa sói đầu đàn thống trị rừng tây Whispering Forest và là Elite Monster duy nhất trong phạm vi MVP. Tiếng hú Pack Howl gọi tối đa 2 Timber Wolf hỗ trợ đồng thời mở cửa sổ phản công lớn nếu người chơi phá Poise kịp thời."
+    },
+    {
+      "id": "mob_elite_briar_stag",
+      "name": "Briar Stag",
+      "tier": "ELITE",
+      "mvp": false,
+      "regionId": "reg_whispering_forest",
+      "level": 15,
+      "element": "EARTH",
+      "weaknessElement": "FIRE",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 3650,
+        "atk": 76,
+        "def": 38,
+        "poise": 330,
+        "moveSpeed": 144,
+        "attackSpeed": 1.05,
+        "critRate": 0.12,
+        "elementalRes": {
+          "FIRE": -0.3,
+          "WATER": 0.15,
+          "EARTH": 0.4,
+          "WIND": 0.05,
+          "LIGHTNING": 0.0,
+          "FROST": 0.0,
+          "LIGHT": 0.1,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.05
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 256,
+        "leashDistancePx": 640,
+        "patrolRadiusPx": 208,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HIGHEST_THREAT"
+      },
+      "attackPatterns": [
+        {
+          "key": "antler_sweep",
+          "damageRatio": 1.2,
+          "telegraphMs": 600,
+          "cooldownMs": 2400,
+          "rangePx": 84,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "BLEED",
+            "chance": 0.45,
+            "durationMs": 4000,
+            "value": 18
+          }
+        },
+        {
+          "key": "thorn_stampede",
+          "damageRatio": 1.7,
+          "telegraphMs": 1000,
+          "cooldownMs": 7500,
+          "rangePx": 240,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "ROOT",
+            "chance": 0.65,
+            "durationMs": 2000,
+            "value": 1
+          }
+        },
+        {
+          "key": "verdant_shock_ring",
+          "damageRatio": 1.5,
+          "telegraphMs": 1200,
+          "cooldownMs": 11000,
+          "rangePx": 176,
+          "hitboxShape": "RING",
+          "statusEffect": {
+            "type": "POISON",
+            "chance": 0.6,
+            "durationMs": 4500,
+            "value": 20
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 860,
+        "goldMin": 180,
+        "goldMax": 275,
+        "lootTableId": "ltb_mob_elite_briar_stag"
+      },
+      "respawnSeconds": 360,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.65,
+        "poisePerExtraPlayer": 0.4
+      },
+      "descriptionVi": "Thần hươu sừng gai lang thang ở ranh giới phía đông Whispering Forest giáp chân núi Ironpeak. Là thử thách Elite mở rộng sau MVP giúp người chơi kiếm lõi thảo mộc tinh luyện trước khi tiến sang khu vực mới."
+    },
+    {
+      "id": "mob_elite_magma_colossus",
+      "name": "Magma Colossus",
+      "tier": "ELITE",
+      "mvp": false,
+      "regionId": "reg_ironpeak_mountains",
+      "level": 27,
+      "element": "FIRE",
+      "weaknessElement": "WATER",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 10200,
+        "atk": 158,
+        "def": 82,
+        "poise": 540,
+        "moveSpeed": 88,
+        "attackSpeed": 0.85,
+        "critRate": 0.08,
+        "elementalRes": {
+          "FIRE": 0.45,
+          "WATER": -0.35,
+          "EARTH": 0.2,
+          "WIND": 0.0,
+          "LIGHTNING": 0.05,
+          "FROST": -0.15,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.1
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 256,
+        "leashDistancePx": 608,
+        "patrolRadiusPx": 144,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HIGHEST_THREAT"
+      },
+      "attackPatterns": [
+        {
+          "key": "anvil_slam",
+          "damageRatio": 1.3,
+          "telegraphMs": 850,
+          "cooldownMs": 2800,
+          "rangePx": 88,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "KNOCKBACK",
+            "chance": 0.75,
+            "durationMs": 500,
+            "value": 96
+          }
+        },
+        {
+          "key": "molten_fissure_line",
+          "damageRatio": 1.75,
+          "telegraphMs": 1150,
+          "cooldownMs": 7600,
+          "rangePx": 256,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "BURN",
+            "chance": 0.8,
+            "durationMs": 4500,
+            "value": 42
+          }
+        },
+        {
+          "key": "furnace_overload",
+          "damageRatio": 1.9,
+          "telegraphMs": 1450,
+          "cooldownMs": 13500,
+          "rangePx": 176,
+          "hitboxShape": "SELF_AOE",
+          "statusEffect": {
+            "type": "STUN",
+            "chance": 0.65,
+            "durationMs": 1500,
+            "value": 1
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 1980,
+        "goldMin": 360,
+        "goldMax": 540,
+        "lootTableId": "ltb_mob_elite_magma_colossus"
+      },
+      "respawnSeconds": 420,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.7,
+        "poisePerExtraPlayer": 0.45
+      },
+      "descriptionVi": "Người khổng lồ dung nham bảo vệ mỏ sắt thượng nguồn Ironpeak Mountains. Khi lõi ngực phát sáng chuẩn bị Furnace Overload, các kỹ năng nguyên tố Thủy gây gấp đôi sát thương phá Poise để ngắt đòn."
+    },
+    {
+      "id": "mob_elite_crystal_matriarch",
+      "name": "Crystal Matriarch",
+      "tier": "ELITE",
+      "mvp": false,
+      "regionId": "reg_crystal_caverns",
+      "level": 43,
+      "element": "LIGHTNING",
+      "weaknessElement": "EARTH",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 20800,
+        "atk": 292,
+        "def": 124,
+        "poise": 740,
+        "moveSpeed": 122,
+        "attackSpeed": 1.05,
+        "critRate": 0.14,
+        "elementalRes": {
+          "FIRE": 0.05,
+          "WATER": 0.15,
+          "EARTH": -0.35,
+          "WIND": 0.1,
+          "LIGHTNING": 0.45,
+          "FROST": 0.05,
+          "LIGHT": 0.1,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.05
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 288,
+        "leashDistancePx": 640,
+        "patrolRadiusPx": 160,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "RANGED_FIRST"
+      },
+      "attackPatterns": [
+        {
+          "key": "prismatic_scythe",
+          "damageRatio": 1.2,
+          "telegraphMs": 620,
+          "cooldownMs": 2300,
+          "rangePx": 96,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "SHOCK",
+            "chance": 0.5,
+            "durationMs": 4000,
+            "value": 0.2
+          }
+        },
+        {
+          "key": "refraction_beam",
+          "damageRatio": 1.75,
+          "telegraphMs": 1100,
+          "cooldownMs": 7200,
+          "rangePx": 288,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "SHOCK",
+            "chance": 0.75,
+            "durationMs": 4500,
+            "value": 0.25
+          }
+        },
+        {
+          "key": "resonant_crystal_ring",
+          "damageRatio": 1.9,
+          "telegraphMs": 1350,
+          "cooldownMs": 12500,
+          "rangePx": 224,
+          "hitboxShape": "RING",
+          "statusEffect": {
+            "type": "STUN",
+            "chance": 0.55,
+            "durationMs": 1500,
+            "value": 1
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 3950,
+        "goldMin": 680,
+        "goldMax": 1020,
+        "lootTableId": "ltb_mob_elite_crystal_matriarch"
+      },
+      "respawnSeconds": 480,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.7,
+        "poisePerExtraPlayer": 0.45
+      },
+      "descriptionVi": "Chúa nhện pha lê lấp lánh điện quang thống trị tầng giữa Crystal Caverns. Phóng tia khúc xạ xuyên thẳng và rải vòng cộng hưởng, là nguồn rơi lõi pha lê tinh khiết cho cường hóa cấp +7 trở lên."
+    },
+    {
+      "id": "mob_elite_sunstone_warden",
+      "name": "Sunstone Warden",
+      "tier": "ELITE",
+      "mvp": false,
+      "regionId": "reg_forgotten_ruins",
+      "level": 58,
+      "element": "LIGHT",
+      "weaknessElement": "SHADOW",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 34800,
+        "atk": 438,
+        "def": 204,
+        "poise": 1080,
+        "moveSpeed": 112,
+        "attackSpeed": 1.0,
+        "critRate": 0.13,
+        "elementalRes": {
+          "FIRE": 0.15,
+          "WATER": 0.05,
+          "EARTH": 0.15,
+          "WIND": 0.05,
+          "LIGHTNING": 0.1,
+          "FROST": 0.05,
+          "LIGHT": 0.45,
+          "SHADOW": -0.35,
+          "NEUTRAL": 0.1
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 288,
+        "leashDistancePx": 640,
+        "patrolRadiusPx": 160,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HIGHEST_THREAT"
+      },
+      "attackPatterns": [
+        {
+          "key": "solar_halberd_combo",
+          "damageRatio": 1.25,
+          "telegraphMs": 650,
+          "cooldownMs": 2400,
+          "rangePx": 96,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "BLIND",
+            "chance": 0.45,
+            "durationMs": 3000,
+            "value": 0.3
+          }
+        },
+        {
+          "key": "sunbeam_spear",
+          "damageRatio": 1.8,
+          "telegraphMs": 1100,
+          "cooldownMs": 7400,
+          "rangePx": 288,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "BURN",
+            "chance": 0.7,
+            "durationMs": 4500,
+            "value": 85
+          }
+        },
+        {
+          "key": "sanctuary_nova",
+          "damageRatio": 2.0,
+          "telegraphMs": 1450,
+          "cooldownMs": 14000,
+          "rangePx": 208,
+          "hitboxShape": "SELF_AOE",
+          "statusEffect": {
+            "type": "DEF_DOWN",
+            "chance": 0.75,
+            "durationMs": 5000,
+            "value": 0.25
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 6650,
+        "goldMin": 1080,
+        "goldMax": 1620,
+        "lootTableId": "ltb_mob_elite_sunstone_warden"
+      },
+      "respawnSeconds": 540,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.75,
+        "poisePerExtraPlayer": 0.45
+      },
+      "descriptionVi": "Thủ vệ Đá Mặt Trời canh giữ Thánh Điện Cổ trong Forgotten Ruins. Thay cho boss khu vực, hắn đại diện cho bài kiểm tra Ancient Trials đòi hỏi tổ đội kết hợp sát thương Bóng Tối và phá giáp chính xác."
+    },
+    {
+      "id": "mob_elite_permafrost_mammoth",
+      "name": "Permafrost Mammoth",
+      "tier": "ELITE",
+      "mvp": false,
+      "regionId": "reg_frostbound_highlands",
+      "level": 73,
+      "element": "FROST",
+      "weaknessElement": "FIRE",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 58500,
+        "atk": 612,
+        "def": 292,
+        "poise": 1520,
+        "moveSpeed": 102,
+        "attackSpeed": 0.85,
+        "critRate": 0.1,
+        "elementalRes": {
+          "FIRE": -0.35,
+          "WATER": 0.2,
+          "EARTH": 0.15,
+          "WIND": 0.1,
+          "LIGHTNING": 0.0,
+          "FROST": 0.5,
+          "LIGHT": 0.05,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.15
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 272,
+        "leashDistancePx": 640,
+        "patrolRadiusPx": 176,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HIGHEST_THREAT"
+      },
+      "attackPatterns": [
+        {
+          "key": "glacial_tusk_toss",
+          "damageRatio": 1.3,
+          "telegraphMs": 750,
+          "cooldownMs": 2600,
+          "rangePx": 96,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "KNOCKBACK",
+            "chance": 0.8,
+            "durationMs": 550,
+            "value": 112
+          }
+        },
+        {
+          "key": "tundra_stampede",
+          "damageRatio": 1.85,
+          "telegraphMs": 1150,
+          "cooldownMs": 8000,
+          "rangePx": 272,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "FREEZE",
+            "chance": 0.65,
+            "durationMs": 2000,
+            "value": 1
+          }
+        },
+        {
+          "key": "permafrost_shatter",
+          "damageRatio": 2.05,
+          "telegraphMs": 1450,
+          "cooldownMs": 14500,
+          "rangePx": 208,
+          "hitboxShape": "SELF_AOE",
+          "statusEffect": {
+            "type": "CHILL",
+            "chance": 0.9,
+            "durationMs": 5000,
+            "value": 0.35
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 9850,
+        "goldMin": 1520,
+        "goldMax": 2280,
+        "lootTableId": "ltb_mob_elite_permafrost_mammoth"
+      },
+      "respawnSeconds": 540,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.75,
+        "poisePerExtraPlayer": 0.5
+      },
+      "descriptionVi": "Voi ma mút vĩnh cửu phủ lớp băng dày cứng như thép thống lĩnh vùng đồi tuyết Frostbound Highlands. Cú giẫm làm vỡ băng xung quanh tạo vùng trượt lạnh nếu không phá hủy giáp băng bằng đòn Hỏa."
+    },
+    {
+      "id": "mob_elite_cinder_wyvern",
+      "name": "Cinder Wyvern",
+      "tier": "ELITE",
+      "mvp": false,
+      "regionId": "reg_ember_wasteland",
+      "level": 89,
+      "element": "FIRE",
+      "weaknessElement": "WATER",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 84000,
+        "atk": 825,
+        "def": 345,
+        "poise": 1950,
+        "moveSpeed": 156,
+        "attackSpeed": 1.15,
+        "critRate": 0.16,
+        "elementalRes": {
+          "FIRE": 0.5,
+          "WATER": -0.35,
+          "EARTH": 0.1,
+          "WIND": 0.15,
+          "LIGHTNING": 0.0,
+          "FROST": -0.2,
+          "LIGHT": 0.0,
+          "SHADOW": 0.05,
+          "NEUTRAL": 0.05
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 320,
+        "leashDistancePx": 640,
+        "patrolRadiusPx": 208,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "RANGED_FIRST"
+      },
+      "attackPatterns": [
+        {
+          "key": "scorching_tail_whip",
+          "damageRatio": 1.25,
+          "telegraphMs": 620,
+          "cooldownMs": 2300,
+          "rangePx": 104,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "BURN",
+            "chance": 0.65,
+            "durationMs": 4500,
+            "value": 125
+          }
+        },
+        {
+          "key": "napalm_strafe",
+          "damageRatio": 1.85,
+          "telegraphMs": 1100,
+          "cooldownMs": 7600,
+          "rangePx": 288,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "BURN",
+            "chance": 0.9,
+            "durationMs": 5500,
+            "value": 150
+          }
+        },
+        {
+          "key": "volcanic_divebomb",
+          "damageRatio": 2.15,
+          "telegraphMs": 1400,
+          "cooldownMs": 13500,
+          "rangePx": 256,
+          "hitboxShape": "CIRCLE",
+          "statusEffect": {
+            "type": "STUN",
+            "chance": 0.6,
+            "durationMs": 1600,
+            "value": 1
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 14200,
+        "goldMin": 2120,
+        "goldMax": 3180,
+        "lootTableId": "ltb_mob_elite_cinder_wyvern"
+      },
+      "respawnSeconds": 600,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.75,
+        "poisePerExtraPlayer": 0.5
+      },
+      "descriptionVi": "Phi long tro tàn chao lượn trên miệng núi lửa Ember Wasteland. Là mục tiêu chủ lực trong chuỗi Volcanic Raid và Forge Trials, rơi vảy hỏa long cần thiết để rèn vũ khí bậc Mythic lên +10."
+    },
+    {
+      "id": "mob_elite_dread_harbinger",
+      "name": "Dread Harbinger",
+      "tier": "ELITE",
+      "mvp": false,
+      "regionId": "reg_abyssal_kingdom",
+      "level": 98,
+      "element": "SHADOW",
+      "weaknessElement": "LIGHT",
+      "spriteSize": "96x96",
+      "stats": {
+        "hp": 112000,
+        "atk": 965,
+        "def": 420,
+        "poise": 2400,
+        "moveSpeed": 146,
+        "attackSpeed": 1.18,
+        "critRate": 0.18,
+        "elementalRes": {
+          "FIRE": 0.1,
+          "WATER": 0.1,
+          "EARTH": 0.1,
+          "WIND": 0.1,
+          "LIGHTNING": 0.1,
+          "FROST": 0.1,
+          "LIGHT": -0.35,
+          "SHADOW": 0.5,
+          "NEUTRAL": 0.1
+        }
+      },
+      "aiProfile": {
+        "aggroRadiusPx": 320,
+        "leashDistancePx": 640,
+        "patrolRadiusPx": 192,
+        "fleeHpPercent": 0,
+        "aiStates": [
+          "IDLE",
+          "PATROL",
+          "DETECT",
+          "CHASE",
+          "ATTACK",
+          "RETURN",
+          "STUNNED",
+          "DEATH",
+          "RESPAWN"
+        ],
+        "targetPriority": "HEALER_FIRST"
+      },
+      "attackPatterns": [
+        {
+          "key": "reaper_crescent",
+          "damageRatio": 1.3,
+          "telegraphMs": 600,
+          "cooldownMs": 2200,
+          "rangePx": 104,
+          "hitboxShape": "CONE",
+          "statusEffect": {
+            "type": "CORRUPT",
+            "chance": 0.7,
+            "durationMs": 5000,
+            "value": 150
+          }
+        },
+        {
+          "key": "abyss_rift_slash",
+          "damageRatio": 1.9,
+          "telegraphMs": 1050,
+          "cooldownMs": 7200,
+          "rangePx": 288,
+          "hitboxShape": "RECTANGLE",
+          "statusEffect": {
+            "type": "DEF_DOWN",
+            "chance": 0.75,
+            "durationMs": 5000,
+            "value": 0.3
+          }
+        },
+        {
+          "key": "oblivion_ring",
+          "damageRatio": 2.2,
+          "telegraphMs": 1400,
+          "cooldownMs": 14000,
+          "rangePx": 240,
+          "hitboxShape": "RING",
+          "statusEffect": {
+            "type": "BLIND",
+            "chance": 0.7,
+            "durationMs": 3500,
+            "value": 0.35
+          }
+        }
+      ],
+      "rewards": {
+        "exp": 17600,
+        "goldMin": 2650,
+        "goldMax": 3980,
+        "lootTableId": "ltb_mob_elite_dread_harbinger"
+      },
+      "respawnSeconds": 600,
+      "multiplayerScaling": {
+        "hpPerExtraPlayer": 0.75,
+        "poisePerExtraPlayer": 0.5
+      },
+      "descriptionVi": "Sứ giả diệt vong cầm lưỡi hái hư không tuần tra trước cổng dng_eclipse_throne tại Abyssal Kingdom. Hạ gục hắn mở đường và cấp tinh chất bóng tối cấp tối thượng cho đội hình trước khi đối đầu Malakor."
+    }
+  ]
+}

@@ -1,0 +1,1478 @@
+{
+  "schemaVersion": "1.0.0",
+  "updatedAt": "2026-11-19",
+  "bosses": [
+    {
+      "id": "boss_thornback_elder",
+      "name": "Thornback Elder",
+      "title": "Ancient Guardian of Mossroot Hollow",
+      "mvp": true,
+      "regionId": "reg_whispering_forest",
+      "dungeonId": "dng_mossroot_hollow",
+      "level": 15,
+      "element": "EARTH",
+      "weaknessElement": "FIRE",
+      "spriteSize": "128x128",
+      "loreVi": "Từng là Thụ Thần bảo hộ biên giới giữa Greenhaven Village và Whispering Forest, Thornback Elder bị nhiễm nguồn nhựa hư hóa rỉ ra từ khe nứt cổ dưới đáy Mossroot Hollow. Hắn xem mọi sinh linh đặt chân vào thánh điện rễ cây là kẻ phá rừng và sẵn sàng chôn vùi cả ngôi làng dưới lớp gai cổ thụ.",
+      "visualConceptVi": "Thân hình cổ thụ khổng lồ chuẩn 16-bit (128x128 px) với bộ vỏ sồi rêu phong đậm, lưng mọc bờm gai tầm gửi uốn cong tạo silhouette sừng vương miện rõ rệt. Lõi ngực mang khối nhựa phát quang màu xanh lục chuyển dần sang cam đỏ ở Phase 3; hai cánh tay rễ lớn có độ tương phản sáng tối sắc nét giúp người chơi đọc ngay hướng vung đòn.",
+      "arena": {
+        "widthTiles": 26,
+        "heightTiles": 20,
+        "hazards": [
+          {
+            "key": "hz_briar_perimeter",
+            "nameVi": "Vành Đai Gai Rừng",
+            "triggerPhase": 2,
+            "effectVi": "Bụi gai mọc dọc mép tường đấu trường, gây sát thương Earth và hiệu ứng Bleed nếu người chơi bị đẩy sát tường.",
+            "damageRatio": 0.45,
+            "intervalMs": 1000
+          },
+          {
+            "key": "hz_toxic_sap_pool",
+            "nameVi": "Vũng Nhựa Độc Rỉ Máu",
+            "triggerPhase": 3,
+            "effectVi": "Xuất hiện ngẫu nhiên sau đòn Canopy Thorn Rain, tồn tại 12 giây, làm chậm 30% và gây sát thương Poison theo giây.",
+            "damageRatio": 0.35,
+            "intervalMs": 1000
+          }
+        ],
+        "safePillars": [
+          {
+            "id": "pil_moss_nw",
+            "tileX": 7,
+            "tileY": 6,
+            "destructible": true,
+            "mechanicVi": "Chắn đạn Spore Volley và chặn đường húc Heartwood Charge; khi bị boss húc vỡ, boss bị choáng tự thân 2.5 giây và chịu thêm 25% sát thương Poise."
+          },
+          {
+            "id": "pil_moss_ne",
+            "tileX": 18,
+            "tileY": 6,
+            "destructible": true,
+            "mechanicVi": "Chắn đạn Spore Volley và chặn đường húc Heartwood Charge; khi bị boss húc vỡ, boss bị choáng tự thân 2.5 giây và chịu thêm 25% sát thương Poise."
+          },
+          {
+            "id": "pil_moss_sw",
+            "tileX": 7,
+            "tileY": 13,
+            "destructible": true,
+            "mechanicVi": "Chắn đạn Spore Volley và cung cấp bóng che khỏi làn sóng gai thẳng đứng ở Phase 2."
+          },
+          {
+            "id": "pil_moss_se",
+            "tileX": 18,
+            "tileY": 13,
+            "destructible": true,
+            "mechanicVi": "Chắn đạn Spore Volley và cung cấp bóng che khỏi làn sóng gai thẳng đứng ở Phase 2."
+          }
+        ],
+        "entryLockRule": {
+          "lockDelayMs": 5000,
+          "allowLateJoin": false,
+          "resetOnWipe": true,
+          "descriptionVi": "Rào rễ cây đóng kín lối vào 5 giây sau khi người đầu tiên kích hoạt aggro. Không cho phép người ngoài bước vào giữa trận; nếu toàn bộ party gục ngã, boss hồi 100% HP, phục hồi 4 trụ đá và đặt lại về Phase 1."
+        }
+      },
+      "baseStats": {
+        "hp": 10500,
+        "atk": 82,
+        "def": 34,
+        "maxPoise": 520,
+        "moveSpeed": 95,
+        "elementalRes": {
+          "FIRE": -0.35,
+          "WATER": 0.15,
+          "EARTH": 0.4,
+          "WIND": 0.0,
+          "LIGHTNING": 0.05,
+          "FROST": -0.1,
+          "LIGHT": 0.05,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.1
+        }
+      },
+      "phases": [
+        {
+          "phaseNumber": 1,
+          "hpThresholdPercent": 100,
+          "nameVi": "Gốc Rễ Thức Tỉnh",
+          "behaviorChangeVi": "Thornback Elder di chuyển chậm rãi theo người có threat cao nhất, luân phiên các đòn đập cận chiến có nhịp dễ đọc và bắn loạt bào tử tầm trung để kiểm tra kỹ năng né tránh cơ bản của người chơi.",
+          "skills": [
+            {
+              "skillKey": "thorn_root_slam",
+              "name": "Root Slam",
+              "telegraphMs": 900,
+              "telegraphVisual": "Vòng tròn viền đỏ cam mờ trên nền đất kèm hiệu ứng boss giơ cao hai tay rễ phát sáng vàng đất.",
+              "damageRatio": 1.35,
+              "hitboxShape": "CIRCLE",
+              "cooldownMs": 3800,
+              "counterplayVi": "Lướt dodge ra ngoài bán kính vòng đỏ hoặc dùng kỹ năng Block/Parry ngay khoảnh khắc hai tay rễ chạm đất để nhận cửa sổ phản công 1.2 giây."
+            },
+            {
+              "skillKey": "thorn_bramble_lash",
+              "name": "Bramble Lash",
+              "telegraphMs": 850,
+              "telegraphVisual": "Vùng hình quạt 120 độ phía trước mặt boss với các mũi gai nhú dần lên từ mặt đất.",
+              "damageRatio": 1.25,
+              "hitboxShape": "CONE",
+              "cooldownMs": 4500,
+              "counterplayVi": "Lướt xuyên qua sườn boss ra phía sau lưng để tránh toàn bộ hình quạt và xả combo an toàn."
+            },
+            {
+              "skillKey": "thorn_spore_volley",
+              "name": "Spore Volley",
+              "telegraphMs": 1000,
+              "telegraphVisual": "Ba đường chỉ thị tia mảnh màu xanh rêu tỏa hình nan quạt về phía mục tiêu ở xa.",
+              "damageRatio": 1.1,
+              "hitboxShape": "LINE_PROJECTILE",
+              "cooldownMs": 6500,
+              "counterplayVi": "Nấp sau một trong 4 trụ đá hoặc lách vào khoảng trống giữa 3 đường đạn; đạn không xuyên trụ."
+            }
+          ]
+        },
+        {
+          "phaseNumber": 2,
+          "hpThresholdPercent": 65,
+          "nameVi": "Tán Gai Bùng Nổ",
+          "behaviorChangeVi": "Khi xuống 65% HP, boss gầm vang kích hoạt Vành Đai Gai Rừng ở mép đấu trường, tăng 15% tốc độ đánh và bổ sung kỹ năng trói rễ cùng cơ chế tụ nhựa hồi máu buộc người chơi phá giáp hoặc tập trung hỏa lực ngắt chiêu.",
+          "skills": [
+            {
+              "skillKey": "thorn_creeping_roots",
+              "name": "Creeping Root Prison",
+              "telegraphMs": 1150,
+              "telegraphVisual": "Ba vòng tròn rễ cây bám theo vị trí từng người chơi và khóa chặt vị trí trước khi nổ 0.4 giây.",
+              "damageRatio": 1.4,
+              "hitboxShape": "MULTI_CIRCLE",
+              "cooldownMs": 8500,
+              "counterplayVi": "Di chuyển đều tay cho đến khi vòng tròn khóa cố định rồi mới dùng Dodge để thoát hẳn khỏi hiệu ứng Root 2 giây."
+            },
+            {
+              "skillKey": "thorn_canopy_rain",
+              "name": "Canopy Thorn Rain",
+              "telegraphMs": 1400,
+              "telegraphVisual": "Mạng lưới 6 vòng tròn rơi gai xếp xen kẽ khắp đấu trường kèm bóng đổ đậm dần trên mặt đất.",
+              "damageRatio": 1.5,
+              "hitboxShape": "MULTI_CIRCLE",
+              "cooldownMs": 11000,
+              "counterplayVi": "Quan sát khoảng trống giữa các vòng bóng đổ hoặc đứng sát góc an toàn của trụ đá; không tụ tập sát đồng đội."
+            },
+            {
+              "skillKey": "thorn_regrowth_sap",
+              "name": "Regrowth Sap Channel",
+              "telegraphMs": 2200,
+              "telegraphVisual": "Boss cắm hai tay xuống đất, xuất hiện thanh niệm chú trên đầu và các hạt nhựa xanh hút từ sàn về lõi ngực.",
+              "damageRatio": 0.9,
+              "hitboxShape": "RING",
+              "cooldownMs": 18000,
+              "counterplayVi": "Dồn sát thương nguyên tố Fire (như kỹ năng của Kael) hoặc đòn nặng phá thanh Poise trong 2.2 giây để ngắt hoàn toàn khả năng hồi 6% HP của boss."
+            }
+          ]
+        },
+        {
+          "phaseNumber": 3,
+          "hpThresholdPercent": 30,
+          "nameVi": "Cơn Thịnh Nộ Cổ Thụ",
+          "behaviorChangeVi": "Lõi nhựa nứt đỏ rực, boss giảm 20% cooldown toàn bộ kỹ năng, tạo vũng nhựa độc sau mỗi cơn mưa gai và tung cú húc toàn sân Heartwood Charge có thể bị lợi dụng để đâm vào trụ đá.",
+          "skills": [
+            {
+              "skillKey": "thorn_heartwood_charge",
+              "name": "Heartwood Charge",
+              "telegraphMs": 1200,
+              "telegraphVisual": "Đường băng chữ nhật dài màu đỏ rõ nét khóa hướng tới người chơi xa nhất kèm hoạt ảnh boss cúi vai dậm chân.",
+              "damageRatio": 1.85,
+              "hitboxShape": "RECTANGLE",
+              "cooldownMs": 9500,
+              "counterplayVi": "Đứng canh sao cho một trụ đá còn nguyên nằm trên đường húc rồi lướt ngang vào phút chót để boss đâm vỡ trụ và tự choáng."
+            },
+            {
+              "skillKey": "thorn_mossroot_quake",
+              "name": "Mossroot Quake Waves",
+              "telegraphMs": 1300,
+              "telegraphVisual": "Hai đợt vòng sóng đồng tâm mở rộng dần từ tâm boss với ranh giới vòng trong và vòng ngoài tách biệt rõ.",
+              "damageRatio": 1.65,
+              "hitboxShape": "RING",
+              "cooldownMs": 10500,
+              "counterplayVi": "Lướt dodge xuyên qua vòng sóng thứ nhất vào vùng sát tâm, sau đó lùi nhẹ khi vòng thứ hai lan rộng ra ngoài."
+            },
+            {
+              "skillKey": "thorn_sylvan_tempest",
+              "name": "Sylvan Tempest",
+              "telegraphMs": 1600,
+              "telegraphVisual": "Bốn luồng gai chữ thập xoay chậm quanh boss 90 độ kèm chỉ thị mũi tên hướng xoay trên mặt đất.",
+              "damageRatio": 1.75,
+              "hitboxShape": "CROSS_LINE",
+              "cooldownMs": 14000,
+              "counterplayVi": "Chạy vòng cung cùng chiều xoay của chữ thập ở cự ly trung bình hoặc tận dụng khoảnh khắc boss đứng yên cuối chiêu để tung Ultimate."
+            }
+          ]
+        }
+      ],
+      "staggerMechanic": {
+        "poiseBreakDurationMs": 6000,
+        "damageTakenMultiplier": 1.4,
+        "recoveryPoisePercent": 100,
+        "weaknessPoiseBonusMultiplier": 1.5,
+        "mechanicNoteVi": "Khi thanh Poise giảm về 0, Thornback Elder khuỵu gối trong 6 giây, hủy bỏ chiêu đang niệm, nhận thêm 40% sát thương và giảm 100% kháng Earth. Kỹ năng hệ Fire gây gấp 1.5 lần sát thương lên thanh Poise."
+      },
+      "enrageMechanic": {
+        "enrageTimerSeconds": 360,
+        "atkMultiplier": 1.65,
+        "attackSpeedMultiplier": 1.3,
+        "visualCueVi": "Vỏ cây tỏa hơi khói đỏ trầm ổn định, mắt lõi chuyển sáng vàng gắt và thông báo hệ thống hiện cảnh báo không nhấp nháy trên thanh HP boss."
+      },
+      "partyScaling": {
+        "1": {
+          "hpMultiplier": 1.0,
+          "atkMultiplier": 1.0,
+          "poiseMultiplier": 1.0,
+          "rewardBonusPercent": 0
+        },
+        "2": {
+          "hpMultiplier": 1.75,
+          "atkMultiplier": 1.05,
+          "poiseMultiplier": 1.45,
+          "rewardBonusPercent": 10
+        },
+        "3": {
+          "hpMultiplier": 2.45,
+          "atkMultiplier": 1.1,
+          "poiseMultiplier": 1.85,
+          "rewardBonusPercent": 20
+        },
+        "4": {
+          "hpMultiplier": 3.1,
+          "atkMultiplier": 1.15,
+          "poiseMultiplier": 2.25,
+          "rewardBonusPercent": 30
+        }
+      },
+      "rewards": {
+        "exp": 1650,
+        "goldMin": 450,
+        "goldMax": 680,
+        "bossTokens": 5,
+        "starlightShardsFirstClear": 480,
+        "starlightShardsWeekly": 160,
+        "lootTableId": "ltb_boss_thornback_elder"
+      },
+      "respawnSchedule": {
+        "instanceCooldownMinutes": 15,
+        "worldRespawnMinutes": 60
+      },
+      "antiExploitRulesVi": [
+        "Đấu trường bị niêm phong hoàn toàn trên server sau 5 giây; mọi đòn đánh hoặc projectile từ ngoài tọa độ phòng boss đều bị server hủy bỏ.",
+        "Không tồn tại điểm mù kẹt địa hình: nếu đường dẫn pathfinding bị chặn quá 2 giây, boss tự động chuyển sang kỹ năng tầm xa Creeping Root Prison.",
+        "Người chơi phải đóng góp tối thiểu 5% sát thương, lượng hồi máu hoặc chặn đòn hợp lệ trong trận mới đủ điều kiện nhận loot cá nhân và Boss Token.",
+        "Ngắt kết nối giữa trận không giữ trạng thái bất tử quá 2 giây; nếu toàn đội rời phòng hoặc chết hết, instance tự động reset sạch trạng thái và không tính tiến độ phase."
+      ],
+      "animationKeys": [
+        "boss_thornback_idle",
+        "boss_thornback_walk",
+        "boss_thornback_attack_slam",
+        "boss_thornback_attack_lash",
+        "boss_thornback_telegraph_charge",
+        "boss_thornback_skill_channel",
+        "boss_thornback_phase_shift",
+        "boss_thornback_stagger",
+        "boss_thornback_recover",
+        "boss_thornback_enrage",
+        "boss_thornback_death"
+      ],
+      "vfxKeys": [
+        "vfx_boss_thornback_slam_dust",
+        "vfx_boss_thornback_bramble_arc",
+        "vfx_boss_thornback_spore_bolt",
+        "vfx_boss_thornback_root_snare",
+        "vfx_boss_thornback_thorn_rain",
+        "vfx_boss_thornback_sap_heal",
+        "vfx_boss_thornback_quake_ring",
+        "vfx_boss_thornback_enrage_embers"
+      ]
+    },
+    {
+      "id": "boss_ignis_forgelord",
+      "name": "Ignis Forgelord",
+      "title": "Tyrant of the Slag Foundry",
+      "mvp": false,
+      "regionId": "reg_ironpeak_mountains",
+      "dungeonId": "dng_slag_foundry",
+      "level": 30,
+      "element": "FIRE",
+      "weaknessElement": "WATER",
+      "spriteSize": "160x160",
+      "loreVi": "Vốn là Đại Thợ Rèn cổ đại của bộ tộc núi Ironpeak đã tự rèn linh hồn mình vào chiếc lò vĩnh cửu để chống lại mùa đông băng giá, Ignis Forgelord bị ngọn lửa tham vọng thiêu rụi lý trí. Hắn điều khiển cả xưởng đúc dng_slag_foundry như một pháo đài dung nham khổng lồ.",
+      "visualConceptVi": "Khổng lồ giáp sắt nung chuẩn 16-bit (160x160 px), vai rộng mang hai ống khói tỏa tro đỏ và tay phải cầm chiến chùy rèn rực lửa nặng nề. Các khe giáp hở sáng cam vàng dịu, tự động chuyển sang màu xanh thép nguội khi bị làm mát bằng nguyên tố Water để người chơi nhận biết ngay trạng thái yếu giáp.",
+      "arena": {
+        "widthTiles": 28,
+        "heightTiles": 22,
+        "hazards": [
+          {
+            "key": "hz_molten_trough",
+            "nameVi": "Rãnh Dung Nham Xưởng Đúc",
+            "triggerPhase": 2,
+            "effectVi": "Hai rãnh sắt dọc sàn đấu trường luân phiên đổ đầy dung nham mỗi 18 giây, gây sát thương Fire và Burn trong 6 giây.",
+            "damageRatio": 0.6,
+            "intervalMs": 1000
+          },
+          {
+            "key": "hz_superheated_floor",
+            "nameVi": "Mặt Sàn Quá Nhiệt",
+            "triggerPhase": 3,
+            "effectVi": "Các ô gạch gần lò trung tâm phát sáng cam trong 3 giây rồi bùng lửa, buộc party di chuyển xoay vòng.",
+            "damageRatio": 0.55,
+            "intervalMs": 1200
+          }
+        ],
+        "safePillars": [
+          {
+            "id": "pil_coolant_nw",
+            "tileX": 8,
+            "tileY": 6,
+            "destructible": false,
+            "mechanicVi": "Trụ ống dẫn nước làm mát; đánh vào van trụ hoặc dùng kỹ năng Water kích hoạt làn sương lạnh bán kính 3 tile giúp hạ nhiệt giáp boss và giảm 40% sát thương Crucible Nova."
+          },
+          {
+            "id": "pil_coolant_ne",
+            "tileX": 19,
+            "tileY": 6,
+            "destructible": false,
+            "mechanicVi": "Trụ ống dẫn nước làm mát; có thời gian hồi van 25 giây sau khi kích hoạt sương lạnh."
+          },
+          {
+            "id": "pil_coolant_sw",
+            "tileX": 8,
+            "tileY": 15,
+            "destructible": false,
+            "mechanicVi": "Trụ ống dẫn nước làm mát che chắn sóng nhiệt từ trung tâm lò."
+          },
+          {
+            "id": "pil_coolant_se",
+            "tileX": 19,
+            "tileY": 15,
+            "destructible": false,
+            "mechanicVi": "Trụ ống dẫn nước làm mát che chắn sóng nhiệt từ trung tâm lò."
+          }
+        ],
+        "entryLockRule": {
+          "lockDelayMs": 5000,
+          "allowLateJoin": false,
+          "resetOnWipe": true,
+          "descriptionVi": "Cổng sắt nung sập xuống khóa kín xưởng đúc sau 5 giây kể từ khi kích hoạt chiến đấu. Reset hoàn toàn trạng thái boss và van làm mát nếu toàn đội gục ngã."
+        }
+      },
+      "baseStats": {
+        "hp": 36000,
+        "atk": 185,
+        "def": 84,
+        "maxPoise": 1150,
+        "moveSpeed": 105,
+        "elementalRes": {
+          "FIRE": 0.45,
+          "WATER": -0.35,
+          "EARTH": 0.15,
+          "WIND": 0.0,
+          "LIGHTNING": 0.05,
+          "FROST": -0.15,
+          "LIGHT": 0.0,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.15
+        }
+      },
+      "phases": [
+        {
+          "phaseNumber": 1,
+          "hpThresholdPercent": 100,
+          "nameVi": "Búa Rèn Nóng Chảy",
+          "behaviorChangeVi": "Ignis Forgelord tấn công bằng những cú bổ búa nặng nề diện rộng kết hợp làn sóng xỉ thép đẩy lùi, đồng thời tích lũy nhiệt năng trên giáp sau mỗi 3 đòn.",
+          "skills": [
+            {
+              "skillKey": "ignis_molten_cleave",
+              "name": "Molten Hammer Cleave",
+              "telegraphMs": 950,
+              "telegraphVisual": "Cung quét 150 độ viền cam sáng rõ trên sàn kèm tia lửa bốc lên từ đầu búa kéo lê phía sau.",
+              "damageRatio": 1.45,
+              "hitboxShape": "CONE",
+              "cooldownMs": 4200,
+              "counterplayVi": "Đứng lệch sườn tay trái của boss hoặc parry đúng nhịp búa vung ngang để tạo độ trễ lớn."
+            },
+            {
+              "skillKey": "ignis_slag_wave",
+              "name": "Slag Wave",
+              "telegraphMs": 1000,
+              "telegraphVisual": "Đường thẳng rộng 3 tile phát sáng đỏ đậm kéo dài từ vị trí búa đập xuống đất.",
+              "damageRatio": 1.35,
+              "hitboxShape": "RECTANGLE",
+              "cooldownMs": 5500,
+              "counterplayVi": "Bước ngang ra khỏi đường rãnh thẳng trước khi sóng dung nham tràn tới."
+            },
+            {
+              "skillKey": "ignis_anvil_drop",
+              "name": "Anvil Drop",
+              "telegraphMs": 1150,
+              "telegraphVisual": "Vòng tròn tâm điểm dày nét khóa lên người chơi có threat cao nhất khi boss nhảy bật lên không trung.",
+              "damageRatio": 1.6,
+              "hitboxShape": "CIRCLE",
+              "cooldownMs": 8000,
+              "counterplayVi": "Dẫn boss nhảy gần trụ ống làm mát rồi né ra ngoài vòng tròn để tận dụng van nước làm nguội giáp."
+            }
+          ]
+        },
+        {
+          "phaseNumber": 2,
+          "hpThresholdPercent": 65,
+          "nameVi": "Lò Luyện Quá Tải",
+          "behaviorChangeVi": "Boss kích hoạt rãnh dung nham xưởng đúc, bọc lớp giáp Quá Nhiệt giảm 25% sát thương vật lý cho đến khi bị làm nguội bằng van nước hoặc kỹ năng Water, đồng thời triệu hồi cầu lửa di động.",
+          "skills": [
+            {
+              "skillKey": "ignis_ember_orbs",
+              "name": "Forged Ember Orbs",
+              "telegraphMs": 1200,
+              "telegraphVisual": "Bốn quả cầu lửa nhỏ nổi quanh vai boss trong 1.2 giây kèm mũi tên hướng bay rõ rệt.",
+              "damageRatio": 1.3,
+              "hitboxShape": "LINE_PROJECTILE",
+              "cooldownMs": 7800,
+              "counterplayVi": "Nấp sau trụ làm mát hoặc dùng kỹ năng tầm xa phá cầu lửa trước khi chúng nổ lan."
+            },
+            {
+              "skillKey": "ignis_quench_overload",
+              "name": "Molten Overheat Pulse",
+              "telegraphMs": 1800,
+              "telegraphVisual": "Vòng nhiệt mở rộng từ tâm boss với thanh đo áp suất hiển thị trên đầu.",
+              "damageRatio": 1.7,
+              "hitboxShape": "RING",
+              "cooldownMs": 14000,
+              "counterplayVi": "Kích hoạt van nước trên trụ làm mát gần boss để biến đòn này thành phản ứng Bốc Hơi làm vỡ 35% thanh Poise của boss."
+            },
+            {
+              "skillKey": "ignis_trough_surge",
+              "name": "Foundry Trough Surge",
+              "telegraphMs": 1400,
+              "telegraphVisual": "Hai rãnh sắt dọc sáng rực lên kèm tiếng còi xưởng đúc báo hiệu dung nham chuẩn bị xả.",
+              "damageRatio": 1.55,
+              "hitboxShape": "ARENA_WAVE",
+              "cooldownMs": 18000,
+              "counterplayVi": "Di chuyển sang khu vực sàn giữa hoặc hai cánh an toàn ngoài hai rãnh sắt."
+            }
+          ]
+        },
+        {
+          "phaseNumber": 3,
+          "hpThresholdPercent": 30,
+          "nameVi": "Lõi Mặt Trời Nhân Tạo",
+          "behaviorChangeVi": "Lò luyện đạt cực điểm, sàn trung tâm liên tục nóng đỏ. Ignis rút ngắn hồi chiêu 20% và liên kết cú đập 3 nhịp kết thúc bằng vụ nổ toàn sân Crucible Nova đòi hỏi đội hình sử dụng trụ làm mát chuẩn xác.",
+          "skills": [
+            {
+              "skillKey": "ignis_cross_eruption",
+              "name": "Cross-Forge Eruption",
+              "telegraphMs": 1250,
+              "telegraphVisual": "Bốn rãnh chữ thập nổ từ tâm boss kèm dấu gạch chéo cho đợt nổ thứ hai sau 1.5 giây.",
+              "damageRatio": 1.75,
+              "hitboxShape": "CROSS_LINE",
+              "cooldownMs": 9500,
+              "counterplayVi": "Đứng ở góc chéo tránh đợt chữ thập đầu tiên, ngay sau đó bước vào khe an toàn vừa nổ xong để tránh đợt chữ X."
+            },
+            {
+              "skillKey": "ignis_hammer_chain",
+              "name": "Relentless Hammer Chain",
+              "telegraphMs": 900,
+              "telegraphVisual": "Ba vòng tròn liên tiếp đánh dấu bước tiến của boss theo mục tiêu chính.",
+              "damageRatio": 1.45,
+              "hitboxShape": "MULTI_CIRCLE",
+              "cooldownMs": 8500,
+              "counterplayVi": "Không hoảng loạn bấm dodge sớm ở nhịp 1; giữ nhịp bước đi ngang và chỉ dùng dodge cho cú bổ thứ 3 rộng nhất."
+            },
+            {
+              "skillKey": "ignis_crucible_nova",
+              "name": "Crucible Nova",
+              "telegraphMs": 2200,
+              "telegraphVisual": "Boss bước vào giữa lò, vầng hào quang nhiệt thu tụ rồi tỏa ra toàn đấu trường, để lại vùng bóng mát rõ màu xanh lam sau 4 trụ làm mát.",
+              "damageRatio": 2.35,
+              "hitboxShape": "ARENA_WAVE",
+              "cooldownMs": 22000,
+              "counterplayVi": "Chạy nấp phía sau trụ làm mát có sương lạnh đang hoạt động hoặc phá thanh Poise boss trước khi đếm ngược 2.2 giây kết thúc."
+            }
+          ]
+        }
+      ],
+      "staggerMechanic": {
+        "poiseBreakDurationMs": 6500,
+        "damageTakenMultiplier": 1.45,
+        "recoveryPoisePercent": 100,
+        "weaknessPoiseBonusMultiplier": 1.6,
+        "mechanicNoteVi": "Phá vỡ thanh Poise làm giáp Ignis tắt lửa hoàn toàn trong 6.5 giây, loại bỏ buff giảm sát thương vật lý và tăng 45% sát thương gánh chịu. Phản ứng Water + Làm Mát tạo sát thương Poise cộng thêm cực lớn."
+      },
+      "enrageMechanic": {
+        "enrageTimerSeconds": 420,
+        "atkMultiplier": 1.75,
+        "attackSpeedMultiplier": 1.35,
+        "visualCueVi": "Toàn bộ 4 van làm mát bị khóa cứng, giáp boss cháy trắng vàng ổn định và nhiệt độ sàn tăng liên tục."
+      },
+      "partyScaling": {
+        "1": {
+          "hpMultiplier": 1.0,
+          "atkMultiplier": 1.0,
+          "poiseMultiplier": 1.0,
+          "rewardBonusPercent": 0
+        },
+        "2": {
+          "hpMultiplier": 1.75,
+          "atkMultiplier": 1.05,
+          "poiseMultiplier": 1.45,
+          "rewardBonusPercent": 10
+        },
+        "3": {
+          "hpMultiplier": 2.45,
+          "atkMultiplier": 1.1,
+          "poiseMultiplier": 1.85,
+          "rewardBonusPercent": 20
+        },
+        "4": {
+          "hpMultiplier": 3.1,
+          "atkMultiplier": 1.15,
+          "poiseMultiplier": 2.25,
+          "rewardBonusPercent": 30
+        }
+      },
+      "rewards": {
+        "exp": 4800,
+        "goldMin": 1250,
+        "goldMax": 1850,
+        "bossTokens": 8,
+        "starlightShardsFirstClear": 640,
+        "starlightShardsWeekly": 240,
+        "lootTableId": "ltb_boss_ignis_forgelord"
+      },
+      "respawnSchedule": {
+        "instanceCooldownMinutes": 20,
+        "worldRespawnMinutes": 90
+      },
+      "antiExploitRulesVi": [
+        "Các trụ làm mát chỉ cản sóng nhiệt và projectile, không cản boss nhảy Anvil Drop hoặc di chuyển vòng qua.",
+        "Van nước làm mát dùng cooldown theo đồng hồ server (25 giây) và khóa chống spam tương tác trong cùng 1 tick.",
+        "Mọi lượng sát thương phản ứng làm mát đều do server kiểm định dựa trên khoảng cách thực tế giữa boss và vùng sương lạnh.",
+        "Yêu cầu đóng góp tối thiểu 5% sát thương/hỗ trợ và hiện diện trong phòng khi boss gục ngã để nhận Boss Token."
+      ],
+      "animationKeys": [
+        "boss_ignis_idle",
+        "boss_ignis_walk",
+        "boss_ignis_attack_cleave",
+        "boss_ignis_attack_slam",
+        "boss_ignis_telegraph_nova",
+        "boss_ignis_skill_cooled",
+        "boss_ignis_phase_shift",
+        "boss_ignis_stagger",
+        "boss_ignis_recover",
+        "boss_ignis_enrage",
+        "boss_ignis_death"
+      ],
+      "vfxKeys": [
+        "vfx_boss_ignis_hammer_arc",
+        "vfx_boss_ignis_slag_wave",
+        "vfx_boss_ignis_ember_orb",
+        "vfx_boss_ignis_coolant_steam",
+        "vfx_boss_ignis_cross_fissure",
+        "vfx_boss_ignis_crucible_nova",
+        "vfx_boss_ignis_enrage_blaze"
+      ]
+    },
+    {
+      "id": "boss_prism_leviathan",
+      "name": "Prism Leviathan",
+      "title": "Sovereign of the Refracted Deep",
+      "mvp": false,
+      "regionId": "reg_crystal_caverns",
+      "dungeonId": "dng_prism_sanctum",
+      "level": 50,
+      "element": "LIGHTNING",
+      "weaknessElement": "EARTH",
+      "spriteSize": "192x192",
+      "loreVi": "Hải xà tinh thể cổ đại ngủ yên hàng nghìn năm trong hồ ngầm tích điện tại đáy Crystal Caverns. Sự khai khoáng quá mức của các thợ săn cổ vật đã đánh thức nó, biến toàn bộ dng_prism_sanctum thành một mê cung khúc xạ tia sét chết người.",
+      "visualConceptVi": "Thân rắn biển khổng lồ chuẩn 16-bit (192x192 px) kết từ hàng chục mảng pha lê lam ngọc và tím thạch anh nối nhau bằng hồ quang điện mềm mại. Đầu mang mào lăng kính 3 cạnh phát sáng dịu báo hiệu góc bắn laser, tuyệt đối tránh hiệu ứng chớp trắng gắt gây mỏi mắt.",
+      "arena": {
+        "widthTiles": 30,
+        "heightTiles": 24,
+        "hazards": [
+          {
+            "key": "hz_electrified_pool",
+            "nameVi": "Hồ Ngầm Nhiễm Điện",
+            "triggerPhase": 1,
+            "effectVi": "Vùng nước nông xung quanh rìa bệ đá truyền dẫn tia sét mỗi khi boss tung chiêu tĩnh điện, gây Shock và sát thương Lightning.",
+            "damageRatio": 0.5,
+            "intervalMs": 1000
+          },
+          {
+            "key": "hz_resonant_shards",
+            "nameVi": "Mảnh Tinh Thể Cộng Hưởng",
+            "triggerPhase": 2,
+            "effectVi": "Các cột pha lê nhỏ trồi lên sàn sẽ khúc xạ tia laser của boss theo góc 90 độ nếu không bị phá hủy kịp thời.",
+            "damageRatio": 0.85,
+            "intervalMs": 1500
+          }
+        ],
+        "safePillars": [
+          {
+            "id": "pil_quartz_nw",
+            "tileX": 8,
+            "tileY": 7,
+            "destructible": false,
+            "mechanicVi": "Trụ thạch anh tiếp đất; hút tia sét quá tải trong phạm vi 2 tile và tạo vùng an toàn trước tia laser thẳng."
+          },
+          {
+            "id": "pil_quartz_ne",
+            "tileX": 21,
+            "tileY": 7,
+            "destructible": false,
+            "mechanicVi": "Trụ thạch anh tiếp đất; bảo vệ người chơi khỏi sóng điện Polarity Ring khi đứng đúng phía tiếp địa."
+          },
+          {
+            "id": "pil_quartz_sw",
+            "tileX": 8,
+            "tileY": 16,
+            "destructible": false,
+            "mechanicVi": "Trụ thạch anh tiếp đất; cắt đường truyền của Refracted Laser."
+          },
+          {
+            "id": "pil_quartz_se",
+            "tileX": 21,
+            "tileY": 16,
+            "destructible": false,
+            "mechanicVi": "Trụ thạch anh tiếp đất; cắt đường truyền của Refracted Laser."
+          }
+        ],
+        "entryLockRule": {
+          "lockDelayMs": 5000,
+          "allowLateJoin": false,
+          "resetOnWipe": true,
+          "descriptionVi": "Màn chắn pha lê đóng cửa thánh điện sau 5 giây. Toàn bộ mảnh cộng hưởng và chỉ số điện tích reset về 0 nếu cả party thất bại."
+        }
+      },
+      "baseStats": {
+        "hp": 98000,
+        "atk": 355,
+        "def": 158,
+        "maxPoise": 2100,
+        "moveSpeed": 125,
+        "elementalRes": {
+          "FIRE": 0.05,
+          "WATER": 0.2,
+          "EARTH": -0.35,
+          "WIND": 0.1,
+          "LIGHTNING": 0.5,
+          "FROST": 0.05,
+          "LIGHT": 0.15,
+          "SHADOW": 0.0,
+          "NEUTRAL": 0.05
+        }
+      },
+      "phases": [
+        {
+          "phaseNumber": 1,
+          "hpThresholdPercent": 100,
+          "nameVi": "Thủy Triều Điện Quang",
+          "behaviorChangeVi": "Prism Leviathan uốn lượn quanh hồ trung tâm, tấn công bằng đuôi pha lê diện rộng và bắn chùm gai lăng kính tầm xa nhằm chia tách vị trí tank và DPS.",
+          "skills": [
+            {
+              "skillKey": "prism_tail_whip",
+              "name": "Tail Arc Whip",
+              "telegraphMs": 850,
+              "telegraphVisual": "Vùng bán nguyệt rộng phía sau và bên hông boss viền xanh điện rõ nét.",
+              "damageRatio": 1.35,
+              "hitboxShape": "CONE",
+              "cooldownMs": 3800,
+              "counterplayVi": "Tránh tụ tập sau đuôi boss; di chuyển áp sát phần đầu bên sườn hoặc dùng dodge xuyên nhịp quét."
+            },
+            {
+              "skillKey": "prism_static_surge",
+              "name": "Static Surge Line",
+              "telegraphMs": 950,
+              "telegraphVisual": "Vệt chữ nhật sáng xanh lam khóa thẳng về phía người chơi đứng xa nhất.",
+              "damageRatio": 1.45,
+              "hitboxShape": "RECTANGLE",
+              "cooldownMs": 5600,
+              "counterplayVi": "Bước ngang khỏi đường ngắm hoặc dẫn tia điện đập vào trụ thạch anh tiếp đất để triệt tiêu sóng lan."
+            },
+            {
+              "skillKey": "prism_needle_fan",
+              "name": "Prism Needle Fan",
+              "telegraphMs": 900,
+              "telegraphVisual": "Năm vệt chỉ thị mảnh tỏa hình quạt đều từ mào tinh thể của boss.",
+              "damageRatio": 1.15,
+              "hitboxShape": "LINE_PROJECTILE",
+              "cooldownMs": 6400,
+              "counterplayVi": "Lách vào khoảng trống giữa 5 đường đạn ở khoảng cách trung bình hoặc dùng trụ thạch anh chắn."
+            }
+          ]
+        },
+        {
+          "phaseNumber": 2,
+          "hpThresholdPercent": 65,
+          "nameVi": "Khúc Xạ Quang Phổ",
+          "behaviorChangeVi": "Boss lặn xuống mặt hồ rồi trồi lên gọi 3 Mảnh Tinh Thể Cộng Hưởng trên bệ đá. Nếu không phá các mảnh này, tia laser của boss sẽ bật nảy cắt ngang toàn bộ sân đấu.",
+          "skills": [
+            {
+              "skillKey": "prism_dive_breach",
+              "name": "Subterranean Breach",
+              "telegraphMs": 1250,
+              "telegraphVisual": "Gợn sóng điện tròn lớn nổi lên tại điểm trồi kèm vòng cảnh báo lan ra ngoài.",
+              "damageRatio": 1.65,
+              "hitboxShape": "CIRCLE",
+              "cooldownMs": 9500,
+              "counterplayVi": "Rời khỏi tâm gợn sóng ngay lập tức; sau khi boss trồi lên sẽ dừng 1.5 giây tạo cơ hội xả sát thương Earth."
+            },
+            {
+              "skillKey": "prism_refracted_laser",
+              "name": "Refracted Laser Array",
+              "telegraphMs": 1450,
+              "telegraphVisual": "Đường ngắm mảnh nối từ miệng boss tới các Mảnh Tinh Thể còn sống và chỉ rõ hướng tia khúc xạ tiếp theo.",
+              "damageRatio": 1.75,
+              "hitboxShape": "CROSS_LINE",
+              "cooldownMs": 11500,
+              "counterplayVi": "Ưu tiên phá hủy ít nhất 2 Mảnh Tinh Thể bằng kỹ năng Earth hoặc đứng khuất sau trụ thạch anh lớn."
+            },
+            {
+              "skillKey": "prism_overcharge_conduit",
+              "name": "Overcharge Conduits",
+              "telegraphMs": 1700,
+              "telegraphVisual": "Bốn vòng tròn điện tụ năng lượng xung quanh boss và nối dây sáng về phía nó.",
+              "damageRatio": 1.5,
+              "hitboxShape": "MULTI_CIRCLE",
+              "cooldownMs": 15000,
+              "counterplayVi": "Đánh vỡ các nút điện tích trước khi chúng phát nổ để ngăn boss nhận buff tăng 25% tốc độ đánh."
+            }
+          ]
+        },
+        {
+          "phaseNumber": 3,
+          "hpThresholdPercent": 30,
+          "nameVi": "Cơn Bão Cộng Hưởng",
+          "behaviorChangeVi": "Hồ ngầm dậy sóng điện liên tục; boss triển khai hai chùm laser xoay đối xứng kết hợp vòng xung Polarity Rings luân phiên trong-ngoài đòi hỏi khả năng đọc nhịp di chuyển chính xác.",
+          "skills": [
+            {
+              "skillKey": "prism_polarity_rings",
+              "name": "Sanctum Polarity Rings",
+              "telegraphMs": 1200,
+              "telegraphVisual": "Vòng tròn trung tâm và vòng vành ngoài đổi màu báo hiệu thứ tự nổ (vòng trong nổ trước, vòng ngoài nổ sau 1.1 giây).",
+              "damageRatio": 1.7,
+              "hitboxShape": "RING",
+              "cooldownMs": 9000,
+              "counterplayVi": "Đứng ngoài rìa chờ vòng trong nổ rồi lướt vào sát người boss để né vòng ngoài đồng thời tiếp tục tấn công."
+            },
+            {
+              "skillKey": "prism_dual_beams",
+              "name": "Rotating Dual Prism Beams",
+              "telegraphMs": 1500,
+              "telegraphVisual": "Hai tia laser đối xứng 180 độ cùng mũi tên vòng cung chỉ hướng xoay 270 độ quanh tâm đấu trường.",
+              "damageRatio": 1.85,
+              "hitboxShape": "CROSS_LINE",
+              "cooldownMs": 13500,
+              "counterplayVi": "Di chuyển áp sát gần boss để giảm quãng đường chạy vòng cung cùng chiều xoay của hai tia laser."
+            },
+            {
+              "skillKey": "prism_cataclysm_discharge",
+              "name": "Cataclysmic Discharge",
+              "telegraphMs": 2200,
+              "telegraphVisual": "Boss cuộn thân tại trung tâm tích điện lên trần hang, toàn sàn hiện ánh xanh ngoại trừ 4 vùng bóng tiếp địa quanh trụ thạch anh.",
+              "damageRatio": 2.4,
+              "hitboxShape": "ARENA_WAVE",
+              "cooldownMs": 22000,
+              "counterplayVi": "Tập trung vào vùng bóng tiếp địa sau 4 trụ thạch anh hoặc dùng combo nguyên tố Earth phá thanh Poise để ngắt toàn bộ chiêu."
+            }
+          ]
+        }
+      ],
+      "staggerMechanic": {
+        "poiseBreakDurationMs": 6500,
+        "damageTakenMultiplier": 1.45,
+        "recoveryPoisePercent": 100,
+        "weaknessPoiseBonusMultiplier": 1.6,
+        "mechanicNoteVi": "Khi vỡ Poise, toàn bộ vỏ pha lê nứt rạn và Leviathan nằm bất động trên bệ đá 6.5 giây, tự hủy mọi Mảnh Tinh Thể đang tồn tại. Nguyên tố Earth gây 1.6x sát thương Poise."
+      },
+      "enrageMechanic": {
+        "enrageTimerSeconds": 450,
+        "atkMultiplier": 1.8,
+        "attackSpeedMultiplier": 1.35,
+        "visualCueVi": "Toàn bộ thân tinh thể phát sáng tím lam đậm ổn định và hồ ngầm dâng điện thu hẹp vĩnh viễn mép bệ đá."
+      },
+      "partyScaling": {
+        "1": {
+          "hpMultiplier": 1.0,
+          "atkMultiplier": 1.0,
+          "poiseMultiplier": 1.0,
+          "rewardBonusPercent": 0
+        },
+        "2": {
+          "hpMultiplier": 1.75,
+          "atkMultiplier": 1.05,
+          "poiseMultiplier": 1.45,
+          "rewardBonusPercent": 10
+        },
+        "3": {
+          "hpMultiplier": 2.45,
+          "atkMultiplier": 1.1,
+          "poiseMultiplier": 1.85,
+          "rewardBonusPercent": 20
+        },
+        "4": {
+          "hpMultiplier": 3.1,
+          "atkMultiplier": 1.15,
+          "poiseMultiplier": 2.25,
+          "rewardBonusPercent": 30
+        }
+      },
+      "rewards": {
+        "exp": 12800,
+        "goldMin": 3200,
+        "goldMax": 4600,
+        "bossTokens": 12,
+        "starlightShardsFirstClear": 800,
+        "starlightShardsWeekly": 320,
+        "lootTableId": "ltb_boss_prism_leviathan"
+      },
+      "respawnSchedule": {
+        "instanceCooldownMinutes": 30,
+        "worldRespawnMinutes": 120
+      },
+      "antiExploitRulesVi": [
+        "Vị trí va chạm khúc xạ laser được tính toán raycast hoàn toàn trên server theo trạng thái thực tế của Mảnh Tinh Thể và trụ thạch anh.",
+        "Trạng thái lặn của boss có giới hạn bất tử chính xác 1.8 giây, không cho phép kéo lỗi boss kẹt dưới nước vô thời hạn.",
+        "Người chơi đứng sát rìa ngoài bệ đá quá 3 giây chịu sát thương điện giật tăng dần, loại bỏ chiến thuật đứng mép ngoài tầm AI.",
+        "Quyền nhận phần thưởng chỉ cấp cho thành viên có trong instance từ đầu trận và đạt ngưỡng đóng góp hợp lệ."
+      ],
+      "animationKeys": [
+        "boss_prism_idle",
+        "boss_prism_slither",
+        "boss_prism_attack_tail",
+        "boss_prism_dive",
+        "boss_prism_breach",
+        "boss_prism_telegraph_laser",
+        "boss_prism_skill_discharge",
+        "boss_prism_phase_shift",
+        "boss_prism_stagger",
+        "boss_prism_recover",
+        "boss_prism_enrage",
+        "boss_prism_death"
+      ],
+      "vfxKeys": [
+        "vfx_boss_prism_tail_arc",
+        "vfx_boss_prism_needle_fan",
+        "vfx_boss_prism_breach_splash",
+        "vfx_boss_prism_laser_beam",
+        "vfx_boss_prism_polarity_ring",
+        "vfx_boss_prism_discharge_storm",
+        "vfx_boss_prism_enrage_aura"
+      ]
+    },
+    {
+      "id": "boss_boreas_frostking",
+      "name": "Boreas Frostking",
+      "title": "Eternal Monarch of Glacial Citadel",
+      "mvp": false,
+      "regionId": "reg_frostbound_highlands",
+      "dungeonId": "dng_glacial_citadel",
+      "level": 75,
+      "element": "FROST",
+      "weaknessElement": "FIRE",
+      "spriteSize": "192x192",
+      "loreVi": "Vị quân vương phương Bắc đã lập khế ước với cơn bão tuyết nguyên thủy để bảo vệ thành lũy trước quân đoàn Abyssal, nhưng cái giá phải trả là trái tim đóng băng vĩnh viễn. Từ ngai vàng băng trong dng_glacial_citadel, Boreas thử thách mọi anh hùng xem họ có đủ ngọn lửa ý chí để bước vào vực thẳm hay không.",
+      "visualConceptVi": "Vua giáp băng uy nghi chuẩn 16-bit (192x192 px) khoác áo choàng rách viền tuyết trắng xanh, đội vương miện nhũ băng sắc nhọn và cầm trọng kiếm pha lê băng dài. Khí lạnh nhẹ tỏa quanh chân tạo độ sâu 2.5D rõ ràng, đối lập ấm áp với 4 chậu lửa cổ rực cam đặt bốn góc điện thờ.",
+      "arena": {
+        "widthTiles": 32,
+        "heightTiles": 24,
+        "hazards": [
+          {
+            "key": "hz_creeping_hypothermia",
+            "nameVi": "Giá Rét Tích Tụ",
+            "triggerPhase": 1,
+            "effectVi": "Chiến đấu ngoài vùng ấm của Chậu Lửa Cổ tích tụ 1 cộng dồn Hypothermia mỗi 6 giây; đạt 5 cộng dồn sẽ bị Freeze trong 2.5 giây.",
+            "damageRatio": 0.4,
+            "intervalMs": 2000
+          },
+          {
+            "key": "hz_blizzard_gale",
+            "nameVi": "Gió Tuyết Xô Đẩy",
+            "triggerPhase": 2,
+            "effectVi": "Luồng gió thổi ngang đấu trường mỗi 20 giây đẩy chậm người chơi về một phía và có thể dập tắt 1 Chậu Lửa Cổ nếu không được che chắn.",
+            "damageRatio": 0.35,
+            "intervalMs": 1000
+          }
+        ],
+        "safePillars": [
+          {
+            "id": "pil_brazier_nw",
+            "tileX": 9,
+            "tileY": 7,
+            "destructible": false,
+            "mechanicVi": "Chậu Lửa Cổ tỏa hơi ấm bán kính 3 tile giúp xóa sạch cộng dồn Hypothermia; nếu bị Boreas đóng băng, người chơi đánh 3 đòn hoặc dùng kỹ năng Fire để thắp sáng lại."
+          },
+          {
+            "id": "pil_brazier_ne",
+            "tileX": 22,
+            "tileY": 7,
+            "destructible": false,
+            "mechanicVi": "Chậu Lửa Cổ xóa cộng dồn lạnh giá và làm tan băng cho đồng đội gần đó."
+          },
+          {
+            "id": "pil_brazier_sw",
+            "tileX": 9,
+            "tileY": 16,
+            "destructible": false,
+            "mechanicVi": "Chậu Lửa Cổ chắn gió tuyết và duy trì vùng ấm chiến thuật."
+          },
+          {
+            "id": "pil_brazier_se",
+            "tileX": 22,
+            "tileY": 16,
+            "destructible": false,
+            "mechanicVi": "Chậu Lửa Cổ chắn gió tuyết và duy trì vùng ấm chiến thuật."
+          }
+        ],
+        "entryLockRule": {
+          "lockDelayMs": 5000,
+          "allowLateJoin": false,
+          "resetOnWipe": true,
+          "descriptionVi": "Tường băng dựng kín lối vào sau 5 giây. Nếu cả tổ đội ngã xuống, 4 Chậu Lửa Cổ được thắp lại và boss đặt lại về Phase 1."
+        }
+      },
+      "baseStats": {
+        "hp": 235000,
+        "atk": 640,
+        "def": 285,
+        "maxPoise": 3600,
+        "moveSpeed": 115,
+        "elementalRes": {
+          "FIRE": -0.35,
+          "WATER": 0.25,
+          "EARTH": 0.1,
+          "WIND": 0.15,
+          "LIGHTNING": 0.05,
+          "FROST": 0.55,
+          "LIGHT": 0.05,
+          "SHADOW": 0.05,
+          "NEUTRAL": 0.15
+        }
+      },
+      "phases": [
+        {
+          "phaseNumber": 1,
+          "hpThresholdPercent": 100,
+          "nameVi": "Băng Quyền Ngự Trị",
+          "behaviorChangeVi": "Boreas chiến đấu như một kiếm sĩ vương giả điềm tĩnh với các đường chém trọng kiếm rộng để lại vệt băng trơn và vòng gai sương muối buộc party xoay vòng quanh các chậu lửa.",
+          "skills": [
+            {
+              "skillKey": "boreas_glacial_arc",
+              "name": "Glacial Greatsword Arc",
+              "telegraphMs": 900,
+              "telegraphVisual": "Vùng hình quạt rộng 160 độ màu lam nhạt kèm hoa tuyết sắc xoay theo lưỡi trọng kiếm.",
+              "damageRatio": 1.45,
+              "hitboxShape": "CONE",
+              "cooldownMs": 4000,
+              "counterplayVi": "Parry chuẩn xác cú chém thứ nhất để làm gián đoạn nhát chém ngược thứ hai và gây lượng lớn sát thương Poise."
+            },
+            {
+              "skillKey": "boreas_permafrost_trail",
+              "name": "Permafrost Trail",
+              "telegraphMs": 1000,
+              "telegraphVisual": "Đường kiếm khí thẳng dài màu trắng xanh chạy dọc sàn và kết tinh gai băng sau 0.6 giây.",
+              "damageRatio": 1.4,
+              "hitboxShape": "RECTANGLE",
+              "cooldownMs": 5800,
+              "counterplayVi": "Không dẫn đường kiếm khí đâm thẳng qua Chậu Lửa Cổ để tránh bị dập lửa; lách ngang sang vùng sàn trống."
+            },
+            {
+              "skillKey": "boreas_frostbite_crown",
+              "name": "Frostbite Crown",
+              "telegraphMs": 1200,
+              "telegraphVisual": "Sáu vòng tròn gai băng mọc thành hình vương miện xung quanh mục tiêu ở cự ly trung bình.",
+              "damageRatio": 1.5,
+              "hitboxShape": "MULTI_CIRCLE",
+              "cooldownMs": 8200,
+              "counterplayVi": "Chạy về vùng ấm gần Chậu Lửa Cổ để xóa nhanh trạng thái Chill trước khi dính đòn kế tiếp."
+            }
+          ]
+        },
+        {
+          "phaseNumber": 2,
+          "hpThresholdPercent": 65,
+          "nameVi": "Bão Tuyết Vĩnh Hằng",
+          "behaviorChangeVi": "Gió tuyết quét ngang điện thờ, Boreas bắt đầu đóng băng luân phiên Chậu Lửa Cổ và triệu hồi trụ băng tạm thời làm lá chắn duy nhất trước sắc lệnh bão tuyết toàn sân.",
+          "skills": [
+            {
+              "skillKey": "boreas_ice_impalement",
+              "name": "Ice Pillar Impalement",
+              "telegraphMs": 1150,
+              "telegraphVisual": "Bốn vòng tròn sáng lam khóa dưới chân các thành viên; sau khi nổ sẽ để lại 2 cột băng bền vững trên sàn.",
+              "damageRatio": 1.55,
+              "hitboxShape": "MULTI_CIRCLE",
+              "cooldownMs": 10500,
+              "counterplayVi": "Đặt vị trí né cách nhau vừa đủ để giữ lại ít nhất 1 cột băng gần giữa đấu trường dùng chắn đòn Frozen Throne Decree."
+            },
+            {
+              "skillKey": "boreas_snuff_hearth",
+              "name": "Extinguish Hearth",
+              "telegraphMs": 1400,
+              "telegraphVisual": "Tia băng phóng thẳng về phía Chậu Lửa Cổ gần nhất, bọc băng nó trong 15 giây nếu không bị phá.",
+              "damageRatio": 1.3,
+              "hitboxShape": "LINE_PROJECTILE",
+              "cooldownMs": 16000,
+              "counterplayVi": "Phân công 1 thành viên hệ Fire hoặc đánh nhanh phá lớp băng trên chậu lửa ngay lập tức để giữ vùng ấm cho cả đội."
+            },
+            {
+              "skillKey": "boreas_throne_decree",
+              "name": "Frozen Throne Decree",
+              "telegraphMs": 2200,
+              "telegraphVisual": "Boreas cắm kiếm xuống sàn tạo sóng gió băng quét toàn sân, để lại dải bóng chắn rõ rệt sau các cột băng vừa sinh ra.",
+              "damageRatio": 2.3,
+              "hitboxShape": "ARENA_WAVE",
+              "cooldownMs": 21000,
+              "counterplayVi": "Chạy nấp ngay sau cột băng từ chiêu Ice Pillar Impalement cho đến khi sóng tuyết đi qua hoàn toàn."
+            }
+          ]
+        },
+        {
+          "phaseNumber": 3,
+          "hpThresholdPercent": 30,
+          "nameVi": "Tuyệt Đối Không Độ",
+          "behaviorChangeVi": "Boreas triệu hồi 2 phân thân băng mờ cùng đồng bộ đường chém chữ thập và kích hoạt Absolute Zero Shatter, thử thách tối đa khả năng giữ ấm và phối hợp phá giáp của tổ đội.",
+          "skills": [
+            {
+              "skillKey": "boreas_twin_clones",
+              "name": "Sovereign Twin Clones",
+              "telegraphMs": 1300,
+              "telegraphVisual": "Hai bóng băng xuất hiện ở hai cạnh đấu trường giơ kiếm kẻ hai đường cắt chữ thập với bản thể chính.",
+              "damageRatio": 1.75,
+              "hitboxShape": "CROSS_LINE",
+              "cooldownMs": 11000,
+              "counterplayVi": "Quan sát điểm giao cắt của 3 đường chỉ thị rồi di chuyển vào góc tam giác an toàn; phân thân tự tan sau cú chém."
+            },
+            {
+              "skillKey": "boreas_hailstorm_judgment",
+              "name": "Hailstorm Judgment",
+              "telegraphMs": 1350,
+              "telegraphVisual": "Mưa tinh cầu băng rơi tuần tự từ rìa vào tâm rồi ngược từ tâm ra rìa theo hai vòng tròn đồng tâm.",
+              "damageRatio": 1.8,
+              "hitboxShape": "RING",
+              "cooldownMs": 12500,
+              "counterplayVi": "Đứng trong tâm khi rìa ngoài rơi rồi lập tức lướt ra vòng ngoài khi tâm sáng lên."
+            },
+            {
+              "skillKey": "boreas_absolute_zero",
+              "name": "Absolute Zero Shatter",
+              "telegraphMs": 2300,
+              "telegraphVisual": "Vòng kết tinh băng khổng lồ thu gọn vào trung tâm trọng kiếm; thanh Poise tạm thời dễ vỡ phát sáng màu cam rực.",
+              "damageRatio": 2.5,
+              "hitboxShape": "ARENA_WAVE",
+              "cooldownMs": 24000,
+              "counterplayVi": "Dồn Ultimate và kỹ năng nguyên tố Fire phá vỡ lớp giáp băng trong 2.3 giây để hủy chiêu và gây hiệu ứng Tan Chảy cực mạnh."
+            }
+          ]
+        }
+      ],
+      "staggerMechanic": {
+        "poiseBreakDurationMs": 7000,
+        "damageTakenMultiplier": 1.5,
+        "recoveryPoisePercent": 100,
+        "weaknessPoiseBonusMultiplier": 1.65,
+        "mechanicNoteVi": "Phá Poise khiến Boreas chống kiếm quỳ gối 7 giây, tự động thắp sáng lại toàn bộ Chậu Lửa Cổ bị đóng băng và tăng 50% sát thương nhận vào."
+      },
+      "enrageMechanic": {
+        "enrageTimerSeconds": 480,
+        "atkMultiplier": 1.85,
+        "attackSpeedMultiplier": 1.35,
+        "visualCueVi": "Toàn bộ 4 Chậu Lửa Cổ bị đóng băng vĩnh viễn, vương miện Boreas phát sáng băng lam đậm và tốc độ tích tụ Hypothermia tăng gấp đôi."
+      },
+      "partyScaling": {
+        "1": {
+          "hpMultiplier": 1.0,
+          "atkMultiplier": 1.0,
+          "poiseMultiplier": 1.0,
+          "rewardBonusPercent": 0
+        },
+        "2": {
+          "hpMultiplier": 1.75,
+          "atkMultiplier": 1.05,
+          "poiseMultiplier": 1.45,
+          "rewardBonusPercent": 10
+        },
+        "3": {
+          "hpMultiplier": 2.45,
+          "atkMultiplier": 1.1,
+          "poiseMultiplier": 1.85,
+          "rewardBonusPercent": 20
+        },
+        "4": {
+          "hpMultiplier": 3.1,
+          "atkMultiplier": 1.15,
+          "poiseMultiplier": 2.25,
+          "rewardBonusPercent": 30
+        }
+      },
+      "rewards": {
+        "exp": 28500,
+        "goldMin": 6800,
+        "goldMax": 9600,
+        "bossTokens": 16,
+        "starlightShardsFirstClear": 960,
+        "starlightShardsWeekly": 400,
+        "lootTableId": "ltb_boss_boreas_frostking"
+      },
+      "respawnSchedule": {
+        "instanceCooldownMinutes": 45,
+        "worldRespawnMinutes": 180
+      },
+      "antiExploitRulesVi": [
+        "Cộng dồn Hypothermia và phạm vi sưởi ấm Chậu Lửa Cổ được tính hoàn toàn trên server mỗi tick 20 Hz; không thể né cơ chế lạnh bằng thao tác sửa đồng hồ client.",
+        "Trạng thái nấp sau cột băng khi boss tung Frozen Throne Decree được kiểm định bằng raycast trực tiếp từ tâm boss tới hitbox thực của người chơi.",
+        "Phân thân băng là thực thể server-side ngắn hạn không rơi loot và không tính vào nhiệm vụ hạ quái.",
+        "Yêu cầu hiện diện hợp lệ và đóng góp tối thiểu 5% để nhận phần thưởng cuối trận."
+      ],
+      "animationKeys": [
+        "boss_boreas_idle",
+        "boss_boreas_walk",
+        "boss_boreas_attack_cleave",
+        "boss_boreas_attack_thrust",
+        "boss_boreas_telegraph_decree",
+        "boss_boreas_skill_clones",
+        "boss_boreas_phase_shift",
+        "boss_boreas_stagger",
+        "boss_boreas_recover",
+        "boss_boreas_enrage",
+        "boss_boreas_death"
+      ],
+      "vfxKeys": [
+        "vfx_boss_boreas_glacial_arc",
+        "vfx_boss_boreas_permafrost_line",
+        "vfx_boss_boreas_ice_pillar",
+        "vfx_boss_boreas_blizzard_wave",
+        "vfx_boss_boreas_clone_slash",
+        "vfx_boss_boreas_absolute_zero",
+        "vfx_boss_boreas_hearth_warmth"
+      ]
+    },
+    {
+      "id": "boss_malakor_abyss",
+      "name": "Malakor, Sovereign of the Abyss",
+      "title": "Usurper of the Eclipse Throne",
+      "mvp": false,
+      "regionId": "reg_abyssal_kingdom",
+      "dungeonId": "dng_eclipse_throne",
+      "level": 100,
+      "element": "SHADOW",
+      "weaknessElement": "LIGHT",
+      "spriteSize": "256x256",
+      "loreVi": "Từng là Tổng Quản Ánh Sao canh giữ trục cân bằng nguyên tố của lục địa Eldoria, Malakor đã mở vết nứt Nhật Thực để chiếm đoạt sự bất tử, nhấn chìm cả vương triều cổ vào Abyssal Kingdom. Ngồi trên dng_eclipse_throne, hắn là đỉnh cao thử thách cấp 100 kết nối toàn bộ hệ thống chiến đấu, nguyên tố và phối hợp tổ đội của trò chơi.",
+      "visualConceptVi": "Đế vương Hư Không siêu lớn chuẩn 16-bit (256x256 px) lơ lửng phía trên sàn đá nhật thực, mang đôi cánh bóng đêm dệt từ những mảnh sao vỡ màu tím sẫm và viền vàng ánh trăng. Phía sau lưng là vầng Nhật Thực chuyển sắc theo 4 phase từ tím lam sang đỏ tía và trắng viền đen, mọi đường chỉ thị chiêu thức đều dùng viền sáng tương phản cao trên nền tối để giữ khả năng đọc chiến trường tuyệt đối.",
+      "arena": {
+        "widthTiles": 36,
+        "heightTiles": 28,
+        "hazards": [
+          {
+            "key": "hz_eclipse_void_edge",
+            "nameVi": "Rìa Vực Thẳm Sụp Đổ",
+            "triggerPhase": 3,
+            "effectVi": "Vành ngoài 3 tile của đấu trường vỡ vụn ở Phase 3 và thêm 2 tile ở Phase 4, đẩy ngược và gây sát thương Shadow nặng nếu bước ra mép vỡ.",
+            "damageRatio": 0.9,
+            "intervalMs": 1000
+          },
+          {
+            "key": "hz_abyssal_eclipse_pool",
+            "nameVi": "Vùng Nhật Thực Hủ Hóa",
+            "triggerPhase": 2,
+            "effectVi": "Vùng bóng tối duy trì 14 giây sau kỹ năng Abyssal Eclipse, gây Corrupt và giảm 30% hiệu quả hồi máu khi đứng bên trong.",
+            "damageRatio": 0.65,
+            "intervalMs": 1000
+          }
+        ],
+        "safePillars": [
+          {
+            "id": "pil_sunseal_nw",
+            "tileX": 11,
+            "tileY": 8,
+            "destructible": false,
+            "mechanicVi": "Cột Ấn Mặt Trời cổ; khi bị Malakor nhuộm đen ở Phase 2+, người chơi đánh kỹ năng Light hoặc tương tác 1.5 giây để thanh tẩy, mở vòm ánh sáng bảo vệ khỏi Final Eclipse Collapse."
+          },
+          {
+            "id": "pil_sunseal_ne",
+            "tileX": 24,
+            "tileY": 8,
+            "destructible": false,
+            "mechanicVi": "Cột Ấn Mặt Trời cổ tạo vòm thanh tẩy xóa hiệu ứng Corrupt và chắn đòn diệt toàn sân."
+          },
+          {
+            "id": "pil_sunseal_sw",
+            "tileX": 11,
+            "tileY": 19,
+            "destructible": false,
+            "mechanicVi": "Cột Ấn Mặt Trời cổ hỗ trợ mở cửa sổ suy yếu giáp bóng tối của Malakor."
+          },
+          {
+            "id": "pil_sunseal_se",
+            "tileX": 24,
+            "tileY": 19,
+            "destructible": false,
+            "mechanicVi": "Cột Ấn Mặt Trời cổ hỗ trợ mở cửa sổ suy yếu giáp bóng tối của Malakor."
+          }
+        ],
+        "entryLockRule": {
+          "lockDelayMs": 5000,
+          "allowLateJoin": false,
+          "resetOnWipe": true,
+          "descriptionVi": "Kết giới Nhật Thực khóa hoàn toàn ngai vàng sau 5 giây. Mọi tile sụp đổ và trạng thái 4 Cột Ấn Mặt Trời được khôi phục nguyên trạng nếu party thất bại."
+        }
+      },
+      "baseStats": {
+        "hp": 460000,
+        "atk": 980,
+        "def": 430,
+        "maxPoise": 5400,
+        "moveSpeed": 135,
+        "elementalRes": {
+          "FIRE": 0.1,
+          "WATER": 0.1,
+          "EARTH": 0.1,
+          "WIND": 0.1,
+          "LIGHTNING": 0.1,
+          "FROST": 0.1,
+          "LIGHT": -0.35,
+          "SHADOW": 0.6,
+          "NEUTRAL": 0.15
+        }
+      },
+      "phases": [
+        {
+          "phaseNumber": 1,
+          "hpThresholdPercent": 100,
+          "nameVi": "Bóng Đêm Giáng Thế",
+          "behaviorChangeVi": "Malakor giao chiến với phong thái áp đảo nhưng có quy luật: kết hợp kiếm chém rộng, vết rách hư không xuyên thẳng và hố trọng lực hút nhẹ nhằm kiểm soát không gian.",
+          "skills": [
+            {
+              "skillKey": "malakor_abyssal_sweep",
+              "name": "Abyssal Blade Sweep",
+              "telegraphMs": 850,
+              "telegraphVisual": "Vòng cung 180 độ viền tím sáng bạc quét phía trước mặt kèm vệt lưỡi liềm tối.",
+              "damageRatio": 1.45,
+              "hitboxShape": "CONE",
+              "cooldownMs": 3600,
+              "counterplayVi": "Lướt dodge xuyên tâm ra sau lưng hoặc parry chính xác nhát vung đầu để ngắt chuỗi chém."
+            },
+            {
+              "skillKey": "malakor_rift_piercer",
+              "name": "Rift Piercer",
+              "telegraphMs": 950,
+              "telegraphVisual": "Hai đường thẳng song song kẻ dài xuyên sân đấu báo hiệu kiếm khí hư không cắt qua.",
+              "damageRatio": 1.55,
+              "hitboxShape": "RECTANGLE",
+              "cooldownMs": 5400,
+              "counterplayVi": "Đứng vào khe hẹp ở chính giữa hai đường song song hoặc lách hoàn toàn ra ngoài biên."
+            },
+            {
+              "skillKey": "malakor_gravity_well",
+              "name": "Umbral Gravity Well",
+              "telegraphMs": 1200,
+              "telegraphVisual": "Vòng xoáy tối hút nhẹ người chơi về tâm đấu trường trước khi phát nổ sau 1.2 giây.",
+              "damageRatio": 1.6,
+              "hitboxShape": "CIRCLE",
+              "cooldownMs": 9200,
+              "counterplayVi": "Giữ lại Stamina để dùng Dodge bật ngược ra khỏi vòng nổ ngay ở 0.3 giây cuối."
+            }
+          ]
+        },
+        {
+          "phaseNumber": 2,
+          "hpThresholdPercent": 70,
+          "nameVi": "Nhật Thực Phân Tách",
+          "behaviorChangeVi": "Malakor nhuộm đen 2 trong 4 Cột Ấn Mặt Trời, tạo dây xích hư không liên kết ngẫu nhiên 2 thành viên party và dùng nhát chém phản chiếu tạo dấu ấn Nhật Thực trên sàn.",
+          "skills": [
+            {
+              "skillKey": "malakor_mirror_slash",
+              "name": "Eclipse Mirror Slash",
+              "telegraphMs": 1050,
+              "telegraphVisual": "Vết cắt tím sáng xuất hiện đồng thời từ Malakor và một ảnh ảo đối diện phía bên kia mục tiêu.",
+              "damageRatio": 1.65,
+              "hitboxShape": "CROSS_LINE",
+              "cooldownMs": 7500,
+              "counterplayVi": "Bước chéo 45 độ khỏi trục nối giữa Malakor và ảnh ảo để né cả hai đường chém cùng lúc."
+            },
+            {
+              "skillKey": "malakor_void_tether",
+              "name": "Void Tether Chains",
+              "telegraphMs": 1300,
+              "telegraphVisual": "Sợi xích năng lượng tím nối giữa 2 người chơi với vòng cảnh báo đỏ nếu đứng quá gần hoặc quá xa nhau.",
+              "damageRatio": 1.5,
+              "hitboxShape": "LINE_PROJECTILE",
+              "cooldownMs": 12500,
+              "counterplayVi": "Hai người chơi bị nối phải chạy kéo giãn quá 7 tile trong 2 giây để làm đứt dây xích an toàn (chế độ solo: kéo đứt bằng cách chạy cách trụ trung tâm 7 tile)."
+            },
+            {
+              "skillKey": "malakor_corrupt_obelisk",
+              "name": "Astral Obelisk Corruption",
+              "telegraphMs": 1600,
+              "telegraphVisual": "Hai chùm khói tím nối từ Malakor sang 2 Cột Ấn Mặt Trời khiến chúng tỏa vầng tối.",
+              "damageRatio": 1.4,
+              "hitboxShape": "MULTI_CIRCLE",
+              "cooldownMs": 18000,
+              "counterplayVi": "Thanh tẩy nhanh ít nhất 1 Cột Ấn Mặt Trời bằng kỹ năng Light hoặc tương tác giữ nút để lấy khiên miễn nhiễm Corrupt."
+            }
+          ]
+        },
+        {
+          "phaseNumber": 3,
+          "hpThresholdPercent": 40,
+          "nameVi": "Vực Thẳm Nuốt Chửng",
+          "behaviorChangeVi": "Mép ngoài đấu trường sụp xuống vực thẳm thu hẹp không gian chiến đấu. Malakor mở rộng vùng Nhật Thực gây sát thương theo thời gian và gọi mưa thiên thạch hư không có nhịp rơi xen kẽ.",
+          "skills": [
+            {
+              "skillKey": "malakor_dimensional_cross",
+              "name": "Dimensional Cleave Cross",
+              "telegraphMs": 1150,
+              "telegraphVisual": "Bốn vết rách không gian chữ thập xoay đổi góc sau 1.2 giây với viền trắng sắc nét.",
+              "damageRatio": 1.85,
+              "hitboxShape": "CROSS_LINE",
+              "cooldownMs": 8800,
+              "counterplayVi": "Thực hiện nhịp di chuyển hai bước: né chữ thập đầu tiên rồi lập tức bước vào vùng vừa nổ để tránh góc chữ X tiếp theo."
+            },
+            {
+              "skillKey": "malakor_abyssal_eclipse",
+              "name": "Abyssal Eclipse Zones",
+              "telegraphMs": 1350,
+              "telegraphVisual": "Ba vòng nhật thực viền vàng nhạt xuất hiện quanh các khu vực đông người chơi nhất.",
+              "damageRatio": 1.7,
+              "hitboxShape": "MULTI_CIRCLE",
+              "cooldownMs": 11500,
+              "counterplayVi": "Dẫn vùng Nhật Thực đặt ra gần mép ngoài đã thu hẹp để giữ sạch không gian trung tâm và quanh các Cột Ấn Mặt Trời."
+            },
+            {
+              "skillKey": "malakor_sovereign_meteors",
+              "name": "Sovereign's Meteor Rain",
+              "telegraphMs": 1500,
+              "telegraphVisual": "Chuỗi 8 vòng bóng đổ rơi theo hình xoắn ốc từ ngoài vào tâm với đường dẫn sáng rõ ràng.",
+              "damageRatio": 1.9,
+              "hitboxShape": "RING",
+              "cooldownMs": 15000,
+              "counterplayVi": "Chạy bám theo đuôi vòng xoắn ốc nơi thiên thạch vừa rơi xong; Healer duy trì buff giảm sát thương cho đồng đội."
+            }
+          ]
+        },
+        {
+          "phaseNumber": 4,
+          "hpThresholdPercent": 15,
+          "nameVi": "Hoàng Hôn Vĩnh Cửu",
+          "behaviorChangeVi": "Giai đoạn cao trào cuối cùng: sàn đấu tiếp tục thu hẹp thêm 2 tile, Malakor bật khiên Hư Không yêu cầu phối hợp thanh tẩy Cột Ấn Mặt Trời và dồn sát thương Light/Poise vượt qua ngưỡng hủy diệt Final Eclipse Collapse.",
+          "skills": [
+            {
+              "skillKey": "malakor_void_execution",
+              "name": "Relentless Void Execution",
+              "telegraphMs": 850,
+              "telegraphVisual": "Ba vệt lướt chém liên tiếp khóa hướng nhanh kèm bóng ma chỉ vị trí kết thúc.",
+              "damageRatio": 1.75,
+              "hitboxShape": "RECTANGLE",
+              "cooldownMs": 6800,
+              "counterplayVi": "Tank giữ vững hướng boss quay mặt ra mép sân; các thành viên khác dùng kỹ năng di chuyển nhanh hoặc i-frame xuyên qua vệt lướt."
+            },
+            {
+              "skillKey": "malakor_eclipse_pulse",
+              "name": "Final Twilight Rings",
+              "telegraphMs": 1100,
+              "telegraphVisual": "Ba vòng xung tối nối tiếp nhau từ trung tâm lan ra toàn sàn với khoảng nghỉ 0.9 giây giữa mỗi vòng.",
+              "damageRatio": 1.85,
+              "hitboxShape": "RING",
+              "cooldownMs": 9500,
+              "counterplayVi": "Nhảy/lướt ngược chiều vào trong qua từng vòng sóng theo nhịp đều, không chạy lùi ra mép vực vỡ."
+            },
+            {
+              "skillKey": "malakor_final_collapse",
+              "name": "Final Eclipse Collapse",
+              "telegraphMs": 2600,
+              "telegraphVisual": "Vầng Nhật Thực sau lưng Malakor mở rộng bao trùm trần điện, chỉ để lại vùng vòm ánh sáng vàng rõ rệt quanh các Cột Ấn Mặt Trời đã được thanh tẩy.",
+              "damageRatio": 2.9,
+              "hitboxShape": "ARENA_WAVE",
+              "cooldownMs": 26000,
+              "counterplayVi": "Tập trung toàn bộ party vào vòm ánh sáng của Cột Ấn Mặt Trời đã thanh tẩy, đồng thời tung toàn bộ Ultimate hệ Light sau khi sóng đi qua để kết liễu boss."
+            }
+          ]
+        }
+      ],
+      "staggerMechanic": {
+        "poiseBreakDurationMs": 7000,
+        "damageTakenMultiplier": 1.5,
+        "recoveryPoisePercent": 100,
+        "weaknessPoiseBonusMultiplier": 1.7,
+        "mechanicNoteVi": "Phá Poise khiến Malakor rơi xuống sàn bất động 7 giây, tắt khiên Hư Không và thanh tẩy ngay 1 Cột Ấn Mặt Trời gần nhất. Các kỹ năng hệ Light (Seraphina, Aurelia) gây 1.7x sát thương Poise."
+      },
+      "enrageMechanic": {
+        "enrageTimerSeconds": 540,
+        "atkMultiplier": 2.0,
+        "attackSpeedMultiplier": 1.4,
+        "visualCueVi": "Vầng Nhật Thực chuyển sắc đỏ tía cố định, toàn bộ 4 Cột Ấn Mặt Trời vỡ vụn và mỗi đòn đánh của Malakor đều kèm sóng chấn động toàn sàn."
+      },
+      "partyScaling": {
+        "1": {
+          "hpMultiplier": 1.0,
+          "atkMultiplier": 1.0,
+          "poiseMultiplier": 1.0,
+          "rewardBonusPercent": 0
+        },
+        "2": {
+          "hpMultiplier": 1.75,
+          "atkMultiplier": 1.05,
+          "poiseMultiplier": 1.45,
+          "rewardBonusPercent": 10
+        },
+        "3": {
+          "hpMultiplier": 2.45,
+          "atkMultiplier": 1.1,
+          "poiseMultiplier": 1.85,
+          "rewardBonusPercent": 20
+        },
+        "4": {
+          "hpMultiplier": 3.1,
+          "atkMultiplier": 1.15,
+          "poiseMultiplier": 2.25,
+          "rewardBonusPercent": 30
+        }
+      },
+      "rewards": {
+        "exp": 62000,
+        "goldMin": 14500,
+        "goldMax": 21000,
+        "bossTokens": 25,
+        "starlightShardsFirstClear": 1600,
+        "starlightShardsWeekly": 480,
+        "lootTableId": "ltb_boss_malakor_abyss"
+      },
+      "respawnSchedule": {
+        "instanceCooldownMinutes": 60,
+        "worldRespawnMinutes": 240
+      },
+      "antiExploitRulesVi": [
+        "Bản đồ lưới va chạm sụp đổ ở Phase 3 và Phase 4 được đồng bộ và xác thực vị trí nghiêm ngặt trên server; mọi gói tin di chuyển vượt biên bị từ chối và kéo về vị trí hợp lệ cuối cùng.",
+        "Trạng thái thanh tẩy 4 Cột Ấn Mặt Trời và vòm miễn nhiễm Final Eclipse Collapse được khóa nguyên tử trên server, ngăn người chơi giả mạo trạng thái miễn nhiễm từ client.",
+        "Không thể bỏ qua Phase 4 bằng dồn sát thương vượt ngưỡng 1 hit: HP boss khóa tối thiểu 15% trong 1.5 giây chuyển pha để kích hoạt đúng kịch bản Hoàng Hôn Vĩnh Cửu.",
+        "Thưởng First Clear STARLIGHT_SHARD được ghi nhận bất biến theo accountId trong sổ cái JSON cục bộ, ngăn tái tạo nhân vật hoặc reset instance để cày vô hạn."
+      ],
+      "animationKeys": [
+        "boss_malakor_idle",
+        "boss_malakor_float",
+        "boss_malakor_attack_sweep",
+        "boss_malakor_attack_pierce",
+        "boss_malakor_telegraph_collapse",
+        "boss_malakor_skill_tether",
+        "boss_malakor_skill_meteors",
+        "boss_malakor_phase_shift",
+        "boss_malakor_stagger",
+        "boss_malakor_recover",
+        "boss_malakor_enrage",
+        "boss_malakor_death"
+      ],
+      "vfxKeys": [
+        "vfx_boss_malakor_blade_arc",
+        "vfx_boss_malakor_rift_beam",
+        "vfx_boss_malakor_gravity_well",
+        "vfx_boss_malakor_void_tether",
+        "vfx_boss_malakor_eclipse_zone",
+        "vfx_boss_malakor_meteor_rain",
+        "vfx_boss_malakor_sunseal_dome",
+        "vfx_boss_malakor_final_collapse"
+      ]
+    }
+  ]
+}

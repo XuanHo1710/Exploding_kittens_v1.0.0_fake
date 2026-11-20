@@ -1,0 +1,589 @@
+{
+  "executedAt": "2026-11-19T16:15:35.821Z",
+  "nodeVersion": "v22.20.0",
+  "gachaMonteCarlo100k": [
+    {
+      "bannerId": "bnr_perm_heroes",
+      "totalPulls": 100000,
+      "seed": 20261119,
+      "empiricalRatesPct": {
+        "MYTHIC": 0.544,
+        "LEGENDARY": 1.84,
+        "EPIC": 13.289,
+        "RARE": 28.238,
+        "UNCOMMON": 32.577,
+        "COMMON": 23.512
+      },
+      "baseRatesPct": {
+        "MYTHIC": 0.4,
+        "LEGENDARY": 1.2,
+        "EPIC": 8.4,
+        "RARE": 30,
+        "UNCOMMON": 35,
+        "COMMON": 25
+      },
+      "topTierCount": 2384,
+      "effectiveTopRatePct": 2.384,
+      "avgPullsPerTop": 41.95,
+      "avgShardsPerTop": 6711,
+      "p50PullsToTop": 44,
+      "p90PullsToTop": 70,
+      "maxPullsObserved": 75,
+      "featuredTopRatePct": null,
+      "avgStarEssencePer10Pull": 234.77
+    },
+    {
+      "bannerId": "bnr_perm_arsenal",
+      "totalPulls": 100000,
+      "seed": 20261120,
+      "empiricalRatesPct": {
+        "MYTHIC": 0.717,
+        "LEGENDARY": 2.153,
+        "EPIC": 13.536,
+        "RARE": 28.133,
+        "UNCOMMON": 31.917,
+        "COMMON": 23.544
+      },
+      "baseRatesPct": {
+        "MYTHIC": 0.5,
+        "LEGENDARY": 1.5,
+        "EPIC": 9,
+        "RARE": 30,
+        "UNCOMMON": 34,
+        "COMMON": 25
+      },
+      "topTierCount": 2870,
+      "effectiveTopRatePct": 2.87,
+      "avgPullsPerTop": 34.84,
+      "avgShardsPerTop": 5575,
+      "p50PullsToTop": 35,
+      "p90PullsToTop": 59,
+      "maxPullsObserved": 66,
+      "featuredTopRatePct": null,
+      "avgStarEssencePer10Pull": 83.03
+    },
+    {
+      "bannerId": "bnr_lim_storm_sovereign",
+      "totalPulls": 100000,
+      "seed": 20261121,
+      "empiricalRatesPct": {
+        "MYTHIC": 0.605,
+        "LEGENDARY": 1.771,
+        "EPIC": 13.311,
+        "RARE": 28.032,
+        "UNCOMMON": 32.485,
+        "COMMON": 23.796
+      },
+      "baseRatesPct": {
+        "MYTHIC": 0.4,
+        "LEGENDARY": 1.2,
+        "EPIC": 8.4,
+        "RARE": 30,
+        "UNCOMMON": 35,
+        "COMMON": 25
+      },
+      "topTierCount": 2376,
+      "effectiveTopRatePct": 2.376,
+      "avgPullsPerTop": 42.09,
+      "avgShardsPerTop": 6734,
+      "p50PullsToTop": 45,
+      "p90PullsToTop": 70,
+      "maxPullsObserved": 77,
+      "featuredTopRatePct": 67.8,
+      "avgStarEssencePer10Pull": 235.16
+    }
+  ],
+  "weaponEnhancement": {
+    "sampleWeaponId": "wpn_iron_longsword",
+    "sampleBaseAtk": 26,
+    "finalPlus10Atk": 155,
+    "totalGold0To10": 26400,
+    "archetypes": {
+      "casual_1h_day": {
+        "totalHours": 22.35,
+        "estimatedDays": 22.4
+      },
+      "regular_2_5h_day": {
+        "totalHours": 13.84,
+        "estimatedDays": 5.5
+      },
+      "hardcore_5h_day": {
+        "totalHours": 8.95,
+        "estimatedDays": 1.8
+      }
+    },
+    "curve": [
+      {
+        "level": "+1",
+        "blacksmithLv": 1,
+        "weaponAtk": 32,
+        "goldStep": 150
+      },
+      {
+        "level": "+2",
+        "blacksmithLv": 1,
+        "weaponAtk": 38,
+        "goldStep": 300
+      },
+      {
+        "level": "+3",
+        "blacksmithLv": 1,
+        "weaponAtk": 45,
+        "goldStep": 550
+      },
+      {
+        "level": "+4",
+        "blacksmithLv": 2,
+        "weaponAtk": 54,
+        "goldStep": 900
+      },
+      {
+        "level": "+5",
+        "blacksmithLv": 2,
+        "weaponAtk": 65,
+        "goldStep": 1400
+      },
+      {
+        "level": "+6",
+        "blacksmithLv": 2,
+        "weaponAtk": 77,
+        "goldStep": 2100
+      },
+      {
+        "level": "+7",
+        "blacksmithLv": 3,
+        "weaponAtk": 92,
+        "goldStep": 3000
+      },
+      {
+        "level": "+8",
+        "blacksmithLv": 3,
+        "weaponAtk": 109,
+        "goldStep": 4200
+      },
+      {
+        "level": "+9",
+        "blacksmithLv": 4,
+        "weaponAtk": 130,
+        "goldStep": 5800
+      },
+      {
+        "level": "+10",
+        "blacksmithLv": 4,
+        "weaponAtk": 155,
+        "goldStep": 8000
+      }
+    ]
+  },
+  "combatAndParity": {
+    "allBossTtkCheck": [
+      {
+        "bossId": "boss_thornback_elder",
+        "level": 15,
+        "bossHp": 10500,
+        "bossDef": 34,
+        "enrageSec": 360,
+        "soloSustainedDps": 412,
+        "soloTtkSec": 25,
+        "party4ScaledHp": 32550,
+        "party4TtkSec": 28,
+        "recommendedPacingTargetSec": "120-210",
+        "pacingDiagnosis": "TOO_FAST_NEEDS_HP_OR_STAT_TUNING"
+      },
+      {
+        "bossId": "boss_ignis_forgelord",
+        "level": 30,
+        "bossHp": 36000,
+        "bossDef": 84,
+        "enrageSec": 420,
+        "soloSustainedDps": 999,
+        "soloTtkSec": 36,
+        "party4ScaledHp": 111600,
+        "party4TtkSec": 39,
+        "recommendedPacingTargetSec": "120-210",
+        "pacingDiagnosis": "TOO_FAST_NEEDS_HP_OR_STAT_TUNING"
+      },
+      {
+        "bossId": "boss_prism_leviathan",
+        "level": 50,
+        "bossHp": 98000,
+        "bossDef": 158,
+        "enrageSec": 450,
+        "soloSustainedDps": 2136,
+        "soloTtkSec": 46,
+        "party4ScaledHp": 303800,
+        "party4TtkSec": 50,
+        "recommendedPacingTargetSec": "120-210",
+        "pacingDiagnosis": "TOO_FAST_NEEDS_HP_OR_STAT_TUNING"
+      },
+      {
+        "bossId": "boss_boreas_frostking",
+        "level": 75,
+        "bossHp": 235000,
+        "bossDef": 285,
+        "enrageSec": 480,
+        "soloSustainedDps": 3939,
+        "soloTtkSec": 60,
+        "party4ScaledHp": 728500,
+        "party4TtkSec": 65,
+        "recommendedPacingTargetSec": "120-210",
+        "pacingDiagnosis": "TOO_FAST_NEEDS_HP_OR_STAT_TUNING"
+      },
+      {
+        "bossId": "boss_malakor_abyss",
+        "level": 100,
+        "bossHp": 460000,
+        "bossDef": 430,
+        "enrageSec": 540,
+        "soloSustainedDps": 5958,
+        "soloTtkSec": 77,
+        "party4ScaledHp": 1426000,
+        "party4TtkSec": 84,
+        "recommendedPacingTargetSec": "120-210",
+        "pacingDiagnosis": "TOO_FAST_NEEDS_HP_OR_STAT_TUNING"
+      }
+    ],
+    "rarityParityLv15": [
+      {
+        "heroId": "chr_kael_vanguard",
+        "rarity": "RARE",
+        "role": "MELEE_DPS",
+        "totalAtk": 445,
+        "rawDps": 850,
+        "sustainedDps": 679
+      },
+      {
+        "heroId": "chr_lyra_windrunner",
+        "rarity": "RARE",
+        "role": "RANGED_DPS",
+        "totalAtk": 386,
+        "rawDps": 710,
+        "sustainedDps": 561
+      },
+      {
+        "heroId": "chr_seraphina_dawn",
+        "rarity": "RARE",
+        "role": "SUPPORT",
+        "totalAtk": 356,
+        "rawDps": 516,
+        "sustainedDps": 409
+      },
+      {
+        "heroId": "chr_bram_bastion",
+        "rarity": "EPIC",
+        "role": "TANK",
+        "totalAtk": 337,
+        "rawDps": 488,
+        "sustainedDps": 388
+      },
+      {
+        "heroId": "chr_vex_nightblade",
+        "rarity": "EPIC",
+        "role": "MELEE_DPS",
+        "totalAtk": 431,
+        "rawDps": 878,
+        "sustainedDps": 696
+      },
+      {
+        "heroId": "chr_orin_stormcaller",
+        "rarity": "LEGENDARY",
+        "role": "MAGIC_DPS",
+        "totalAtk": 403,
+        "rawDps": 681,
+        "sustainedDps": 541
+      },
+      {
+        "heroId": "chr_freya_frostveil",
+        "rarity": "EPIC",
+        "role": "MAGIC_DPS",
+        "totalAtk": 391,
+        "rawDps": 689,
+        "sustainedDps": 549
+      },
+      {
+        "heroId": "chr_torvald_rageborn",
+        "rarity": "LEGENDARY",
+        "role": "MELEE_DPS",
+        "totalAtk": 481,
+        "rawDps": 750,
+        "sustainedDps": 596
+      },
+      {
+        "heroId": "chr_nyx_voidcaller",
+        "rarity": "MYTHIC",
+        "role": "MAGIC_DPS",
+        "totalAtk": 411,
+        "rawDps": 611,
+        "sustainedDps": 482
+      },
+      {
+        "heroId": "chr_rowan_tidewarden",
+        "rarity": "UNCOMMON",
+        "role": "TANK",
+        "totalAtk": 318,
+        "rawDps": 472,
+        "sustainedDps": 375
+      },
+      {
+        "heroId": "chr_mira_ironfist",
+        "rarity": "COMMON",
+        "role": "HYBRID",
+        "totalAtk": 433,
+        "rawDps": 776,
+        "sustainedDps": 618
+      },
+      {
+        "heroId": "chr_aurelia_starbow",
+        "rarity": "MYTHIC",
+        "role": "RANGED_DPS",
+        "totalAtk": 407,
+        "rawDps": 715,
+        "sustainedDps": 564
+      }
+    ],
+    "rarityParityLv60": [
+      {
+        "heroId": "chr_kael_vanguard",
+        "rarity": "RARE",
+        "role": "MELEE_DPS",
+        "totalAtk": 1937,
+        "rawDps": 7179,
+        "sustainedDps": 5748
+      },
+      {
+        "heroId": "chr_lyra_windrunner",
+        "rarity": "RARE",
+        "role": "RANGED_DPS",
+        "totalAtk": 1689,
+        "rawDps": 5374,
+        "sustainedDps": 4269
+      },
+      {
+        "heroId": "chr_seraphina_dawn",
+        "rarity": "RARE",
+        "role": "SUPPORT",
+        "totalAtk": 1579,
+        "rawDps": 5115,
+        "sustainedDps": 4087
+      },
+      {
+        "heroId": "chr_bram_bastion",
+        "rarity": "EPIC",
+        "role": "TANK",
+        "totalAtk": 1433,
+        "rawDps": 4009,
+        "sustainedDps": 3198
+      },
+      {
+        "heroId": "chr_vex_nightblade",
+        "rarity": "EPIC",
+        "role": "MELEE_DPS",
+        "totalAtk": 1890,
+        "rawDps": 7000,
+        "sustainedDps": 5581
+      },
+      {
+        "heroId": "chr_orin_stormcaller",
+        "rarity": "LEGENDARY",
+        "role": "MAGIC_DPS",
+        "totalAtk": 1752,
+        "rawDps": 6609,
+        "sustainedDps": 5281
+      },
+      {
+        "heroId": "chr_freya_frostveil",
+        "rarity": "EPIC",
+        "role": "MAGIC_DPS",
+        "totalAtk": 1714,
+        "rawDps": 6910,
+        "sustainedDps": 5539
+      },
+      {
+        "heroId": "chr_torvald_rageborn",
+        "rarity": "LEGENDARY",
+        "role": "MELEE_DPS",
+        "totalAtk": 2064,
+        "rawDps": 6174,
+        "sustainedDps": 4923
+      },
+      {
+        "heroId": "chr_nyx_voidcaller",
+        "rarity": "MYTHIC",
+        "role": "MAGIC_DPS",
+        "totalAtk": 1782,
+        "rawDps": 5799,
+        "sustainedDps": 4612
+      },
+      {
+        "heroId": "chr_rowan_tidewarden",
+        "rarity": "UNCOMMON",
+        "role": "TANK",
+        "totalAtk": 1371,
+        "rawDps": 3723,
+        "sustainedDps": 2966
+      },
+      {
+        "heroId": "chr_mira_ironfist",
+        "rarity": "COMMON",
+        "role": "HYBRID",
+        "totalAtk": 1896,
+        "rawDps": 6304,
+        "sustainedDps": 5033
+      },
+      {
+        "heroId": "chr_aurelia_starbow",
+        "rarity": "MYTHIC",
+        "role": "RANGED_DPS",
+        "totalAtk": 1760,
+        "rawDps": 5436,
+        "sustainedDps": 4309
+      }
+    ]
+  },
+  "economy30Days": [
+    {
+      "profile": "Casual (1.0h/ngày)",
+      "hoursPerDay": 1,
+      "totalGoldIn": 31780,
+      "totalGoldOut": 31000,
+      "endingGold": 780,
+      "sinkToFaucetRatioPct": 97.5,
+      "totalShardsIn": 6072,
+      "totalShardsOut": 4800,
+      "endingShards": 1272,
+      "totalFreePulls30d": 30,
+      "weaponEnhancementReached": "+8",
+      "buildingsCompleted": "5/7",
+      "snapshots": [
+        {
+          "day": 1,
+          "goldBalance": 640,
+          "shardsBalance": 266,
+          "weaponEnhReached": "+1",
+          "buildingsCompleted": 0,
+          "cumulativePulls": 0
+        },
+        {
+          "day": 7,
+          "goldBalance": 1030,
+          "shardsBalance": 982,
+          "weaponEnhReached": "+5",
+          "buildingsCompleted": 2,
+          "cumulativePulls": 10
+        },
+        {
+          "day": 14,
+          "goldBalance": 2580,
+          "shardsBalance": 1112,
+          "weaponEnhReached": "+6",
+          "buildingsCompleted": 3,
+          "cumulativePulls": 20
+        },
+        {
+          "day": 30,
+          "goldBalance": 780,
+          "shardsBalance": 1272,
+          "weaponEnhReached": "+8",
+          "buildingsCompleted": 5,
+          "cumulativePulls": 30
+        }
+      ]
+    },
+    {
+      "profile": "Regular (2.5h/ngày)",
+      "hoursPerDay": 2.5,
+      "totalGoldIn": 58780,
+      "totalGoldOut": 51250,
+      "endingGold": 7530,
+      "sinkToFaucetRatioPct": 87.2,
+      "totalShardsIn": 6072,
+      "totalShardsOut": 4800,
+      "endingShards": 1272,
+      "totalFreePulls30d": 30,
+      "weaponEnhancementReached": "+9",
+      "buildingsCompleted": "6/7",
+      "snapshots": [
+        {
+          "day": 1,
+          "goldBalance": 825,
+          "shardsBalance": 266,
+          "weaponEnhReached": "+1",
+          "buildingsCompleted": 1,
+          "cumulativePulls": 0
+        },
+        {
+          "day": 7,
+          "goldBalance": 1525,
+          "shardsBalance": 982,
+          "weaponEnhReached": "+6",
+          "buildingsCompleted": 3,
+          "cumulativePulls": 10
+        },
+        {
+          "day": 14,
+          "goldBalance": 2070,
+          "shardsBalance": 1112,
+          "weaponEnhReached": "+7",
+          "buildingsCompleted": 5,
+          "cumulativePulls": 20
+        },
+        {
+          "day": 30,
+          "goldBalance": 7530,
+          "shardsBalance": 1272,
+          "weaponEnhReached": "+9",
+          "buildingsCompleted": 6,
+          "cumulativePulls": 30
+        }
+      ]
+    },
+    {
+      "profile": "Hardcore (5.0h/ngày)",
+      "hoursPerDay": 5,
+      "totalGoldIn": 84280,
+      "totalGoldOut": 78250,
+      "endingGold": 6030,
+      "sinkToFaucetRatioPct": 92.8,
+      "totalShardsIn": 6072,
+      "totalShardsOut": 4800,
+      "endingShards": 1272,
+      "totalFreePulls30d": 30,
+      "weaponEnhancementReached": "+9",
+      "buildingsCompleted": "7/7",
+      "snapshots": [
+        {
+          "day": 1,
+          "goldBalance": 1150,
+          "shardsBalance": 266,
+          "weaponEnhReached": "+1",
+          "buildingsCompleted": 1,
+          "cumulativePulls": 0
+        },
+        {
+          "day": 7,
+          "goldBalance": 1600,
+          "shardsBalance": 982,
+          "weaponEnhReached": "+6",
+          "buildingsCompleted": 4,
+          "cumulativePulls": 10
+        },
+        {
+          "day": 14,
+          "goldBalance": 2420,
+          "shardsBalance": 1112,
+          "weaponEnhReached": "+8",
+          "buildingsCompleted": 5,
+          "cumulativePulls": 20
+        },
+        {
+          "day": 30,
+          "goldBalance": 6030,
+          "shardsBalance": 1272,
+          "weaponEnhReached": "+9",
+          "buildingsCompleted": 7,
+          "cumulativePulls": 30
+        }
+      ]
+    }
+  ]
+}

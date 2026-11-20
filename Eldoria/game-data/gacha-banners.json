@@ -1,0 +1,470 @@
+{
+  "schemaVersion": "1.0.0",
+  "catalog": "gacha-banners",
+  "game": "Eldoria: Forgotten Wilds",
+  "lastUpdated": "2026-11-19",
+  "totalCount": 4,
+  "mvpCount": 2,
+  "descriptionVi": "Danh mục chuẩn 4 Banner Gacha (2 Permanent Banner MVP và 2 Limited Banner hậu MVP) của Eldoria: Forgotten Wilds. Tuân thủ tuyệt đối Constitution Principle VI và ADR-005: 100% sử dụng tiền tệ nội tệ STARLIGHT_SHARD kiếm qua gameplay trong MVP (không thanh toán tiền thật), công khai toàn bộ xác suất, minh bạch Pity/Soft Pity, chuyển đổi vật phẩm trùng lặp rõ ràng và mọi giao dịch quay thực thi nguyên tử trên server kèm JSON WAL.",
+  "globalRules": {
+    "currencyType": "STARLIGHT_SHARD",
+    "singlePullCost": 160,
+    "tenPullCost": 1600,
+    "realMoneyPurchaseEnabledInMvp": false,
+    "cashOutAllowed": false,
+    "publicRateDisclosureMandatory": true,
+    "serverAuthoritativeCsprng": true,
+    "atomicMultiFileWalRequired": true,
+    "tenPullGuaranteeMinRarity": "EPIC",
+    "maxCharacterConstellation": 6,
+    "maxWeaponRefinement": 5,
+    "pityFormulaDescriptionVi": "Khi pityCounter (tính từ 1 cho lượt quay kế tiếp kể từ lần nhận MYTHIC/LEGENDARY gần nhất) đạt softPityStart..hardPity-1, tổng xác suất nhận nhóm trên cùng (MYTHIC + LEGENDARY) tăng tuyến tính mỗi lượt thêm softPitySlope, phân bổ nội bộ 25% MYTHIC / 75% LEGENDARY; phần xác suất còn lại co tỷ lệ đều qua EPIC, RARE, UNCOMMON, COMMON. Tại lượt thứ hardPity, xác suất đạt 100% (1.0). Bộ đếm epicPity bảo đảm tối đa mỗi 10 lượt nhận ít nhất 1 EPIC trở lên (hoặc MYTHIC/LEGENDARY nếu trúng nhóm cao hơn).",
+    "freeStarlightShardSourcesVi": [
+      "Chuỗi nhiệm vụ khởi đầu và nhiệm vụ khu vực (160–320 STARLIGHT_SHARD/nhiệm vụ; 12 nhiệm vụ MVP trao tổng 2.400 STARLIGHT_SHARD).",
+      "Phần thưởng hạ Boss lần đầu cấp tài khoản (480 đến 1.600 STARLIGHT_SHARD tùy Boss) và hạ Boss hàng tuần (160 đến 480 STARLIGHT_SHARD/tuần).",
+      "Mốc khám phá bản đồ, kích hoạt Waypoint và mở rương bí mật trong 8 vùng đất.",
+      "Thành tựu chiến đấu, nông trại, chăn nuôi, xây dựng và sưu tầm."
+    ]
+  },
+  "duplicateConversion": {
+    "CHARACTER": {
+      "COMMON": {
+        "withinConstellationCap": { "constellationShards": 1, "starEssence": 2, "bonusItemId": null, "bonusItemQty": 0 },
+        "overflowBeyondC6": { "constellationShards": 0, "starEssence": 4, "bonusItemId": "mat_starlight_dust", "bonusItemQty": 1 }
+      },
+      "UNCOMMON": {
+        "withinConstellationCap": { "constellationShards": 1, "starEssence": 5, "bonusItemId": null, "bonusItemQty": 0 },
+        "overflowBeyondC6": { "constellationShards": 0, "starEssence": 10, "bonusItemId": "mat_starlight_dust", "bonusItemQty": 1 }
+      },
+      "RARE": {
+        "withinConstellationCap": { "constellationShards": 1, "starEssence": 12, "bonusItemId": null, "bonusItemQty": 0 },
+        "overflowBeyondC6": { "constellationShards": 0, "starEssence": 24, "bonusItemId": "mat_starlight_dust", "bonusItemQty": 2 }
+      },
+      "EPIC": {
+        "withinConstellationCap": { "constellationShards": 1, "starEssence": 30, "bonusItemId": null, "bonusItemQty": 0 },
+        "overflowBeyondC6": { "constellationShards": 0, "starEssence": 60, "bonusItemId": "mat_starlight_dust", "bonusItemQty": 4 }
+      },
+      "LEGENDARY": {
+        "withinConstellationCap": { "constellationShards": 1, "starEssence": 80, "bonusItemId": null, "bonusItemQty": 0 },
+        "overflowBeyondC6": { "constellationShards": 0, "starEssence": 160, "bonusItemId": "mat_starlight_dust", "bonusItemQty": 8 }
+      },
+      "MYTHIC": {
+        "withinConstellationCap": { "constellationShards": 1, "starEssence": 150, "bonusItemId": null, "bonusItemQty": 0 },
+        "overflowBeyondC6": { "constellationShards": 0, "starEssence": 300, "bonusItemId": "mat_starlight_dust", "bonusItemQty": 15 }
+      }
+    },
+    "WEAPON": {
+      "notesVi": "Vũ khí trùng lặp vẫn được giữ nguyên dưới dạng ItemInstance trong kho đồ (có thể trang bị cho nhân vật khác, tinh luyện tối đa bậc 5 hoặc phân rã tại bld_blacksmith Lv 2+), đồng thời tặng kèm ngay STAR_ESSENCE và CRAFTING_TOKEN minh bạch.",
+      "COMMON": { "keepWeaponInstance": true, "starEssence": 1, "craftingToken": 1 },
+      "UNCOMMON": { "keepWeaponInstance": true, "starEssence": 3, "craftingToken": 2 },
+      "RARE": { "keepWeaponInstance": true, "starEssence": 8, "craftingToken": 4 },
+      "EPIC": { "keepWeaponInstance": true, "starEssence": 20, "craftingToken": 8 },
+      "LEGENDARY": { "keepWeaponInstance": true, "starEssence": 60, "craftingToken": 20 },
+      "MYTHIC": { "keepWeaponInstance": true, "starEssence": 120, "craftingToken": 40 }
+    }
+  },
+  "starEssenceShop": {
+    "currencyType": "STAR_ESSENCE",
+    "resetPolicy": "MONTHLY_ROTATION_AND_PERMANENT_STOCK",
+    "descriptionVi": "Cửa hàng Tinh Hoa Ánh Sao cho phép người chơi đổi trực tiếp nhân vật, vũ khí hoặc vật phẩm thiết yếu bằng STAR_ESSENCE nhận từ vật phẩm trùng lặp — cơ chế bảo vệ chống xui xẻo tuyệt đối minh bạch.",
+    "offers": [
+      { "offerId": "shop_ess_mira", "rewardType": "CHARACTER", "rewardId": "chr_mira_ironfist", "qty": 1, "rarity": "COMMON", "costStarEssence": 40, "limitPerMonth": 2, "mvp": true },
+      { "offerId": "shop_ess_rowan", "rewardType": "CHARACTER", "rewardId": "chr_rowan_tidewarden", "qty": 1, "rarity": "UNCOMMON", "costStarEssence": 75, "limitPerMonth": 2, "mvp": true },
+      { "offerId": "shop_ess_kael", "rewardType": "CHARACTER", "rewardId": "chr_kael_vanguard", "qty": 1, "rarity": "RARE", "costStarEssence": 120, "limitPerMonth": 1, "mvp": true },
+      { "offerId": "shop_ess_lyra", "rewardType": "CHARACTER", "rewardId": "chr_lyra_windrunner", "qty": 1, "rarity": "RARE", "costStarEssence": 120, "limitPerMonth": 1, "mvp": true },
+      { "offerId": "shop_ess_seraphina", "rewardType": "CHARACTER", "rewardId": "chr_seraphina_dawn", "qty": 1, "rarity": "RARE", "costStarEssence": 120, "limitPerMonth": 1, "mvp": true },
+      { "offerId": "shop_ess_bram", "rewardType": "CHARACTER", "rewardId": "chr_bram_bastion", "qty": 1, "rarity": "EPIC", "costStarEssence": 240, "limitPerMonth": 1, "mvp": false },
+      { "offerId": "shop_ess_vex", "rewardType": "CHARACTER", "rewardId": "chr_vex_nightblade", "qty": 1, "rarity": "EPIC", "costStarEssence": 240, "limitPerMonth": 1, "mvp": false },
+      { "offerId": "shop_ess_freya", "rewardType": "CHARACTER", "rewardId": "chr_freya_frostveil", "qty": 1, "rarity": "EPIC", "costStarEssence": 240, "limitPerMonth": 1, "mvp": false },
+      { "offerId": "shop_ess_orin", "rewardType": "CHARACTER", "rewardId": "chr_orin_stormcaller", "qty": 1, "rarity": "LEGENDARY", "costStarEssence": 600, "limitPerMonth": 1, "mvp": false },
+      { "offerId": "shop_ess_torvald", "rewardType": "CHARACTER", "rewardId": "chr_torvald_rageborn", "qty": 1, "rarity": "LEGENDARY", "costStarEssence": 600, "limitPerMonth": 1, "mvp": false },
+      { "offerId": "shop_ess_elderwood_cleaver", "rewardType": "WEAPON", "rewardId": "wpn_elderwood_cleaver", "qty": 1, "rarity": "EPIC", "costStarEssence": 200, "limitPerMonth": 1, "mvp": true },
+      { "offerId": "shop_ess_starbloom_scepter", "rewardType": "WEAPON", "rewardId": "wpn_starbloom_scepter", "qty": 1, "rarity": "LEGENDARY", "costStarEssence": 500, "limitPerMonth": 1, "mvp": true },
+      { "offerId": "shop_ess_forgelord_waraxe", "rewardType": "WEAPON", "rewardId": "wpn_forgelord_waraxe", "qty": 1, "rarity": "EPIC", "costStarEssence": 200, "limitPerMonth": 1, "mvp": false },
+      { "offerId": "shop_ess_voltspire_stormstaff", "rewardType": "WEAPON", "rewardId": "wpn_voltspire_stormstaff", "qty": 1, "rarity": "LEGENDARY", "costStarEssence": 500, "limitPerMonth": 1, "mvp": false },
+      { "offerId": "shop_ess_starlight_dust", "rewardType": "ITEM", "rewardId": "mat_starlight_dust", "qty": 5, "rarity": "RARE", "costStarEssence": 30, "limitPerMonth": 10, "mvp": true },
+      { "offerId": "shop_ess_revive_feather", "rewardType": "ITEM", "rewardId": "csm_revive_feather", "qty": 2, "rarity": "RARE", "costStarEssence": 25, "limitPerMonth": 10, "mvp": true }
+    ]
+  },
+  "banners": [
+    {
+      "id": "bnr_perm_heroes",
+      "name": "Heroes of Eldoria",
+      "titleVi": "Lời Hiệu Triệu Eldoria (Banner Nhân Vật Thường Trực)",
+      "bannerType": "PERMANENT_CHARACTER",
+      "rewardCategory": "CHARACTER",
+      "sharedPityGroup": "PERMANENT_CHARACTER",
+      "mvp": true,
+      "active": true,
+      "schedule": {
+        "mode": "PERMANENT",
+        "startAt": null,
+        "endAt": null
+      },
+      "cost": {
+        "currencyType": "STARLIGHT_SHARD",
+        "singlePull": 160,
+        "tenPull": 1600
+      },
+      "pity": {
+        "hardPity": 80,
+        "softPityStart": 65,
+        "softPitySlope": 0.06,
+        "epicPity": 10,
+        "pityTargetRarities": ["MYTHIC", "LEGENDARY"],
+        "pityConditionalSplit": {
+          "MYTHIC": 0.25,
+          "LEGENDARY": 0.75
+        },
+        "featuredGuarantee": null
+      },
+      "baseRates": {
+        "MYTHIC": 0.004,
+        "LEGENDARY": 0.012,
+        "EPIC": 0.084,
+        "RARE": 0.300,
+        "UNCOMMON": 0.350,
+        "COMMON": 0.250
+      },
+      "featured": {
+        "MYTHIC": [],
+        "LEGENDARY": [],
+        "EPIC": []
+      },
+      "pool": {
+        "MYTHIC": [
+          "chr_nyx_voidcaller",
+          "chr_aurelia_starbow"
+        ],
+        "LEGENDARY": [
+          "chr_orin_stormcaller",
+          "chr_torvald_rageborn"
+        ],
+        "EPIC": [
+          "chr_bram_bastion",
+          "chr_vex_nightblade",
+          "chr_freya_frostveil"
+        ],
+        "RARE": [
+          "chr_kael_vanguard",
+          "chr_lyra_windrunner",
+          "chr_seraphina_dawn"
+        ],
+        "UNCOMMON": [
+          "chr_rowan_tidewarden"
+        ],
+        "COMMON": [
+          "chr_mira_ironfist"
+        ]
+      },
+      "uiArtKey": "ui_banner_perm_heroes",
+      "descriptionVi": "Banner nhân vật thường trực có mặt ngay từ MVP, sử dụng 100% STARLIGHT_SHARD kiếm qua gameplay. Bảo đảm ít nhất 1 nhân vật EPIC trở lên mỗi 10 lượt, Soft Pity bắt đầu từ lượt 65 (+6%/lượt) và Hard Pity bảo đảm nhân vật LEGENDARY/MYTHIC tối đa tại lượt 80."
+    },
+    {
+      "id": "bnr_perm_arsenal",
+      "name": "Arsenal of the Wilds",
+      "titleVi": "Kho Binh Khí Cổ Xưa (Banner Vũ Khí Thường Trực)",
+      "bannerType": "PERMANENT_WEAPON",
+      "rewardCategory": "WEAPON",
+      "sharedPityGroup": "PERMANENT_WEAPON",
+      "mvp": true,
+      "active": true,
+      "schedule": {
+        "mode": "PERMANENT",
+        "startAt": null,
+        "endAt": null
+      },
+      "cost": {
+        "currencyType": "STARLIGHT_SHARD",
+        "singlePull": 160,
+        "tenPull": 1600
+      },
+      "pity": {
+        "hardPity": 70,
+        "softPityStart": 55,
+        "softPitySlope": 0.065,
+        "epicPity": 10,
+        "pityTargetRarities": ["MYTHIC", "LEGENDARY"],
+        "pityConditionalSplit": {
+          "MYTHIC": 0.25,
+          "LEGENDARY": 0.75
+        },
+        "featuredGuarantee": null
+      },
+      "baseRates": {
+        "MYTHIC": 0.005,
+        "LEGENDARY": 0.015,
+        "EPIC": 0.090,
+        "RARE": 0.300,
+        "UNCOMMON": 0.340,
+        "COMMON": 0.250
+      },
+      "featured": {
+        "MYTHIC": [],
+        "LEGENDARY": [],
+        "EPIC": []
+      },
+      "pool": {
+        "MYTHIC": [
+          "wpn_abyssal_sovereign_claymore",
+          "wpn_astralforge_starbow",
+          "wpn_celestial_dawn_staff",
+          "wpn_umbramancer_void_wand"
+        ],
+        "LEGENDARY": [
+          "wpn_starbloom_scepter",
+          "wpn_voltspire_stormstaff",
+          "wpn_bloodforge_colossus",
+          "wpn_solaris_eclipse_blade",
+          "wpn_phantom_eclipse_kris",
+          "wpn_dragonspine_partisan",
+          "wpn_frostbite_greataxe",
+          "wpn_tempest_horizon_bow",
+          "wpn_boreal_bastion_shield",
+          "wpn_embercore_titan_gauntlet"
+        ],
+        "EPIC": [
+          "wpn_elderwood_cleaver",
+          "wpn_forgelord_waraxe",
+          "wpn_stoneheart_aegis",
+          "wpn_prism_recurve_bow",
+          "wpn_glaciersong_wand",
+          "wpn_runic_ruin_saber",
+          "wpn_duskveil_twinblade",
+          "wpn_relic_repeater_crossbow",
+          "wpn_glacier_lance",
+          "wpn_obsidian_crusher_gauntlet",
+          "wpn_cinder_rune_wand"
+        ],
+        "RARE": [
+          "wpn_wolf_fang_dagger",
+          "wpn_mossroot_pike",
+          "wpn_thornbark_bulwark",
+          "wpn_crimson_vanguard_blade",
+          "wpn_ironpeak_greatsword",
+          "wpn_galeweaver_longbow",
+          "wpn_crystal_stiletto",
+          "wpn_crystal_conduit_staff"
+        ],
+        "UNCOMMON": [
+          "wpn_iron_longsword",
+          "wpn_ashwood_shortbow",
+          "wpn_oak_acolyte_staff",
+          "wpn_iron_arbalest",
+          "wpn_tidebreaker_halberd"
+        ],
+        "COMMON": [
+          "wpn_woodcutter_handaxe",
+          "wpn_copper_knuckle_gauntlet"
+        ]
+      },
+      "uiArtKey": "ui_banner_perm_arsenal",
+      "descriptionVi": "Banner vũ khí thường trực gồm toàn bộ 40 vũ khí phân tầng đủ 11 chủng loại, hoàn toàn dùng nội tệ STARLIGHT_SHARD. Soft Pity khởi động từ lượt 55 (+6.5%/lượt) và Hard Pity bảo đảm vũ khí LEGENDARY/MYTHIC tối đa tại lượt 70."
+    },
+    {
+      "id": "bnr_lim_storm_sovereign",
+      "name": "Sovereign of Storm & Void",
+      "titleVi": "Ngôi Vương Bão Tố & Hư Không (Limited Character Banner — Post-MVP)",
+      "bannerType": "LIMITED_CHARACTER",
+      "rewardCategory": "CHARACTER",
+      "sharedPityGroup": "LIMITED_CHARACTER",
+      "mvp": false,
+      "active": false,
+      "schedule": {
+        "mode": "SEASONAL_LIMITED",
+        "durationDays": 21,
+        "startAt": null,
+        "endAt": null,
+        "notesVi": "Kích hoạt theo chu kỳ mùa 21 ngày từ Milestone 2+; bộ đếm Pity và trạng thái bảo đảm 50/50 được bảo lưu sang Banner Limited Nhân Vật tiếp theo."
+      },
+      "cost": {
+        "currencyType": "STARLIGHT_SHARD",
+        "singlePull": 160,
+        "tenPull": 1600
+      },
+      "pity": {
+        "hardPity": 80,
+        "softPityStart": 65,
+        "softPitySlope": 0.06,
+        "epicPity": 10,
+        "pityTargetRarities": ["MYTHIC", "LEGENDARY"],
+        "pityConditionalSplit": {
+          "MYTHIC": 0.25,
+          "LEGENDARY": 0.75
+        },
+        "featuredGuarantee": {
+          "firstTopTierFeaturedChance": 0.5,
+          "guaranteedFeaturedOnSecondTopTier": true,
+          "epicFeaturedChance": 0.5,
+          "descriptionVi": "Khi nhận MYTHIC hoặc LEGENDARY, có 50% cơ hội nhận nhân vật Featured (chr_nyx_voidcaller cho MYTHIC, chr_orin_stormcaller cho LEGENDARY). Nếu lệch khỏi Featured, lần nhận MYTHIC/LEGENDARY kế tiếp trong nhóm LIMITED_CHARACTER bảo đảm 100% trúng nhân vật Featured."
+        }
+      },
+      "baseRates": {
+        "MYTHIC": 0.004,
+        "LEGENDARY": 0.012,
+        "EPIC": 0.084,
+        "RARE": 0.300,
+        "UNCOMMON": 0.350,
+        "COMMON": 0.250
+      },
+      "featured": {
+        "MYTHIC": [
+          "chr_nyx_voidcaller"
+        ],
+        "LEGENDARY": [
+          "chr_orin_stormcaller"
+        ],
+        "EPIC": [
+          "chr_vex_nightblade",
+          "chr_freya_frostveil"
+        ]
+      },
+      "pool": {
+        "MYTHIC": [
+          "chr_nyx_voidcaller",
+          "chr_aurelia_starbow"
+        ],
+        "LEGENDARY": [
+          "chr_orin_stormcaller",
+          "chr_torvald_rageborn"
+        ],
+        "EPIC": [
+          "chr_vex_nightblade",
+          "chr_freya_frostveil",
+          "chr_bram_bastion"
+        ],
+        "RARE": [
+          "chr_kael_vanguard",
+          "chr_lyra_windrunner",
+          "chr_seraphina_dawn"
+        ],
+        "UNCOMMON": [
+          "chr_rowan_tidewarden"
+        ],
+        "COMMON": [
+          "chr_mira_ironfist"
+        ]
+      },
+      "uiArtKey": "ui_banner_lim_storm_sovereign",
+      "descriptionVi": "Banner Nhân Vật Giới Hạn hậu MVP tăng tỷ lệ cho Triệu Hồi Sư Hư Không Nyx Umbramancer (MYTHIC) và Pháp Sư Lôi Điện Orin Voltspire (LEGENDARY) kèm cơ chế 50/50 bảo đảm minh bạch hoàn toàn bằng STARLIGHT_SHARD."
+    },
+    {
+      "id": "bnr_lim_dragonforge",
+      "name": "Dragonforge Astral Armory",
+      "titleVi": "Lò Rèn Long Cốt & Tinh Tú (Limited Weapon Banner — Post-MVP)",
+      "bannerType": "LIMITED_WEAPON",
+      "rewardCategory": "WEAPON",
+      "sharedPityGroup": "LIMITED_WEAPON",
+      "mvp": false,
+      "active": false,
+      "schedule": {
+        "mode": "SEASONAL_LIMITED",
+        "durationDays": 21,
+        "startAt": null,
+        "endAt": null,
+        "notesVi": "Kích hoạt đồng hành với sự kiện mở rộng vùng núi lửa và hầm ngục cấp cao ở Milestone 3+; bộ đếm Pity bảo lưu giữa các Banner Limited Vũ Khí."
+      },
+      "cost": {
+        "currencyType": "STARLIGHT_SHARD",
+        "singlePull": 160,
+        "tenPull": 1600
+      },
+      "pity": {
+        "hardPity": 70,
+        "softPityStart": 55,
+        "softPitySlope": 0.065,
+        "epicPity": 10,
+        "pityTargetRarities": ["MYTHIC", "LEGENDARY"],
+        "pityConditionalSplit": {
+          "MYTHIC": 0.25,
+          "LEGENDARY": 0.75
+        },
+        "featuredGuarantee": {
+          "firstTopTierFeaturedChance": 0.5,
+          "guaranteedFeaturedOnSecondTopTier": true,
+          "epicFeaturedChance": 0.5,
+          "descriptionVi": "Khi nhận vũ khí MYTHIC hoặc LEGENDARY, có 50% cơ hội nhận vũ khí Featured của Lò Rèn Long Cốt; nếu lệch, lần nhận MYTHIC/LEGENDARY kế tiếp trong nhóm LIMITED_WEAPON bảo đảm 100% trúng vũ khí Featured."
+        }
+      },
+      "baseRates": {
+        "MYTHIC": 0.005,
+        "LEGENDARY": 0.015,
+        "EPIC": 0.090,
+        "RARE": 0.300,
+        "UNCOMMON": 0.340,
+        "COMMON": 0.250
+      },
+      "featured": {
+        "MYTHIC": [
+          "wpn_astralforge_starbow"
+        ],
+        "LEGENDARY": [
+          "wpn_bloodforge_colossus",
+          "wpn_dragonspine_partisan",
+          "wpn_embercore_titan_gauntlet"
+        ],
+        "EPIC": [
+          "wpn_forgelord_waraxe",
+          "wpn_cinder_rune_wand",
+          "wpn_stoneheart_aegis"
+        ]
+      },
+      "pool": {
+        "MYTHIC": [
+          "wpn_astralforge_starbow",
+          "wpn_abyssal_sovereign_claymore",
+          "wpn_celestial_dawn_staff",
+          "wpn_umbramancer_void_wand"
+        ],
+        "LEGENDARY": [
+          "wpn_bloodforge_colossus",
+          "wpn_dragonspine_partisan",
+          "wpn_embercore_titan_gauntlet",
+          "wpn_solaris_eclipse_blade",
+          "wpn_tempest_horizon_bow",
+          "wpn_voltspire_stormstaff",
+          "wpn_starbloom_scepter",
+          "wpn_phantom_eclipse_kris",
+          "wpn_frostbite_greataxe",
+          "wpn_boreal_bastion_shield"
+        ],
+        "EPIC": [
+          "wpn_forgelord_waraxe",
+          "wpn_cinder_rune_wand",
+          "wpn_stoneheart_aegis",
+          "wpn_elderwood_cleaver",
+          "wpn_prism_recurve_bow",
+          "wpn_glaciersong_wand",
+          "wpn_runic_ruin_saber",
+          "wpn_duskveil_twinblade",
+          "wpn_relic_repeater_crossbow",
+          "wpn_glacier_lance",
+          "wpn_obsidian_crusher_gauntlet"
+        ],
+        "RARE": [
+          "wpn_wolf_fang_dagger",
+          "wpn_mossroot_pike",
+          "wpn_thornbark_bulwark",
+          "wpn_crimson_vanguard_blade",
+          "wpn_ironpeak_greatsword",
+          "wpn_galeweaver_longbow",
+          "wpn_crystal_stiletto",
+          "wpn_crystal_conduit_staff"
+        ],
+        "UNCOMMON": [
+          "wpn_iron_longsword",
+          "wpn_ashwood_shortbow",
+          "wpn_oak_acolyte_staff",
+          "wpn_iron_arbalest",
+          "wpn_tidebreaker_halberd"
+        ],
+        "COMMON": [
+          "wpn_woodcutter_handaxe",
+          "wpn_copper_knuckle_gauntlet"
+        ]
+      },
+      "uiArtKey": "ui_banner_lim_dragonforge",
+      "descriptionVi": "Banner Vũ Khí Giới Hạn hậu MVP nổi bật với nỏ thần Astralforge Starbow (MYTHIC) cùng bộ ba binh khí rèn từ xương rồng và lửa núi lửa (Bloodforge Colossus, Dragonspine Partisan, Embercore Titan Gauntlet), đi kèm Pity 70 lượt và bảo đảm 50/50."
+    }
+  ]
+}

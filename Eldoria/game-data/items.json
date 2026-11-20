@@ -1,0 +1,4423 @@
+{
+  "schemaVersion": "1.0.0",
+  "updatedAt": "2026-11-19",
+  "equipmentSets": [
+    {
+      "id": "set_greenhaven_novice",
+      "name": "Greenhaven Novice Attire",
+      "regionId": "reg_greenhaven_village",
+      "tierLevel": 1,
+      "rarity": "COMMON",
+      "mvp": true,
+      "pieceIds": [
+        "eqp_novice_straw_hood",
+        "eqp_novice_linen_tunic",
+        "eqp_novice_cloth_gloves",
+        "eqp_novice_traveler_boots"
+      ],
+      "bonuses": {
+        "2": {
+          "stats": {
+            "hp": 40,
+            "stamina": 15
+          },
+          "effectKey": "eff_set_novice_2p",
+          "descriptionVi": "Tăng +40 HP tối đa và +15 Stamina, hỗ trợ người chơi mới thu thập và chiến đấu quanh Greenhaven Village."
+        },
+        "4": {
+          "stats": {
+            "def": 10,
+            "moveSpeedPct": 0.05,
+            "gatherSpeedPct": 0.1
+          },
+          "effectKey": "eff_set_novice_4p",
+          "descriptionVi": "Tăng +10 DEF, +5% tốc độ di chuyển và +10% tốc độ chặt gỗ, đào quặng và thu hoạch nông sản."
+        }
+      }
+    },
+    {
+      "id": "set_mossroot_guard",
+      "name": "Mossroot Guard Regalia",
+      "regionId": "reg_whispering_forest",
+      "tierLevel": 10,
+      "rarity": "RARE",
+      "mvp": true,
+      "pieceIds": [
+        "eqp_mossroot_helm",
+        "eqp_mossroot_breastplate",
+        "eqp_mossroot_gauntlets",
+        "eqp_mossroot_greaves"
+      ],
+      "bonuses": {
+        "2": {
+          "stats": {
+            "def": 24,
+            "earthRes": 0.12
+          },
+          "effectKey": "eff_set_mossroot_2p",
+          "descriptionVi": "Tăng +24 DEF và +12% kháng nguyên tố Thổ (EARTH), giảm sát thương từ độc bào tử và gai rễ."
+        },
+        "4": {
+          "stats": {
+            "hp": 140,
+            "poiseBonus": 20,
+            "hpRegenPerSec": 3
+          },
+          "effectKey": "eff_set_mossroot_4p",
+          "descriptionVi": "Tăng +140 HP, +20 điểm cân bằng chống choáng (Poise) và hồi +3 HP mỗi giây khi đứng yên hoặc chặn đòn thành công."
+        }
+      }
+    },
+    {
+      "id": "set_ironpeak_forge",
+      "name": "Ironpeak Forgeplate",
+      "regionId": "reg_ironpeak_mountains",
+      "tierLevel": 25,
+      "rarity": "RARE",
+      "mvp": false,
+      "pieceIds": [
+        "eqp_ironpeak_helm",
+        "eqp_ironpeak_cuirass",
+        "eqp_ironpeak_bracers",
+        "eqp_ironpeak_sabatons"
+      ],
+      "bonuses": {
+        "2": {
+          "stats": {
+            "atk": 22,
+            "fireRes": 0.15
+          },
+          "effectKey": "eff_set_ironpeak_2p",
+          "descriptionVi": "Tăng +22 ATK và +15% kháng nguyên tố Hỏa (FIRE), thích hợp cho các trận chiến vùng núi lửa Ironpeak."
+        },
+        "4": {
+          "stats": {
+            "critDamage": 0.18,
+            "def": 45,
+            "staggerDamagePct": 0.15
+          },
+          "effectKey": "eff_set_ironpeak_4p",
+          "descriptionVi": "Tăng +45 DEF, +18% sát thương chí mạng và +15% sát thương phá giáp (Stagger) lên Boss."
+        }
+      }
+    },
+    {
+      "id": "set_crystal_arcanist",
+      "name": "Crystal Arcanist Vestments",
+      "regionId": "reg_crystal_caverns",
+      "tierLevel": 40,
+      "rarity": "EPIC",
+      "mvp": false,
+      "pieceIds": [
+        "eqp_crystal_circlet",
+        "eqp_crystal_vestment",
+        "eqp_crystal_handwraps",
+        "eqp_crystal_slippers"
+      ],
+      "bonuses": {
+        "2": {
+          "stats": {
+            "int": 32,
+            "mp": 120
+          },
+          "effectKey": "eff_set_crystal_2p",
+          "descriptionVi": "Tăng +32 INT và +120 MP tối đa, mở rộng khả năng duy trì chuỗi kỹ năng phép thuật."
+        },
+        "4": {
+          "stats": {
+            "cooldownReduction": 0.12,
+            "elementalDamagePct": 0.16,
+            "mpRegenPerSec": 4
+          },
+          "effectKey": "eff_set_crystal_4p",
+          "descriptionVi": "Giảm 12% hồi chiêu kỹ năng, tăng +16% sát thương nguyên tố và hồi +4 MP mỗi giây sau khi kích hoạt phản ứng nguyên tố."
+        }
+      }
+    },
+    {
+      "id": "set_frostbound_warden",
+      "name": "Frostbound Warden Aegis",
+      "regionId": "reg_frostbound_highlands",
+      "tierLevel": 65,
+      "rarity": "LEGENDARY",
+      "mvp": false,
+      "pieceIds": [
+        "eqp_frostbound_greathelm",
+        "eqp_frostbound_hauberk",
+        "eqp_frostbound_vambraces",
+        "eqp_frostbound_striders"
+      ],
+      "bonuses": {
+        "2": {
+          "stats": {
+            "def": 90,
+            "frostRes": 0.25,
+            "hp": 320
+          },
+          "effectKey": "eff_set_frostbound_2p",
+          "descriptionVi": "Tăng +90 DEF, +320 HP tối đa và +25% kháng Băng (FROST), giảm mạnh hiệu ứng làm chậm trong bão tuyết."
+        },
+        "4": {
+          "stats": {
+            "atk": 65,
+            "frostDamagePct": 0.2,
+            "blockMitigationPct": 0.12
+          },
+          "effectKey": "eff_set_frostbound_4p",
+          "descriptionVi": "Tăng +65 ATK, +20% sát thương nguyên tố Băng và tăng thêm 12% giảm sát thương khi đỡ đòn hoặc phản đòn (Parry)."
+        }
+      }
+    },
+    {
+      "id": "set_abyssal_sovereign",
+      "name": "Abyssal Sovereign Regalia",
+      "regionId": "reg_abyssal_kingdom",
+      "tierLevel": 88,
+      "rarity": "MYTHIC",
+      "mvp": false,
+      "pieceIds": [
+        "eqp_abyssal_crown",
+        "eqp_abyssal_mantle",
+        "eqp_abyssal_claws",
+        "eqp_abyssal_treads"
+      ],
+      "bonuses": {
+        "2": {
+          "stats": {
+            "atk": 95,
+            "int": 60,
+            "critRate": 0.08
+          },
+          "effectKey": "eff_set_abyssal_2p",
+          "descriptionVi": "Tăng +95 ATK, +60 INT và +8% tỉ lệ chí mạng, phù hợp cho các chiến binh chinh phục Abyssal Kingdom."
+        },
+        "4": {
+          "stats": {
+            "critDamage": 0.25,
+            "cooldownReduction": 0.1,
+            "shadowRes": 0.25,
+            "bossDamagePct": 0.15
+          },
+          "effectKey": "eff_set_abyssal_4p",
+          "descriptionVi": "Tăng +25% sát thương chí mạng, giảm 10% hồi chiêu, +25% kháng Bóng tối và +15% sát thương lên Boss Raid."
+        }
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "wpn_iron_longsword",
+      "name": "Iron Longsword",
+      "category": "WEAPON",
+      "weaponType": "SWORD",
+      "slot": "MAIN_HAND",
+      "element": "NEUTRAL",
+      "rarity": "UNCOMMON",
+      "levelReq": 1,
+      "mvp": true,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "WARRIOR",
+        "KNIGHT"
+      ],
+      "signatureForCharacterId": "chr_kael_vanguard",
+      "baseStats": {
+        "atk": 26,
+        "attackSpeed": 1.05,
+        "critRate": 0.04
+      },
+      "additionalStats": {
+        "str": 3,
+        "vit": 2
+      },
+      "durabilityMax": 120,
+      "sellPriceGold": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "STARTER:chr_kael_vanguard",
+        "CRAFTING",
+        "NPC_SHOP:npc_smith_garrik"
+      ],
+      "iconKey": "ico_wpn_iron_longsword",
+      "descriptionVi": "Thanh trường kiếm rèn từ sắt thô của thợ rèn Garrik tại Greenhaven Village. Cân bằng tốt giữa tốc độ chém và lực sát thương, phù hợp nâng cấp xuyên suốt giai đoạn đầu lên +10."
+    },
+    {
+      "id": "wpn_crimson_vanguard_blade",
+      "name": "Crimson Vanguard Blade",
+      "category": "WEAPON",
+      "weaponType": "SWORD",
+      "slot": "MAIN_HAND",
+      "element": "FIRE",
+      "rarity": "RARE",
+      "levelReq": 20,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "WARRIOR",
+        "KNIGHT"
+      ],
+      "signatureForCharacterId": "chr_kael_vanguard",
+      "baseStats": {
+        "atk": 78,
+        "attackSpeed": 1.08,
+        "critRate": 0.06
+      },
+      "additionalStats": {
+        "str": 10,
+        "fireDamagePct": 0.1
+      },
+      "durabilityMax": 160,
+      "sellPriceGold": 220,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_ironpeak_mountains",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_crimson_vanguard_blade",
+      "descriptionVi": "Lưỡi kiếm tôi trong lò dung nham Ironpeak, phát ra ánh đỏ rực mỗi khi tung chuỗi chém. Khuếch đại mạnh kỹ năng nguyên tố Hỏa của đội tiên phong."
+    },
+    {
+      "id": "wpn_runic_ruin_saber",
+      "name": "Runic Ruin Saber",
+      "category": "WEAPON",
+      "weaponType": "SWORD",
+      "slot": "MAIN_HAND",
+      "element": "LIGHTNING",
+      "rarity": "EPIC",
+      "levelReq": 50,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "WARRIOR",
+        "KNIGHT",
+        "ASSASSIN"
+      ],
+      "baseStats": {
+        "atk": 172,
+        "attackSpeed": 1.12,
+        "critRate": 0.09
+      },
+      "additionalStats": {
+        "agi": 18,
+        "str": 14,
+        "lightningDamagePct": 0.12
+      },
+      "durabilityMax": 210,
+      "sellPriceGold": 780,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_forgotten_ruins",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_runic_ruin_saber",
+      "descriptionVi": "Thanh kiếm cong khắc cổ ngữ sấm sét tìm thấy trong Forgotten Ruins. Cho phép tung đòn phản công nhanh với dòng điện lan nhẹ."
+    },
+    {
+      "id": "wpn_solaris_eclipse_blade",
+      "name": "Solaris Eclipse Blade",
+      "category": "WEAPON",
+      "weaponType": "SWORD",
+      "slot": "MAIN_HAND",
+      "element": "FIRE",
+      "rarity": "LEGENDARY",
+      "levelReq": 85,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "WARRIOR",
+        "KNIGHT"
+      ],
+      "baseStats": {
+        "atk": 302,
+        "attackSpeed": 1.12,
+        "critRate": 0.12,
+        "poiseBonus": 18
+      },
+      "additionalStats": {
+        "str": 34,
+        "critDamage": 0.22,
+        "fireDamagePct": 0.18
+      },
+      "durabilityMax": 270,
+      "sellPriceGold": 2400,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_ember_wasteland",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_solaris_eclipse_blade",
+      "descriptionVi": "Thánh kiếm rèn từ lõi hỏa diệm và vảy rồng cổ đại tại Ember Wasteland, để lại vệt kiếm khí mặt trời thiêu đốt kẻ thù."
+    },
+    {
+      "id": "wpn_elderwood_cleaver",
+      "name": "Elderwood Cleaver",
+      "category": "WEAPON",
+      "weaponType": "GREATSWORD",
+      "slot": "MAIN_HAND",
+      "element": "EARTH",
+      "rarity": "EPIC",
+      "levelReq": 15,
+      "mvp": true,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "WARRIOR",
+        "BERSERKER"
+      ],
+      "baseStats": {
+        "atk": 68,
+        "attackSpeed": 0.84,
+        "critRate": 0.05,
+        "poiseBonus": 28
+      },
+      "additionalStats": {
+        "str": 12,
+        "vit": 8,
+        "earthDamagePct": 0.1
+      },
+      "durabilityMax": 180,
+      "sellPriceGold": 320,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_thornback_elder",
+        "CRAFTING",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_elderwood_cleaver",
+      "descriptionVi": "Đại kiếm chế tác từ lõi gỗ cổ thụ và gai đá của Boss Thornback Elder trong Mossroot Hollow. Nhịp vung nặng nhưng có lực phá giáp cực mạnh."
+    },
+    {
+      "id": "wpn_ironpeak_greatsword",
+      "name": "Ironpeak Steel Greatsword",
+      "category": "WEAPON",
+      "weaponType": "GREATSWORD",
+      "slot": "MAIN_HAND",
+      "element": "NEUTRAL",
+      "rarity": "RARE",
+      "levelReq": 25,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "WARRIOR",
+        "BERSERKER"
+      ],
+      "baseStats": {
+        "atk": 104,
+        "attackSpeed": 0.85,
+        "critRate": 0.05,
+        "poiseBonus": 24
+      },
+      "additionalStats": {
+        "str": 16,
+        "def": 10
+      },
+      "durabilityMax": 175,
+      "sellPriceGold": 310,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_ironpeak_mountains"
+      ],
+      "iconKey": "ico_wpn_ironpeak_greatsword",
+      "descriptionVi": "Đại kiếm thép tinh luyện theo kỹ thuật của các thợ rèn núi Ironpeak, bền bỉ và gây lượng sát thương vật lý ổn định."
+    },
+    {
+      "id": "wpn_bloodforge_colossus",
+      "name": "Bloodforge Colossus",
+      "category": "WEAPON",
+      "weaponType": "GREATSWORD",
+      "slot": "MAIN_HAND",
+      "element": "FIRE",
+      "rarity": "LEGENDARY",
+      "levelReq": 75,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "BERSERKER",
+        "WARRIOR"
+      ],
+      "signatureForCharacterId": "chr_torvald_rageborn",
+      "baseStats": {
+        "atk": 292,
+        "attackSpeed": 0.86,
+        "critRate": 0.1,
+        "poiseBonus": 42
+      },
+      "additionalStats": {
+        "str": 36,
+        "critDamage": 0.25,
+        "fireDamagePct": 0.18
+      },
+      "durabilityMax": 265,
+      "sellPriceGold": 2250,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_ember_wasteland",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_bloodforge_colossus",
+      "descriptionVi": "Vũ khí trứ danh của Torvald Bloodforge. Mỗi nhát chém nặng nề đều tích tụ nhiệt huyết, gia tăng sức phá giáp lên kẻ thù khổng lồ."
+    },
+    {
+      "id": "wpn_abyssal_sovereign_claymore",
+      "name": "Abyssal Sovereign Claymore",
+      "category": "WEAPON",
+      "weaponType": "GREATSWORD",
+      "slot": "MAIN_HAND",
+      "element": "SHADOW",
+      "rarity": "MYTHIC",
+      "levelReq": 90,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "BERSERKER",
+        "WARRIOR"
+      ],
+      "baseStats": {
+        "atk": 355,
+        "attackSpeed": 0.88,
+        "critRate": 0.14,
+        "poiseBonus": 50
+      },
+      "additionalStats": {
+        "str": 44,
+        "critDamage": 0.3,
+        "shadowDamagePct": 0.2
+      },
+      "durabilityMax": 300,
+      "sellPriceGold": 4200,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_malakor_abyss",
+        "BOSS_TOKEN_SHOP",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_abyssal_sovereign_claymore",
+      "descriptionVi": "Cự kiếm bóng tối kết tinh từ mảnh vỡ nhật thực của Malakor. Đỉnh cao vũ khí cận chiến hạng nặng trong Abyssal Kingdom."
+    },
+    {
+      "id": "wpn_wolf_fang_dagger",
+      "name": "Wolf Fang Dagger",
+      "category": "WEAPON",
+      "weaponType": "DAGGER",
+      "slot": "MAIN_HAND",
+      "element": "NEUTRAL",
+      "rarity": "RARE",
+      "levelReq": 8,
+      "mvp": true,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "ASSASSIN",
+        "ARCHER"
+      ],
+      "baseStats": {
+        "atk": 36,
+        "attackSpeed": 1.32,
+        "critRate": 0.1
+      },
+      "additionalStats": {
+        "agi": 7,
+        "critDamage": 0.1
+      },
+      "durabilityMax": 135,
+      "sellPriceGold": 135,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "ELITE_DROP:mob_elite_alpha_direwolf",
+        "CRAFTING",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_wolf_fang_dagger",
+      "descriptionVi": "Chủ thủ mài sắc từ răng nanh Alpha Direwolf tại Whispering Forest. Tốc độ ra đòn cực nhanh, lý tưởng để tích chí mạng liên hoàn."
+    },
+    {
+      "id": "wpn_crystal_stiletto",
+      "name": "Crystal Stiletto",
+      "category": "WEAPON",
+      "weaponType": "DAGGER",
+      "slot": "MAIN_HAND",
+      "element": "FROST",
+      "rarity": "RARE",
+      "levelReq": 35,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "ASSASSIN",
+        "ARCHER"
+      ],
+      "baseStats": {
+        "atk": 102,
+        "attackSpeed": 1.35,
+        "critRate": 0.13
+      },
+      "additionalStats": {
+        "agi": 16,
+        "dex": 12,
+        "frostDamagePct": 0.1
+      },
+      "durabilityMax": 165,
+      "sellPriceGold": 460,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_crystal_caverns"
+      ],
+      "iconKey": "ico_wpn_crystal_stiletto",
+      "descriptionVi": "Dao găm trong suốt cắt gọt từ pha lê lạnh của Crystal Caverns, xuyên thủng khe hở giáp đối phương với độ chính xác cao."
+    },
+    {
+      "id": "wpn_duskveil_twinblade",
+      "name": "Duskveil Twinblade",
+      "category": "WEAPON",
+      "weaponType": "DAGGER",
+      "slot": "MAIN_HAND",
+      "element": "SHADOW",
+      "rarity": "EPIC",
+      "levelReq": 55,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "ASSASSIN"
+      ],
+      "signatureForCharacterId": "chr_vex_nightblade",
+      "baseStats": {
+        "atk": 166,
+        "attackSpeed": 1.38,
+        "critRate": 0.16
+      },
+      "additionalStats": {
+        "agi": 26,
+        "critDamage": 0.22,
+        "shadowDamagePct": 0.15
+      },
+      "durabilityMax": 210,
+      "sellPriceGold": 980,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_forgotten_ruins",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_duskveil_twinblade",
+      "descriptionVi": "Song đoản đao gắn liền với sát thủ Vex Duskveil. Thiết kế nhẹ và đen tuyền, tối ưu cho các đòn lướt chém áp sát từ góc khuất."
+    },
+    {
+      "id": "wpn_phantom_eclipse_kris",
+      "name": "Phantom Eclipse Kris",
+      "category": "WEAPON",
+      "weaponType": "DAGGER",
+      "slot": "MAIN_HAND",
+      "element": "SHADOW",
+      "rarity": "LEGENDARY",
+      "levelReq": 85,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "ASSASSIN"
+      ],
+      "baseStats": {
+        "atk": 268,
+        "attackSpeed": 1.4,
+        "critRate": 0.2
+      },
+      "additionalStats": {
+        "agi": 38,
+        "critDamage": 0.3,
+        "shadowDamagePct": 0.18
+      },
+      "durabilityMax": 260,
+      "sellPriceGold": 2450,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "REGION_DROP:reg_abyssal_kingdom",
+        "CRAFTING",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_phantom_eclipse_kris",
+      "descriptionVi": "Lưỡi dao gợn sóng thấm đẫm năng lượng hư không. Mọi cú đâm chí mạng đều để lại vết cắt bóng tối kéo dài."
+    },
+    {
+      "id": "wpn_mossroot_pike",
+      "name": "Mossroot Pike",
+      "category": "WEAPON",
+      "weaponType": "SPEAR",
+      "slot": "MAIN_HAND",
+      "element": "EARTH",
+      "rarity": "RARE",
+      "levelReq": 10,
+      "mvp": true,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "KNIGHT",
+        "WARRIOR"
+      ],
+      "baseStats": {
+        "atk": 46,
+        "attackSpeed": 1,
+        "critRate": 0.05,
+        "poiseBonus": 14
+      },
+      "additionalStats": {
+        "vit": 7,
+        "str": 6,
+        "earthDamagePct": 0.08
+      },
+      "durabilityMax": 150,
+      "sellPriceGold": 160,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "DUNGEON_DROP:dng_mossroot_hollow",
+        "CRAFTING",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_mossroot_pike",
+      "descriptionVi": "Ngọn giáo dài gia cố bằng dây leo cổ thụ và mũi thép nhọn, giúp giữ khoảng cách an toàn khi đối đầu bầy quái trong Mossroot Hollow."
+    },
+    {
+      "id": "wpn_tidebreaker_halberd",
+      "name": "Tidebreaker Halberd",
+      "category": "WEAPON",
+      "weaponType": "SPEAR",
+      "slot": "MAIN_HAND",
+      "element": "WATER",
+      "rarity": "UNCOMMON",
+      "levelReq": 25,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "KNIGHT",
+        "WARRIOR"
+      ],
+      "signatureForCharacterId": "chr_rowan_tidewarden",
+      "baseStats": {
+        "atk": 84,
+        "attackSpeed": 0.98,
+        "def": 14,
+        "poiseBonus": 18
+      },
+      "additionalStats": {
+        "vit": 12,
+        "waterDamagePct": 0.1
+      },
+      "durabilityMax": 165,
+      "sellPriceGold": 240,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "QUEST",
+        "REGION_DROP:reg_ironpeak_mountains"
+      ],
+      "iconKey": "ico_wpn_tidebreaker_halberd",
+      "descriptionVi": "Kích dài truyền thống của Rowan Mistbreaker, chuyên dụng cho chiến thuật chặn đòn, giữ chân mục tiêu và quét rộng vòng cung."
+    },
+    {
+      "id": "wpn_glacier_lance",
+      "name": "Glacier Lance",
+      "category": "WEAPON",
+      "weaponType": "SPEAR",
+      "slot": "MAIN_HAND",
+      "element": "FROST",
+      "rarity": "EPIC",
+      "levelReq": 65,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "KNIGHT",
+        "WARRIOR"
+      ],
+      "baseStats": {
+        "atk": 218,
+        "attackSpeed": 1.02,
+        "def": 24,
+        "poiseBonus": 26
+      },
+      "additionalStats": {
+        "str": 22,
+        "vit": 20,
+        "frostDamagePct": 0.15
+      },
+      "durabilityMax": 230,
+      "sellPriceGold": 1350,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_boreas_frostking",
+        "CRAFTING",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_glacier_lance",
+      "descriptionVi": "Trường thương kết băng vĩnh cửu rèn tại Frostbound Highlands, mũi thương phát khí hàn làm chậm đòn đánh của kẻ địch."
+    },
+    {
+      "id": "wpn_dragonspine_partisan",
+      "name": "Dragonspine Partisan",
+      "category": "WEAPON",
+      "weaponType": "SPEAR",
+      "slot": "MAIN_HAND",
+      "element": "FIRE",
+      "rarity": "LEGENDARY",
+      "levelReq": 80,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "KNIGHT",
+        "WARRIOR"
+      ],
+      "baseStats": {
+        "atk": 286,
+        "attackSpeed": 1.05,
+        "critRate": 0.11,
+        "poiseBonus": 32
+      },
+      "additionalStats": {
+        "str": 30,
+        "vit": 24,
+        "fireDamagePct": 0.18
+      },
+      "durabilityMax": 270,
+      "sellPriceGold": 2300,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_ember_wasteland",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_dragonspine_partisan",
+      "descriptionVi": "Cây kích chiến tạo tác từ xương sống và vảy cổ long vùng Ember Wasteland, nổi tiếng nhờ tầm đâm xa và sức xuyên giáp vượt trội."
+    },
+    {
+      "id": "wpn_woodcutter_handaxe",
+      "name": "Woodcutter Handaxe",
+      "category": "WEAPON",
+      "weaponType": "AXE",
+      "slot": "MAIN_HAND",
+      "element": "NEUTRAL",
+      "rarity": "COMMON",
+      "levelReq": 1,
+      "mvp": true,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "WARRIOR",
+        "BERSERKER"
+      ],
+      "baseStats": {
+        "atk": 21,
+        "attackSpeed": 0.92,
+        "poiseBonus": 12
+      },
+      "additionalStats": {
+        "str": 2,
+        "gatherSpeedPct": 0.08
+      },
+      "durabilityMax": 110,
+      "sellPriceGold": 28,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "NPC_SHOP:npc_smith_garrik",
+        "QUEST"
+      ],
+      "iconKey": "ico_wpn_woodcutter_handaxe",
+      "descriptionVi": "Chiếc rìu chiến cán gỗ sồi đơn giản nhưng chắc chắn, vừa có thể đốn gỗ nhanh quanh làng vừa hạ gục quái vật cấp thấp."
+    },
+    {
+      "id": "wpn_forgelord_waraxe",
+      "name": "Forgelord Waraxe",
+      "category": "WEAPON",
+      "weaponType": "AXE",
+      "slot": "MAIN_HAND",
+      "element": "FIRE",
+      "rarity": "EPIC",
+      "levelReq": 28,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "BERSERKER",
+        "WARRIOR"
+      ],
+      "baseStats": {
+        "atk": 118,
+        "attackSpeed": 0.88,
+        "critRate": 0.08,
+        "poiseBonus": 28
+      },
+      "additionalStats": {
+        "str": 18,
+        "fireDamagePct": 0.14
+      },
+      "durabilityMax": 195,
+      "sellPriceGold": 490,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_ignis_forgelord",
+        "CRAFTING",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_forgelord_waraxe",
+      "descriptionVi": "Chiến phủ hai lưỡi nung đỏ từ lõi lò rèn của Boss Ignis Forgelord. Gây sát thương diện hẹp cực lớn kèm hiệu ứng thiêu đốt."
+    },
+    {
+      "id": "wpn_frostbite_greataxe",
+      "name": "Frostbite Greataxe",
+      "category": "WEAPON",
+      "weaponType": "AXE",
+      "slot": "MAIN_HAND",
+      "element": "FROST",
+      "rarity": "LEGENDARY",
+      "levelReq": 68,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "BERSERKER",
+        "WARRIOR"
+      ],
+      "baseStats": {
+        "atk": 264,
+        "attackSpeed": 0.86,
+        "critRate": 0.11,
+        "poiseBonus": 38
+      },
+      "additionalStats": {
+        "str": 32,
+        "critDamage": 0.22,
+        "frostDamagePct": 0.18
+      },
+      "durabilityMax": 255,
+      "sellPriceGold": 1950,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_boreas_frostking",
+        "CRAFTING",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_frostbite_greataxe",
+      "descriptionVi": "Đại rìu chiến phủ băng tuyết từ ngai vàng của Boreas Frostking, có khả năng đóng băng mặt đất sau đòn bổ xuống."
+    },
+    {
+      "id": "wpn_ashwood_shortbow",
+      "name": "Ashwood Shortbow",
+      "category": "WEAPON",
+      "weaponType": "BOW",
+      "slot": "MAIN_HAND",
+      "element": "WIND",
+      "rarity": "UNCOMMON",
+      "levelReq": 1,
+      "mvp": true,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "ARCHER"
+      ],
+      "signatureForCharacterId": "chr_lyra_windrunner",
+      "baseStats": {
+        "atk": 25,
+        "attackSpeed": 1.12,
+        "critRate": 0.06
+      },
+      "additionalStats": {
+        "dex": 4,
+        "agi": 2
+      },
+      "durabilityMax": 120,
+      "sellPriceGold": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "STARTER:chr_lyra_windrunner",
+        "CRAFTING",
+        "NPC_SHOP:npc_smith_garrik"
+      ],
+      "iconKey": "ico_wpn_ashwood_shortbow",
+      "descriptionVi": "Cây cung gỗ tần bì đàn hồi cao của Lyra Galeweaver, bắn tên chuẩn xác và linh hoạt khi vừa chạy vừa thả diều quái vật."
+    },
+    {
+      "id": "wpn_galeweaver_longbow",
+      "name": "Galeweaver Longbow",
+      "category": "WEAPON",
+      "weaponType": "BOW",
+      "slot": "MAIN_HAND",
+      "element": "WIND",
+      "rarity": "RARE",
+      "levelReq": 22,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "ARCHER"
+      ],
+      "signatureForCharacterId": "chr_lyra_windrunner",
+      "baseStats": {
+        "atk": 82,
+        "attackSpeed": 1.15,
+        "critRate": 0.09
+      },
+      "additionalStats": {
+        "dex": 12,
+        "windDamagePct": 0.12
+      },
+      "durabilityMax": 160,
+      "sellPriceGold": 240,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_ironpeak_mountains",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_galeweaver_longbow",
+      "descriptionVi": "Trường cung chế tác từ gỗ thông đỉnh gió Ironpeak. Mỗi mũi tên bay đi đều mang theo luồng gió xoáy tăng tầm bắn."
+    },
+    {
+      "id": "wpn_prism_recurve_bow",
+      "name": "Prism Recurve Bow",
+      "category": "WEAPON",
+      "weaponType": "BOW",
+      "slot": "MAIN_HAND",
+      "element": "LIGHT",
+      "rarity": "EPIC",
+      "levelReq": 40,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "ARCHER"
+      ],
+      "baseStats": {
+        "atk": 144,
+        "attackSpeed": 1.16,
+        "critRate": 0.12
+      },
+      "additionalStats": {
+        "dex": 20,
+        "critDamage": 0.16,
+        "lightDamagePct": 0.14
+      },
+      "durabilityMax": 200,
+      "sellPriceGold": 680,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_prism_leviathan",
+        "CRAFTING",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_prism_recurve_bow",
+      "descriptionVi": "Cung phản xạ đính vảy lăng kính của Boss Prism Leviathan, khúc xạ ánh sáng thành những tia tên xuyên thấu."
+    },
+    {
+      "id": "wpn_tempest_horizon_bow",
+      "name": "Tempest Horizon Bow",
+      "category": "WEAPON",
+      "weaponType": "BOW",
+      "slot": "MAIN_HAND",
+      "element": "WIND",
+      "rarity": "LEGENDARY",
+      "levelReq": 75,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "ARCHER"
+      ],
+      "baseStats": {
+        "atk": 265,
+        "attackSpeed": 1.2,
+        "critRate": 0.16
+      },
+      "additionalStats": {
+        "dex": 34,
+        "agi": 20,
+        "windDamagePct": 0.2
+      },
+      "durabilityMax": 260,
+      "sellPriceGold": 2150,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_ember_wasteland",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_tempest_horizon_bow",
+      "descriptionVi": "Thần cung triệu gọi cuồng phong chân trời, tăng tốc độ nạp mũi tên và khuếch đại sát thương mưa tên diện rộng."
+    },
+    {
+      "id": "wpn_iron_arbalest",
+      "name": "Iron Arbalest",
+      "category": "WEAPON",
+      "weaponType": "CROSSBOW",
+      "slot": "MAIN_HAND",
+      "element": "NEUTRAL",
+      "rarity": "UNCOMMON",
+      "levelReq": 18,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "ARCHER"
+      ],
+      "baseStats": {
+        "atk": 72,
+        "attackSpeed": 0.9,
+        "critRate": 0.08
+      },
+      "additionalStats": {
+        "dex": 9,
+        "armorPenPct": 0.08
+      },
+      "durabilityMax": 150,
+      "sellPriceGold": 190,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "NPC_SHOP:npc_ironpeak_quartermaster"
+      ],
+      "iconKey": "ico_wpn_iron_arbalest",
+      "descriptionVi": "Nỏ cơ khí dây thép với lực bắn mạnh và khả năng xuyên giáp cao hơn cung thường, đánh đổi bằng tốc độ nạp tên chậm hơn."
+    },
+    {
+      "id": "wpn_relic_repeater_crossbow",
+      "name": "Relic Repeater Crossbow",
+      "category": "WEAPON",
+      "weaponType": "CROSSBOW",
+      "slot": "MAIN_HAND",
+      "element": "LIGHTNING",
+      "rarity": "EPIC",
+      "levelReq": 52,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "ARCHER"
+      ],
+      "baseStats": {
+        "atk": 184,
+        "attackSpeed": 1.05,
+        "critRate": 0.12
+      },
+      "additionalStats": {
+        "dex": 22,
+        "lightningDamagePct": 0.14,
+        "armorPenPct": 0.12
+      },
+      "durabilityMax": 215,
+      "sellPriceGold": 920,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_forgotten_ruins",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_relic_repeater_crossbow",
+      "descriptionVi": "Nỏ liên thanh cơ cổ chế tạo từ mảnh di tích Forgotten Ruins, bắn ra loạt tiễn tích điện với tốc độ ấn tượng."
+    },
+    {
+      "id": "wpn_astralforge_starbow",
+      "name": "Astralforge Starbow",
+      "category": "WEAPON",
+      "weaponType": "CROSSBOW",
+      "slot": "MAIN_HAND",
+      "element": "LIGHT",
+      "rarity": "MYTHIC",
+      "levelReq": 90,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "ARCHER"
+      ],
+      "signatureForCharacterId": "chr_aurelia_starbow",
+      "baseStats": {
+        "atk": 342,
+        "attackSpeed": 1.08,
+        "critRate": 0.18
+      },
+      "additionalStats": {
+        "dex": 42,
+        "critDamage": 0.28,
+        "lightDamagePct": 0.22,
+        "armorPenPct": 0.15
+      },
+      "durabilityMax": 300,
+      "sellPriceGold": 4200,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_malakor_abyss",
+        "BOSS_TOKEN_SHOP",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_astralforge_starbow",
+      "descriptionVi": "Thần nỏ ánh sao độc bản của Aurelia Astralforge. Phóng ra chùm tia tinh tú xuyên thủng lớp giáp dày nhất của Boss Raid."
+    },
+    {
+      "id": "wpn_oak_acolyte_staff",
+      "name": "Oak Acolyte Staff",
+      "category": "WEAPON",
+      "weaponType": "STAFF",
+      "slot": "MAIN_HAND",
+      "element": "LIGHT",
+      "rarity": "UNCOMMON",
+      "levelReq": 1,
+      "mvp": true,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "HEALER",
+        "MAGE",
+        "SUMMONER"
+      ],
+      "signatureForCharacterId": "chr_seraphina_dawn",
+      "baseStats": {
+        "atk": 20,
+        "int": 14,
+        "attackSpeed": 0.98
+      },
+      "additionalStats": {
+        "mp": 35,
+        "healingPowerPct": 0.08
+      },
+      "durabilityMax": 120,
+      "sellPriceGold": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "STARTER:chr_seraphina_dawn",
+        "CRAFTING",
+        "NPC_SHOP:npc_smith_garrik"
+      ],
+      "iconKey": "ico_wpn_oak_acolyte_staff",
+      "descriptionVi": "Quyền trượng gỗ sồi đính hạt hổ phách ấm áp của Seraphina Solis, tăng cường hiệu quả hồi máu và phép Ánh sáng đầu game."
+    },
+    {
+      "id": "wpn_crystal_conduit_staff",
+      "name": "Crystal Conduit Staff",
+      "category": "WEAPON",
+      "weaponType": "STAFF",
+      "slot": "MAIN_HAND",
+      "element": "WATER",
+      "rarity": "RARE",
+      "levelReq": 38,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "MAGE",
+        "HEALER",
+        "SUMMONER"
+      ],
+      "baseStats": {
+        "atk": 106,
+        "int": 52,
+        "attackSpeed": 1
+      },
+      "additionalStats": {
+        "mp": 110,
+        "waterDamagePct": 0.14,
+        "cooldownReduction": 0.06
+      },
+      "durabilityMax": 175,
+      "sellPriceGold": 540,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_crystal_caverns",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_crystal_conduit_staff",
+      "descriptionVi": "Pháp trượng dẫn truyền dòng mana tinh khiết chế tác từ tinh thể Crystal Caverns, giúp duy trì thi triển phép liên tục."
+    },
+    {
+      "id": "wpn_voltspire_stormstaff",
+      "name": "Voltspire Stormstaff",
+      "category": "WEAPON",
+      "weaponType": "STAFF",
+      "slot": "MAIN_HAND",
+      "element": "LIGHTNING",
+      "rarity": "LEGENDARY",
+      "levelReq": 60,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "MAGE",
+        "SUMMONER"
+      ],
+      "signatureForCharacterId": "chr_orin_stormcaller",
+      "baseStats": {
+        "atk": 182,
+        "int": 94,
+        "attackSpeed": 1.04,
+        "critRate": 0.12
+      },
+      "additionalStats": {
+        "mp": 180,
+        "lightningDamagePct": 0.2,
+        "cooldownReduction": 0.1
+      },
+      "durabilityMax": 245,
+      "sellPriceGold": 1680,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_forgotten_ruins",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_voltspire_stormstaff",
+      "descriptionVi": "Pháp trượng bão tố mang dấu ấn của đại pháp sư Orin Voltspire, tích tụ lôi điện và khuếch đại cực mạnh kỹ năng diện rộng."
+    },
+    {
+      "id": "wpn_celestial_dawn_staff",
+      "name": "Celestial Dawn Staff",
+      "category": "WEAPON",
+      "weaponType": "STAFF",
+      "slot": "MAIN_HAND",
+      "element": "LIGHT",
+      "rarity": "MYTHIC",
+      "levelReq": 88,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "HEALER",
+        "MAGE"
+      ],
+      "signatureForCharacterId": "chr_seraphina_dawn",
+      "baseStats": {
+        "atk": 274,
+        "int": 132,
+        "attackSpeed": 1.06,
+        "critRate": 0.14
+      },
+      "additionalStats": {
+        "mp": 260,
+        "lightDamagePct": 0.22,
+        "healingPowerPct": 0.25,
+        "cooldownReduction": 0.12
+      },
+      "durabilityMax": 300,
+      "sellPriceGold": 4100,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_malakor_abyss",
+        "BOSS_TOKEN_SHOP",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_celestial_dawn_staff",
+      "descriptionVi": "Thánh trượng bình minh tinh tú giúp thanh tẩy hiệu ứng xấu và gia tăng tối đa sức mạnh hồi phục lẫn cột ánh sáng phán xét."
+    },
+    {
+      "id": "wpn_starbloom_scepter",
+      "name": "Starbloom Scepter",
+      "category": "WEAPON",
+      "weaponType": "WAND",
+      "slot": "MAIN_HAND",
+      "element": "LIGHT",
+      "rarity": "LEGENDARY",
+      "levelReq": 15,
+      "mvp": true,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "MAGE",
+        "HEALER",
+        "SUMMONER"
+      ],
+      "baseStats": {
+        "atk": 56,
+        "int": 32,
+        "attackSpeed": 1.14,
+        "critRate": 0.08
+      },
+      "additionalStats": {
+        "mp": 75,
+        "lightDamagePct": 0.12,
+        "cooldownReduction": 0.06
+      },
+      "durabilityMax": 200,
+      "sellPriceGold": 520,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "GACHA:bnr_perm_arsenal",
+        "BOSS_TOKEN_SHOP",
+        "BOSS_DROP:boss_thornback_elder"
+      ],
+      "iconKey": "ico_wpn_starbloom_scepter",
+      "descriptionVi": "Đũa phép khảm bụi ánh sao rực rỡ, vũ khí Legendary tiêu biểu trong giai đoạn MVP. Có thể nhận từ Weapon Banner hoặc đổi bằng Boss Token."
+    },
+    {
+      "id": "wpn_glaciersong_wand",
+      "name": "Glaciersong Wand",
+      "category": "WEAPON",
+      "weaponType": "WAND",
+      "slot": "MAIN_HAND",
+      "element": "FROST",
+      "rarity": "EPIC",
+      "levelReq": 42,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "MAGE",
+        "SUMMONER"
+      ],
+      "signatureForCharacterId": "chr_freya_frostveil",
+      "baseStats": {
+        "atk": 124,
+        "int": 68,
+        "attackSpeed": 1.15,
+        "critRate": 0.1
+      },
+      "additionalStats": {
+        "mp": 135,
+        "frostDamagePct": 0.16,
+        "cooldownReduction": 0.08
+      },
+      "durabilityMax": 205,
+      "sellPriceGold": 760,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_prism_leviathan",
+        "CRAFTING",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_glaciersong_wand",
+      "descriptionVi": "Đũa phép tinh thể băng của Freya Glaciersong, tăng thời gian đóng băng và khống chế đám đông."
+    },
+    {
+      "id": "wpn_cinder_rune_wand",
+      "name": "Cinder Rune Wand",
+      "category": "WEAPON",
+      "weaponType": "WAND",
+      "slot": "MAIN_HAND",
+      "element": "FIRE",
+      "rarity": "EPIC",
+      "levelReq": 76,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "MAGE",
+        "SUMMONER"
+      ],
+      "baseStats": {
+        "atk": 218,
+        "int": 108,
+        "attackSpeed": 1.16,
+        "critRate": 0.13
+      },
+      "additionalStats": {
+        "mp": 195,
+        "fireDamagePct": 0.18,
+        "critDamage": 0.18
+      },
+      "durabilityMax": 240,
+      "sellPriceGold": 1820,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_ember_wasteland"
+      ],
+      "iconKey": "ico_wpn_cinder_rune_wand",
+      "descriptionVi": "Đũa phép khắc cổ ngữ tro tàn của vùng Ember Wasteland, đẩy tốc độ thi triển phép hỏa cầu lên mức tối đa."
+    },
+    {
+      "id": "wpn_umbramancer_void_wand",
+      "name": "Umbramancer Void Wand",
+      "category": "WEAPON",
+      "weaponType": "WAND",
+      "slot": "MAIN_HAND",
+      "element": "SHADOW",
+      "rarity": "MYTHIC",
+      "levelReq": 90,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "SUMMONER",
+        "MAGE"
+      ],
+      "signatureForCharacterId": "chr_nyx_voidcaller",
+      "baseStats": {
+        "atk": 282,
+        "int": 140,
+        "attackSpeed": 1.18,
+        "critRate": 0.16
+      },
+      "additionalStats": {
+        "mp": 280,
+        "shadowDamagePct": 0.24,
+        "summonDamagePct": 0.25,
+        "cooldownReduction": 0.12
+      },
+      "durabilityMax": 300,
+      "sellPriceGold": 4200,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_malakor_abyss",
+        "BOSS_TOKEN_SHOP",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_umbramancer_void_wand",
+      "descriptionVi": "Pháp khí hư không tối thượng của Nyx Umbramancer, gia tăng đáng kể sát thương vật triệu hồi và vùng bóng tối kéo dài."
+    },
+    {
+      "id": "wpn_thornbark_bulwark",
+      "name": "Thornbark Bulwark",
+      "category": "WEAPON",
+      "weaponType": "SHIELD",
+      "slot": "OFF_HAND",
+      "element": "EARTH",
+      "rarity": "RARE",
+      "levelReq": 10,
+      "mvp": true,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "KNIGHT",
+        "WARRIOR",
+        "HEALER"
+      ],
+      "baseStats": {
+        "atk": 16,
+        "def": 36,
+        "poiseBonus": 26
+      },
+      "additionalStats": {
+        "vit": 8,
+        "hp": 90,
+        "earthRes": 0.1
+      },
+      "durabilityMax": 170,
+      "sellPriceGold": 175,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "DUNGEON_DROP:dng_mossroot_hollow",
+        "BOSS_DROP:boss_thornback_elder",
+        "CRAFTING",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_thornbark_bulwark",
+      "descriptionVi": "Chiếc khiên gỗ bọc vỏ gai rêu cứng cáp thu được từ Mossroot Hollow. Mở rộng cửa sổ phản đòn (Parry) và giảm sát thương nhận vào."
+    },
+    {
+      "id": "wpn_stoneheart_aegis",
+      "name": "Stoneheart Aegis",
+      "category": "WEAPON",
+      "weaponType": "SHIELD",
+      "slot": "OFF_HAND",
+      "element": "EARTH",
+      "rarity": "EPIC",
+      "levelReq": 30,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "KNIGHT",
+        "WARRIOR"
+      ],
+      "signatureForCharacterId": "chr_bram_bastion",
+      "baseStats": {
+        "atk": 38,
+        "def": 88,
+        "poiseBonus": 44
+      },
+      "additionalStats": {
+        "vit": 20,
+        "hp": 240,
+        "blockMitigationPct": 0.12
+      },
+      "durabilityMax": 225,
+      "sellPriceGold": 620,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_ignis_forgelord",
+        "CRAFTING",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_stoneheart_aegis",
+      "descriptionVi": "Đại thuẫn đá granite khắc phù văn kiên cố của Bram Stoneheart, có thể đứng vững trước đòn quét nặng của Boss."
+    },
+    {
+      "id": "wpn_boreal_bastion_shield",
+      "name": "Boreal Bastion Shield",
+      "category": "WEAPON",
+      "weaponType": "SHIELD",
+      "slot": "OFF_HAND",
+      "element": "FROST",
+      "rarity": "LEGENDARY",
+      "levelReq": 70,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "KNIGHT",
+        "WARRIOR"
+      ],
+      "baseStats": {
+        "atk": 84,
+        "def": 182,
+        "poiseBonus": 65
+      },
+      "additionalStats": {
+        "vit": 36,
+        "hp": 520,
+        "frostRes": 0.22,
+        "blockMitigationPct": 0.16
+      },
+      "durabilityMax": 280,
+      "sellPriceGold": 2100,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_boreas_frostking",
+        "CRAFTING",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_boreal_bastion_shield",
+      "descriptionVi": "Tấm khiên băng hà không thể phá vỡ chế tạo từ tinh hoa băng giá, phản lại một phần khí lạnh làm chậm kẻ tấn công."
+    },
+    {
+      "id": "wpn_copper_knuckle_gauntlet",
+      "name": "Copper Knuckle Gauntlet",
+      "category": "WEAPON",
+      "weaponType": "GAUNTLET",
+      "slot": "MAIN_HAND",
+      "element": "NEUTRAL",
+      "rarity": "COMMON",
+      "levelReq": 3,
+      "mvp": true,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "WARRIOR",
+        "BERSERKER"
+      ],
+      "signatureForCharacterId": "chr_mira_ironfist",
+      "baseStats": {
+        "atk": 22,
+        "attackSpeed": 1.28,
+        "critRate": 0.06,
+        "poiseBonus": 10
+      },
+      "additionalStats": {
+        "str": 3,
+        "agi": 3
+      },
+      "durabilityMax": 115,
+      "sellPriceGold": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "QUEST",
+        "NPC_SHOP:npc_smith_garrik"
+      ],
+      "iconKey": "ico_wpn_copper_knuckle_gauntlet",
+      "descriptionVi": "Đôi găng chiến bọc đồng thô được Mira Crankbolt ưa dùng, tung ra loạt đấm liên hoàn dồn dập và ít tiêu hao Stamina."
+    },
+    {
+      "id": "wpn_obsidian_crusher_gauntlet",
+      "name": "Obsidian Crusher Gauntlet",
+      "category": "WEAPON",
+      "weaponType": "GAUNTLET",
+      "slot": "MAIN_HAND",
+      "element": "EARTH",
+      "rarity": "EPIC",
+      "levelReq": 48,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "WARRIOR",
+        "BERSERKER"
+      ],
+      "baseStats": {
+        "atk": 154,
+        "attackSpeed": 1.24,
+        "critRate": 0.1,
+        "poiseBonus": 30
+      },
+      "additionalStats": {
+        "str": 22,
+        "vit": 16,
+        "staggerDamagePct": 0.18
+      },
+      "durabilityMax": 210,
+      "sellPriceGold": 860,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_forgotten_ruins",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_obsidian_crusher_gauntlet",
+      "descriptionVi": "Đôi thiết thủ nạm đá hắc diện sắc nhọn, chuyên phá thanh cân bằng (Stagger) của các hộ vệ đá trong Forgotten Ruins."
+    },
+    {
+      "id": "wpn_embercore_titan_gauntlet",
+      "name": "Embercore Titan Gauntlet",
+      "category": "WEAPON",
+      "weaponType": "GAUNTLET",
+      "slot": "MAIN_HAND",
+      "element": "FIRE",
+      "rarity": "LEGENDARY",
+      "levelReq": 82,
+      "mvp": false,
+      "maxEnhancement": 10,
+      "allowedClasses": [
+        "WARRIOR",
+        "BERSERKER"
+      ],
+      "baseStats": {
+        "atk": 272,
+        "attackSpeed": 1.3,
+        "critRate": 0.14,
+        "poiseBonus": 38
+      },
+      "additionalStats": {
+        "str": 36,
+        "critDamage": 0.24,
+        "fireDamagePct": 0.18
+      },
+      "durabilityMax": 265,
+      "sellPriceGold": 2350,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_ember_wasteland",
+        "GACHA:bnr_perm_arsenal"
+      ],
+      "iconKey": "ico_wpn_embercore_titan_gauntlet",
+      "descriptionVi": "Thiết thủ dung nham chế tạo từ vảy rồng lửa, tạo ra sóng chấn động rực lửa mỗi khi kết thúc chuỗi combo cận chiến."
+    },
+    {
+      "id": "eqp_novice_straw_hood",
+      "name": "Novice Straw Hood",
+      "category": "EQUIPMENT",
+      "slot": "HELMET",
+      "setId": "set_greenhaven_novice",
+      "rarity": "COMMON",
+      "levelReq": 1,
+      "mvp": true,
+      "baseStats": {
+        "def": 6,
+        "hp": 20
+      },
+      "additionalStats": {
+        "vit": 1
+      },
+      "durabilityMax": 90,
+      "sellPriceGold": 15,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "STARTER",
+        "CRAFTING",
+        "NPC_SHOP:npc_village_tailor"
+      ],
+      "iconKey": "ico_eqp_novice_straw_hood",
+      "descriptionVi": "Mũ vải dệt đơn sơ của cư dân Greenhaven Village, che nắng mưa khi làm ruộng và giảm nhẹ sát thương va chạm."
+    },
+    {
+      "id": "eqp_novice_linen_tunic",
+      "name": "Novice Linen Tunic",
+      "category": "EQUIPMENT",
+      "slot": "CHEST_ARMOR",
+      "setId": "set_greenhaven_novice",
+      "rarity": "COMMON",
+      "levelReq": 1,
+      "mvp": true,
+      "baseStats": {
+        "def": 10,
+        "hp": 35
+      },
+      "additionalStats": {
+        "vit": 2
+      },
+      "durabilityMax": 100,
+      "sellPriceGold": 22,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "STARTER",
+        "CRAFTING",
+        "NPC_SHOP:npc_village_tailor"
+      ],
+      "iconKey": "ico_eqp_novice_linen_tunic",
+      "descriptionVi": "Áo vải gai may chắc chắn, là trang bị khởi đầu của mọi nhà thám hiểm rời ngôi nhà gỗ nhỏ tại Greenhaven."
+    },
+    {
+      "id": "eqp_novice_cloth_gloves",
+      "name": "Novice Cloth Gloves",
+      "category": "EQUIPMENT",
+      "slot": "GLOVES",
+      "setId": "set_greenhaven_novice",
+      "rarity": "COMMON",
+      "levelReq": 1,
+      "mvp": true,
+      "baseStats": {
+        "def": 5,
+        "stamina": 10
+      },
+      "additionalStats": {
+        "dex": 1
+      },
+      "durabilityMax": 90,
+      "sellPriceGold": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "STARTER",
+        "CRAFTING",
+        "NPC_SHOP:npc_village_tailor"
+      ],
+      "iconKey": "ico_eqp_novice_cloth_gloves",
+      "descriptionVi": "Găng tay vải lót da mỏng giúp cầm chắc cuốc, rìu và vũ khí mà không phồng tay trong những ngày đầu."
+    },
+    {
+      "id": "eqp_novice_traveler_boots",
+      "name": "Novice Traveler Boots",
+      "category": "EQUIPMENT",
+      "slot": "BOOTS",
+      "setId": "set_greenhaven_novice",
+      "rarity": "COMMON",
+      "levelReq": 1,
+      "mvp": true,
+      "baseStats": {
+        "def": 5,
+        "moveSpeedPct": 0.03
+      },
+      "additionalStats": {
+        "agi": 1
+      },
+      "durabilityMax": 90,
+      "sellPriceGold": 15,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "STARTER",
+        "CRAFTING",
+        "NPC_SHOP:npc_village_tailor"
+      ],
+      "iconKey": "ico_eqp_novice_traveler_boots",
+      "descriptionVi": "Đôi ủng da mềm bám đường đất tốt, giúp di chuyển linh hoạt qua các con đường mòn quanh làng."
+    },
+    {
+      "id": "eqp_hunter_tunic",
+      "name": "Whispering Hunter Tunic",
+      "category": "EQUIPMENT",
+      "slot": "CHEST_ARMOR",
+      "setId": null,
+      "rarity": "UNCOMMON",
+      "levelReq": 5,
+      "mvp": true,
+      "baseStats": {
+        "def": 18,
+        "hp": 65
+      },
+      "additionalStats": {
+        "agi": 4,
+        "dex": 3,
+        "critRate": 0.03
+      },
+      "durabilityMax": 130,
+      "sellPriceGold": 75,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "QUEST",
+        "REGION_DROP:reg_whispering_forest"
+      ],
+      "iconKey": "ico_eqp_hunter_tunic",
+      "descriptionVi": "Áo khoác da sói may thủ công của thợ săn Whispering Forest, nhẹ và giữ ấm tốt mà không cản trở động tác né đòn."
+    },
+    {
+      "id": "eqp_mossroot_helm",
+      "name": "Mossroot Guard Helm",
+      "category": "EQUIPMENT",
+      "slot": "HELMET",
+      "setId": "set_mossroot_guard",
+      "rarity": "RARE",
+      "levelReq": 10,
+      "mvp": true,
+      "baseStats": {
+        "def": 24,
+        "hp": 85
+      },
+      "additionalStats": {
+        "vit": 5,
+        "earthRes": 0.06
+      },
+      "durabilityMax": 160,
+      "sellPriceGold": 140,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "DUNGEON_DROP:dng_mossroot_hollow",
+        "BOSS_DROP:boss_thornback_elder",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_mossroot_helm",
+      "descriptionVi": "Mũ giáp sắt bọc vỏ cây cổ thụ vùng Mossroot, bảo vệ phần đầu khỏi bào tử độc và mảnh đá văng."
+    },
+    {
+      "id": "eqp_mossroot_breastplate",
+      "name": "Mossroot Guard Breastplate",
+      "category": "EQUIPMENT",
+      "slot": "CHEST_ARMOR",
+      "setId": "set_mossroot_guard",
+      "rarity": "RARE",
+      "levelReq": 10,
+      "mvp": true,
+      "baseStats": {
+        "def": 36,
+        "hp": 145
+      },
+      "additionalStats": {
+        "vit": 8,
+        "str": 4,
+        "poiseBonus": 10
+      },
+      "durabilityMax": 180,
+      "sellPriceGold": 195,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "DUNGEON_DROP:dng_mossroot_hollow",
+        "BOSS_DROP:boss_thornback_elder",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_mossroot_breastplate",
+      "descriptionVi": "Giáp ngực ghép từ vỏ cứng Crawler Chitin và thép rèn, biểu tượng của những chiến binh đã vượt qua Mossroot Hollow."
+    },
+    {
+      "id": "eqp_mossroot_gauntlets",
+      "name": "Mossroot Guard Gauntlets",
+      "category": "EQUIPMENT",
+      "slot": "GLOVES",
+      "setId": "set_mossroot_guard",
+      "rarity": "RARE",
+      "levelReq": 10,
+      "mvp": true,
+      "baseStats": {
+        "def": 20,
+        "atk": 8
+      },
+      "additionalStats": {
+        "str": 5,
+        "critRate": 0.03
+      },
+      "durabilityMax": 155,
+      "sellPriceGold": 135,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "DUNGEON_DROP:dng_mossroot_hollow",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_mossroot_gauntlets",
+      "descriptionVi": "Găng giáp bọc thép pha rêu cổ giúp giữ vững thế tay khi chặn đòn nặng và tăng nhẹ lực công kích."
+    },
+    {
+      "id": "eqp_mossroot_greaves",
+      "name": "Mossroot Guard Greaves",
+      "category": "EQUIPMENT",
+      "slot": "BOOTS",
+      "setId": "set_mossroot_guard",
+      "rarity": "RARE",
+      "levelReq": 10,
+      "mvp": true,
+      "baseStats": {
+        "def": 22,
+        "hp": 70,
+        "moveSpeedPct": 0.05
+      },
+      "additionalStats": {
+        "agi": 4,
+        "vit": 4
+      },
+      "durabilityMax": 155,
+      "sellPriceGold": 140,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "DUNGEON_DROP:dng_mossroot_hollow",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_mossroot_greaves",
+      "descriptionVi": "Ủng chiến đế thép chống trượt trên rễ cây ẩm ướt, cho phép né đòn nhanh trong đấu trường Boss."
+    },
+    {
+      "id": "eqp_copper_vitality_ring",
+      "name": "Copper Vitality Ring",
+      "category": "EQUIPMENT",
+      "slot": "RING",
+      "setId": null,
+      "rarity": "UNCOMMON",
+      "levelReq": 5,
+      "mvp": true,
+      "baseStats": {
+        "hp": 55,
+        "stamina": 15
+      },
+      "additionalStats": {
+        "vit": 4,
+        "luk": 2
+      },
+      "durabilityMax": 120,
+      "sellPriceGold": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "QUEST",
+        "NPC_SHOP:npc_smith_garrik"
+      ],
+      "iconKey": "ico_eqp_copper_vitality_ring",
+      "descriptionVi": "Nhẫn đồng tinh luyện khảm mảnh thạch anh xanh, tăng sinh lực và sức bền cho người mới khám phá rừng sâu."
+    },
+    {
+      "id": "eqp_direwolf_fang_pendant",
+      "name": "Direwolf Fang Pendant",
+      "category": "EQUIPMENT",
+      "slot": "NECKLACE",
+      "setId": null,
+      "rarity": "RARE",
+      "levelReq": 10,
+      "mvp": true,
+      "baseStats": {
+        "atk": 14,
+        "critRate": 0.05
+      },
+      "additionalStats": {
+        "str": 5,
+        "agi": 5
+      },
+      "durabilityMax": 150,
+      "sellPriceGold": 165,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "ELITE_DROP:mob_elite_alpha_direwolf",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_direwolf_fang_pendant",
+      "descriptionVi": "Dây chuyền chế tác từ răng nanh đầu đàn Alpha Direwolf, truyền bản năng săn mồi giúp tăng mạnh tỉ lệ chí mạng."
+    },
+    {
+      "id": "eqp_thornback_heart_charm",
+      "name": "Thornback Heart Charm",
+      "category": "EQUIPMENT",
+      "slot": "ACCESSORY",
+      "setId": null,
+      "rarity": "EPIC",
+      "levelReq": 15,
+      "mvp": true,
+      "baseStats": {
+        "hp": 130,
+        "def": 18,
+        "atk": 12
+      },
+      "additionalStats": {
+        "vit": 8,
+        "earthRes": 0.12,
+        "hpRegenPerSec": 3
+      },
+      "durabilityMax": 200,
+      "sellPriceGold": 350,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_thornback_elder",
+        "BOSS_TOKEN_SHOP"
+      ],
+      "iconKey": "ico_eqp_thornback_heart_charm",
+      "descriptionVi": "Bùa hộ mệnh chứa tinh hoa lõi gỗ của Boss Thornback Elder. Vật phẩm danh giá nhất của giai đoạn MVP giúp tăng sức bền vượt trội."
+    },
+    {
+      "id": "eqp_ironpeak_helm",
+      "name": "Ironpeak Forge Helm",
+      "category": "EQUIPMENT",
+      "slot": "HELMET",
+      "setId": "set_ironpeak_forge",
+      "rarity": "RARE",
+      "levelReq": 25,
+      "mvp": false,
+      "baseStats": {
+        "def": 46,
+        "hp": 165
+      },
+      "additionalStats": {
+        "str": 8,
+        "fireRes": 0.08
+      },
+      "durabilityMax": 185,
+      "sellPriceGold": 290,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_ironpeak_mountains"
+      ],
+      "iconKey": "ico_eqp_ironpeak_helm",
+      "descriptionVi": "Mũ trụ thép đúc nguyên khối của đội thợ rèn núi Ironpeak, chịu nhiệt cao và che chắn tốt mặt trước."
+    },
+    {
+      "id": "eqp_ironpeak_cuirass",
+      "name": "Ironpeak Forge Cuirass",
+      "category": "EQUIPMENT",
+      "slot": "CHEST_ARMOR",
+      "setId": "set_ironpeak_forge",
+      "rarity": "RARE",
+      "levelReq": 25,
+      "mvp": false,
+      "baseStats": {
+        "def": 68,
+        "hp": 260
+      },
+      "additionalStats": {
+        "vit": 12,
+        "str": 10,
+        "fireRes": 0.1
+      },
+      "durabilityMax": 200,
+      "sellPriceGold": 380,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_ignis_forgelord",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_ironpeak_cuirass",
+      "descriptionVi": "Áo giáp tấm thép dày tôi bằng than núi lửa, giảm thiểu đáng kể sát thương nổ và thiêu đốt."
+    },
+    {
+      "id": "eqp_ironpeak_bracers",
+      "name": "Ironpeak Forge Bracers",
+      "category": "EQUIPMENT",
+      "slot": "GLOVES",
+      "setId": "set_ironpeak_forge",
+      "rarity": "RARE",
+      "levelReq": 25,
+      "mvp": false,
+      "baseStats": {
+        "def": 38,
+        "atk": 18
+      },
+      "additionalStats": {
+        "str": 10,
+        "critDamage": 0.08
+      },
+      "durabilityMax": 180,
+      "sellPriceGold": 275,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_ironpeak_mountains"
+      ],
+      "iconKey": "ico_eqp_ironpeak_bracers",
+      "descriptionVi": "Bao tay thép chịu nhiệt có gờ bảo vệ cổ tay, gia tăng lực vung vũ khí cận chiến."
+    },
+    {
+      "id": "eqp_ironpeak_sabatons",
+      "name": "Ironpeak Forge Sabatons",
+      "category": "EQUIPMENT",
+      "slot": "BOOTS",
+      "setId": "set_ironpeak_forge",
+      "rarity": "RARE",
+      "levelReq": 25,
+      "mvp": false,
+      "baseStats": {
+        "def": 42,
+        "hp": 140,
+        "moveSpeedPct": 0.06
+      },
+      "additionalStats": {
+        "vit": 9,
+        "poiseBonus": 14
+      },
+      "durabilityMax": 180,
+      "sellPriceGold": 280,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_ironpeak_mountains"
+      ],
+      "iconKey": "ico_eqp_ironpeak_sabatons",
+      "descriptionVi": "Ủng bọc sắt đế đinh bám chặt vách đá cheo leo Ironpeak, hạn chế bị hất văng bởi kỹ năng diện rộng."
+    },
+    {
+      "id": "eqp_crystal_circlet",
+      "name": "Crystal Arcanist Circlet",
+      "category": "EQUIPMENT",
+      "slot": "HELMET",
+      "setId": "set_crystal_arcanist",
+      "rarity": "EPIC",
+      "levelReq": 40,
+      "mvp": false,
+      "baseStats": {
+        "def": 56,
+        "mp": 95
+      },
+      "additionalStats": {
+        "int": 18,
+        "cooldownReduction": 0.04
+      },
+      "durabilityMax": 210,
+      "sellPriceGold": 620,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_crystal_caverns"
+      ],
+      "iconKey": "ico_eqp_crystal_circlet",
+      "descriptionVi": "Vương miện pha lê cộng hưởng dòng chảy ma lực trong Crystal Caverns, giúp đầu óc minh mẫn khi thi triển phép."
+    },
+    {
+      "id": "eqp_crystal_vestment",
+      "name": "Crystal Arcanist Vestment",
+      "category": "EQUIPMENT",
+      "slot": "CHEST_ARMOR",
+      "setId": "set_crystal_arcanist",
+      "rarity": "EPIC",
+      "levelReq": 40,
+      "mvp": false,
+      "baseStats": {
+        "def": 82,
+        "hp": 310,
+        "mp": 140
+      },
+      "additionalStats": {
+        "int": 24,
+        "waterRes": 0.12,
+        "lightRes": 0.12
+      },
+      "durabilityMax": 225,
+      "sellPriceGold": 790,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_prism_leviathan",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_crystal_vestment",
+      "descriptionVi": "Áo choàng dệt từ tơ ánh trăng đính mảnh tinh thể, phản xạ một phần phép nguyên tố đánh tới."
+    },
+    {
+      "id": "eqp_crystal_handwraps",
+      "name": "Crystal Arcanist Handwraps",
+      "category": "EQUIPMENT",
+      "slot": "GLOVES",
+      "setId": "set_crystal_arcanist",
+      "rarity": "EPIC",
+      "levelReq": 40,
+      "mvp": false,
+      "baseStats": {
+        "def": 48,
+        "atk": 24
+      },
+      "additionalStats": {
+        "int": 16,
+        "critRate": 0.06
+      },
+      "durabilityMax": 205,
+      "sellPriceGold": 590,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_crystal_caverns"
+      ],
+      "iconKey": "ico_eqp_crystal_handwraps",
+      "descriptionVi": "Găng vải khảm bụi pha lê giúp tập trung nguyên tố nơi đầu ngón tay và rút ngắn thời gian niệm chú."
+    },
+    {
+      "id": "eqp_crystal_slippers",
+      "name": "Crystal Arcanist Slippers",
+      "category": "EQUIPMENT",
+      "slot": "BOOTS",
+      "setId": "set_crystal_arcanist",
+      "rarity": "EPIC",
+      "levelReq": 40,
+      "mvp": false,
+      "baseStats": {
+        "def": 52,
+        "mp": 80,
+        "moveSpeedPct": 0.08
+      },
+      "additionalStats": {
+        "int": 14,
+        "agi": 10
+      },
+      "durabilityMax": 205,
+      "sellPriceGold": 600,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_crystal_caverns"
+      ],
+      "iconKey": "ico_eqp_crystal_slippers",
+      "descriptionVi": "Đôi giày nhẹ thanh thoát giúp các pháp sư và trị liệu sư dễ dàng giữ vị trí an toàn ngoài vùng telegraph Boss."
+    },
+    {
+      "id": "eqp_frostbound_greathelm",
+      "name": "Frostbound Warden Greathelm",
+      "category": "EQUIPMENT",
+      "slot": "HELMET",
+      "setId": "set_frostbound_warden",
+      "rarity": "LEGENDARY",
+      "levelReq": 65,
+      "mvp": false,
+      "baseStats": {
+        "def": 108,
+        "hp": 420
+      },
+      "additionalStats": {
+        "vit": 24,
+        "frostRes": 0.14
+      },
+      "durabilityMax": 255,
+      "sellPriceGold": 1520,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_boreas_frostking",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_frostbound_greathelm",
+      "descriptionVi": "Mũ giáp sừng băng của cận vệ Frostbound Highlands, che chắn hoàn toàn tầm nhìn trong bão tuyết dày đặc."
+    },
+    {
+      "id": "eqp_frostbound_hauberk",
+      "name": "Frostbound Warden Hauberk",
+      "category": "EQUIPMENT",
+      "slot": "CHEST_ARMOR",
+      "setId": "set_frostbound_warden",
+      "rarity": "LEGENDARY",
+      "levelReq": 65,
+      "mvp": false,
+      "baseStats": {
+        "def": 156,
+        "hp": 640
+      },
+      "additionalStats": {
+        "vit": 32,
+        "str": 22,
+        "frostRes": 0.18
+      },
+      "durabilityMax": 275,
+      "sellPriceGold": 1980,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_boreas_frostking",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_frostbound_hauberk",
+      "descriptionVi": "Chiến giáp mythril lót lông thú phương Bắc, hấp thụ lực công kích cực mạnh mà vẫn giữ ấm cơ thể."
+    },
+    {
+      "id": "eqp_frostbound_vambraces",
+      "name": "Frostbound Warden Vambraces",
+      "category": "EQUIPMENT",
+      "slot": "GLOVES",
+      "setId": "set_frostbound_warden",
+      "rarity": "LEGENDARY",
+      "levelReq": 65,
+      "mvp": false,
+      "baseStats": {
+        "def": 92,
+        "atk": 46
+      },
+      "additionalStats": {
+        "str": 22,
+        "poiseBonus": 20
+      },
+      "durabilityMax": 250,
+      "sellPriceGold": 1460,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_frostbound_highlands"
+      ],
+      "iconKey": "ico_eqp_frostbound_vambraces",
+      "descriptionVi": "Hộ uyển hợp kim mythril lạnh giá, gia cường độ ổn định khi đỡ đòn bằng khiên hoặc vũ khí nặng."
+    },
+    {
+      "id": "eqp_frostbound_striders",
+      "name": "Frostbound Warden Striders",
+      "category": "EQUIPMENT",
+      "slot": "BOOTS",
+      "setId": "set_frostbound_warden",
+      "rarity": "LEGENDARY",
+      "levelReq": 65,
+      "mvp": false,
+      "baseStats": {
+        "def": 98,
+        "hp": 360,
+        "moveSpeedPct": 0.09
+      },
+      "additionalStats": {
+        "agi": 20,
+        "vit": 18
+      },
+      "durabilityMax": 250,
+      "sellPriceGold": 1480,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_frostbound_highlands"
+      ],
+      "iconKey": "ico_eqp_frostbound_striders",
+      "descriptionVi": "Ủng chiến đi tuyết giúp bước đi vững chãi trên mặt băng trơn trượt, không bị giảm tốc độ chạy nước rút."
+    },
+    {
+      "id": "eqp_abyssal_crown",
+      "name": "Abyssal Sovereign Crown",
+      "category": "EQUIPMENT",
+      "slot": "HELMET",
+      "setId": "set_abyssal_sovereign",
+      "rarity": "MYTHIC",
+      "levelReq": 88,
+      "mvp": false,
+      "baseStats": {
+        "def": 148,
+        "hp": 580,
+        "mp": 180
+      },
+      "additionalStats": {
+        "str": 28,
+        "int": 28,
+        "critRate": 0.08
+      },
+      "durabilityMax": 300,
+      "sellPriceGold": 3100,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_malakor_abyss",
+        "BOSS_TOKEN_SHOP",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_abyssal_crown",
+      "descriptionVi": "Vương miện hắc thạch nạm tinh thể hư không, dấu ấn quyền năng của những anh hùng vượt qua ngai vàng Abyssal."
+    },
+    {
+      "id": "eqp_abyssal_mantle",
+      "name": "Abyssal Sovereign Mantle",
+      "category": "EQUIPMENT",
+      "slot": "CHEST_ARMOR",
+      "setId": "set_abyssal_sovereign",
+      "rarity": "MYTHIC",
+      "levelReq": 88,
+      "mvp": false,
+      "baseStats": {
+        "def": 212,
+        "hp": 860,
+        "mp": 220
+      },
+      "additionalStats": {
+        "vit": 40,
+        "shadowRes": 0.2,
+        "allElemRes": 0.08
+      },
+      "durabilityMax": 320,
+      "sellPriceGold": 3800,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_malakor_abyss",
+        "BOSS_TOKEN_SHOP",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_abyssal_mantle",
+      "descriptionVi": "Áo giáp hoàng gia dệt từ sợi bóng tối và mảnh nhật thực, mang lại khả năng phòng thủ toàn diện ở endgame."
+    },
+    {
+      "id": "eqp_abyssal_claws",
+      "name": "Abyssal Sovereign Claws",
+      "category": "EQUIPMENT",
+      "slot": "GLOVES",
+      "setId": "set_abyssal_sovereign",
+      "rarity": "MYTHIC",
+      "levelReq": 88,
+      "mvp": false,
+      "baseStats": {
+        "def": 126,
+        "atk": 72
+      },
+      "additionalStats": {
+        "critRate": 0.07,
+        "critDamage": 0.16,
+        "attackSpeed": 0.08
+      },
+      "durabilityMax": 300,
+      "sellPriceGold": 3050,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_malakor_abyss",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_abyssal_claws",
+      "descriptionVi": "Găng giáp sắc bén tăng cường mạnh mẽ tốc độ đánh và lực xuyên phá chí mạng trong các trận raid kéo dài."
+    },
+    {
+      "id": "eqp_abyssal_treads",
+      "name": "Abyssal Sovereign Treads",
+      "category": "EQUIPMENT",
+      "slot": "BOOTS",
+      "setId": "set_abyssal_sovereign",
+      "rarity": "MYTHIC",
+      "levelReq": 88,
+      "mvp": false,
+      "baseStats": {
+        "def": 134,
+        "hp": 520,
+        "moveSpeedPct": 0.12
+      },
+      "additionalStats": {
+        "agi": 34,
+        "stamina": 45
+      },
+      "durabilityMax": 300,
+      "sellPriceGold": 3050,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_malakor_abyss",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_abyssal_treads",
+      "descriptionVi": "Chiến hài bước xuyên khoảng không, giảm nhẹ lượng Stamina tiêu hao khi né tránh (Dodge) liên tiếp."
+    },
+    {
+      "id": "eqp_forgelord_ember_ring",
+      "name": "Forgelord Ember Ring",
+      "category": "EQUIPMENT",
+      "slot": "RING",
+      "setId": null,
+      "rarity": "RARE",
+      "levelReq": 28,
+      "mvp": false,
+      "baseStats": {
+        "atk": 24,
+        "critRate": 0.05
+      },
+      "additionalStats": {
+        "str": 10,
+        "fireDamagePct": 0.1
+      },
+      "durabilityMax": 175,
+      "sellPriceGold": 340,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_ignis_forgelord",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_forgelord_ember_ring",
+      "descriptionVi": "Nhẫn thép nung đỏ giữ ngọn lửa nhỏ của Ignis Forgelord, khuếch đại sát thương cận chiến và nguyên tố Hỏa."
+    },
+    {
+      "id": "eqp_prism_resonance_ring",
+      "name": "Prism Resonance Ring",
+      "category": "EQUIPMENT",
+      "slot": "RING",
+      "setId": null,
+      "rarity": "EPIC",
+      "levelReq": 42,
+      "mvp": false,
+      "baseStats": {
+        "int": 26,
+        "mp": 110
+      },
+      "additionalStats": {
+        "elementalDamagePct": 0.1,
+        "cooldownReduction": 0.06
+      },
+      "durabilityMax": 205,
+      "sellPriceGold": 690,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_prism_leviathan",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_prism_resonance_ring",
+      "descriptionVi": "Chiếc nhẫn đính lăng kính đa sắc, tăng cường mọi phản ứng cộng hưởng nguyên tố giữa các thành viên trong party."
+    },
+    {
+      "id": "eqp_rimeheart_signet",
+      "name": "Rimeheart Signet",
+      "category": "EQUIPMENT",
+      "slot": "RING",
+      "setId": null,
+      "rarity": "LEGENDARY",
+      "levelReq": 68,
+      "mvp": false,
+      "baseStats": {
+        "atk": 48,
+        "def": 42,
+        "critRate": 0.08
+      },
+      "additionalStats": {
+        "frostDamagePct": 0.14,
+        "frostRes": 0.15
+      },
+      "durabilityMax": 255,
+      "sellPriceGold": 1680,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_boreas_frostking",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_rimeheart_signet",
+      "descriptionVi": "Nhẫn ấn triện bằng tinh thể băng vĩnh cửu, vừa tăng sức công phá nguyên tố Băng vừa củng cố phòng ngự."
+    },
+    {
+      "id": "eqp_eclipse_void_band",
+      "name": "Eclipse Void Band",
+      "category": "EQUIPMENT",
+      "slot": "RING",
+      "setId": null,
+      "rarity": "MYTHIC",
+      "levelReq": 90,
+      "mvp": false,
+      "baseStats": {
+        "atk": 76,
+        "int": 52,
+        "critRate": 0.11
+      },
+      "additionalStats": {
+        "critDamage": 0.2,
+        "shadowDamagePct": 0.16
+      },
+      "durabilityMax": 300,
+      "sellPriceGold": 3400,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_malakor_abyss",
+        "BOSS_TOKEN_SHOP"
+      ],
+      "iconKey": "ico_eqp_eclipse_void_band",
+      "descriptionVi": "Vòng nhẫn nhật thực thu gọn sức mạnh của Abyssal Kingdom, nâng tầm sát thương chí mạng cho mọi class."
+    },
+    {
+      "id": "eqp_ironpeak_forge_amulet",
+      "name": "Ironpeak Forge Amulet",
+      "category": "EQUIPMENT",
+      "slot": "NECKLACE",
+      "setId": null,
+      "rarity": "RARE",
+      "levelReq": 26,
+      "mvp": false,
+      "baseStats": {
+        "hp": 190,
+        "def": 30
+      },
+      "additionalStats": {
+        "vit": 12,
+        "fireRes": 0.12
+      },
+      "durabilityMax": 175,
+      "sellPriceGold": 310,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "QUEST",
+        "REGION_DROP:reg_ironpeak_mountains"
+      ],
+      "iconKey": "ico_eqp_ironpeak_forge_amulet",
+      "descriptionVi": "Mặt dây chuyền búa rèn bằng thép trắng, bảo vệ chiến binh khỏi hơi nóng hầm mỏ và tăng sinh lực tối đa."
+    },
+    {
+      "id": "eqp_ancient_relic_medallion",
+      "name": "Ancient Relic Medallion",
+      "category": "EQUIPMENT",
+      "slot": "NECKLACE",
+      "setId": null,
+      "rarity": "EPIC",
+      "levelReq": 52,
+      "mvp": false,
+      "baseStats": {
+        "atk": 40,
+        "int": 36,
+        "mp": 130
+      },
+      "additionalStats": {
+        "cooldownReduction": 0.08,
+        "luk": 14
+      },
+      "durabilityMax": 220,
+      "sellPriceGold": 940,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_forgotten_ruins"
+      ],
+      "iconKey": "ico_eqp_ancient_relic_medallion",
+      "descriptionVi": "Huy chương cổ đại khắc ngôn ngữ thất lạc từ Forgotten Ruins, tăng chỉ số may mắn LUK và tốc độ hồi chiêu."
+    },
+    {
+      "id": "eqp_dragonscale_talisman",
+      "name": "Dragonscale Talisman",
+      "category": "EQUIPMENT",
+      "slot": "NECKLACE",
+      "setId": null,
+      "rarity": "LEGENDARY",
+      "levelReq": 78,
+      "mvp": false,
+      "baseStats": {
+        "hp": 480,
+        "atk": 62,
+        "def": 56
+      },
+      "additionalStats": {
+        "str": 24,
+        "vit": 24,
+        "fireRes": 0.2
+      },
+      "durabilityMax": 270,
+      "sellPriceGold": 2150,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "REGION_DROP:reg_ember_wasteland"
+      ],
+      "iconKey": "ico_eqp_dragonscale_talisman",
+      "descriptionVi": "Bùa vảy rồng rực cháy vùng Ember Wasteland, cân bằng xuất sắc giữa tấn công, phòng thủ và kháng Hỏa."
+    },
+    {
+      "id": "eqp_abyssal_star_choker",
+      "name": "Abyssal Star Choker",
+      "category": "EQUIPMENT",
+      "slot": "NECKLACE",
+      "setId": null,
+      "rarity": "MYTHIC",
+      "levelReq": 88,
+      "mvp": false,
+      "baseStats": {
+        "atk": 78,
+        "int": 72,
+        "hp": 520
+      },
+      "additionalStats": {
+        "cooldownReduction": 0.1,
+        "allElemRes": 0.12,
+        "critDamage": 0.18
+      },
+      "durabilityMax": 300,
+      "sellPriceGold": 3500,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "BOSS_DROP:boss_malakor_abyss",
+        "BOSS_TOKEN_SHOP"
+      ],
+      "iconKey": "ico_eqp_abyssal_star_choker",
+      "descriptionVi": "Vòng cổ đính sao băng tắt lịm giữa vực sâu, gia tăng mạnh toàn diện sức mạnh phép lẫn vật lý."
+    },
+    {
+      "id": "eqp_miner_lantern_belt",
+      "name": "Miner Lantern Belt",
+      "category": "EQUIPMENT",
+      "slot": "ACCESSORY",
+      "setId": null,
+      "rarity": "UNCOMMON",
+      "levelReq": 20,
+      "mvp": false,
+      "baseStats": {
+        "stamina": 35,
+        "def": 16
+      },
+      "additionalStats": {
+        "gatherSpeedPct": 0.15,
+        "luk": 6
+      },
+      "durabilityMax": 150,
+      "sellPriceGold": 180,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "CRAFTING",
+        "QUEST",
+        "NPC_SHOP:npc_ironpeak_quartermaster"
+      ],
+      "iconKey": "ico_eqp_miner_lantern_belt",
+      "descriptionVi": "Thắt lưng gắn đèn dầu chiếu sáng hang sâu, tăng tốc độ khai thác quặng và tăng nhẹ cơ hội nhặt nguyên liệu hiếm."
+    },
+    {
+      "id": "eqp_ruin_seeker_compass",
+      "name": "Ruin Seeker Compass",
+      "category": "EQUIPMENT",
+      "slot": "ACCESSORY",
+      "setId": null,
+      "rarity": "EPIC",
+      "levelReq": 50,
+      "mvp": false,
+      "baseStats": {
+        "critRate": 0.08,
+        "moveSpeedPct": 0.08
+      },
+      "additionalStats": {
+        "luk": 18,
+        "dex": 16,
+        "rareDropBonusPct": 0.1
+      },
+      "durabilityMax": 215,
+      "sellPriceGold": 900,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "QUEST",
+        "REGION_DROP:reg_forgotten_ruins"
+      ],
+      "iconKey": "ico_eqp_ruin_seeker_compass",
+      "descriptionVi": "La bàn cổ chỉ lối tới kho báu ẩn trong Forgotten Ruins, gia tăng tốc độ di chuyển và tỉ lệ rớt nguyên liệu quý."
+    },
+    {
+      "id": "eqp_cinder_phoenix_feather",
+      "name": "Cinder Phoenix Feather",
+      "category": "EQUIPMENT",
+      "slot": "ACCESSORY",
+      "setId": null,
+      "rarity": "LEGENDARY",
+      "levelReq": 80,
+      "mvp": false,
+      "baseStats": {
+        "hp": 450,
+        "atk": 54,
+        "int": 46
+      },
+      "additionalStats": {
+        "fireDamagePct": 0.16,
+        "fireRes": 0.22,
+        "hpRegenPerSec": 8
+      },
+      "durabilityMax": 270,
+      "sellPriceGold": 2250,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "REGION_DROP:reg_ember_wasteland",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_eqp_cinder_phoenix_feather",
+      "descriptionVi": "Chiếc lông phượng hoàng tro tàn tỏa nhiệt dịu ấm, liên tục hồi phục sinh lực trong những trận chiến khốc liệt."
+    },
+    {
+      "id": "eqp_crown_of_forgotten_wilds",
+      "name": "Emblem of Forgotten Wilds",
+      "category": "EQUIPMENT",
+      "slot": "ACCESSORY",
+      "setId": null,
+      "rarity": "MYTHIC",
+      "levelReq": 90,
+      "mvp": false,
+      "baseStats": {
+        "hp": 620,
+        "mp": 240,
+        "atk": 82,
+        "def": 74
+      },
+      "additionalStats": {
+        "allStats": 18,
+        "bossDamagePct": 0.12,
+        "gatherSpeedPct": 0.2
+      },
+      "durabilityMax": 320,
+      "sellPriceGold": 4500,
+      "stackable": false,
+      "maxStack": 1,
+      "sources": [
+        "ACHIEVEMENT:ach_master_of_eldoria",
+        "BOSS_DROP:boss_malakor_abyss"
+      ],
+      "iconKey": "ico_eqp_crown_of_forgotten_wilds",
+      "descriptionVi": "Huy hiệu tối thượng tôn vinh nhà thám hiểm đã chinh phục trọn vẹn 8 vùng đất Eldoria — kết hợp hoàn hảo sức mạnh chiến đấu lẫn sản xuất."
+    },
+    {
+      "id": "mat_oak_wood",
+      "name": "Oak Wood",
+      "category": "MATERIAL",
+      "subCategory": "WOOD",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 3,
+      "sources": [
+        "GATHERING:reg_greenhaven_village",
+        "GATHERING:reg_whispering_forest"
+      ],
+      "iconKey": "ico_mat_oak_wood",
+      "descriptionVi": "Gỗ sồi phổ biến quanh Greenhaven Village, là vật liệu cốt lõi để xây dựng công trình cơ bản, đóng chuồng trại và làm cán vũ khí."
+    },
+    {
+      "id": "mat_pine_wood",
+      "name": "Pine Wood",
+      "category": "MATERIAL",
+      "subCategory": "WOOD",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 5,
+      "sources": [
+        "GATHERING:reg_whispering_forest",
+        "GATHERING:reg_ironpeak_mountains"
+      ],
+      "iconKey": "ico_mat_pine_wood",
+      "descriptionVi": "Gỗ thông thớ thẳng và dẻo dai thu hoạch sâu trong Whispering Forest, rất thích hợp chế tạo cung tên và nâng cấp nhà cửa."
+    },
+    {
+      "id": "mat_ancient_heartwood",
+      "name": "Ancient Heartwood",
+      "category": "MATERIAL",
+      "subCategory": "WOOD",
+      "rarity": "EPIC",
+      "mvp": false,
+      "tier": 4,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 48,
+      "sources": [
+        "GATHERING:reg_forgotten_ruins",
+        "GATHERING:reg_frostbound_highlands"
+      ],
+      "iconKey": "ico_mat_ancient_heartwood",
+      "descriptionVi": "Lõi gỗ ngàn năm cứng như thép và dẫn truyền ma lực tốt, dùng để rèn pháp trượng cao cấp và nâng cấp công trình cấp cuối."
+    },
+    {
+      "id": "mat_rough_stone",
+      "name": "Rough Stone",
+      "category": "MATERIAL",
+      "subCategory": "STONE",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 3,
+      "sources": [
+        "MINING:reg_greenhaven_village",
+        "MINING:reg_whispering_forest"
+      ],
+      "iconKey": "ico_mat_rough_stone",
+      "descriptionVi": "Đá tự nhiên dễ khai thác quanh rìa làng và bìa rừng, dùng để dựng móng công trình, lò nung và rèn dụng cụ cơ bản."
+    },
+    {
+      "id": "mat_granite_block",
+      "name": "Granite Block",
+      "category": "MATERIAL",
+      "subCategory": "STONE",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "tier": 2,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 12,
+      "sources": [
+        "MINING:reg_ironpeak_mountains",
+        "CRAFTING"
+      ],
+      "iconKey": "ico_mat_granite_block",
+      "descriptionVi": "Khối đá hoa cương đẽo gọt sắc nét từ vùng núi Ironpeak, cần thiết cho công trình cấp trung và tường thành Guild Hall."
+    },
+    {
+      "id": "mat_copper_ore",
+      "name": "Copper Ore",
+      "category": "MATERIAL",
+      "subCategory": "ORE",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 6,
+      "sources": [
+        "MINING:reg_greenhaven_village",
+        "MINING:reg_whispering_forest"
+      ],
+      "iconKey": "ico_mat_copper_ore",
+      "descriptionVi": "Quặng đồng thô chứa ánh cam đỏ, có thể nung thành Copper Ingot tại lò nung để rèn trang bị và cường hóa vũ khí +1 đến +3."
+    },
+    {
+      "id": "mat_iron_ore",
+      "name": "Iron Ore",
+      "category": "MATERIAL",
+      "subCategory": "ORE",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "tier": 2,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 12,
+      "sources": [
+        "MINING:reg_whispering_forest",
+        "MINING:reg_ironpeak_mountains",
+        "DUNGEON_DROP:dng_mossroot_hollow"
+      ],
+      "iconKey": "ico_mat_iron_ore",
+      "descriptionVi": "Quặng sắt chắc chắn khai thác từ hang đá Whispering Forest và Ironpeak, nguyên liệu chủ đạo cho lò rèn và cường hóa +4 đến +6."
+    },
+    {
+      "id": "mat_silver_ore",
+      "name": "Silver Ore",
+      "category": "MATERIAL",
+      "subCategory": "ORE",
+      "rarity": "RARE",
+      "mvp": false,
+      "tier": 3,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 26,
+      "sources": [
+        "MINING:reg_ironpeak_mountains",
+        "MINING:reg_crystal_caverns"
+      ],
+      "iconKey": "ico_mat_silver_ore",
+      "descriptionVi": "Quặng bạc sáng bóng giàu tính dẫn phép, dùng chế tác trang sức, vũ khí khắc chế sinh vật bóng tối và nâng cấp công trình."
+    },
+    {
+      "id": "mat_mythril_ore",
+      "name": "Mythril Ore",
+      "category": "MATERIAL",
+      "subCategory": "ORE",
+      "rarity": "EPIC",
+      "mvp": false,
+      "tier": 5,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 58,
+      "sources": [
+        "MINING:reg_frostbound_highlands",
+        "MINING:reg_forgotten_ruins"
+      ],
+      "iconKey": "ico_mat_mythril_ore",
+      "descriptionVi": "Quặng kim loại huyền thoại nhẹ hơn thép nhưng cứng gấp bội, chỉ tìm thấy ở các mạch quặng sâu Frostbound Highlands."
+    },
+    {
+      "id": "mat_obsidian_shard",
+      "name": "Obsidian Shard",
+      "category": "MATERIAL",
+      "subCategory": "MINERAL",
+      "rarity": "EPIC",
+      "mvp": false,
+      "tier": 5,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 64,
+      "sources": [
+        "MINING:reg_ember_wasteland",
+        "MINING:reg_forgotten_ruins"
+      ],
+      "iconKey": "ico_mat_obsidian_shard",
+      "descriptionVi": "Mảnh hắc diện thạch hình thành từ dung nham nguội nhanh, cạnh sắc như dao cạo, chuyên dùng rèn vũ khí xuyên giáp."
+    },
+    {
+      "id": "mat_void_crystal",
+      "name": "Void Crystal",
+      "category": "MATERIAL",
+      "subCategory": "MINERAL",
+      "rarity": "LEGENDARY",
+      "mvp": false,
+      "tier": 6,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 145,
+      "sources": [
+        "MINING:reg_abyssal_kingdom",
+        "BOSS_DROP:boss_malakor_abyss"
+      ],
+      "iconKey": "ico_mat_void_crystal",
+      "descriptionVi": "Tinh thể tím đen kết tụ từ khe nứt hư không tại Abyssal Kingdom, nguyên liệu tối thượng cho trang bị Mythic."
+    },
+    {
+      "id": "mat_copper_ingot",
+      "name": "Copper Ingot",
+      "category": "MATERIAL",
+      "subCategory": "REFINED",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 16,
+      "sources": [
+        "SMELTING",
+        "QUEST"
+      ],
+      "iconKey": "ico_mat_copper_ingot",
+      "descriptionVi": "Thỏi đồng tinh luyện từ Copper Ore và Coal trong lò nung. Dùng rèn trang bị cấp đầu và cường hóa vũ khí +1 đến +3."
+    },
+    {
+      "id": "mat_iron_ingot",
+      "name": "Iron Ingot",
+      "category": "MATERIAL",
+      "subCategory": "REFINED",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "tier": 2,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 32,
+      "sources": [
+        "SMELTING",
+        "QUEST"
+      ],
+      "iconKey": "ico_mat_iron_ingot",
+      "descriptionVi": "Thỏi sắt rèn chất lượng cao, là nền tảng để chế tạo vũ khí Whispering Forest, bộ giáp Mossroot và cường hóa +4 đến +6."
+    },
+    {
+      "id": "mat_steel_ingot",
+      "name": "Steel Ingot",
+      "category": "MATERIAL",
+      "subCategory": "REFINED",
+      "rarity": "RARE",
+      "mvp": true,
+      "tier": 3,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 65,
+      "sources": [
+        "SMELTING",
+        "REGION_DROP:reg_ironpeak_mountains"
+      ],
+      "iconKey": "ico_mat_steel_ingot",
+      "descriptionVi": "Thỏi thép tôi luyện ở nhiệt độ cao bằng Iron Ore và Coal, bắt buộc cho dòng trang bị Ironpeak Forge."
+    },
+    {
+      "id": "mat_mythril_ingot",
+      "name": "Mythril Ingot",
+      "category": "MATERIAL",
+      "subCategory": "REFINED",
+      "rarity": "EPIC",
+      "mvp": false,
+      "tier": 5,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 150,
+      "sources": [
+        "SMELTING"
+      ],
+      "iconKey": "ico_mat_mythril_ingot",
+      "descriptionVi": "Thỏi hợp kim mythril ánh bạc xanh thuần khiết, vật liệu chủ lực cho bộ giáp Frostbound Warden và vũ khí Legendary."
+    },
+    {
+      "id": "mat_starlight_dust",
+      "name": "Starlight Dust",
+      "category": "MATERIAL",
+      "subCategory": "ESSENCE",
+      "rarity": "RARE",
+      "mvp": true,
+      "tier": 3,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 45,
+      "sources": [
+        "DUNGEON_DROP:dng_mossroot_hollow",
+        "ELITE_DROP:mob_elite_alpha_direwolf",
+        "BOSS_DROP:boss_thornback_elder",
+        "DISMANTLING"
+      ],
+      "iconKey": "ico_mat_starlight_dust",
+      "descriptionVi": "Bụi ánh sao lấp lánh thu được từ hầm ngục, phân giải trang bị hoặc hạ gục tinh anh. Dùng làm chất xúc tác cường hóa vũ khí +7 đến +10."
+    },
+    {
+      "id": "mat_arcane_crystal",
+      "name": "Arcane Crystal",
+      "category": "MATERIAL",
+      "subCategory": "MINERAL",
+      "rarity": "RARE",
+      "mvp": false,
+      "tier": 3,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 42,
+      "sources": [
+        "MINING:reg_crystal_caverns",
+        "BOSS_DROP:boss_prism_leviathan"
+      ],
+      "iconKey": "ico_mat_arcane_crystal",
+      "descriptionVi": "Tinh thể ma lực xanh biếc phát sáng trong Crystal Caverns, dùng chế tạo đũa phép, pháp trượng và thuốc tăng cường ma pháp."
+    },
+    {
+      "id": "mat_coal",
+      "name": "Coal",
+      "category": "MATERIAL",
+      "subCategory": "MINERAL",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 5,
+      "sources": [
+        "MINING:reg_greenhaven_village",
+        "MINING:reg_whispering_forest",
+        "MINING:reg_ironpeak_mountains"
+      ],
+      "iconKey": "ico_mat_coal",
+      "descriptionVi": "Than đá cháy lâu và tỏa nhiệt cao, là nhiên liệu thiết yếu cho lò nung Furnace và bếp lửa công suất lớn."
+    },
+    {
+      "id": "mat_clay",
+      "name": "River Clay",
+      "category": "MATERIAL",
+      "subCategory": "STONE",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 4,
+      "sources": [
+        "GATHERING:reg_greenhaven_village",
+        "GATHERING:reg_whispering_forest"
+      ],
+      "iconKey": "ico_mat_clay",
+      "descriptionVi": "Đất sét dẻo khai thác ven suối Greenhaven, dùng làm gạch nung, ngói lợp, lò nung và chậu ươm cây."
+    },
+    {
+      "id": "mat_fiber_hemp",
+      "name": "Hemp Fiber",
+      "category": "MATERIAL",
+      "subCategory": "FIBER",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 3,
+      "sources": [
+        "GATHERING:reg_greenhaven_village",
+        "GATHERING:reg_whispering_forest"
+      ],
+      "iconKey": "ico_mat_fiber_hemp",
+      "descriptionVi": "Sợi gai dai thu từ bụi cỏ ven đường, dùng bện dây cung, may áo vải và chế tạo bao đựng nông sản."
+    },
+    {
+      "id": "mat_slime_gel",
+      "name": "Slime Gel",
+      "category": "MATERIAL",
+      "subCategory": "MONSTER_DROP",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 6,
+      "sources": [
+        "MOB_DROP:mob_moss_slime"
+      ],
+      "iconKey": "ico_mat_slime_gel",
+      "descriptionVi": "Chất dịch đàn hồi rơi từ Moss Slime, dùng chế tạo keo kết dính, phân bón cơ bản và lọ thuốc hồi máu nhỏ."
+    },
+    {
+      "id": "mat_goblin_tooth",
+      "name": "Goblin Tooth",
+      "category": "MATERIAL",
+      "subCategory": "MONSTER_DROP",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 8,
+      "sources": [
+        "MOB_DROP:mob_forest_goblin"
+      ],
+      "iconKey": "ico_mat_goblin_tooth",
+      "descriptionVi": "Răng nanh nhỏ sắc nhọn của Forest Goblin, dùng chế tạo mũi tên, bẫy săn và vật liệu cường hóa vũ khí cấp thấp."
+    },
+    {
+      "id": "mat_wolf_pelt",
+      "name": "Timber Wolf Pelt",
+      "category": "MATERIAL",
+      "subCategory": "MONSTER_DROP",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "tier": 2,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 14,
+      "sources": [
+        "MOB_DROP:mob_timber_wolf",
+        "ELITE_DROP:mob_elite_alpha_direwolf"
+      ],
+      "iconKey": "ico_mat_wolf_pelt",
+      "descriptionVi": "Bộ da lông dày và bền của Timber Wolf, là nguyên liệu chính may áo Whispering Hunter Tunic và lót giáp."
+    },
+    {
+      "id": "mat_spore_cap_dust",
+      "name": "Spore Cap Dust",
+      "category": "MATERIAL",
+      "subCategory": "MONSTER_DROP",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "tier": 2,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 15,
+      "sources": [
+        "MOB_DROP:mob_spore_cap"
+      ],
+      "iconKey": "ico_mat_spore_cap_dust",
+      "descriptionVi": "Bột bào tử phát quang thu từ nấm quái Spore Cap, có giá trị cao trong giả kim thuật và chế tạo thuốc hồi MP."
+    },
+    {
+      "id": "mat_boar_tusk",
+      "name": "Briar Boar Tusk",
+      "category": "MATERIAL",
+      "subCategory": "MONSTER_DROP",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "tier": 2,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 16,
+      "sources": [
+        "MOB_DROP:mob_briar_boar"
+      ],
+      "iconKey": "ico_mat_boar_tusk",
+      "descriptionVi": "Cặp ngà cong cứng cáp của Briar Boar, thường dùng gia cố đầu giáo, chuôi đại kiếm và cường hóa vũ khí +4 đến +6."
+    },
+    {
+      "id": "mat_bat_wing",
+      "name": "Hollow Bat Wing",
+      "category": "MATERIAL",
+      "subCategory": "MONSTER_DROP",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "tier": 2,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 16,
+      "sources": [
+        "MOB_DROP:mob_hollow_bat"
+      ],
+      "iconKey": "ico_mat_bat_wing",
+      "descriptionVi": "Màng cánh dai và siêu nhẹ của dơi hang Hollow Bat, dùng pha chế thuốc tăng Stamina và chế tạo áo choàng nhẹ."
+    },
+    {
+      "id": "mat_crawler_chitin",
+      "name": "Root Crawler Chitin",
+      "category": "MATERIAL",
+      "subCategory": "MONSTER_DROP",
+      "rarity": "RARE",
+      "mvp": true,
+      "tier": 2,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 24,
+      "sources": [
+        "MOB_DROP:mob_root_crawler",
+        "DUNGEON_DROP:dng_mossroot_hollow"
+      ],
+      "iconKey": "ico_mat_crawler_chitin",
+      "descriptionVi": "Lớp giáp vỏ cứng như sắt của Root Crawler trong Mossroot Hollow, nguyên liệu cốt lõi để rèn bộ giáp Mossroot Guard."
+    },
+    {
+      "id": "mat_shaman_totem",
+      "name": "Goblin Shaman Totem",
+      "category": "MATERIAL",
+      "subCategory": "MONSTER_DROP",
+      "rarity": "RARE",
+      "mvp": true,
+      "tier": 2,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 28,
+      "sources": [
+        "MOB_DROP:mob_goblin_shaman",
+        "DUNGEON_DROP:dng_mossroot_hollow"
+      ],
+      "iconKey": "ico_mat_shaman_totem",
+      "descriptionVi": "Bùa gỗ khắc ký tự nguyên sơ của Goblin Shaman, tỏa ma lực tự nhiên dùng chế tác đũa phép và lông vũ hồi sinh."
+    },
+    {
+      "id": "mat_alpha_fang",
+      "name": "Alpha Direwolf Fang",
+      "category": "MATERIAL",
+      "subCategory": "ELITE_DROP",
+      "rarity": "RARE",
+      "mvp": true,
+      "tier": 3,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 55,
+      "sources": [
+        "ELITE_DROP:mob_elite_alpha_direwolf"
+      ],
+      "iconKey": "ico_mat_alpha_fang",
+      "descriptionVi": "Răng nanh lớn sắc lạnh của tinh anh Alpha Direwolf. Nguyên liệu quan trọng để rèn dao găm Wolf Fang và cường hóa +7 đến +8."
+    },
+    {
+      "id": "mat_thornback_heart",
+      "name": "Thornback Elder Heart",
+      "category": "MATERIAL",
+      "subCategory": "BOSS_DROP",
+      "rarity": "EPIC",
+      "mvp": true,
+      "tier": 3,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 140,
+      "sources": [
+        "BOSS_DROP:boss_thornback_elder"
+      ],
+      "iconKey": "ico_mat_thornback_heart",
+      "descriptionVi": "Trái tim cổ thụ đập nhịp sinh mệnh thu từ Boss Thornback Elder. Bắt buộc để rèn vũ khí Boss MVP và cường hóa chạm mốc +9 đến +10."
+    },
+    {
+      "id": "mat_cinder_core",
+      "name": "Forgelord Cinder Core",
+      "category": "MATERIAL",
+      "subCategory": "BOSS_DROP",
+      "rarity": "EPIC",
+      "mvp": false,
+      "tier": 4,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 180,
+      "sources": [
+        "BOSS_DROP:boss_ignis_forgelord"
+      ],
+      "iconKey": "ico_mat_cinder_core",
+      "descriptionVi": "Hạt nhân hỏa diệm không bao giờ tắt rơi từ Boss Ignis Forgelord, dùng chế tác vũ khí Hỏa và bộ giáp Ironpeak."
+    },
+    {
+      "id": "mat_prism_scale",
+      "name": "Prism Leviathan Scale",
+      "category": "MATERIAL",
+      "subCategory": "BOSS_DROP",
+      "rarity": "EPIC",
+      "mvp": false,
+      "tier": 4,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 220,
+      "sources": [
+        "BOSS_DROP:boss_prism_leviathan"
+      ],
+      "iconKey": "ico_mat_prism_scale",
+      "descriptionVi": "Vảy lăng kính phản quang ngũ sắc của Boss Prism Leviathan, là nguyên liệu chế tạo bộ giáp Crystal Arcanist."
+    },
+    {
+      "id": "mat_rime_essence",
+      "name": "Boreal Rime Essence",
+      "category": "MATERIAL",
+      "subCategory": "BOSS_DROP",
+      "rarity": "LEGENDARY",
+      "mvp": false,
+      "tier": 5,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 340,
+      "sources": [
+        "BOSS_DROP:boss_boreas_frostking"
+      ],
+      "iconKey": "ico_mat_rime_essence",
+      "descriptionVi": "Tinh hoa băng giá thuần khiết kết tinh từ vương miện Boss Boreas Frostking, chuyên dùng chế tạo trang bị Legendary hệ Băng."
+    },
+    {
+      "id": "mat_eclipse_shard",
+      "name": "Abyssal Eclipse Shard",
+      "category": "MATERIAL",
+      "subCategory": "BOSS_DROP",
+      "rarity": "MYTHIC",
+      "mvp": false,
+      "tier": 6,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 580,
+      "sources": [
+        "BOSS_DROP:boss_malakor_abyss"
+      ],
+      "iconKey": "ico_mat_eclipse_shard",
+      "descriptionVi": "Mảnh vỡ nhật thực huyền thoại rơi từ Boss cuối Malakor. Nguyên liệu đỉnh cao để chế tác trang bị Mythic Abyssal Sovereign."
+    },
+    {
+      "id": "mat_monster_bone",
+      "name": "Sturdy Monster Bone",
+      "category": "MATERIAL",
+      "subCategory": "MONSTER_DROP",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 7,
+      "sources": [
+        "MOB_DROP:mob_timber_wolf",
+        "MOB_DROP:mob_briar_boar",
+        "REGION_DROP:reg_whispering_forest"
+      ],
+      "iconKey": "ico_mat_monster_bone",
+      "descriptionVi": "Xương quái vật cứng chắc dùng làm cán công cụ, nghiền bột xương làm phân bón giàu dinh dưỡng hoặc rèn mũi tên."
+    },
+    {
+      "id": "mat_shadow_thread",
+      "name": "Shadowsilk Thread",
+      "category": "MATERIAL",
+      "subCategory": "MONSTER_DROP",
+      "rarity": "EPIC",
+      "mvp": false,
+      "tier": 5,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 72,
+      "sources": [
+        "REGION_DROP:reg_forgotten_ruins",
+        "REGION_DROP:reg_abyssal_kingdom"
+      ],
+      "iconKey": "ico_mat_shadow_thread",
+      "descriptionVi": "Sợi chỉ dệt từ bóng tối đặc sánh, siêu bền và hấp thụ ánh sáng, dùng may áo giáp sát thủ và pháp sư cấp cao."
+    },
+    {
+      "id": "mat_dragon_scale",
+      "name": "Ember Dragon Scale",
+      "category": "MATERIAL",
+      "subCategory": "ELITE_DROP",
+      "rarity": "LEGENDARY",
+      "mvp": false,
+      "tier": 6,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 195,
+      "sources": [
+        "REGION_DROP:reg_ember_wasteland"
+      ],
+      "iconKey": "ico_mat_dragon_scale",
+      "descriptionVi": "Tấm vảy rồng rực đỏ chống chịu được dung nham, rơi từ các á long tinh anh tại Ember Wasteland."
+    },
+    {
+      "id": "mat_ancient_relic_frag",
+      "name": "Ancient Relic Fragment",
+      "category": "MATERIAL",
+      "subCategory": "MONSTER_DROP",
+      "rarity": "RARE",
+      "mvp": false,
+      "tier": 4,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 52,
+      "sources": [
+        "REGION_DROP:reg_forgotten_ruins"
+      ],
+      "iconKey": "ico_mat_ancient_relic_frag",
+      "descriptionVi": "Mảnh cơ khí cổ ngữ rơi từ vệ binh đá tại Forgotten Ruins, dùng chế tạo nỏ liên thanh và trang sức khám phá."
+    },
+    {
+      "id": "mat_sunwheat_grain",
+      "name": "Sunwheat Grain",
+      "category": "MATERIAL",
+      "subCategory": "CROP",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 10,
+      "sources": [
+        "FARMING:crp_sunwheat"
+      ],
+      "iconKey": "ico_mat_sunwheat_grain",
+      "descriptionVi": "Hạt lúa mì vàng ươm thu hoạch từ nông trại, là nguyên liệu làm bánh, nấu súp và thức ăn cho gà, bò."
+    },
+    {
+      "id": "mat_wild_berry",
+      "name": "Wild Berry",
+      "category": "MATERIAL",
+      "subCategory": "CROP",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 8,
+      "sources": [
+        "FARMING:crp_berry_bush",
+        "GATHERING:reg_greenhaven_village",
+        "GATHERING:reg_whispering_forest"
+      ],
+      "iconKey": "ico_mat_wild_berry",
+      "descriptionVi": "Quả mọng rừng ngọt thanh vừa có thể ăn sống chống đói nhẹ vừa dùng nướng bánh Berry Pie tăng tốc độ chạy."
+    },
+    {
+      "id": "mat_moon_herb_leaf",
+      "name": "Moon Herb Leaf",
+      "category": "MATERIAL",
+      "subCategory": "CROP",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "tier": 2,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 18,
+      "sources": [
+        "FARMING:crp_moon_herb",
+        "GATHERING:reg_whispering_forest"
+      ],
+      "iconKey": "ico_mat_moon_herb_leaf",
+      "descriptionVi": "Lá thảo mộc phát sáng dịu nhẹ dưới ánh trăng, là thành phần chính để pha thuốc hồi HP/MP và nấu súp thảo dược."
+    },
+    {
+      "id": "mat_golden_carrot",
+      "name": "Golden Carrot",
+      "category": "MATERIAL",
+      "subCategory": "CROP",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "tier": 2,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 22,
+      "sources": [
+        "FARMING:crp_golden_carrot"
+      ],
+      "iconKey": "ico_mat_golden_carrot",
+      "descriptionVi": "Củ cà rốt ánh vàng giòn ngọt giàu dinh dưỡng, dùng chế biến món Golden Roast tăng ATK/DEF trước khi đánh Boss."
+    },
+    {
+      "id": "mat_ember_pepper",
+      "name": "Ember Pepper",
+      "category": "MATERIAL",
+      "subCategory": "CROP",
+      "rarity": "RARE",
+      "mvp": true,
+      "tier": 3,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 35,
+      "sources": [
+        "FARMING:crp_ember_pepper"
+      ],
+      "iconKey": "ico_mat_ember_pepper",
+      "descriptionVi": "Trái ớt đỏ cay nồng tỏa hơi ấm, nguyên liệu chủ lực nấu Ember Curry giúp tăng tỉ lệ chí mạng và sát thương Hỏa."
+    },
+    {
+      "id": "mat_frost_turnip",
+      "name": "Frost Turnip",
+      "category": "MATERIAL",
+      "subCategory": "CROP",
+      "rarity": "RARE",
+      "mvp": false,
+      "tier": 3,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 38,
+      "sources": [
+        "FARMING:crp_frost_turnip"
+      ],
+      "iconKey": "ico_mat_frost_turnip",
+      "descriptionVi": "Củ cải mùa đông mát lạnh chỉ sinh trưởng tốt vào vụ Đông, dùng nấu các món kháng nhiệt và hồi MP mạnh."
+    },
+    {
+      "id": "mat_starlight_melon",
+      "name": "Starlight Melon",
+      "category": "MATERIAL",
+      "subCategory": "CROP",
+      "rarity": "EPIC",
+      "mvp": false,
+      "tier": 5,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 95,
+      "sources": [
+        "FARMING:crp_starlight_melon"
+      ],
+      "iconKey": "ico_mat_starlight_melon",
+      "descriptionVi": "Quả dưa ánh sao hiếm có tỏa ánh bạc ngọt lịm, dùng chế tạo đại tiệc tổ đội tăng toàn diện chỉ số trong Boss Raid."
+    },
+    {
+      "id": "mat_fresh_egg",
+      "name": "Fresh Egg",
+      "category": "MATERIAL",
+      "subCategory": "ANIMAL_PRODUCE",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 12,
+      "sources": [
+        "HUSBANDRY:anm_meadow_chicken"
+      ],
+      "iconKey": "ico_mat_fresh_egg",
+      "descriptionVi": "Trứng gà tươi thu hoạch mỗi ngày từ Chicken Coop. Nguyên liệu thiết yếu cho các công thức nướng bánh và món ăn buff chiến đấu."
+    },
+    {
+      "id": "mat_fresh_milk",
+      "name": "Fresh Milk",
+      "category": "MATERIAL",
+      "subCategory": "ANIMAL_PRODUCE",
+      "rarity": "COMMON",
+      "mvp": true,
+      "tier": 1,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 18,
+      "sources": [
+        "HUSBANDRY:anm_clover_cow"
+      ],
+      "iconKey": "ico_mat_fresh_milk",
+      "descriptionVi": "Sữa bò thơm béo vắt từ Clover Cow hạnh phúc, dùng nấu súp bổ dưỡng, làm phô mai và pha chế thuốc hồi phục."
+    },
+    {
+      "id": "mat_soft_wool",
+      "name": "Soft Cloud Wool",
+      "category": "MATERIAL",
+      "subCategory": "ANIMAL_PRODUCE",
+      "rarity": "UNCOMMON",
+      "mvp": false,
+      "tier": 2,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 24,
+      "sources": [
+        "HUSBANDRY:anm_cloud_sheep"
+      ],
+      "iconKey": "ico_mat_soft_wool",
+      "descriptionVi": "Len cừu trắng mịn xốp như mây, dùng dệt áo choàng kháng lạnh khi tiến vào Frostbound Highlands."
+    },
+    {
+      "id": "mat_truffle_mushroom",
+      "name": "Forest Truffle",
+      "category": "MATERIAL",
+      "subCategory": "ANIMAL_PRODUCE",
+      "rarity": "RARE",
+      "mvp": false,
+      "tier": 3,
+      "stackable": true,
+      "maxStack": 999,
+      "sellPriceGold": 58,
+      "sources": [
+        "HUSBANDRY:anm_bristle_pig"
+      ],
+      "iconKey": "ico_mat_truffle_mushroom",
+      "descriptionVi": "Nấm cục hương thơm nồng nàn do Truffle Pig đào tìm trong vườn, nguyên liệu thượng hạng cho món ăn tăng mạnh ATK."
+    },
+    {
+      "id": "mat_moon_silk",
+      "name": "Lunar Moth Silk",
+      "category": "MATERIAL",
+      "subCategory": "ANIMAL_PRODUCE",
+      "rarity": "EPIC",
+      "mvp": false,
+      "tier": 4,
+      "stackable": true,
+      "maxStack": 99,
+      "sellPriceGold": 88,
+      "sources": [
+        "HUSBANDRY:anm_lunar_moth_hare"
+      ],
+      "iconKey": "ico_mat_moon_silk",
+      "descriptionVi": "Tơ ánh trăng óng ánh nhả ra từ sinh vật kỳ ảo Lunar Moth, dùng dệt áo giáp pháp sư Crystal Arcanist và trang phục quý."
+    },
+    {
+      "id": "csm_hp_potion_small",
+      "name": "Small Healing Potion",
+      "category": "CONSUMABLE",
+      "subCategory": "POTION",
+      "rarity": "COMMON",
+      "mvp": true,
+      "hungerRestore": 0,
+      "staminaRestore": 0,
+      "hpRestore": 120,
+      "mpRestore": 0,
+      "buffEffect": null,
+      "durationSeconds": 0,
+      "cooldownSeconds": 8,
+      "stackable": true,
+      "maxStack": 99,
+      "buyPriceGold": 25,
+      "sellPriceGold": 10,
+      "sources": [
+        "CRAFTING",
+        "NPC_SHOP:npc_village_herbalist",
+        "MOB_DROP:mob_forest_goblin"
+      ],
+      "iconKey": "ico_csm_hp_potion_small",
+      "descriptionVi": "Bình dược đỏ cơ bản chưng cất từ Slime Gel và Moon Herb, phục hồi tức thì 120 HP trong chiến đấu."
+    },
+    {
+      "id": "csm_hp_potion_med",
+      "name": "Medium Healing Potion",
+      "category": "CONSUMABLE",
+      "subCategory": "POTION",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "hungerRestore": 0,
+      "staminaRestore": 0,
+      "hpRestore": 350,
+      "mpRestore": 0,
+      "buffEffect": {
+        "stat": "hpRegenPerSec",
+        "value": 6,
+        "labelVi": "Hồi thêm +6 HP/giây trong 10 giây"
+      },
+      "durationSeconds": 10,
+      "cooldownSeconds": 10,
+      "stackable": true,
+      "maxStack": 99,
+      "buyPriceGold": 75,
+      "sellPriceGold": 30,
+      "sources": [
+        "CRAFTING",
+        "NPC_SHOP:npc_village_herbalist",
+        "DUNGEON_DROP:dng_mossroot_hollow"
+      ],
+      "iconKey": "ico_csm_hp_potion_med",
+      "descriptionVi": "Bình thuốc trị thương cô đặc phục hồi ngay 350 HP kèm hiệu ứng tái tạo nhẹ, phù hợp cho các trận đánh Boss tổ đội."
+    },
+    {
+      "id": "csm_mp_potion_small",
+      "name": "Small Mana Potion",
+      "category": "CONSUMABLE",
+      "subCategory": "POTION",
+      "rarity": "COMMON",
+      "mvp": true,
+      "hungerRestore": 0,
+      "staminaRestore": 0,
+      "hpRestore": 0,
+      "mpRestore": 80,
+      "buffEffect": null,
+      "durationSeconds": 0,
+      "cooldownSeconds": 8,
+      "stackable": true,
+      "maxStack": 99,
+      "buyPriceGold": 28,
+      "sellPriceGold": 11,
+      "sources": [
+        "CRAFTING",
+        "NPC_SHOP:npc_village_herbalist",
+        "MOB_DROP:mob_spore_cap"
+      ],
+      "iconKey": "ico_csm_mp_potion_small",
+      "descriptionVi": "Bình tinh chất xanh lam điều chế từ Spore Cap Dust, phục hồi ngay 80 MP để duy trì nhịp tung kỹ năng."
+    },
+    {
+      "id": "csm_herb_stew",
+      "name": "Greenhaven Herb Stew",
+      "category": "CONSUMABLE",
+      "subCategory": "FOOD",
+      "rarity": "COMMON",
+      "mvp": true,
+      "hungerRestore": 45,
+      "staminaRestore": 35,
+      "hpRestore": 80,
+      "mpRestore": 20,
+      "buffEffect": {
+        "stat": "hpRegenPerSec",
+        "value": 4,
+        "labelVi": "Tái tạo +4 HP/giây"
+      },
+      "durationSeconds": 300,
+      "cooldownSeconds": 5,
+      "stackable": true,
+      "maxStack": 99,
+      "buyPriceGold": 45,
+      "sellPriceGold": 22,
+      "sources": [
+        "COOKING",
+        "QUEST"
+      ],
+      "iconKey": "ico_csm_herb_stew",
+      "descriptionVi": "Nồi súp thảo mộc nóng hổi nấu từ Sunwheat Grain và Moon Herb Leaf, giúp no bụng, hồi Stamina và tái tạo sinh lực liên tục."
+    },
+    {
+      "id": "csm_berry_pie",
+      "name": "Wild Berry Pie",
+      "category": "CONSUMABLE",
+      "subCategory": "FOOD",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "hungerRestore": 40,
+      "staminaRestore": 50,
+      "hpRestore": 50,
+      "mpRestore": 40,
+      "buffEffect": {
+        "stat": "moveSpeedPct",
+        "value": 0.08,
+        "labelVi": "Tăng tốc độ di chuyển +8%"
+      },
+      "durationSeconds": 300,
+      "cooldownSeconds": 5,
+      "stackable": true,
+      "maxStack": 99,
+      "buyPriceGold": 65,
+      "sellPriceGold": 32,
+      "sources": [
+        "COOKING"
+      ],
+      "iconKey": "ico_csm_berry_pie",
+      "descriptionVi": "Bánh nướng quả mọng thơm lừng từ trứng gà, sữa tươi và lúa mì. Tăng tốc độ chạy khi thu hoạch, khám phá bản đồ và né đòn."
+    },
+    {
+      "id": "csm_golden_roast",
+      "name": "Golden Carrot Roast",
+      "category": "CONSUMABLE",
+      "subCategory": "FOOD",
+      "rarity": "RARE",
+      "mvp": true,
+      "hungerRestore": 75,
+      "staminaRestore": 60,
+      "hpRestore": 150,
+      "mpRestore": 30,
+      "buffEffect": {
+        "stat": "atkPct",
+        "value": 0.1,
+        "secondaryStat": "defPct",
+        "secondaryValue": 0.08,
+        "labelVi": "Tăng +10% ATK và +8% DEF"
+      },
+      "durationSeconds": 600,
+      "cooldownSeconds": 5,
+      "stackable": true,
+      "maxStack": 99,
+      "buyPriceGold": null,
+      "sellPriceGold": 62,
+      "sources": [
+        "COOKING"
+      ],
+      "iconKey": "ico_csm_golden_roast",
+      "descriptionVi": "Món hầm cà rốt vàng thượng hạng kết hợp nông sản và sữa tươi, cung cấp buff ATK và DEF mạnh mẽ suốt 10 phút đi dungeon."
+    },
+    {
+      "id": "csm_ember_curry",
+      "name": "Ember Pepper Curry",
+      "category": "CONSUMABLE",
+      "subCategory": "FOOD",
+      "rarity": "RARE",
+      "mvp": true,
+      "hungerRestore": 70,
+      "staminaRestore": 55,
+      "hpRestore": 120,
+      "mpRestore": 50,
+      "buffEffect": {
+        "stat": "critRate",
+        "value": 0.08,
+        "secondaryStat": "fireDamagePct",
+        "secondaryValue": 0.1,
+        "labelVi": "Tăng +8% tỉ lệ chí mạng và +10% sát thương Hỏa"
+      },
+      "durationSeconds": 600,
+      "cooldownSeconds": 5,
+      "stackable": true,
+      "maxStack": 99,
+      "buyPriceGold": null,
+      "sellPriceGold": 78,
+      "sources": [
+        "COOKING"
+      ],
+      "iconKey": "ico_csm_ember_curry",
+      "descriptionVi": "Cà ri ớt lửa cay nồng giúp bùng nổ sức mạnh chí mạng và sát thương Hỏa, cực kỳ hiệu quả khi khắc chế Boss thực vật như Thornback Elder."
+    },
+    {
+      "id": "csm_stamina_tonic",
+      "name": "Swiftwing Stamina Tonic",
+      "category": "CONSUMABLE",
+      "subCategory": "POTION",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "hungerRestore": 5,
+      "staminaRestore": 90,
+      "hpRestore": 0,
+      "mpRestore": 20,
+      "buffEffect": {
+        "stat": "staminaRegenPct",
+        "value": 0.25,
+        "labelVi": "Tăng +25% tốc độ hồi Stamina"
+      },
+      "durationSeconds": 180,
+      "cooldownSeconds": 12,
+      "stackable": true,
+      "maxStack": 99,
+      "buyPriceGold": 60,
+      "sellPriceGold": 26,
+      "sources": [
+        "CRAFTING",
+        "NPC_SHOP:npc_village_herbalist"
+      ],
+      "iconKey": "ico_csm_stamina_tonic",
+      "descriptionVi": "Thuốc tăng lực điều chế từ Hollow Bat Wing và Wild Berry, phục hồi tức thì 90 Stamina cho cả việc đào mỏ lẫn né đòn liên hoàn."
+    },
+    {
+      "id": "csm_revive_feather",
+      "name": "Dawnlight Revive Feather",
+      "category": "CONSUMABLE",
+      "subCategory": "UTILITY",
+      "rarity": "RARE",
+      "mvp": true,
+      "hungerRestore": 0,
+      "staminaRestore": 0,
+      "hpRestore": 0,
+      "mpRestore": 0,
+      "buffEffect": {
+        "stat": "revivePctHp",
+        "value": 0.5,
+        "labelVi": "Hồi sinh đồng đội hoặc bản thân với 50% HP/MP và 3 giây miễn sát thương"
+      },
+      "durationSeconds": 3,
+      "cooldownSeconds": 120,
+      "stackable": true,
+      "maxStack": 20,
+      "buyPriceGold": 220,
+      "sellPriceGold": 85,
+      "sources": [
+        "CRAFTING",
+        "QUEST",
+        "BOSS_DROP:boss_thornback_elder"
+      ],
+      "iconKey": "ico_csm_revive_feather",
+      "descriptionVi": "Chiếc lông vũ ánh sáng quý giá cho phép hồi sinh đồng đội ngã xuống trong dungeon co-op hoặc tự hồi sinh tối đa một lần mỗi lượt Boss."
+    },
+    {
+      "id": "csm_fertilizer_basic",
+      "name": "Basic Organic Fertilizer",
+      "category": "CONSUMABLE",
+      "subCategory": "FARMING",
+      "rarity": "COMMON",
+      "mvp": true,
+      "hungerRestore": 0,
+      "staminaRestore": 0,
+      "hpRestore": 0,
+      "mpRestore": 0,
+      "buffEffect": {
+        "stat": "cropGrowthSpeedPct",
+        "value": 0.2,
+        "secondaryStat": "cropQualityChance",
+        "secondaryValue": 0.15,
+        "labelVi": "Tăng +20% tốc độ lớn cây trồng và +15% tỉ lệ nông sản phẩm chất cao"
+      },
+      "durationSeconds": 0,
+      "cooldownSeconds": 0,
+      "stackable": true,
+      "maxStack": 99,
+      "buyPriceGold": 20,
+      "sellPriceGold": 8,
+      "sources": [
+        "CRAFTING",
+        "NPC_SHOP:npc_farm_merchant"
+      ],
+      "iconKey": "ico_csm_fertilizer_basic",
+      "descriptionVi": "Phân bón hữu cơ ủ từ Slime Gel và bột xương, rắc trực tiếp lên luống đất đã cày để rút ngắn thời gian thu hoạch."
+    },
+    {
+      "id": "csm_fertilizer_rich",
+      "name": "Rich Starlight Fertilizer",
+      "category": "CONSUMABLE",
+      "subCategory": "FARMING",
+      "rarity": "RARE",
+      "mvp": false,
+      "hungerRestore": 0,
+      "staminaRestore": 0,
+      "hpRestore": 0,
+      "mpRestore": 0,
+      "buffEffect": {
+        "stat": "cropGrowthSpeedPct",
+        "value": 0.35,
+        "secondaryStat": "cropQualityChance",
+        "secondaryValue": 0.35,
+        "labelVi": "Tăng +35% tốc độ lớn cây trồng và +35% tỉ lệ nông sản phẩm chất Vàng/Hiếm"
+      },
+      "durationSeconds": 0,
+      "cooldownSeconds": 0,
+      "stackable": true,
+      "maxStack": 99,
+      "buyPriceGold": 85,
+      "sellPriceGold": 35,
+      "sources": [
+        "CRAFTING",
+        "NPC_SHOP:npc_farm_merchant"
+      ],
+      "iconKey": "ico_csm_fertilizer_rich",
+      "descriptionVi": "Phân bón cao cấp trộn bụi ánh sao và bột nấm bào tử, giúp gieo trồng nông sản hiếm đạt phẩm chất thượng hạng."
+    },
+    {
+      "id": "csm_repair_kit",
+      "name": "Field Repair Kit",
+      "category": "CONSUMABLE",
+      "subCategory": "UTILITY",
+      "rarity": "COMMON",
+      "mvp": true,
+      "hungerRestore": 0,
+      "staminaRestore": 0,
+      "hpRestore": 0,
+      "mpRestore": 0,
+      "buffEffect": {
+        "stat": "durabilityRestorePct",
+        "value": 0.5,
+        "labelVi": "Phục hồi 50% độ bền tối đa cho một vũ khí hoặc trang bị"
+      },
+      "durationSeconds": 0,
+      "cooldownSeconds": 3,
+      "stackable": true,
+      "maxStack": 50,
+      "buyPriceGold": 35,
+      "sellPriceGold": 14,
+      "sources": [
+        "CRAFTING",
+        "NPC_SHOP:npc_smith_garrik"
+      ],
+      "iconKey": "ico_csm_repair_kit",
+      "descriptionVi": "Bộ đá mài và đinh tán nhỏ gọn cho phép sửa nhanh trang bị bị mòn độ bền ngay trong chuyến thám hiểm mà không cần quay về làng."
+    },
+    {
+      "id": "sed_sunwheat",
+      "name": "Sunwheat Seeds",
+      "category": "SEED",
+      "rarity": "COMMON",
+      "mvp": true,
+      "cropId": "crp_sunwheat",
+      "seasons": [
+        "SPRING",
+        "SUMMER",
+        "AUTUMN"
+      ],
+      "buyPriceGold": 12,
+      "sellPriceGold": 5,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "NPC_SHOP:npc_farm_merchant",
+        "QUEST",
+        "GATHERING:reg_greenhaven_village"
+      ],
+      "iconKey": "ico_sed_sunwheat",
+      "descriptionVi": "Hạt giống lúa mì nắng dễ trồng, lớn nhanh qua 3 mùa Xuân–Hạ–Thu, là nguồn lương thực và thức ăn chăn nuôi chủ lực."
+    },
+    {
+      "id": "sed_berry_bush",
+      "name": "Wild Berry Seeds",
+      "category": "SEED",
+      "rarity": "COMMON",
+      "mvp": true,
+      "cropId": "crp_berry_bush",
+      "seasons": [
+        "SPRING",
+        "SUMMER"
+      ],
+      "buyPriceGold": 18,
+      "sellPriceGold": 7,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "NPC_SHOP:npc_farm_merchant",
+        "GATHERING:reg_whispering_forest"
+      ],
+      "iconKey": "ico_sed_berry_bush",
+      "descriptionVi": "Hạt bụi quả mọng có thể thu hoạch lặp lại nhiều lần trong mùa Xuân và Hạ, thích hợp cho người chơi làm bánh và thuốc."
+    },
+    {
+      "id": "sed_moon_herb",
+      "name": "Moon Herb Seeds",
+      "category": "SEED",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "cropId": "crp_moon_herb",
+      "seasons": [
+        "SPRING",
+        "AUTUMN"
+      ],
+      "buyPriceGold": 28,
+      "sellPriceGold": 11,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "NPC_SHOP:npc_farm_merchant",
+        "GATHERING:reg_whispering_forest"
+      ],
+      "iconKey": "ico_sed_moon_herb",
+      "descriptionVi": "Hạt thảo mộc ánh trăng ưa khí hậu mát mẻ của mùa Xuân và Thu, cung cấp nguyên liệu ổn định cho nghề nấu ăn và giả kim."
+    },
+    {
+      "id": "sed_golden_carrot",
+      "name": "Golden Carrot Seeds",
+      "category": "SEED",
+      "rarity": "UNCOMMON",
+      "mvp": true,
+      "cropId": "crp_golden_carrot",
+      "seasons": [
+        "SPRING",
+        "AUTUMN"
+      ],
+      "buyPriceGold": 35,
+      "sellPriceGold": 14,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "NPC_SHOP:npc_farm_merchant",
+        "QUEST"
+      ],
+      "iconKey": "ico_sed_golden_carrot",
+      "descriptionVi": "Hạt giống cà rốt vàng cao sản cho ra nông sản nấu món Golden Roast tăng mạnh ATK/DEF cho tổ đội."
+    },
+    {
+      "id": "sed_ember_pepper",
+      "name": "Ember Pepper Seeds",
+      "category": "SEED",
+      "rarity": "RARE",
+      "mvp": true,
+      "cropId": "crp_ember_pepper",
+      "seasons": [
+        "SUMMER"
+      ],
+      "buyPriceGold": 55,
+      "sellPriceGold": 22,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "NPC_SHOP:npc_farm_merchant",
+        "DUNGEON_DROP:dng_mossroot_hollow"
+      ],
+      "iconKey": "ico_sed_ember_pepper",
+      "descriptionVi": "Hạt giống ớt lửa chịu nắng tốt nhất vào mùa Hạ, mang lại lợi nhuận cao và nguyên liệu nấu món cà ri tăng chí mạng."
+    },
+    {
+      "id": "sed_frost_turnip",
+      "name": "Frost Turnip Seeds",
+      "category": "SEED",
+      "rarity": "RARE",
+      "mvp": false,
+      "cropId": "crp_frost_turnip",
+      "seasons": [
+        "WINTER"
+      ],
+      "buyPriceGold": 52,
+      "sellPriceGold": 20,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "NPC_SHOP:npc_farm_merchant",
+        "REGION_DROP:reg_frostbound_highlands"
+      ],
+      "iconKey": "ico_sed_frost_turnip",
+      "descriptionVi": "Hạt củ cải băng đặc biệt nảy mầm tốt ngay trong mùa Đông phủ tuyết, giúp nông trại duy trì sản lượng quanh năm."
+    },
+    {
+      "id": "sed_clover_hay",
+      "name": "Clover Hay Seeds",
+      "category": "SEED",
+      "rarity": "COMMON",
+      "mvp": false,
+      "cropId": "crp_clover_hay",
+      "seasons": [
+        "SPRING",
+        "SUMMER",
+        "AUTUMN"
+      ],
+      "buyPriceGold": 10,
+      "sellPriceGold": 4,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "NPC_SHOP:npc_farm_merchant"
+      ],
+      "iconKey": "ico_sed_clover_hay",
+      "descriptionVi": "Hạt cỏ ba lá sinh trưởng cực nhanh, chuyên trồng để làm cỏ khô dự trữ cho Barn và tăng hạnh phúc đàn gia súc."
+    },
+    {
+      "id": "sed_silver_pumpkin",
+      "name": "Silver Pumpkin Seeds",
+      "category": "SEED",
+      "rarity": "UNCOMMON",
+      "mvp": false,
+      "cropId": "crp_silver_pumpkin",
+      "seasons": [
+        "AUTUMN"
+      ],
+      "buyPriceGold": 42,
+      "sellPriceGold": 17,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "NPC_SHOP:npc_farm_merchant"
+      ],
+      "iconKey": "ico_sed_silver_pumpkin",
+      "descriptionVi": "Hạt bí ngô vỏ bạc vụ Thu, thời gian lớn dài nhưng cho sản lượng và giá trị kinh tế rất cao khi thu hoạch."
+    },
+    {
+      "id": "sed_storm_radish",
+      "name": "Storm Radish Seeds",
+      "category": "SEED",
+      "rarity": "RARE",
+      "mvp": false,
+      "cropId": "crp_storm_radish",
+      "seasons": [
+        "SPRING",
+        "AUTUMN"
+      ],
+      "buyPriceGold": 48,
+      "sellPriceGold": 19,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "NPC_SHOP:npc_farm_merchant",
+        "REGION_DROP:reg_ironpeak_mountains"
+      ],
+      "iconKey": "ico_sed_storm_radish",
+      "descriptionVi": "Hạt củ cải bão phát triển mạnh hơn 30% trong những ngày mưa giông, dùng nấu món tăng tốc độ đánh."
+    },
+    {
+      "id": "sed_crimson_tomato",
+      "name": "Crimson Tomato Seeds",
+      "category": "SEED",
+      "rarity": "UNCOMMON",
+      "mvp": false,
+      "cropId": "crp_crimson_tomato",
+      "seasons": [
+        "SUMMER"
+      ],
+      "buyPriceGold": 30,
+      "sellPriceGold": 12,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "NPC_SHOP:npc_farm_merchant"
+      ],
+      "iconKey": "ico_sed_crimson_tomato",
+      "descriptionVi": "Hạt cà chua đỏ mọng cho thu hoạch nhiều đợt trong mùa Hạ, thích hợp làm nước sốt và súp hồi máu diện rộng."
+    },
+    {
+      "id": "sed_honey_melon",
+      "name": "Honey Melon Seeds",
+      "category": "SEED",
+      "rarity": "RARE",
+      "mvp": false,
+      "cropId": "crp_honey_melon",
+      "seasons": [
+        "SUMMER"
+      ],
+      "buyPriceGold": 60,
+      "sellPriceGold": 24,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "NPC_SHOP:npc_farm_merchant",
+        "QUEST"
+      ],
+      "iconKey": "ico_sed_honey_melon",
+      "descriptionVi": "Hạt dưa mật ngọt lịm vụ Hạ, nguồn nguyên liệu cao cấp tạo đồ uống hồi Stamina tức thì."
+    },
+    {
+      "id": "sed_shadow_garlic",
+      "name": "Shadow Garlic Seeds",
+      "category": "SEED",
+      "rarity": "RARE",
+      "mvp": false,
+      "cropId": "crp_shadow_garlic",
+      "seasons": [
+        "AUTUMN",
+        "WINTER"
+      ],
+      "buyPriceGold": 58,
+      "sellPriceGold": 23,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "REGION_DROP:reg_forgotten_ruins",
+        "NPC_SHOP:npc_farm_merchant"
+      ],
+      "iconKey": "ico_sed_shadow_garlic",
+      "descriptionVi": "Hạt tỏi tím đen chịu lạnh giỏi vào mùa Thu–Đông, dùng điều chế thuốc kháng độc và kháng Bóng tối."
+    },
+    {
+      "id": "sed_crystal_lotus",
+      "name": "Crystal Lotus Seeds",
+      "category": "SEED",
+      "rarity": "EPIC",
+      "mvp": false,
+      "cropId": "crp_crystal_lotus",
+      "seasons": [
+        "SPRING",
+        "WINTER"
+      ],
+      "buyPriceGold": 110,
+      "sellPriceGold": 45,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "REGION_DROP:reg_crystal_caverns",
+        "BOSS_DROP:boss_prism_leviathan"
+      ],
+      "iconKey": "ico_sed_crystal_lotus",
+      "descriptionVi": "Hạt sen pha lê quý hiếm hấp thụ linh khí nước, chỉ nảy mầm tốt trên ô đất được tưới tiêu đầy đủ."
+    },
+    {
+      "id": "sed_ash_chili",
+      "name": "Ash Chili Seeds",
+      "category": "SEED",
+      "rarity": "EPIC",
+      "mvp": false,
+      "cropId": "crp_ash_chili",
+      "seasons": [
+        "SUMMER"
+      ],
+      "buyPriceGold": 120,
+      "sellPriceGold": 48,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "REGION_DROP:reg_ember_wasteland"
+      ],
+      "iconKey": "ico_sed_ash_chili",
+      "descriptionVi": "Hạt ớt tro núi lửa mang nhiệt lượng cực cao từ Ember Wasteland, nguyên liệu chế biến thuốc bùng nổ sát thương raid."
+    },
+    {
+      "id": "sed_starlight_melon",
+      "name": "Starlight Melon Seeds",
+      "category": "SEED",
+      "rarity": "LEGENDARY",
+      "mvp": false,
+      "cropId": "crp_starlight_melon",
+      "seasons": [
+        "SUMMER",
+        "AUTUMN"
+      ],
+      "buyPriceGold": 220,
+      "sellPriceGold": 90,
+      "stackable": true,
+      "maxStack": 99,
+      "sources": [
+        "BOSS_TOKEN_SHOP",
+        "REGION_DROP:reg_abyssal_kingdom",
+        "QUEST"
+      ],
+      "iconKey": "ico_sed_starlight_melon",
+      "descriptionVi": "Hạt giống dưa ánh sao huyền thoại hấp thụ tinh hoa đêm trăng, cho ra quả dưa quý nhất Eldoria dùng nấu đại tiệc Boss Raid."
+    }
+  ]
+}
