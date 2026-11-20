@@ -1,0 +1,359 @@
+{
+  "manifestVersion": "1.0.0",
+  "generatedAt": "2026-11-19T23:53:00.065Z",
+  "pixelStandard": {
+    "baseTilePx": 32,
+    "heroFramePx": [
+      48,
+      64
+    ],
+    "vfxMicroFramePx": [
+      16,
+      16
+    ],
+    "viewportPx": [
+      640,
+      360
+    ],
+    "paddingPx": 2,
+    "extrudePx": 1
+  },
+  "entries": [
+    {
+      "assetKey": "atlas_chr_kael_vanguard",
+      "objectKey": "v1/atlases/heroes/chr_kael_vanguard.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "hero_on_demand",
+      "sha256": "2fc8cd2e755a017a2360a7e5e912fdfc309af8a09924bd219625403ab89a9fc2",
+      "sizeBytes": 42370
+    },
+    {
+      "assetKey": "atlas_chr_kael_vanguard_json",
+      "objectKey": "v1/atlases/heroes/chr_kael_vanguard.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "hero_on_demand",
+      "sha256": "6e1bddeb5338d890db0268a619834dca57f94d925def88c14fdeede94cff0d85",
+      "sizeBytes": 159559
+    },
+    {
+      "assetKey": "portrait_chr_kael_vanguard",
+      "objectKey": "v1/ui/portraits/chr_kael_vanguard.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "798b735a7713c5a32995954f002999f3d076880bc57dd5df16a4bcfeb22bd35b",
+      "sizeBytes": 526
+    },
+    {
+      "assetKey": "atlas_chr_lyra_windrunner",
+      "objectKey": "v1/atlases/heroes/chr_lyra_windrunner.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "hero_on_demand",
+      "sha256": "3b49473f88fcc7581ace986dacd4c2b8edd6d91c14090b63356ebc503616928e",
+      "sizeBytes": 42072
+    },
+    {
+      "assetKey": "atlas_chr_lyra_windrunner_json",
+      "objectKey": "v1/atlases/heroes/chr_lyra_windrunner.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "hero_on_demand",
+      "sha256": "deaa51977c653d8ec28b14527741e1de04d64c8c94c9dbba56fa7f730252a879",
+      "sizeBytes": 160321
+    },
+    {
+      "assetKey": "portrait_chr_lyra_windrunner",
+      "objectKey": "v1/ui/portraits/chr_lyra_windrunner.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "6da6cca1bf7f7642b079fd137221c707f06396d950a22109bdf4e3f714253856",
+      "sizeBytes": 529
+    },
+    {
+      "assetKey": "atlas_chr_seraphina_dawn",
+      "objectKey": "v1/atlases/heroes/chr_seraphina_dawn.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "hero_on_demand",
+      "sha256": "2087c01d846eacc0f460ba7fa4ed69a1cc425d15d757dc2b4fb781081c994c84",
+      "sizeBytes": 42522
+    },
+    {
+      "assetKey": "atlas_chr_seraphina_dawn_json",
+      "objectKey": "v1/atlases/heroes/chr_seraphina_dawn.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "hero_on_demand",
+      "sha256": "323d332346125e0e06d4d08b75596f366f04213bc5fabdb4669c7fc1b3875964",
+      "sizeBytes": 159940
+    },
+    {
+      "assetKey": "portrait_chr_seraphina_dawn",
+      "objectKey": "v1/ui/portraits/chr_seraphina_dawn.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "6810162ec1a6e4cf5760e90e197043670dc11f1ffe5793c8bc2ac6924a9e4ba4",
+      "sizeBytes": 525
+    },
+    {
+      "assetKey": "atlas_chr_bram_bastion",
+      "objectKey": "v1/atlases/heroes/chr_bram_bastion.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "hero_on_demand",
+      "sha256": "028115ef1381452efe2afc43d49d6b7f0813014f7cbc49fc935d83d8a75d0559",
+      "sizeBytes": 42773
+    },
+    {
+      "assetKey": "atlas_chr_bram_bastion_json",
+      "objectKey": "v1/atlases/heroes/chr_bram_bastion.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "hero_on_demand",
+      "sha256": "a520266fe7ca783cfe109d95d88a439ccf8c526115116f2fee1cd0403cfbcea3",
+      "sizeBytes": 159178
+    },
+    {
+      "assetKey": "portrait_chr_bram_bastion",
+      "objectKey": "v1/ui/portraits/chr_bram_bastion.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "124f58df87186c86eddf7ae586b1047a5145a287acb0be3d5f5f14f189fff2d9",
+      "sizeBytes": 528
+    },
+    {
+      "assetKey": "atlas_chr_vex_nightblade",
+      "objectKey": "v1/atlases/heroes/chr_vex_nightblade.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "hero_on_demand",
+      "sha256": "9999d0829dee7a2604245d15767baa9f502a9975a9b56d74229a5a1f89f1050a",
+      "sizeBytes": 41365
+    },
+    {
+      "assetKey": "atlas_chr_vex_nightblade_json",
+      "objectKey": "v1/atlases/heroes/chr_vex_nightblade.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "hero_on_demand",
+      "sha256": "19b25c63d1d1ae67eacfb09e72abdb2cfe1b87616d542b854fcf1e78d636aeea",
+      "sizeBytes": 159940
+    },
+    {
+      "assetKey": "portrait_chr_vex_nightblade",
+      "objectKey": "v1/ui/portraits/chr_vex_nightblade.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "54ea850b764014c495f8441c0c5babeeb3743a3215f2a5a4d52f55c67f447615",
+      "sizeBytes": 524
+    },
+    {
+      "assetKey": "atlas_chr_orin_stormcaller",
+      "objectKey": "v1/atlases/heroes/chr_orin_stormcaller.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "hero_on_demand",
+      "sha256": "80d980e920402d180d75f5634babde92e75153b9266485c4dfaca3f0adcad72d",
+      "sizeBytes": 42517
+    },
+    {
+      "assetKey": "atlas_chr_orin_stormcaller_json",
+      "objectKey": "v1/atlases/heroes/chr_orin_stormcaller.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "hero_on_demand",
+      "sha256": "905f735b663b09b53e4756c37522287efba0fa6d8a3ecda2f48fb87aee1e9ca0",
+      "sizeBytes": 160702
+    },
+    {
+      "assetKey": "portrait_chr_orin_stormcaller",
+      "objectKey": "v1/ui/portraits/chr_orin_stormcaller.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "ee3ae9dc064d7ca7c483a680150cfffe32372e50bf6809efbd6a0311a4c4dc90",
+      "sizeBytes": 526
+    },
+    {
+      "assetKey": "portrait_chr_mira_ironfist",
+      "objectKey": "v1/ui/portraits/chr_mira_ironfist.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "a42cc2b8897243e50eb6244edfcbe43fede1e6cd33e1b169c14a4682f9afd827",
+      "sizeBytes": 526
+    },
+    {
+      "assetKey": "portrait_chr_rowan_tidewarden",
+      "objectKey": "v1/ui/portraits/chr_rowan_tidewarden.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "8571a8d80702c62afe412395a26c9bd094e972dbcb8398c601d1a99f779de810",
+      "sizeBytes": 527
+    },
+    {
+      "assetKey": "portrait_chr_freya_frostveil",
+      "objectKey": "v1/ui/portraits/chr_freya_frostveil.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "6800cd58d7ed8d967df2f0f659d8ae3d4c771946ddeb1f779df53ebca1b5d055",
+      "sizeBytes": 525
+    },
+    {
+      "assetKey": "portrait_chr_torvald_rageborn",
+      "objectKey": "v1/ui/portraits/chr_torvald_rageborn.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "8e910136018933eb7a857fdc166b24f6c3d5082d2122be990b04db995bd4e936",
+      "sizeBytes": 524
+    },
+    {
+      "assetKey": "portrait_chr_nyx_voidcaller",
+      "objectKey": "v1/ui/portraits/chr_nyx_voidcaller.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "44bb4d3ea3fe45f4aecaf0fedfa11824c45a309dbc7b137a71d9d98d192fe317",
+      "sizeBytes": 529
+    },
+    {
+      "assetKey": "portrait_chr_aurelia_starbow",
+      "objectKey": "v1/ui/portraits/chr_aurelia_starbow.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "2e714328bd5b784d5b5b63eae75355f181e7cfb6445bb0dba1278f8c4cfa6677",
+      "sizeBytes": 527
+    },
+    {
+      "assetKey": "atlas_vfx_16x16",
+      "objectKey": "v1/atlases/vfx/vfx_16x16_animations.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "3b6633bdfe7c6f4ec1422220190b5018e666367518161d53ba86834b76d82353",
+      "sizeBytes": 2806
+    },
+    {
+      "assetKey": "atlas_vfx_16x16_json",
+      "objectKey": "v1/atlases/vfx/vfx_16x16_animations.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "core_ui",
+      "sha256": "31c4e95df9607866504a005c394cf2ae217ec136330ca56255e727b4f90020fb",
+      "sizeBytes": 36570
+    },
+    {
+      "assetKey": "atlas_vfx_skills_mvp",
+      "objectKey": "v1/atlases/vfx/vfx_skills_mvp.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "core_ui",
+      "sha256": "c48ecfd612633dcc058ed3eb0acf1e6ca7173de117bce0d80c512f115f570f0b",
+      "sizeBytes": 13788
+    },
+    {
+      "assetKey": "atlas_vfx_skills_mvp_json",
+      "objectKey": "v1/atlases/vfx/vfx_skills_mvp.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "core_ui",
+      "sha256": "689b36ed613961cd954b0def5f7217dbd4a8b6e6eca66cf72c521ec699e5c513",
+      "sizeBytes": 13616
+    },
+    {
+      "assetKey": "atlas_mobs_forest",
+      "objectKey": "v1/atlases/monsters/mobs_forest_mvp.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "region_mvp",
+      "sha256": "d5f96877285df0cdccf9eec16e80fadbdf8ee3f1f93e55df36558d24e238149f",
+      "sizeBytes": 6613
+    },
+    {
+      "assetKey": "atlas_mobs_forest_json",
+      "objectKey": "v1/atlases/monsters/mobs_forest_mvp.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "region_mvp",
+      "sha256": "3ec96468101345504d4a8bc9038f5597b75dae746b81651e62d01df4057a5c3d",
+      "sizeBytes": 56316
+    },
+    {
+      "assetKey": "atlas_boss_thornback_elder",
+      "objectKey": "v1/atlases/bosses/boss_thornback_elder.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "boss_instance",
+      "sha256": "95eaf4f28364cdf6ebf73961a7dc3e5b8a483e2c98d042b6b8d55e08eee65b65",
+      "sizeBytes": 16536
+    },
+    {
+      "assetKey": "atlas_boss_thornback_elder_json",
+      "objectKey": "v1/atlases/bosses/boss_thornback_elder.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "boss_instance",
+      "sha256": "045b03952432a587bf12a1d9a2bee09488a9df436f51d1ead8d5f2327f077d4f",
+      "sizeBytes": 14758
+    },
+    {
+      "assetKey": "atlas_boss_ignis_forgelord",
+      "objectKey": "v1/atlases/bosses/boss_ignis_forgelord.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "boss_instance",
+      "sha256": "9b73ab8c62165e8e1b7e2586079af48e5bc95548eb5779cf1cb7ec35ee5e54b2",
+      "sizeBytes": 15165
+    },
+    {
+      "assetKey": "atlas_boss_ignis_forgelord_json",
+      "objectKey": "v1/atlases/bosses/boss_ignis_forgelord.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "boss_instance",
+      "sha256": "99c79a1a357ed097dc6cf3efacccb595aac6ff331699b00bf0c7b795099f31b1",
+      "sizeBytes": 14758
+    },
+    {
+      "assetKey": "atlas_world_props_mvp",
+      "objectKey": "v1/atlases/world/world_props_mvp.png",
+      "kind": "ATLAS_PNG",
+      "loadingGroup": "region_mvp",
+      "sha256": "677d27220c7d10b01c131a61a32ddcda8b4d028e6e210822c937e9ea929b8a7b",
+      "sizeBytes": 3661
+    },
+    {
+      "assetKey": "atlas_world_props_mvp_json",
+      "objectKey": "v1/atlases/world/world_props_mvp.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "region_mvp",
+      "sha256": "ce1350d1b5fcd1d54b8781b54e8ec0b08e7bde500fbdc0d280f871ffe0986db6",
+      "sizeBytes": 18162
+    },
+    {
+      "assetKey": "tileset_mvp_extruded",
+      "objectKey": "v1/tilesets/tileset_mvp_extruded.png",
+      "kind": "TILESET_EXTRUDED",
+      "loadingGroup": "region_mvp",
+      "sha256": "64aab94ec7d4868751b3d9adf52684c5c10df60d722c8798a074561398d9c48b",
+      "sizeBytes": 694
+    },
+    {
+      "assetKey": "tileset_mvp_extruded_json",
+      "objectKey": "v1/tilesets/tileset_mvp_extruded.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "region_mvp",
+      "sha256": "101dda1d3f69e42372bede8a088c1cd903d051ff7d6e893610b9cfb91c803ee9",
+      "sizeBytes": 3457
+    },
+    {
+      "assetKey": "map_reg_greenhaven_village",
+      "objectKey": "v1/maps/reg_greenhaven_village.tmj",
+      "kind": "TILED_MAP",
+      "loadingGroup": "region_mvp",
+      "sha256": "cc6f1eb70db627b1e919932406d6bf56a0e7c7a6b3b30cab56036f9a3cde8f57",
+      "sizeBytes": 27153
+    },
+    {
+      "assetKey": "map_reg_whispering_forest",
+      "objectKey": "v1/maps/reg_whispering_forest.tmj",
+      "kind": "TILED_MAP",
+      "loadingGroup": "region_mvp",
+      "sha256": "530ea1cbd4780dc3a86c4627e694d517bdf8646ff720ba6f348c230b529e4fd7",
+      "sizeBytes": 32491
+    },
+    {
+      "assetKey": "map_dng_mossroot_hollow",
+      "objectKey": "v1/maps/dng_mossroot_hollow.tmj",
+      "kind": "TILED_MAP",
+      "loadingGroup": "boss_instance",
+      "sha256": "a1d495056efcf3fe9482503aa7cd7335ecb266cb9069894a385818df2f6815f7",
+      "sizeBytes": 13818
+    },
+    {
+      "assetKey": "animation_clips_registry",
+      "objectKey": "v1/animation-clips.json",
+      "kind": "ATLAS_JSON",
+      "loadingGroup": "core_ui",
+      "sha256": "2f824f0dec0a039bbd78f6976c858c65b43a1e26b08918bc840cd3e2d8a2c868",
+      "sizeBytes": 372327
+    }
+  ]
+}
