@@ -163,7 +163,9 @@ export class CharacterService {
   public async createCharacter(accountId: string, rawDto: unknown) {
     const parsed = CreateCharacterDtoSchema.safeParse(rawDto);
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      const flat = parsed.error.flatten();
+      const message = parsed.error.issues.map((i) => i.message).join(' • ') || 'Tên nhân vật không hợp lệ';
+      throw new BadRequestException({ message, ...flat });
     }
     const dto = parsed.data;
     const byAcc = this.db.readIndex('characters-by-account');

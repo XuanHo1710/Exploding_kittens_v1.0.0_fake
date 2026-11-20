@@ -73,8 +73,18 @@ export const AuthAndLobbyScreens: React.FC<Props> = ({ onEnterWorld }) => {
     try {
       const data =
         mode === 'REGISTER'
-          ? await apiClient.request('POST', '/api/v1/auth/register', { username, email, password }, { skipAuth: true })
-          : await apiClient.request('POST', '/api/v1/auth/login', { identifier, password }, { skipAuth: true });
+          ? await apiClient.request(
+              'POST',
+              '/api/v1/auth/register',
+              { username: username.trim(), email: email.trim(), password },
+              { skipAuth: true },
+            )
+          : await apiClient.request(
+              'POST',
+              '/api/v1/auth/login',
+              { identifier: identifier.trim(), password },
+              { skipAuth: true },
+            );
       apiClient.setTokens(data.accessToken, data.refreshToken);
       setAccount(data.account);
       if (data.account?.preferences) setPreferences(data.account.preferences);
@@ -184,11 +194,16 @@ export const AuthAndLobbyScreens: React.FC<Props> = ({ onEnterWorld }) => {
             <input
               className="rpg-input"
               type="password"
-              placeholder="Mật khẩu (>=10 ký tự, có Hoa, thường, số)"
+              placeholder={mode === 'REGISTER' ? 'Mật khẩu (tối thiểu 6 ký tự)' : 'Mật khẩu'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            {mode === 'REGISTER' && (
+              <div style={{ fontSize: 11, color: '#a89476', lineHeight: 1.4 }}>
+                Tài khoản: 3-24 ký tự (a-z, 0-9, _) • Mật khẩu: tối thiểu 6 ký tự.
+              </div>
+            )}
             {error && (
               <div style={{ background: '#451414', border: '1px solid #f87171', padding: 8, fontSize: 12, color: '#fecaca' }}>
                 {error}

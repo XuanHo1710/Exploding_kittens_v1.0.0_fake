@@ -119,7 +119,9 @@ export class AuthService {
   public async register(rawDto: unknown) {
     const parsed = RegisterDtoSchema.safeParse(rawDto);
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      const flat = parsed.error.flatten();
+      const message = parsed.error.issues.map((i) => i.message).join(' • ') || 'Dữ liệu đăng ký không hợp lệ';
+      throw new BadRequestException({ message, ...flat });
     }
     const dto: RegisterDto = parsed.data;
     const emailKey = dto.email.trim().toLowerCase();
@@ -178,7 +180,9 @@ export class AuthService {
   public async login(rawDto: unknown) {
     const parsed = LoginDtoSchema.safeParse(rawDto);
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      const flat = parsed.error.flatten();
+      const message = parsed.error.issues.map((i) => i.message).join(' • ') || 'Dữ liệu đăng nhập không hợp lệ';
+      throw new BadRequestException({ message, ...flat });
     }
     const dto: LoginDto = parsed.data;
     const key = dto.identifier.trim().toLowerCase();

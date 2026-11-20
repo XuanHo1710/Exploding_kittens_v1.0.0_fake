@@ -51,26 +51,29 @@ export const EquipmentSlotEnum = z.enum([
 export type EquipmentSlot = z.infer<typeof EquipmentSlotEnum>;
 
 export const RegisterDtoSchema = z.object({
-  username: z.string().regex(/^[a-zA-Z0-9_]{3,24}$/),
-  email: z.string().email().max(120),
+  username: z
+    .string()
+    .trim()
+    .regex(/^[a-zA-Z0-9_]{3,24}$/, 'Tên tài khoản cần 3-24 ký tự (chỉ gồm chữ, số và dấu _)'),
+  email: z.string().trim().email('Email không hợp lệ').max(120, 'Email tối đa 120 ký tự'),
   password: z
     .string()
-    .min(10)
-    .max(128)
-    .regex(/[A-Z]/, 'Must include uppercase')
-    .regex(/[a-z]/, 'Must include lowercase')
-    .regex(/[0-9]/, 'Must include digit'),
+    .min(6, 'Mật khẩu cần tối thiểu 6 ký tự')
+    .max(128, 'Mật khẩu tối đa 128 ký tự'),
 });
 export type RegisterDto = z.infer<typeof RegisterDtoSchema>;
 
 export const LoginDtoSchema = z.object({
-  identifier: z.string().min(3).max(120),
-  password: z.string().min(1).max(128),
+  identifier: z.string().trim().min(3, 'Nhập tên tài khoản hoặc email (tối thiểu 3 ký tự)').max(120),
+  password: z.string().min(1, 'Vui lòng nhập mật khẩu').max(128),
 });
 export type LoginDto = z.infer<typeof LoginDtoSchema>;
 
 export const CreateCharacterDtoSchema = z.object({
-  name: z.string().regex(/^[a-zA-Z0-9_ ]{3,20}$/),
+  name: z
+    .string()
+    .trim()
+    .regex(/^[a-zA-Z0-9_ ]{3,20}$/, 'Tên nhân vật cần 3-20 ký tự (chữ không dấu, số, khoảng trắng hoặc _)'),
   starterHeroId: z.enum(['chr_kael_vanguard', 'chr_lyra_windrunner', 'chr_seraphina_dawn']),
 });
 export type CreateCharacterDto = z.infer<typeof CreateCharacterDtoSchema>;

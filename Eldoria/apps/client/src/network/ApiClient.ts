@@ -70,11 +70,23 @@ class ApiClientImpl {
     }
 
     if (!res.ok) {
-      const msg = json?.message
-        ? Array.isArray(json.message)
-          ? json.message.join(', ')
-          : String(json.message)
-        : `HTTP ${res.status}`;
+      let msg = `HTTP ${res.status}`;
+      if (json?.message) {
+        msg = Array.isArray(json.message) ? json.message.join(', ') : String(json.message);
+      } else if (json?.fieldErrors || json?.formErrors) {
+        const parts: string[] = [];
+        if (Array.isArray(json.formErrors)) {
+          parts.push(...json.formErrors.map(String));
+        }
+        if (json.fieldErrors && typeof json.fieldErrors === 'object') {
+          for (const [field, errs] of Object.entries(json.fieldErrors)) {
+            if (Array.isArray(errs) && errs.length > 0) {
+              parts.push(`${field}: ${errs.join(', ')}`);
+            }
+          }
+        }
+        if (parts.length > 0) msg = parts.join(' • ');
+      }
       throw new ApiError(res.status, msg, json);
     }
     return json as T;
