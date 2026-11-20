@@ -1,0 +1,863 @@
+/* Mighty Knight 2.5D Pixel — Crisp Pixel RPG HUD & Responsive PC/Mobile Styles */
+
+.mk-pixel {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.mk-board-root {
+  position: fixed;
+  inset: 0;
+  background: #0d0914;
+  overflow: hidden;
+  user-select: none;
+  touch-action: none;
+  font-family: ui-monospace, 'JetBrains Mono', 'Fira Code', monospace;
+  color: #f8fafc;
+}
+
+.mk-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Top HUD Bar */
+.mk-hud-top {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top));
+  left: max(10px, env(safe-area-inset-left));
+  right: max(10px, env(safe-area-inset-right));
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.mk-hud-cluster,
+.mk-hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+  flex-wrap: wrap;
+}
+
+.mk-badge-wave {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #1a1228;
+  border: 2px solid #fde047;
+  box-shadow: 0 3px 0 #09050f;
+}
+.mk-badge-mode {
+  font-size: 10px;
+  color: #fde047;
+  letter-spacing: 0.08em;
+}
+.mk-badge-wave strong {
+  font-size: 14px;
+  color: #fff;
+}
+
+.mk-biome-pill,
+.mk-stat-pill,
+.mk-combo-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  font-size: 12px;
+  background: rgba(20, 12, 28, 0.88);
+  border: 2px solid #475569;
+  box-shadow: 0 2px 0 #09050f;
+}
+.mk-stat-pill {
+  border-color: #eab308;
+  color: #fde047;
+}
+.mk-combo-pill {
+  border-color: #f97316;
+  color: #fb923c;
+  animation: mk-pop 0.2s ease-out;
+}
+
+@keyframes mk-pop {
+  from { transform: scale(1.18); }
+  to { transform: scale(1); }
+}
+
+/* 3-Phase Boss HP Bar */
+.mk-boss-bar {
+  flex: 1;
+  max-width: 390px;
+  background: rgba(20, 12, 28, 0.92);
+  border: 2px solid #ef4444;
+  padding: 4px 8px;
+  box-shadow: 0 3px 0 #09050f;
+}
+.mk-boss-bar.enraged {
+  border-color: #fde047;
+}
+.mk-boss-bar-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fca5a5;
+  margin-bottom: 3px;
+}
+.mk-boss-track {
+  position: relative;
+  height: 10px;
+  background: #2b121c;
+  border: 1px solid #140c1c;
+}
+.mk-boss-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #dc2626, #f97316);
+  transition: width 80ms linear;
+}
+.mk-boss-notch {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #fde047;
+}
+
+.mk-hud-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: #1e1630;
+  color: #f8fafc;
+  border: 2px solid #64748b;
+  box-shadow: 0 2px 0 #09050f;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+.mk-hud-btn:hover {
+  background: #2e2248;
+}
+.mk-hud-btn.icon {
+  padding: 6px;
+}
+.mk-hud-btn.danger {
+  border-color: #ef4444;
+  color: #fca5a5;
+}
+.mk-upgrade-btn.ready {
+  border-color: #fde047;
+  color: #fde047;
+}
+.mk-dot {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  background: #ef4444;
+  color: #fff;
+  border: 1px solid #140c1c;
+  font-style: normal;
+  font-size: 10px;
+  display: grid;
+  place-items: center;
+}
+
+/* Party Status Strip */
+.mk-party-bar {
+  position: absolute;
+  top: calc(max(8px, env(safe-area-inset-top)) + 42px);
+  left: max(10px, env(safe-area-inset-left));
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  max-width: 65vw;
+  z-index: 18;
+}
+
+.mk-party-card {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: rgba(20, 12, 28, 0.88);
+  border: 2px solid #475569;
+  color: #f8fafc;
+  font-family: inherit;
+  text-align: left;
+  min-width: 124px;
+}
+.mk-party-card.me {
+  background: rgba(30, 24, 54, 0.95);
+  box-shadow: 0 0 0 1px #fde047;
+}
+.mk-party-card.swappable {
+  cursor: pointer;
+}
+.mk-party-card.swappable:hover {
+  background: rgba(45, 36, 78, 0.95);
+}
+.mk-party-card.downed {
+  opacity: 0.6;
+  border-color: #ef4444 !important;
+}
+.mk-party-portrait {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: 1px solid #140c1c;
+}
+.mk-party-meta {
+  flex: 1;
+  min-width: 74px;
+}
+.mk-party-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  margin-bottom: 3px;
+}
+.mk-party-badge {
+  background: #334155;
+  padding: 0 4px;
+  font-weight: 800;
+}
+.mk-party-lv {
+  color: #fde047;
+}
+.mk-swap-hint {
+  margin-left: auto;
+  font-size: 9px;
+  color: #38bdf8;
+}
+.mk-bar {
+  position: relative;
+  height: 6px;
+  background: #1e293b;
+  border: 1px solid #140c1c;
+  margin-bottom: 2px;
+}
+.mk-bar.hp .mk-bar-fill {
+  height: 100%;
+  background: #22c55e;
+}
+.mk-bar-shield {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: #fde047;
+}
+.mk-bar.fury {
+  height: 4px;
+}
+.mk-bar.fury .mk-bar-fill {
+  height: 100%;
+  background: #facc15;
+}
+.mk-bar.fury .mk-bar-fill.full {
+  background: #fb923c;
+}
+
+/* Awakening Ultimate Cut-In Banner */
+.mk-ult-cutin {
+  position: absolute;
+  top: 104px;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 8px;
+  background: rgba(16, 10, 26, 0.95);
+  border: 3px solid #fde047;
+  box-shadow: 4px 4px 0 #09050f;
+  z-index: 25;
+  animation: mk-cutin-slide 0.45s cubic-bezier(0.2, 0.9, 0.2, 1);
+  pointer-events: none;
+}
+@keyframes mk-cutin-slide {
+  0% { transform: translateX(-110%); opacity: 0; }
+  20% { transform: translateX(0); opacity: 1; }
+  85% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(-12px); opacity: 0; }
+}
+.mk-ult-cutin-img {
+  width: 48px;
+  height: 48px;
+  border: 2px solid #fff;
+}
+.mk-ult-cutin-text {
+  display: flex;
+  flex-direction: column;
+}
+.mk-ult-cutin-tag {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: #fde047;
+}
+.mk-ult-cutin-skill {
+  font-size: 16px;
+  line-height: 1.15;
+}
+.mk-ult-cutin-hero {
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+/* Controls Overlay (PC + Mobile Landscape 844x390) */
+.mk-controls-overlay {
+  position: absolute;
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 22;
+}
+
+.mk-joystick {
+  position: relative;
+  width: 98px;
+  height: 98px;
+  background: rgba(20, 12, 28, 0.65);
+  border: 2px solid rgba(148, 163, 184, 0.55);
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+  touch-action: none;
+}
+.mk-joystick-knob {
+  width: 38px;
+  height: 38px;
+  background: #334155;
+  border: 2px solid #fde047;
+}
+.mk-joystick-hint {
+  position: absolute;
+  bottom: 3px;
+  font-size: 9px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.mk-action-cluster {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: auto;
+}
+.mk-skill-row,
+.mk-primary-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.mk-act-btn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: #1c142c;
+  border: 2px solid #64748b;
+  box-shadow: 0 3px 0 #09050f;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  touch-action: none;
+}
+.mk-act-btn img {
+  width: 34px;
+  height: 34px;
+}
+.mk-act-btn.attack {
+  width: 60px;
+  height: 60px;
+  border-color: #ef4444;
+  background: #38141e;
+}
+.mk-act-btn.attack img {
+  width: 40px;
+  height: 40px;
+}
+.mk-act-btn.attack.active,
+.mk-act-btn:active:not(:disabled) {
+  transform: translateY(2px);
+}
+.mk-act-btn.guard {
+  border-color: #fde047;
+}
+.mk-act-btn.dash {
+  border-color: #38bdf8;
+}
+.mk-act-btn.ult {
+  width: 52px;
+  height: 52px;
+  border-color: #7c3aed;
+}
+.mk-act-btn.ult.ready {
+  border-color: #fb923c;
+  box-shadow: 0 0 12px rgba(251, 146, 60, 0.8), 0 3px 0 #09050f;
+}
+.mk-act-btn.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.mk-padlock {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 24px !important;
+  height: 24px !important;
+}
+.mk-cd-mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(12, 8, 20, 0.78);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fde047;
+}
+.mk-key-badge {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 1px 1px 0 #000;
+}
+.mk-lv-badge,
+.mk-combo-step {
+  position: absolute;
+  bottom: 2px;
+  right: 3px;
+  font-size: 9px;
+  color: #fde047;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* Modals (Upgrade / Relic Draft / Result) */
+.mk-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 5, 15, 0.78);
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  z-index: 40;
+}
+.mk-pixel-modal {
+  width: min(780px, 96vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #171024;
+  border: 3px solid #fde047;
+  box-shadow: 0 8px 0 #09050f;
+  padding: 14px;
+}
+.mk-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 2px solid #2e2347;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+.mk-modal-head h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #fde047;
+}
+.mk-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+.mk-upgrade-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mk-upgrade-section {
+  margin-bottom: 14px;
+}
+.mk-upgrade-section h4 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #93c5fd;
+  letter-spacing: 0.06em;
+}
+.mk-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+.mk-up-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #211834;
+  border: 2px solid #475569;
+  color: #f8fafc;
+  text-align: left;
+  cursor: not-allowed;
+  opacity: 0.65;
+  font-family: inherit;
+}
+.mk-up-btn.buyable {
+  cursor: pointer;
+  opacity: 1;
+  border-color: #fde047;
+}
+.mk-up-btn.buyable:hover {
+  background: #2f234a;
+}
+.mk-up-btn img {
+  width: 28px;
+  height: 28px;
+}
+.mk-up-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+}
+.mk-price {
+  color: #fde047;
+  font-weight: 800;
+}
+
+.mk-skill-up-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 8px;
+}
+.mk-skill-up-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: #211834;
+  border: 2px solid #475569;
+  color: #f8fafc;
+  text-align: left;
+  opacity: 0.68;
+  font-family: inherit;
+}
+.mk-skill-up-card.buyable {
+  cursor: pointer;
+  opacity: 1;
+  border-color: #60a5fa;
+}
+.mk-skill-up-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mk-skill-up-head img {
+  width: 30px;
+  height: 30px;
+}
+.mk-skill-lv-tag {
+  display: block;
+  font-size: 11px;
+  color: #fde047;
+}
+.mk-skill-up-desc {
+  margin: 0;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+.mk-evo-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mk-evo-row .evo {
+  font-size: 10px;
+  color: #94a3b8;
+}
+.mk-evo-row .evo.on {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.mk-passive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 8px;
+}
+.mk-owned-relics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.mk-owned-relic-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  border: 2px solid;
+  background: #120c1d;
+  font-size: 11px;
+}
+.mk-owned-relic-chip img {
+  width: 18px;
+  height: 18px;
+}
+
+/* Relic Draft Cards */
+.mk-timer-pill {
+  padding: 4px 10px;
+  background: #ef4444;
+  color: #fff;
+  font-weight: 800;
+  border: 2px solid #140c1c;
+}
+.mk-relic-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.mk-relic-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 10px;
+  background: #221836;
+  border: 2px solid #64748b;
+  color: #f8fafc;
+  text-align: center;
+  cursor: pointer;
+  font-family: inherit;
+}
+.mk-relic-card:hover {
+  background: #30224d;
+  transform: translateY(-2px);
+}
+.mk-relic-icon {
+  width: 36px;
+  height: 36px;
+}
+.mk-relic-stack {
+  font-size: 11px;
+  color: #4ade80;
+}
+.mk-relic-desc {
+  margin: 0;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+/* Result Modal */
+.mk-result-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.mk-result-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #fde047;
+}
+.mk-result-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.mk-result-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: #211834;
+  border: 2px solid #334155;
+}
+.mk-result-row.mvp {
+  border-color: #fde047;
+}
+.mk-result-name,
+.mk-result-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+.mk-mvp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #fde047;
+  color: #140c1c;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-weight: 800;
+}
+.mk-result-relics {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+.mk-mini-relic {
+  position: relative;
+  display: inline-flex;
+}
+.mk-mini-relic img {
+  width: 18px;
+  height: 18px;
+}
+.mk-mini-relic em {
+  font-style: normal;
+  font-size: 9px;
+  color: #fde047;
+}
+.mk-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.mk-loading-pill {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  background: rgba(20, 12, 28, 0.9);
+  border: 2px solid #38bdf8;
+  font-size: 11px;
+  z-index: 30;
+}
+
+.mk-chat-drawer {
+  position: fixed;
+  top: 52px;
+  right: 10px;
+  width: min(340px, 90vw);
+  max-height: 75vh;
+  z-index: 35;
+}
+
+.mk-guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mk-guide-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  border-bottom: 1px solid #2d2342;
+  padding-bottom: 4px;
+}
+
+/* Mobile Landscape 844x390 Optimization */
+@media (max-height: 440px), (max-width: 900px) {
+  .mk-hud-top {
+    top: 4px;
+    left: 6px;
+    right: 6px;
+    gap: 5px;
+    align-items: center;
+  }
+  .mk-biome-pill,
+  .mk-upgrade-btn span {
+    display: none;
+  }
+  .mk-boss-bar {
+    max-width: 235px;
+    padding: 2px 6px;
+  }
+  .mk-boss-bar-head {
+    font-size: 9px;
+    white-space: nowrap;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+  .mk-boss-bar-head span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mk-boss-track {
+    height: 7px;
+  }
+  .mk-party-bar {
+    top: 40px;
+    left: 6px;
+    gap: 4px;
+  }
+  .mk-party-card {
+    min-width: 96px;
+    padding: 3px 5px;
+  }
+  .mk-party-portrait {
+    width: 24px;
+    height: 24px;
+  }
+  .mk-joystick {
+    width: 82px;
+    height: 82px;
+  }
+  .mk-joystick-knob {
+    width: 30px;
+    height: 30px;
+  }
+  .mk-act-btn {
+    width: 40px;
+    height: 40px;
+  }
+  .mk-act-btn img {
+    width: 28px;
+    height: 28px;
+  }
+  .mk-act-btn.attack {
+    width: 52px;
+    height: 52px;
+  }
+  .mk-act-btn.ult {
+    width: 44px;
+    height: 44px;
+  }
+  .mk-skill-row,
+  .mk-primary-row {
+    gap: 5px;
+  }
+  .mk-relic-grid {
+    grid-template-columns: 1fr;
+  }
+}

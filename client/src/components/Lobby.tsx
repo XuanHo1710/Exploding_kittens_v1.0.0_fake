@@ -100,6 +100,24 @@ import {
   type BansungGameMode,
   type BansungHeroId,
   type BansungReviveMode,
+  MK_BIOMES,
+  MK_BIOME_LABELS,
+  MK_DIFFICULTIES,
+  MK_EVT_CONFIG,
+  MK_EVT_HERO,
+  MK_HEROES,
+  MK_HERO_IDS,
+  MK_MAX_COM_BOTS,
+  MK_MAX_PARTY_SIZE,
+  MK_MAX_PLAYERS,
+  MK_STATIC_ROOT,
+  normalizeMkConfig,
+  normalizeMkHero,
+  type MkBiome,
+  type MkPlayMode,
+  type MkConfig,
+  type MkDifficulty,
+  type MkHeroId,
   type GameMode,
   type RoomRules,
   type RoomView,
@@ -113,6 +131,7 @@ import RoomSettings, { RoomRuleSummary } from './RoomSettings';
 import { LobbySpectators, isSpectating, roomPeople } from './Spectators';
 import { roomInviteUrl } from '../roomLink';
 import { initBansungAudio, setBansungBgm, stopBansungBgm, syncBansungMute } from '../bansung/sound';
+import { initMkAudio, setMkBgm, stopMkBgm, syncMkMute } from '../mk/sound';
 import { startMiragineBgm, stopMiragineBgm } from '../thap/sound';
 import MiragineTitleScreen from './thap/MiragineTitleScreen';
 import MiragineTutorialModal from './thap/MiragineTutorialModal';
@@ -295,26 +314,39 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
     if (gameMode === 'thap_hung') {
       stopBansungBgm();
       stopTwBgm();
+      stopMkBgm();
       startMiragineBgm('menu');
       return () => stopMiragineBgm();
     }
     if (gameMode === 'bansung') {
       stopMiragineBgm();
       stopTwBgm();
+      stopMkBgm();
       void initBansungAudio().catch(() => {});
       syncBansungMute();
       setBansungBgm('menu');
       return () => stopBansungBgm();
     }
+    if (gameMode === 'mighty_knight') {
+      stopMiragineBgm();
+      stopBansungBgm();
+      stopTwBgm();
+      void initMkAudio().catch(() => {});
+      syncMkMute();
+      setMkBgm('menu');
+      return () => stopMkBgm();
+    }
     if (gameMode === 'total_war') {
       stopMiragineBgm();
       stopBansungBgm();
+      stopMkBgm();
       startTwBgm('menu');
       return () => stopTwBgm();
     }
     stopMiragineBgm();
     stopBansungBgm();
     stopTwBgm();
+    stopMkBgm();
     return undefined;
   }, [gameMode]);
 
@@ -378,6 +410,27 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
   const myBansungHero = bansungHeroOf(meId);
   const pickBansungHero = (hero: BansungHeroId) => emit('bansung:hero', { hero });
 
+  const isMk = gameMode === 'mighty_knight';
+  const mkCfg = normalizeMkConfig(view.mk?.config, online);
+  const mkMaxBots = Math.max(0, Math.min(MK_MAX_COM_BOTS, MK_MAX_PARTY_SIZE - Math.max(1, online)));
+  const mkBots = Math.max(0, Math.min(mkMaxBots, mkCfg.comBots));
+  const mkTotal = online + mkBots;
+  const mkProblem =
+    online > MK_MAX_PLAYERS
+      ? `Tối đa ${MK_MAX_PLAYERS} người`
+      : mkTotal < 1
+        ? 'Cần ≥ 1 anh hùng'
+        : '';
+  const setMk = (patch: Partial<MkConfig>) =>
+    emit(MK_EVT_CONFIG, { config: normalizeMkConfig({ ...mkCfg, ...patch }, online) });
+  const mkHeroOf = (id: string): MkHeroId => {
+    const saved = view.mk?.heroes?.[id];
+    const idx = Math.max(0, view.players.findIndex((p) => p.id === id));
+    return normalizeMkHero(saved, idx);
+  };
+  const myMkHero = mkHeroOf(meId);
+  const pickMkHero = (hero: MkHeroId) => emit(MK_EVT_HERO, { hero });
+
   // Tam Quốc Toàn Chiến: khớp 100% thế lực, liên minh và phân bổ máy AI như server (`Game.twView` / `Game.startTw`)
   const isTw = gameMode === 'total_war';
   const twCfg = view.tw?.config ?? DEFAULT_TW_CONFIG;
@@ -429,6 +482,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
     gameMode === 'exploding_kittens' ? deck.canStart
       : isThap ? !thapProblem
       : isBansung ? !bansungProblem
+      : isMk ? !mkProblem
       : isTw ? !twProblem
       : gameMode === 'ant_empire' ? online + antsCfg.bots >= 2 && online + antsCfg.bots <= ANTS_MAX_EMPIRES
       : gameMode === 'link_duel' ? online + linkBots >= 1 && online + linkBots <= LINK_MAX_PLAYERS
@@ -612,6 +666,20 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                           aria-hidden="true"
                         />
                         {hero.name}
+                      </span>
+                    );
+                  })()}
+                  {isMk && (() => {
+                    const heroId = mkHeroOf(p.id);
+                    const hero = MK_HEROES[heroId];
+                    return (
+                      <span className="thap-seat-team" style={{ borderColor: hero.accentColor }}>
+                        <img
+                          src={`${MK_STATIC_ROOT}/portraits/${heroId}.png`}
+                          alt={hero.titleVi}
+                          className="mk-seat-portrait"
+                        />
+                        {hero.titleVi}
                       </span>
                     );
                   })()}
@@ -1728,6 +1796,138 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                   </ul>
                 </details>
               </>
+            ) : isMk ? (
+              <>
+                <div className="cfg-select-grid">
+                  <SelectField
+                    label="Chế độ 2.5D Pixel"
+                    value={mkCfg.playMode}
+                    disabled={!isHost}
+                    onChange={(v) => setMk({ playMode: v as MkPlayMode })}
+                  >
+                    <option value="endless">⚔️ Vô Tận (Wave 1→∞ · 4 Quần xã)</option>
+                    <option value="boss_rush">🔥 Boss Rush (Mở sẵn 4 Skill · 4 Đại Boss)</option>
+                  </SelectField>
+
+                  <SelectField
+                    label="Đồng đội COM"
+                    hint={`Đội hình ${mkTotal}/${MK_MAX_PARTY_SIZE}`}
+                    value={mkBots}
+                    disabled={!isHost}
+                    onChange={(v) => setMk({ comBots: Number(v) })}
+                  >
+                    {Array.from({ length: mkMaxBots + 1 }, (_, bots) => (
+                      <option key={bots} value={bots}>
+                        {bots === 0 ? 'Không COM' : `+${bots} COM`}
+                      </option>
+                    ))}
+                  </SelectField>
+
+                  <SelectField
+                    label="Độ khó"
+                    value={mkCfg.difficulty}
+                    disabled={!isHost}
+                    onChange={(v) => setMk({ difficulty: v as MkDifficulty })}
+                  >
+                    {MK_DIFFICULTIES.map((d) => (
+                      <option key={d} value={d}>
+                        {d === 'normal' ? 'Thường' : d === 'hard' ? 'Khó' : 'Ác Mộng'}
+                      </option>
+                    ))}
+                  </SelectField>
+
+                  <SelectField
+                    label="Quần xã Pixel"
+                    value={mkCfg.biome}
+                    disabled={!isHost}
+                    onChange={(v) => setMk({ biome: v as MkBiome | 'auto' })}
+                  >
+                    <option value="auto">🔄 Tự động xoay vòng (5 màn/vùng)</option>
+                    {MK_BIOMES.map((b) => (
+                      <option key={b} value={b}>
+                        {MK_BIOME_LABELS[b]}
+                      </option>
+                    ))}
+                  </SelectField>
+
+                  <SelectField
+                    label="Đổi tướng COM"
+                    value={mkCfg.allowSwitchCom ? '1' : '0'}
+                    disabled={!isHost}
+                    onChange={(v) => setMk({ allowSwitchCom: v === '1' })}
+                  >
+                    <option value="1">Cho phép (Q / Bấm thẻ)</option>
+                    <option value="0">Khóa đội hình</option>
+                  </SelectField>
+                </div>
+
+                <div className="mk-hero-pick">
+                  <div className="cfg-label">
+                    <span>Anh hùng 2.5D Pixel (6 lớp · 15 ảnh/tướng · 5 kỹ năng)</span>
+                    <span className="cfg-hint">
+                      {!me || spectating ? 'Đang xem' : `${MK_HEROES[myMkHero].titleVi} · ${MK_HEROES[myMkHero].codeName}`}
+                    </span>
+                  </div>
+                  <div className="mk-hero-grid">
+                    {MK_HERO_IDS.map((heroId) => {
+                      const hero = MK_HEROES[heroId];
+                      const active = myMkHero === heroId;
+                      return (
+                        <button
+                          key={heroId}
+                          type="button"
+                          className={`mk-hero-btn${active ? ' on' : ''}`}
+                          disabled={!me || spectating}
+                          onClick={() => pickMkHero(heroId)}
+                          title={`${hero.titleVi}: ${hero.skills.map((s) => s.nameVi).join(' · ')} | ULT: ${hero.ultimate.nameVi}`}
+                          style={{ borderColor: active ? hero.accentColor : undefined }}
+                        >
+                          <img
+                            src={`${MK_STATIC_ROOT}/portraits/${heroId}.png`}
+                            alt={hero.titleVi}
+                            className="mk-hero-portrait mk-pixel"
+                            style={{ imageRendering: 'pixelated' }}
+                          />
+                          <div className="mk-hero-info">
+                            <div className="mk-hero-head">
+                              <strong>{hero.titleVi}</strong>
+                              <span className="mk-hero-role">{hero.elementVi}</span>
+                            </div>
+                            <div className="mk-hero-skills">
+                              <span>
+                                <b>[K]</b> {hero.skills[0].nameVi} · <b>[L]</b> {hero.skills[1].nameVi}
+                              </span>
+                              <span>
+                                <b>[I]</b> {hero.skills[2].nameVi} · <b>[O]</b> {hero.skills[3].nameVi}
+                              </span>
+                              <span>
+                                <b>[R] ULT:</b> {hero.ultimate.nameVi}
+                              </span>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="cfg-tags">
+                  <span>WASD di chuyển 2.5D</span>
+                  <span>J / Z Combo 3 nhịp</span>
+                  <span>K · L · I · O (4 Skill) · R Ultimate</span>
+                  <span>E Perfect Parry · Space Dash · Q đổi COM</span>
+                  <span>U Nâng cấp &amp; Tiến hóa Lv3/Lv5</span>
+                </div>
+
+                <details className="cfg-details">
+                  <summary>Chi tiết chế độ Vô tận &amp; Khiên EVADE</summary>
+                  <ul className="rule-summary-list">
+                    <li>CHALLENGE 1 → ∞: Cứ mỗi 3 đợt đụng độ Boss khổng lồ (Đại Pháp Sư Đầu Lâu, Tù Trưởng Búa Chiến, Cự Thạch Dung Nham, Ma Vương Vô Tận).</li>
+                    <li>Dùng Vàng &amp; SP nâng ATK/HP/DEF/SPD (Lv.1→15) và mở khóa Skill 2 + Nội tại (Lv.0→5).</li>
+                    <li>Tích hợp khiên EVADE né trọn đòn đánh, hồi sinh đồng đội và săn Hồn Ma Hộ Mệnh rơi ngọc buff.</li>
+                  </ul>
+                </details>
+              </>
             ) : gameMode === 'blackjack_21' ? (
               <div className="cfg-tags">
                 <span>Chủ phòng làm Nhà Cái</span>
@@ -1758,7 +1958,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                 {online < modeInfo.minPlayers ? (
                   `Cần ít nhất ${modeInfo.minPlayers} người`
                 ) : !deckOk ? (
-                  isThap ? thapProblem : isBansung ? bansungProblem : isTw ? twProblem : gameMode === 'ant_empire' ? 'Cần ≥ 2 đế chế' : gameMode === 'link_duel' ? `Cần 1–${LINK_MAX_PLAYERS} người` : 'Luật chưa hợp lệ'
+                  isThap ? thapProblem : isBansung ? bansungProblem : isMk ? mkProblem : isTw ? twProblem : gameMode === 'ant_empire' ? 'Cần ≥ 2 đế chế' : gameMode === 'link_duel' ? `Cần 1–${LINK_MAX_PLAYERS} người` : 'Luật chưa hợp lệ'
                 ) : poor.length > 0 ? (
                   'Có người thiếu xu'
                 ) : awaitingReady.length > 0 ? (

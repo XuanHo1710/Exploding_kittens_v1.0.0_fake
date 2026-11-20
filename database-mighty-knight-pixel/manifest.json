@@ -1,0 +1,494 @@
+{
+  "version": 2,
+  "style": "2.5d-pixel",
+  "staticRoot": "/database-mighty-knight-pixel",
+  "virtualResolution": {
+    "w": 640,
+    "h": 360
+  },
+  "frameBudget": {
+    "min": 10,
+    "max": 15
+  },
+  "characters": {
+    "heroes": {
+      "knight": {
+        "path": "/database-mighty-knight-pixel/sprites/heroes/knight.png",
+        "portrait": "/database-mighty-knight-pixel/portraits/knight.png",
+        "frames": 15,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#3b82f6"
+      },
+      "archer": {
+        "path": "/database-mighty-knight-pixel/sprites/heroes/archer.png",
+        "portrait": "/database-mighty-knight-pixel/portraits/archer.png",
+        "frames": 15,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#22c55e"
+      },
+      "rogue": {
+        "path": "/database-mighty-knight-pixel/sprites/heroes/rogue.png",
+        "portrait": "/database-mighty-knight-pixel/portraits/rogue.png",
+        "frames": 15,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#eab308"
+      },
+      "barbarian": {
+        "path": "/database-mighty-knight-pixel/sprites/heroes/barbarian.png",
+        "portrait": "/database-mighty-knight-pixel/portraits/barbarian.png",
+        "frames": 15,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#ef4444"
+      },
+      "mage": {
+        "path": "/database-mighty-knight-pixel/sprites/heroes/mage.png",
+        "portrait": "/database-mighty-knight-pixel/portraits/mage.png",
+        "frames": 15,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#a855f7"
+      },
+      "lancer": {
+        "path": "/database-mighty-knight-pixel/sprites/heroes/lancer.png",
+        "portrait": "/database-mighty-knight-pixel/portraits/lancer.png",
+        "frames": 15,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#06b6d4"
+      }
+    },
+    "enemies": {
+      "skull_imp": {
+        "path": "/database-mighty-knight-pixel/sprites/enemies/skull_imp.png",
+        "frames": 11,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#a855f7"
+      },
+      "goblin_raider": {
+        "path": "/database-mighty-knight-pixel/sprites/enemies/goblin_raider.png",
+        "frames": 11,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#4ade80"
+      },
+      "shield_orc": {
+        "path": "/database-mighty-knight-pixel/sprites/enemies/shield_orc.png",
+        "frames": 11,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#94a3b8"
+      },
+      "bone_brute": {
+        "path": "/database-mighty-knight-pixel/sprites/enemies/bone_brute.png",
+        "frames": 11,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#e2e8f0"
+      },
+      "tribal_shaman": {
+        "path": "/database-mighty-knight-pixel/sprites/enemies/tribal_shaman.png",
+        "frames": 12,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#f43f5e"
+      },
+      "frost_archer": {
+        "path": "/database-mighty-knight-pixel/sprites/enemies/frost_archer.png",
+        "frames": 12,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#38bdf8"
+      },
+      "bomber_imp": {
+        "path": "/database-mighty-knight-pixel/sprites/enemies/bomber_imp.png",
+        "frames": 11,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#f97316"
+      },
+      "nether_ghost": {
+        "path": "/database-mighty-knight-pixel/sprites/enemies/nether_ghost.png",
+        "frames": 11,
+        "cellW": 48,
+        "cellH": 48,
+        "anchorX": 24,
+        "anchorY": 44,
+        "accentColor": "#fde047"
+      }
+    },
+    "bosses": {
+      "boss_elder_shaman": {
+        "path": "/database-mighty-knight-pixel/sprites/bosses/boss_elder_shaman.png",
+        "frames": 15,
+        "cellW": 80,
+        "cellH": 80,
+        "anchorX": 40,
+        "anchorY": 74,
+        "accentColor": "#ef4444"
+      },
+      "boss_war_chieftain": {
+        "path": "/database-mighty-knight-pixel/sprites/bosses/boss_war_chieftain.png",
+        "frames": 15,
+        "cellW": 80,
+        "cellH": 80,
+        "anchorX": 40,
+        "anchorY": 74,
+        "accentColor": "#f59e0b"
+      },
+      "boss_lava_golem": {
+        "path": "/database-mighty-knight-pixel/sprites/bosses/boss_lava_golem.png",
+        "frames": 15,
+        "cellW": 80,
+        "cellH": 80,
+        "anchorX": 40,
+        "anchorY": 74,
+        "accentColor": "#f97316"
+      },
+      "boss_abyss_lord": {
+        "path": "/database-mighty-knight-pixel/sprites/bosses/boss_abyss_lord.png",
+        "frames": 15,
+        "cellW": 80,
+        "cellH": 80,
+        "anchorX": 40,
+        "anchorY": 74,
+        "accentColor": "#c084fc"
+      }
+    }
+  },
+  "vfx": {
+    "slash_crescent": {
+      "path": "/database-mighty-knight-pixel/vfx/slash_crescent.png",
+      "frames": 4,
+      "cellW": 64,
+      "cellH": 48,
+      "anchorX": 32,
+      "anchorY": 24,
+      "fps": 18
+    },
+    "slash_cross_x": {
+      "path": "/database-mighty-knight-pixel/vfx/slash_cross_x.png",
+      "frames": 5,
+      "cellW": 64,
+      "cellH": 64,
+      "anchorX": 32,
+      "anchorY": 32,
+      "fps": 18
+    },
+    "whirlwind_360": {
+      "path": "/database-mighty-knight-pixel/vfx/whirlwind_360.png",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 64,
+      "anchorX": 48,
+      "anchorY": 34,
+      "fps": 18
+    },
+    "holy_pillar": {
+      "path": "/database-mighty-knight-pixel/vfx/holy_pillar.png",
+      "frames": 6,
+      "cellW": 64,
+      "cellH": 128,
+      "anchorX": 32,
+      "anchorY": 116,
+      "fps": 16
+    },
+    "ground_fissure": {
+      "path": "/database-mighty-knight-pixel/vfx/ground_fissure.png",
+      "frames": 5,
+      "cellW": 96,
+      "cellH": 48,
+      "anchorX": 48,
+      "anchorY": 28,
+      "fps": 14
+    },
+    "fire_meteor": {
+      "path": "/database-mighty-knight-pixel/vfx/fire_meteor.png",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 64,
+      "anchorX": 24,
+      "anchorY": 46,
+      "fps": 15
+    },
+    "lightning_bolt": {
+      "path": "/database-mighty-knight-pixel/vfx/lightning_bolt.png",
+      "frames": 5,
+      "cellW": 48,
+      "cellH": 128,
+      "anchorX": 24,
+      "anchorY": 120,
+      "fps": 18
+    },
+    "frost_nova": {
+      "path": "/database-mighty-knight-pixel/vfx/frost_nova.png",
+      "frames": 5,
+      "cellW": 96,
+      "cellH": 64,
+      "anchorX": 48,
+      "anchorY": 36,
+      "fps": 15
+    },
+    "gravity_vortex": {
+      "path": "/database-mighty-knight-pixel/vfx/gravity_vortex.png",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 64,
+      "anchorX": 48,
+      "anchorY": 34,
+      "fps": 14
+    },
+    "dragon_spirit": {
+      "path": "/database-mighty-knight-pixel/vfx/dragon_spirit.png",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 48,
+      "anchorX": 48,
+      "anchorY": 24,
+      "fps": 16
+    },
+    "phoenix_flame": {
+      "path": "/database-mighty-knight-pixel/vfx/phoenix_flame.png",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 64,
+      "anchorX": 48,
+      "anchorY": 32,
+      "fps": 16
+    },
+    "magic_rune_25d": {
+      "path": "/database-mighty-knight-pixel/vfx/magic_rune_25d.png",
+      "frames": 4,
+      "cellW": 80,
+      "cellH": 40,
+      "anchorX": 40,
+      "anchorY": 20,
+      "fps": 12
+    },
+    "parry_ring": {
+      "path": "/database-mighty-knight-pixel/vfx/parry_ring.png",
+      "frames": 4,
+      "cellW": 64,
+      "cellH": 64,
+      "anchorX": 32,
+      "anchorY": 32,
+      "fps": 18
+    },
+    "aura_fury": {
+      "path": "/database-mighty-knight-pixel/vfx/aura_fury.png",
+      "frames": 4,
+      "cellW": 48,
+      "cellH": 56,
+      "anchorX": 24,
+      "anchorY": 48,
+      "fps": 12
+    },
+    "hit_spark": {
+      "path": "/database-mighty-knight-pixel/vfx/hit_spark.png",
+      "frames": 4,
+      "cellW": 32,
+      "cellH": 32,
+      "anchorX": 16,
+      "anchorY": 16,
+      "fps": 20
+    },
+    "dust_puff": {
+      "path": "/database-mighty-knight-pixel/vfx/dust_puff.png",
+      "frames": 4,
+      "cellW": 32,
+      "cellH": 24,
+      "anchorX": 16,
+      "anchorY": 18,
+      "fps": 14
+    },
+    "projectiles_sheet": {
+      "path": "/database-mighty-knight-pixel/vfx/projectiles_sheet.png",
+      "frames": 12,
+      "cellW": 32,
+      "cellH": 24,
+      "anchorX": 16,
+      "anchorY": 12,
+      "fps": 12
+    },
+    "pickups_sheet": {
+      "path": "/database-mighty-knight-pixel/vfx/pickups_sheet.png",
+      "frames": 10,
+      "cellW": 16,
+      "cellH": 16,
+      "anchorX": 8,
+      "anchorY": 13,
+      "fps": 10
+    }
+  },
+  "biomes": {
+    "grasslands": {
+      "bg_sky": "/database-mighty-knight-pixel/terrains/grasslands/bg_sky.png",
+      "bg_far": "/database-mighty-knight-pixel/terrains/grasslands/bg_far.png",
+      "bg_mid": "/database-mighty-knight-pixel/terrains/grasslands/bg_mid.png",
+      "ground_arena": "/database-mighty-knight-pixel/terrains/grasslands/ground_arena.png",
+      "fg_silhouette": "/database-mighty-knight-pixel/terrains/grasslands/fg_silhouette.png"
+    },
+    "jungle": {
+      "bg_sky": "/database-mighty-knight-pixel/terrains/jungle/bg_sky.png",
+      "bg_far": "/database-mighty-knight-pixel/terrains/jungle/bg_far.png",
+      "bg_mid": "/database-mighty-knight-pixel/terrains/jungle/bg_mid.png",
+      "ground_arena": "/database-mighty-knight-pixel/terrains/jungle/ground_arena.png",
+      "fg_silhouette": "/database-mighty-knight-pixel/terrains/jungle/fg_silhouette.png"
+    },
+    "volcano": {
+      "bg_sky": "/database-mighty-knight-pixel/terrains/volcano/bg_sky.png",
+      "bg_far": "/database-mighty-knight-pixel/terrains/volcano/bg_far.png",
+      "bg_mid": "/database-mighty-knight-pixel/terrains/volcano/bg_mid.png",
+      "ground_arena": "/database-mighty-knight-pixel/terrains/volcano/ground_arena.png",
+      "fg_silhouette": "/database-mighty-knight-pixel/terrains/volcano/fg_silhouette.png"
+    },
+    "citadel": {
+      "bg_sky": "/database-mighty-knight-pixel/terrains/citadel/bg_sky.png",
+      "bg_far": "/database-mighty-knight-pixel/terrains/citadel/bg_far.png",
+      "bg_mid": "/database-mighty-knight-pixel/terrains/citadel/bg_mid.png",
+      "ground_arena": "/database-mighty-knight-pixel/terrains/citadel/ground_arena.png",
+      "fg_silhouette": "/database-mighty-knight-pixel/terrains/citadel/fg_silhouette.png"
+    }
+  },
+  "ui": {
+    "skillIcons": {
+      "skill_archer_1": "/database-mighty-knight-pixel/ui/skill_archer_1.png",
+      "skill_archer_2": "/database-mighty-knight-pixel/ui/skill_archer_2.png",
+      "skill_archer_3": "/database-mighty-knight-pixel/ui/skill_archer_3.png",
+      "skill_archer_4": "/database-mighty-knight-pixel/ui/skill_archer_4.png",
+      "skill_barbarian_1": "/database-mighty-knight-pixel/ui/skill_barbarian_1.png",
+      "skill_barbarian_2": "/database-mighty-knight-pixel/ui/skill_barbarian_2.png",
+      "skill_barbarian_3": "/database-mighty-knight-pixel/ui/skill_barbarian_3.png",
+      "skill_barbarian_4": "/database-mighty-knight-pixel/ui/skill_barbarian_4.png",
+      "skill_knight_1": "/database-mighty-knight-pixel/ui/skill_knight_1.png",
+      "skill_knight_2": "/database-mighty-knight-pixel/ui/skill_knight_2.png",
+      "skill_knight_3": "/database-mighty-knight-pixel/ui/skill_knight_3.png",
+      "skill_knight_4": "/database-mighty-knight-pixel/ui/skill_knight_4.png",
+      "skill_lancer_1": "/database-mighty-knight-pixel/ui/skill_lancer_1.png",
+      "skill_lancer_2": "/database-mighty-knight-pixel/ui/skill_lancer_2.png",
+      "skill_lancer_3": "/database-mighty-knight-pixel/ui/skill_lancer_3.png",
+      "skill_lancer_4": "/database-mighty-knight-pixel/ui/skill_lancer_4.png",
+      "skill_mage_1": "/database-mighty-knight-pixel/ui/skill_mage_1.png",
+      "skill_mage_2": "/database-mighty-knight-pixel/ui/skill_mage_2.png",
+      "skill_mage_3": "/database-mighty-knight-pixel/ui/skill_mage_3.png",
+      "skill_mage_4": "/database-mighty-knight-pixel/ui/skill_mage_4.png",
+      "skill_rogue_1": "/database-mighty-knight-pixel/ui/skill_rogue_1.png",
+      "skill_rogue_2": "/database-mighty-knight-pixel/ui/skill_rogue_2.png",
+      "skill_rogue_3": "/database-mighty-knight-pixel/ui/skill_rogue_3.png",
+      "skill_rogue_4": "/database-mighty-knight-pixel/ui/skill_rogue_4.png",
+      "ult_archer": "/database-mighty-knight-pixel/ui/ult_archer.png",
+      "ult_barbarian": "/database-mighty-knight-pixel/ui/ult_barbarian.png",
+      "ult_knight": "/database-mighty-knight-pixel/ui/ult_knight.png",
+      "ult_lancer": "/database-mighty-knight-pixel/ui/ult_lancer.png",
+      "ult_mage": "/database-mighty-knight-pixel/ui/ult_mage.png",
+      "ult_rogue": "/database-mighty-knight-pixel/ui/ult_rogue.png"
+    },
+    "relicIcons": {
+      "relic_aegis_rune": "/database-mighty-knight-pixel/ui/relic_aegis_rune.png",
+      "relic_chrono_crystal": "/database-mighty-knight-pixel/ui/relic_chrono_crystal.png",
+      "relic_combo_master": "/database-mighty-knight-pixel/ui/relic_combo_master.png",
+      "relic_frost_brand": "/database-mighty-knight-pixel/ui/relic_frost_brand.png",
+      "relic_fury_core": "/database-mighty-knight-pixel/ui/relic_fury_core.png",
+      "relic_giant_slayer": "/database-mighty-knight-pixel/ui/relic_giant_slayer.png",
+      "relic_midas_coin": "/database-mighty-knight-pixel/ui/relic_midas_coin.png",
+      "relic_parry_emblem": "/database-mighty-knight-pixel/ui/relic_parry_emblem.png",
+      "relic_phantom_cloak": "/database-mighty-knight-pixel/ui/relic_phantom_cloak.png",
+      "relic_phoenix_feather": "/database-mighty-knight-pixel/ui/relic_phoenix_feather.png",
+      "relic_thunder_sigil": "/database-mighty-knight-pixel/ui/relic_thunder_sigil.png",
+      "relic_vampiric_fang": "/database-mighty-knight-pixel/ui/relic_vampiric_fang.png"
+    },
+    "hudIcons": {
+      "btn_attack": "/database-mighty-knight-pixel/ui/btn_attack.png",
+      "btn_dash": "/database-mighty-knight-pixel/ui/btn_dash.png",
+      "btn_guard": "/database-mighty-knight-pixel/ui/btn_guard.png",
+      "btn_switch": "/database-mighty-knight-pixel/ui/btn_switch.png",
+      "icon_padlock": "/database-mighty-knight-pixel/ui/icon_padlock.png",
+      "stat_atk": "/database-mighty-knight-pixel/ui/stat_atk.png",
+      "stat_def": "/database-mighty-knight-pixel/ui/stat_def.png",
+      "stat_hp": "/database-mighty-knight-pixel/ui/stat_hp.png",
+      "stat_spd": "/database-mighty-knight-pixel/ui/stat_spd.png"
+    }
+  },
+  "audio": {
+    "bgm": {
+      "battle_grass": "/database-mighty-knight-pixel/audio/bgm/battle_grass.wav",
+      "battle_volcano": "/database-mighty-knight-pixel/audio/bgm/battle_volcano.wav",
+      "boss_theme": "/database-mighty-knight-pixel/audio/bgm/boss_theme.wav",
+      "lobby_theme": "/database-mighty-knight-pixel/audio/bgm/lobby_theme.wav"
+    },
+    "sfx": {
+      "boss_roar": "/database-mighty-knight-pixel/audio/sfx/boss_roar.wav",
+      "bow_shoot": "/database-mighty-knight-pixel/audio/sfx/bow_shoot.wav",
+      "coin_pick": "/database-mighty-knight-pixel/audio/sfx/coin_pick.wav",
+      "dash_whoosh": "/database-mighty-knight-pixel/audio/sfx/dash_whoosh.wav",
+      "evade_pop": "/database-mighty-knight-pixel/audio/sfx/evade_pop.wav",
+      "fury_up": "/database-mighty-knight-pixel/audio/sfx/fury_up.wav",
+      "guard_block": "/database-mighty-knight-pixel/audio/sfx/guard_block.wav",
+      "guard_up": "/database-mighty-knight-pixel/audio/sfx/guard_up.wav",
+      "heal_pop": "/database-mighty-knight-pixel/audio/sfx/heal_pop.wav",
+      "hero_down": "/database-mighty-knight-pixel/audio/sfx/hero_down.wav",
+      "hero_hit": "/database-mighty-knight-pixel/audio/sfx/hero_hit.wav",
+      "level_up": "/database-mighty-knight-pixel/audio/sfx/level_up.wav",
+      "mage_cast": "/database-mighty-knight-pixel/audio/sfx/mage_cast.wav",
+      "parry_clang": "/database-mighty-knight-pixel/audio/sfx/parry_clang.wav",
+      "revive_ok": "/database-mighty-knight-pixel/audio/sfx/revive_ok.wav",
+      "skill_axe": "/database-mighty-knight-pixel/audio/sfx/skill_axe.wav",
+      "skill_blink": "/database-mighty-knight-pixel/audio/sfx/skill_blink.wav",
+      "skill_charge": "/database-mighty-knight-pixel/audio/sfx/skill_charge.wav",
+      "skill_flurry": "/database-mighty-knight-pixel/audio/sfx/skill_flurry.wav",
+      "skill_frost": "/database-mighty-knight-pixel/audio/sfx/skill_frost.wav",
+      "skill_gravity": "/database-mighty-knight-pixel/audio/sfx/skill_gravity.wav",
+      "skill_holy": "/database-mighty-knight-pixel/audio/sfx/skill_holy.wav",
+      "skill_lance": "/database-mighty-knight-pixel/audio/sfx/skill_lance.wav",
+      "skill_meteor": "/database-mighty-knight-pixel/audio/sfx/skill_meteor.wav",
+      "skill_shadow": "/database-mighty-knight-pixel/audio/sfx/skill_shadow.wav",
+      "skill_slam": "/database-mighty-knight-pixel/audio/sfx/skill_slam.wav",
+      "skill_snipe": "/database-mighty-knight-pixel/audio/sfx/skill_snipe.wav",
+      "skill_spin": "/database-mighty-knight-pixel/audio/sfx/skill_spin.wav",
+      "skill_thunder": "/database-mighty-knight-pixel/audio/sfx/skill_thunder.wav",
+      "skill_warcry": "/database-mighty-knight-pixel/audio/sfx/skill_warcry.wav",
+      "slash_archer": "/database-mighty-knight-pixel/audio/sfx/slash_archer.wav",
+      "slash_barbarian": "/database-mighty-knight-pixel/audio/sfx/slash_barbarian.wav",
+      "slash_heavy": "/database-mighty-knight-pixel/audio/sfx/slash_heavy.wav",
+      "slash_knight": "/database-mighty-knight-pixel/audio/sfx/slash_knight.wav",
+      "slash_lancer": "/database-mighty-knight-pixel/audio/sfx/slash_lancer.wav",
+      "slash_mage": "/database-mighty-knight-pixel/audio/sfx/slash_mage.wav",
+      "slash_rogue": "/database-mighty-knight-pixel/audio/sfx/slash_rogue.wav",
+      "switch_hero": "/database-mighty-knight-pixel/audio/sfx/switch_hero.wav",
+      "ui_click": "/database-mighty-knight-pixel/audio/sfx/ui_click.wav",
+      "ultimate_cast": "/database-mighty-knight-pixel/audio/sfx/ultimate_cast.wav",
+      "upgrade_ok": "/database-mighty-knight-pixel/audio/sfx/upgrade_ok.wav",
+      "wave_clear": "/database-mighty-knight-pixel/audio/sfx/wave_clear.wav"
+    }
+  }
+}

@@ -3,6 +3,7 @@ import { randomInt, randomUUID } from 'crypto';
 import type { Server } from 'socket.io';
 import {
   BANSUNG_EVT_FRAME,
+  MK_EVT_FRAME,
   BET_OPTIONS,
   CHAT_MAX_LEN,
   EMOTES,
@@ -11,6 +12,7 @@ import {
   normalizeRoomRules,
   roomDeckSummary,
   type BansungFrame,
+  type MkFrame,
   type ChatMessage,
   type Emote,
   type GameMode,
@@ -26,18 +28,21 @@ const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 
 type BansungHookedGameHooks = GameHooks & {
   bansungFrame(game: Game, playerId: string, frame: BansungFrame): void;
+  mkFrame(game: Game, playerId: string, frame: MkFrame): void;
 };
 
 type BansungGameOps = {
   setBansungConfig?: (byId: string, raw: unknown) => unknown;
   setBansungHero?: (playerId: string, raw: unknown) => unknown;
+  setMkConfig?: (byId: string, raw: unknown) => unknown;
+  setMkHero?: (playerId: string, raw: unknown) => unknown;
 };
 
-/** Normalizes external mode IDs (including `ban_sung` alias) against `GAME_MODES`. */
+/** Normalizes external mode IDs (including `ban_sung` / `mk` aliases) against `GAME_MODES`. */
 export function normalizeGameMode(raw?: string): GameMode | undefined {
   if (typeof raw !== 'string') return undefined;
   const trimmed = raw.trim();
-  const key = trimmed === 'ban_sung' ? 'bansung' : trimmed;
+  const key = trimmed === 'ban_sung' ? 'bansung' : trimmed === 'mk' ? 'mighty_knight' : trimmed;
   return key && Object.hasOwn(GAME_MODES, key) ? (key as GameMode) : undefined;
 }
 
@@ -87,6 +92,23 @@ export class RoomsService {
         room.emit(BANSUNG_EVT_FRAME, frame);
       } else {
         room.volatile.emit(BANSUNG_EVT_FRAME, frame);
+      }
+    },
+    mkFrame: (game, playerId, frame) => {
+      if (this.playerRoom.get(playerId) !== game.code) return;
+      const room = this.server?.to(`p:${playerId}`);
+      if (!room) return;
+      if (
+        frame.tick === 0 ||
+        frame.damages.length > 0 ||
+        frame.fx.length > 0 ||
+        frame.ultCutIns.length > 0 ||
+        frame.sfx.length > 0 ||
+        frame.phase !== 'combat'
+      ) {
+        room.emit(MK_EVT_FRAME, frame);
+      } else {
+        (room.volatile ?? room).emit(MK_EVT_FRAME, frame);
       }
     },
     linkState: (game, playerId, state) => {
@@ -269,6 +291,8 @@ export class RoomsService {
       if (game.gameMode === 'loto' && game.pot > 0) game.note(`💰 Mua tờ: 50 xu/tờ – hũ ${game.pot} xu cho người KINH trước!`);
       else if (game.gameMode === 'bansung' && typeof bet === 'number' && bet > 0) {
         game.note(`💰 Mỗi người góp ${bet} xu – hũ thưởng Co-op ${game.pot} xu cho người sống sót cuối trận!`);
+      } else if (game.gameMode === 'mighty_knight' && typeof bet === 'number' && bet > 0) {
+        game.note(`💰 Mỗi người góp ${bet} xu – hũ thưởng Mighty Knight ${game.pot} xu (chia thưởng từ Boss Challenge 3+)!`);
       } else if (typeof bet === 'number' && bet > 0) game.note(`💰 Mỗi người cược ${bet} xu – hũ ${game.pot} xu cho người thắng!`);
       game.players.forEach((p) => this.pushAccount(p.id));
       this.broadcast(game);
@@ -490,6 +514,22 @@ export class RoomsService {
       throw new GameError('Chế độ Bắn Súng Co-op chưa sẵn sàng.');
     }
     game.setBansungHero(playerId, raw);
+  }
+
+  setMkConfig(playerId: string, raw: unknown) {
+    const game = this.readyRoom(playerId) as Game & BansungGameOps;
+    if (typeof game.setMkConfig !== 'function') {
+      throw new GameError('Chế độ Mighty Knight chưa sẵn sàng.');
+    }
+    game.setMkConfig(playerId, raw);
+  }
+
+  setMkHero(playerId: string, raw: unknown) {
+    const game = this.readyRoom(playerId) as Game & BansungGameOps;
+    if (typeof game.setMkHero !== 'function') {
+      throw new GameError('Chế độ Mighty Knight chưa sẵn sàng.');
+    }
+    game.setMkHero(playerId, raw);
   }
 
   create(playerId: string, name: string, avatar?: string, rules?: unknown, gameMode?: string) {

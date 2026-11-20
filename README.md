@@ -7,6 +7,7 @@ Game Mèo Nổ chơi qua trình duyệt cho 2–10 người. Mỗi phòng có th
 - `shared/`: danh sách lá bài, số lượng, kiểu dữ liệu dùng chung
 - `database/`: ảnh lá bài. Map tên file ↔ loại lá trong `client/src/cardImages.ts`
 - `database-total-war/`: kho dữ liệu lịch sử & RTS mã nguồn mở (`0ADMods/han_china`, `IMRZ/twtk-interactive-map`, `Mugen87/yuka` kèm `SOURCES.md`), chân dung danh tướng, thẻ bài Thủy Mặc, sprite sheet 6 trạng thái, địa hình và âm thanh của Tam Quốc Toàn Chiến
+- `database-mighty-knight-pixel/`: kho tài nguyên **2.5D Pixel Art** (chuẩn cứng **10–15 ảnh/nhân vật**, 18 Master Strip PNG, 18 Pixel VFX, 4 Quần xã × 5 lớp parallax, 4 BGM + 42 SFX 16-bit Chiptune/FM) của **Mighty Knight 2.5D Pixel**
 - `design/`: trang mẫu thiết kế lá bài
 
 Người chơi đăng ký/đăng nhập bằng tên và PIN. Trình duyệt lưu ID cùng token đăng nhập trong localStorage.
@@ -105,6 +106,28 @@ Chọn **Miragine War** khi tạo phòng để chơi bản tái hiện **100% ng
 | Thông số 16 binh chủng, Giáp Nhẹ/Nặng, kinh tế & hằng số chiến trường `2040×800` | `shared/src/thap/*` |
 | Mô phỏng đợt quân 30s, chiến đấu, Pha Lê & AI khắc chế (Method 481) | `server/src/game/thap/*` |
 | Nạp sprite sheet, âm thanh, vẽ canvas chiến trường & giao diện/HUD điều khiển | `client/src/thap/*`, `client/src/components/thap/*`, `client/src/components/ThapBoard.tsx` |
+
+## ⚔️🛡️ Mighty Knight 2.5D Pixel (1–6 Người + COM · 10–15 Ảnh/Nhân Vật · 30 Kỹ Năng)
+
+Chọn **Mighty Knight 2.5D Pixel** (`gameMode: 'mighty_knight'`) khi tạo phòng. Chế độ hành động nhập vai chặt chém **2.5D Pixel Art** sắc cạnh (độ phân giải pixel ảo `640×360`, chiến trường `1280×360`, `imageSmoothingEnabled = false`, Server quyết định **30 Hz** · Client nội suy **60 FPS**):
+
+- **Chuẩn cứng 10–15 ảnh/nhân vật kết hợp Động cơ Biên đạo 3 Tầng (`MkChoreoTimeline`)**:
+  - Mỗi nhân vật chỉ gồm **đúng 1 file Master Strip PNG** (6 Anh Hùng **15 ảnh** `720×48`, 6 Quái thường **11 ảnh**, 2 Tinh anh **12 ảnh**, 4 Đại Boss **15 ảnh** `1200×80`), alpha nhị phân `0/255` kiểm định tự động trong `server/test/mk-pixel-assets.test.cjs`.
+  - Kết hợp biên đạo khóa pose + nhảy trục `Z` + `flipX` xoay 360° + dư ảnh pixel + micro-hitstop + **18 dải Pixel VFX** tạo ra **60+ hoạt ảnh chiến đấu khác biệt**.
+- **6 Anh Hùng × 30 Kỹ Năng Chủ Động / Ultimate**:
+  - *Aragon (Hiệp Sĩ Lam)*, *Varrick (Cung Thủ)*, *Ramza (Sát Thủ)*, *Conan (Cuồng Chiến)*, *Balthazar (Pháp Sư)*, *Draco (Thương Kỵ Rồng)*.
+  - Mỗi tướng có **Combo 3 nhịp** + **Dash-Attack** + **4 Kỹ năng chủ động** (có **Tiến hóa hiệu ứng ở Lv3 & Lv5**) + **1 Tuyệt kỹ Ultimate** (kèm Banner Cut-In 0.45s khi đầy 100% Fury) + **Guard / Perfect Parry** (cửa sổ 180 ms đầu chặn 100% sát thương, phản đòn, +20 Fury & hoàn 30% hồi chiêu!) + **2 Nội tại**.
+- **Endless Challenge & Boss Rush · 4 Quần Xã · 12 Thánh Vật Roguelite**:
+  - Xoay vòng 4 Quần xã Pixel × 5 lớp parallax (*Đồng Cỏ Ngọc Bích → Rừng Cổ Mộ → Núi Lửa Nham Thạch → Thành Cổ Tinh Tú*), 8 loại quái chiến thuật, 4 Đại Boss 3 giai đoạn (66%/33% HP + Telegraph đỏ) và bảng chọn **1 trong 3 Thánh Vật Relic** sau mỗi Boss.
+  - Hỗ trợ **đổi tướng sang COM (`Q`/`Tab`)** giữa trận và **Hồi sinh Co-op 2.5s**.
+- **Phím tắt**: `WASD`/Mũi tên di chuyển · `J`/`Z` Combo 3 nhịp · `K/L/I/O` (hoặc `1–4`) 4 Kỹ năng · `R` Ultimate · `E`/`H` Guard/Perfect Parry · `Space`/`Shift` Dash · `Q`/`Tab` Đổi tướng COM · `U` Nâng cấp.
+
+| Muốn đổi | Sửa ở |
+|---|---|
+| Hằng số 640×360, 6 Hero, 30 Skill, 12 Relic, 60+ Choreo Timeline | `shared/src/mk/*` |
+| Pipeline sinh ảnh pixel 10–15 ảnh, 18 VFX, 4 Biome & âm thanh 16-bit | `scripts/mightyknight-pixel/*`, `database-mighty-knight-pixel/*` |
+| Mô phỏng 30 Hz, Combo/Parry, 30 Skill, 4 Boss 3 pha, AI COM, chống gian lận | `server/src/game/mk/*` |
+| Renderer 2.5D Pixel Zero-Blur, Choreo Player, HUD, Relic/Upgrade & âm thanh | `client/src/mk/*`, `client/src/components/MkBoard.tsx`, `client/src/components/mk/*` |
 
 ## 🐉⚔️ Tam Quốc Toàn Chiến (Total War: Three Kingdoms)
 

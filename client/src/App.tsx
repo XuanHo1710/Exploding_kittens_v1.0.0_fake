@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
-import { DEFAULT_ROOM_RULES, type AccountInfo, type AntsFrame, type BansungFrame, type ChatMessage, type Emote, type GameFx, type Identity, type LinkState, type PrivateNotice, type RoomView, type ThapFrame, type TwFrame } from '../../shared/src';
+import { DEFAULT_ROOM_RULES, MK_EVT_FRAME, type AccountInfo, type AntsFrame, type BansungFrame, type ChatMessage, type Emote, type GameFx, type Identity, type LinkState, type MkFrame, type PrivateNotice, type RoomView, type ThapFrame, type TwFrame } from '../../shared/src';
 import { RoomPlayerCountContext, RoomRulesContext } from './roomRulesContext';
 import { clearIdentity, loadIdentity, updateIdentity } from './identity';
 import { logoutAccount } from './api';
@@ -26,6 +26,9 @@ import LinkBoard from './components/LinkBoard';
 import LotoBoard from './components/LotoBoard';
 import BansungBoard from './components/BansungBoard';
 import { bansungStore } from './bansung/store';
+import MkBoard from './components/MkBoard';
+import { mkStore } from './mk/store';
+import { stopMkBgm, syncMkMute } from './mk/sound';
 import Rules from './components/Rules';
 import Modal from './components/Modal';
 import { CardPreviewLayer } from './components/CardPreview';
@@ -107,17 +110,22 @@ export default function App() {
     else if (!linkRoom.current) writeRoomParam(null);
   }, [view?.code]);
 
-  // Dọn kho & nhạc nền Miragine War khi rời phòng hoặc chuyển sang trò chơi khác
+  // Dọn kho & nhạc nền Miragine War / Mighty Knight khi rời phòng hoặc chuyển sang trò chơi khác
   useEffect(() => {
     if (!view || view.gameMode !== 'thap_hung') {
       thapStore.reset('', 0);
       stopMiragineBgm();
     }
+    if (!view || view.gameMode !== 'mighty_knight') {
+      mkStore.reset();
+      stopMkBgm();
+    }
   }, [view?.code, view?.gameMode]);
 
-  // Đồng bộ công tắc tắt tiếng Dock tới nhạc nền & SFX Miragine War xuyên suốt Menu/Game
+  // Đồng bộ công tắc tắt tiếng Dock tới nhạc nền & SFX Miragine War / Mighty Knight xuyên suốt Menu/Game
   useEffect(() => {
     syncMiragineBgmMute();
+    syncMkMute();
   }, [settings.sound]);
 
   // Server chỉ nhận socket có token tài khoản: chưa đăng nhập bằng PIN thì chưa kết nối
@@ -134,6 +142,9 @@ export default function App() {
       if (!v || v.gameMode !== 'thap_hung' || v.phase === 'lobby') {
         thapStore.reset('', 0);
       }
+      if (!v || v.gameMode !== 'mighty_knight' || v.phase === 'lobby') {
+        mkStore.reset();
+      }
       joinFromLink(s, v);
     });
     s.on('toast', showToast);
@@ -141,6 +152,9 @@ export default function App() {
     s.on('thap:frame', (f: ThapFrame) => thapStore.push(f));
     s.on('bansung:frame', (f: BansungFrame) => {
       if (f && typeof f === 'object') bansungStore.push(f);
+    });
+    s.on(MK_EVT_FRAME, (f: MkFrame) => {
+      if (f && typeof f === 'object') mkStore.pushFrame(f);
     });
     s.on('tw:frame', (f: TwFrame) => twStore.push(f));
     s.on('link:state', (st: LinkState) => linkStore.push(st));
@@ -264,6 +278,8 @@ export default function App() {
             <LotoBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'bansung' ? (
             <BansungBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
+          ) : view.gameMode === 'mighty_knight' ? (
+            <MkBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'blackjack_21' ? (
             <BlackjackBoard
               view={view}

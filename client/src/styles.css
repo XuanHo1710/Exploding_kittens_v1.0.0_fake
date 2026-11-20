@@ -1964,6 +1964,7 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   box-shadow: 0 10px 22px -6px color-mix(in srgb, var(--card-accent) 40%, rgba(0, 0, 0, 0.35));
 }
 
+.gcard-art-mk,
 .gcard-art-bansung,
 .gcard-art-kittens,
 .gcard-art-playing,
@@ -1977,6 +1978,17 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
   width: 100%;
   height: 100%;
 }
+.gcard-mk-portrait {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid rgba(245, 158, 11, 0.85);
+  background: #141824;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+}
+.gcard-mk-portrait.left { transform: rotate(-7deg) translateY(2px); }
+.gcard-mk-portrait.right { transform: rotate(7deg) translateY(-2px); }
 .gcard-pixel {
   width: 44px;
   height: 44px;
@@ -2280,6 +2292,84 @@ button.primary.danger { background: var(--bad); color: #fff; box-shadow: 0 2px 8
 .hero-pick-btn.on {
   background: color-mix(in srgb, var(--accent) 12%, var(--surface));
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.mk-seat-portrait {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.mk-hero-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mk-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+.mk-hero-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  text-align: left;
+  transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+}
+.mk-hero-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
+.mk-hero-btn.on {
+  background: color-mix(in srgb, #f59e0b 14%, var(--surface));
+  box-shadow: 0 0 0 1.5px rgba(245, 158, 11, 0.5);
+}
+.mk-hero-portrait {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  background: #0f172a;
+}
+.mk-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+.mk-hero-head {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.mk-hero-head strong {
+  font-size: 13px;
+  line-height: 1.15;
+}
+.mk-hero-role {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mk-hero-skills {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 11px;
+  color: var(--text);
+}
+.mk-hero-skills b {
+  color: #f59e0b;
 }
 .loto-color-pick.compact {
   display: flex;

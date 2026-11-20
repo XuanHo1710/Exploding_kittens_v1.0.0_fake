@@ -7,10 +7,11 @@ import type { LotoRoomView } from './loto';
 import type { ThapRoomView } from './thap';
 import type { BansungRoomView } from './bansung';
 import type { TwRoomView } from './tw';
+import type { MkRoomView } from './mightyknight';
 
 export type Phase = 'lobby' | 'playing' | 'ended';
 
-export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire' | 'link_duel' | 'loto' | 'thap_hung' | 'total_war' | 'bansung';
+export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire' | 'link_duel' | 'loto' | 'thap_hung' | 'total_war' | 'bansung' | 'mighty_knight';
 
 export const GAME_MODES: Record<
   GameMode,
@@ -87,6 +88,14 @@ export const GAME_MODES: Record<
     minPlayers: 1,
     maxPlayers: 10,
     desc: 'Co-op bắn súng sinh tồn 2.5D kiểu Soul Knight × Miragine War: 4 lớp nhân vật, nâng cấp kỹ năng & tiến hóa vũ khí, Boss săn mồi liên hoàn, lướt né, choáng & hồi sinh đồng đội.',
+  },
+  mighty_knight: {
+    name: 'Mighty Knight 2.5D Pixel',
+    shortName: 'Mighty Knight',
+    emoji: '⚔️🛡️',
+    minPlayers: 1,
+    maxPlayers: 6,
+    desc: 'Hành động nhập vai 2.5D Pixel Art (10–15 ảnh/nhân vật): 6 anh hùng × 30 kỹ năng & Ultimate, Combo 3 nhịp, Perfect Parry, 4 Quần xã, 4 Đại Boss 3 pha, Boss Rush & 12 Thánh Vật Roguelite!',
   },
 };
 
@@ -283,6 +292,8 @@ export interface RoomView {
   bansung?: BansungRoomView;
   /** Tam Quốc Toàn Chiến (từng nhịp gửi riêng qua 'tw:frame') */
   tw?: TwRoomView;
+  /** Mighty Knight Co-op Endless (từng nhịp gửi riêng qua 'mk:frame') */
+  mk?: MkRoomView;
   /** Thưởng xu từng người sau ván */
   payouts?: Record<string, number>;
 }

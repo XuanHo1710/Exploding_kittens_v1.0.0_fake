@@ -1,6 +1,6 @@
 import { useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from 'react';
 import { ArrowRight, Eye, Plus, Sliders, Sparkles, Users } from 'lucide-react';
-import { BANSUNG_STATIC_ROOT, GAME_MODES, TW_MAX_PLAYERS, type GameMode, type RoomRules } from '../../../shared/src';
+import { BANSUNG_STATIC_ROOT, GAME_MODES, MK_STATIC_ROOT, TW_MAX_PLAYERS, type GameMode, type RoomRules } from '../../../shared/src';
 import Backdrop3D from './Backdrop3D';
 import CardView from './CardView';
 import RoomSettings, { getSavedRoomRules } from './RoomSettings';
@@ -15,6 +15,7 @@ interface GameMeta {
 }
 
 const HUB_GAME_ORDER: readonly GameMode[] = [
+  'mighty_knight',
   'bansung',
   'thap_hung',
   'total_war',
@@ -27,6 +28,29 @@ const HUB_GAME_ORDER: readonly GameMode[] = [
 ];
 
 const HUB_META: Record<GameMode, GameMeta> = {
+  mighty_knight: {
+    title: 'Mighty Knight 2.5D Pixel',
+    tag: 'Pixel 2.5D · 30 Skill',
+    blurb: '6 anh hùng 15 ảnh sắc cạnh · 4 Skill + Ultimate · Perfect Parry · Boss Rush & Relic',
+    accent: '#f59e0b',
+    art: () => (
+      <div className="gcard-art-mk">
+        <img
+          src={`${MK_STATIC_ROOT}/portraits/knight.png`}
+          alt="Hiệp Sĩ Lam"
+          className="gcard-mk-portrait left"
+          style={{ imageRendering: 'pixelated' }}
+        />
+        <img
+          src={`${MK_STATIC_ROOT}/portraits/lancer.png`}
+          alt="Thương Kỵ Rồng"
+          className="gcard-mk-portrait right"
+          style={{ imageRendering: 'pixelated' }}
+        />
+        <span className="gcard-core-badge">⚔️</span>
+      </div>
+    ),
+  },
   bansung: {
     title: 'Bắn Súng Co-op',
     tag: 'Sinh tồn 2.5D',
@@ -282,7 +306,7 @@ export default function Home({
               ? TW_MAX_PLAYERS
               : mode === 'bansung'
               ? Math.max(4, Math.min(10, GAME_MODES.bansung.maxPlayers))
-              : mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'thap_hung' || mode === 'exploding_kittens' || mode === 'link_duel' || mode === 'loto'
+              : mode === 'mighty_knight' || mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'thap_hung' || mode === 'exploding_kittens' || mode === 'link_duel' || mode === 'loto'
                 ? GAME_MODES[mode].maxPlayers
                 : 6,
       },
@@ -298,7 +322,7 @@ export default function Home({
         <header className="hub-header">
           <div className="hub-brand-block">
             <span className="hub-eyebrow">
-              <Sparkles size={13} /> 9 Trò Chơi Online · Chơi Chung Mọi Thiết Bị
+              <Sparkles size={13} /> {HUB_GAME_ORDER.length} Trò Chơi Online · Chơi Chung Mọi Thiết Bị
             </span>
             <h1 className="hub-title">
               Arena <span>Hub</span>

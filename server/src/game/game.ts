@@ -112,11 +112,21 @@ import {
   type TwFactionId,
   type TwFrame,
   type TwRoomView,
+  MK_HERO_IDS,
+  MK_HEROES,
+  DEFAULT_MK_CONFIG,
+  normalizeMkConfig,
+  type MkConfig,
+  type MkFrame,
+  type MkHeroId,
+  type MkRoomView,
 } from '../../../shared/src';
 import { AntWorld } from './ants/world';
 import { ThapWorld, type ThapInit } from './thap/world';
 import { BansungWorld, type BansungInit } from './bansung/world';
 import { validateBansungConfig, validateBansungHero } from './bansung/security';
+import { MkWorld, type MkFighterInit } from './mk/world';
+import { validateMkConfig, validateMkHero } from './mk/security';
 import { TwWorld, type TwSeatInit } from './tw/world';
 import { LinkDuel } from './link/duel';
 
@@ -131,7 +141,7 @@ type BansungWorldNetHooks = BansungWorld & {
 function normalizeDirectGameMode(raw?: string): GameMode | undefined {
   if (typeof raw !== 'string') return undefined;
   const trimmed = raw.trim();
-  const key = trimmed === 'ban_sung' ? 'bansung' : trimmed;
+  const key = trimmed === 'ban_sung' ? 'bansung' : trimmed === 'mk' ? 'mighty_knight' : trimmed;
   return key && Object.hasOwn(GAME_MODES, key) ? (key as GameMode) : undefined;
 }
 
@@ -198,6 +208,8 @@ export interface GameHooks {
   bansungFrame?(game: Game, playerId: string, frame: BansungFrame): void;
   /** Tam Quốc Toàn Chiến: gửi khung hình riêng cho từng người */
   twFrame?(game: Game, playerId: string, frame: TwFrame): void;
+  /** Mighty Knight Co-op Endless: gửi khung hình riêng cho từng người */
+  mkFrame?(game: Game, playerId: string, frame: MkFrame): void;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -287,6 +299,12 @@ export class Game {
   private bansungHeroes = new Map<string, BansungHeroId>();
   private bansungEndFramePending = false;
 
+  // --- Trạng thái Mighty Knight Co-op Endless ---
+  mkConfig: MkConfig = { ...DEFAULT_MK_CONFIG };
+  private mk?: MkWorld;
+  private mkHeroes = new Map<string, MkHeroId>();
+  private mkEndFramePending = false;
+
   // --- Trạng thái Lô Tô Cân Đồ ---
   /** số tờ mỗi người mua (1 hoặc 2), chọn ở phòng chờ */
   private lotoPicks = new Map<string, number>();
@@ -346,6 +364,8 @@ export class Game {
             ? 4
             : resolved === 'bansung'
               ? GAME_MODES.bansung.maxPlayers
+            : resolved === 'mighty_knight'
+              ? GAME_MODES.mighty_knight.maxPlayers
             : resolved === 'total_war'
               ? TW_MAX_PLAYERS
               : resolved === 'thap_hung'
@@ -357,6 +377,7 @@ export class Game {
         GAME_MODES[resolved].maxPlayers,
       );
       if (resolved === 'bansung') this.bansungConfig = normalizeBansungConfig(this.bansungConfig, this.players.length);
+      if (resolved === 'mighty_knight') this.mkConfig = normalizeMkConfig(this.mkConfig, this.players.length);
       this.invalidateReady();
       this.addLog(`🎮 Chủ phòng đổi sang chế độ: ${GAME_MODES[resolved].emoji} ${GAME_MODES[resolved].name}.`);
     });
@@ -447,6 +468,13 @@ export class Game {
       }
       const cfg = normalizeBansungConfig(this.bansungConfig, players.length);
       if (players.length + cfg.bots < 1) throw new GameError('Cần ít nhất 1 chiến binh để bắt đầu.');
+    }
+    if (this.gameMode === 'mighty_knight') {
+      if (players.length > GAME_MODES.mighty_knight.maxPlayers) {
+        throw new GameError(`Chế độ Mighty Knight tối đa ${GAME_MODES.mighty_knight.maxPlayers} người chơi.`);
+      }
+      const cfg = normalizeMkConfig(this.mkConfig, players.length);
+      if (players.length + cfg.comBots < 1) throw new GameError('Cần ít nhất 1 anh hùng để bắt đầu.');
     }
     const unready = players.filter((p) => p.id !== this.hostId && p.readyVersion !== this.rulesVersion);
     if (unready.length) throw new GameError(`Chờ xác nhận luật và mức cược: ${unready.map((p) => p.name).join(', ')}.`);
@@ -667,6 +695,9 @@ export class Game {
       this.thap = undefined;
       this.tw?.stop();
       this.tw = undefined;
+      this.mk?.stop();
+      this.mk = undefined;
+      this.mkEndFramePending = false;
 
       if (this.gameMode === 'blackjack_21') {
         this.startBlackjack();
@@ -690,6 +721,10 @@ export class Game {
       }
       if (this.gameMode === 'bansung') {
         this.startBansung();
+        return;
+      }
+      if (this.gameMode === 'mighty_knight') {
+        this.startMk();
         return;
       }
       if (this.gameMode === 'total_war') {
@@ -760,6 +795,9 @@ export class Game {
       this.bansung?.stop();
       this.bansung = undefined;
       this.bansungEndFramePending = false;
+      this.mk?.stop();
+      this.mk = undefined;
+      this.mkEndFramePending = false;
       this.tw?.stop();
       this.tw = undefined;
       this.link?.stop();
@@ -1533,7 +1571,7 @@ export class Game {
       })),
       spectators: this.spectators.map((x) => ({ id: x.id, name: x.name, avatar: x.avatar, connected: x.connected })),
       hand: this.player(id)?.hand ?? [],
-      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' && this.gameMode !== 'link_duel' && this.gameMode !== 'loto' && this.gameMode !== 'thap_hung' && this.gameMode !== 'total_war' && this.gameMode !== 'bansung' ? this.current()?.id : undefined,
+      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' && this.gameMode !== 'link_duel' && this.gameMode !== 'loto' && this.gameMode !== 'thap_hung' && this.gameMode !== 'total_war' && this.gameMode !== 'bansung' && this.gameMode !== 'mighty_knight' ? this.current()?.id : undefined,
       turnsRemaining: this.turnsRemaining,
       direction: this.direction,
       turnDeadline: this.phase === 'playing' ? this.turnDeadline : undefined,
@@ -1581,6 +1619,7 @@ export class Game {
       thap: this.gameMode === 'thap_hung' ? this.thapView(id) : undefined,
       bansung: this.gameMode === 'bansung' ? this.bansungView(id) : undefined,
       tw: this.gameMode === 'total_war' ? this.twView(id) : undefined,
+      mk: this.gameMode === 'mighty_knight' ? this.mkView(id) : undefined,
       payouts: Object.keys(this.payouts).length ? this.payouts : undefined,
     };
   }
@@ -2071,6 +2110,228 @@ export class Game {
       players,
       myIdx: myPlayer?.idx,
       startedAt: w.startedAt,
+      result: w.result,
+    };
+  }
+
+  // --- Mighty Knight Co-op Endless ---
+
+  setMkConfig(byId: string, raw: unknown) {
+    this.requireLobbyHost(byId);
+    if (this.gameMode !== 'mighty_knight') throw new GameError('Chỉ chỉnh được khi đang chọn chế độ Mighty Knight.');
+    const check = validateMkConfig(raw, this.players.length);
+    if (!check.ok) throw new GameError(check.reason);
+    const next = check.config;
+    const cur = this.mkConfig;
+    if (
+      cur.playMode === next.playMode &&
+      cur.comBots === next.comBots &&
+      cur.difficulty === next.difficulty &&
+      cur.biome === next.biome &&
+      cur.allowSwitchCom === next.allowSwitchCom
+    ) {
+      return;
+    }
+    const modeLabel: Record<MkConfig['playMode'], string> = {
+      endless: 'Vô Tận',
+      boss_rush: 'Boss Rush',
+    };
+    const diffLabel: Record<MkConfig['difficulty'], string> = {
+      normal: 'Thường',
+      hard: 'Khó',
+      nightmare: 'Ác Mộng',
+    };
+    const biomeLabel: Record<MkConfig['biome'], string> = {
+      auto: 'Tự động (5 màn/vùng)',
+      grasslands: 'Đồng Cỏ Ngọc Bích',
+      jungle: 'Rừng Cổ Mộ',
+      volcano: 'Núi Lửa Nham Thạch',
+      citadel: 'Thành Cổ Tinh Tú',
+    };
+    this.run(() => {
+      this.mkConfig = next;
+      this.invalidateReady();
+      this.addLog(
+        `⚔️ Cấu hình Mighty Knight 2.5D Pixel: ${modeLabel[next.playMode]} · ${next.comBots} COM · ${diffLabel[next.difficulty]} · ${biomeLabel[next.biome]}${next.allowSwitchCom ? ' · Đổi Tướng' : ''}.`,
+      );
+    });
+  }
+
+  private mkHeroOf(playerId: string): MkHeroId {
+    const saved = this.mkHeroes.get(playerId);
+    if (saved) return saved;
+    const idx = this.players.findIndex((p) => p.id === playerId);
+    return MK_HERO_IDS[Math.max(0, idx) % MK_HERO_IDS.length] ?? 'knight';
+  }
+
+  setMkHero(playerId: string, raw: unknown) {
+    if (this.gameMode !== 'mighty_knight') throw new GameError('Chỉ chọn anh hùng khi đang ở chế độ Mighty Knight.');
+    if (this.phase !== 'lobby') throw new GameError('Chỉ chọn anh hùng trước khi trận đấu bắt đầu.');
+    const p = this.player(playerId);
+    if (!p || p.left) throw new GameError('Chỉ người chơi trong phòng mới chọn được anh hùng.');
+    const check = validateMkHero(raw);
+    if (!check.ok) throw new GameError(check.reason);
+    if (this.mkHeroes.get(playerId) === check.heroId) return;
+    this.run(() => {
+      this.mkHeroes.set(playerId, check.heroId);
+      const spec = MK_HEROES[check.heroId];
+      this.addLog(`🛡️ ${p.name} chọn anh hùng: ${spec.codeName} (${spec.titleVi}).`);
+    });
+  }
+
+  mkCommand(playerId: string, rawCmd: unknown) {
+    if (this.gameMode !== 'mighty_knight' || this.phase !== 'playing' || !this.mk) {
+      throw new GameError('Trận Mighty Knight chưa diễn ra.');
+    }
+    const p = this.player(playerId);
+    if (!p || p.left) throw new GameError('Bạn đang xem trận này.');
+    if (!rawCmd || typeof rawCmd !== 'object' || typeof (rawCmd as { t?: unknown }).t !== 'string') {
+      throw new GameError('Lệnh không hợp lệ.');
+    }
+    const res = this.mk.enqueueCommand(playerId, rawCmd);
+    if (!res.ok && res.shouldKick) {
+      throw new GameKickError('Phát hiện gửi lệnh quá nhanh, vui lòng chậm lại.');
+    }
+    return res;
+  }
+
+  private startMk() {
+    const cfg = normalizeMkConfig(this.mkConfig, this.players.length);
+    this.mkConfig = cfg;
+    for (const p of this.players) {
+      p.alive = true;
+      p.hand = [];
+    }
+    const inits: MkFighterInit[] = this.players.map((p, idx) => {
+      const heroId = this.mkHeroOf(p.id);
+      this.mkHeroes.set(p.id, heroId);
+      return {
+        id: p.id,
+        name: p.name,
+        heroId,
+        isCom: false,
+        badge: `P${idx + 1}`,
+      };
+    });
+    for (let i = 0; i < cfg.comBots; i++) {
+      const botHero = MK_HERO_IDS[(this.players.length + i) % MK_HERO_IDS.length] ?? 'archer';
+      inits.push({
+        id: `com:${i}`,
+        name: `COM ${MK_HEROES[botHero].codeName}`,
+        heroId: botHero,
+        isCom: true,
+        badge: 'COM',
+      });
+    }
+    this.mk = new MkWorld(inits, cfg, {
+      tick: () => this.sendMkFrames(),
+      changed: () => this.safe(() => this.run(() => this.syncMk())),
+      onEnd: () => this.safe(() => this.run(() => this.syncMk())),
+    });
+    this.phase = 'playing';
+    this.mkEndFramePending = false;
+    this.addLog(`⚔️ Mighty Knight Endless bắt đầu! ${this.players.length} anh hùng + ${cfg.comBots} COM đồng hành!`);
+    this.mk.start();
+    this.sendMkFrames();
+  }
+
+  private syncMk() {
+    const w = this.mk;
+    if (!w) return;
+    for (const msg of w.drainLogs()) this.addLog(msg);
+    for (const wp of w.fighters) {
+      if (wp.originalIsCom) continue;
+      const p = this.player(wp.id);
+      if (p) p.alive = !wp.downed && !wp.left;
+    }
+    if (w.result && this.phase === 'playing') {
+      this.phase = 'ended';
+      const activeHumans = this.players.filter((p) => !p.left);
+      const statById = new Map(w.result.players.map((s) => [s.id, s]));
+      const scoreOf = (id: string) =>
+        (statById.get(id)?.damageDealt ?? 0) + (statById.get(id)?.kills ?? 0) * 80;
+      const ranked = [...activeHumans].sort((a, b) => scoreOf(b.id) - scoreOf(a.id));
+
+      this.payouts = {};
+      if (this.pot > 0 && ranked.length > 0) {
+        if (w.result.waveReached >= 3) {
+          this.winnerIds = ranked.map((p) => p.id);
+          this.winnerId = ranked[0]?.id;
+          const basePool = Math.floor(this.pot * 0.5);
+          const baseEach = Math.floor(basePool / ranked.length);
+          let allocated = 0;
+          for (const p of ranked) {
+            this.payouts[p.id] = baseEach;
+            allocated += baseEach;
+          }
+          const perfPool = this.pot - allocated;
+          const totalWeight = ranked.reduce((sum, p) => sum + Math.max(1, scoreOf(p.id)), 0);
+          for (const p of ranked) {
+            const share = Math.floor((perfPool * Math.max(1, scoreOf(p.id))) / totalWeight);
+            this.payouts[p.id] = (this.payouts[p.id] ?? 0) + share;
+            allocated += share;
+          }
+          const rem = this.pot - allocated;
+          if (rem > 0 && ranked[0]) {
+            this.payouts[ranked[0].id] = (this.payouts[ranked[0].id] ?? 0) + rem;
+          }
+          this.addLog(`🏆 Đạt Challenge ${w.result.waveReached}! Chia hũ ${this.pot} xu cho ${ranked.length} anh hùng.`);
+        } else if (this.bet > 0) {
+          this.winnerId = undefined;
+          this.winnerIds = [];
+          for (const p of activeHumans) this.payouts[p.id] = this.bet;
+          this.addLog(`🛡️ Chưa tới Boss Challenge 3 — hoàn lại ${this.bet} xu cược cho người chơi còn ở lại.`);
+        }
+      } else {
+        this.winnerIds = ranked.map((p) => p.id);
+        this.winnerId = ranked[0]?.id;
+      }
+
+      for (const st of w.result.players) {
+        if (st.isCom) {
+          st.coinDelta = 0;
+          continue;
+        }
+        const p = this.player(st.id);
+        st.coinDelta =
+          this.pot > 0 && this.bet > 0
+            ? p && !p.left
+              ? (this.payouts[st.id] ?? 0) - this.bet
+              : -this.bet
+            : 0;
+      }
+
+      this.mkEndFramePending = true;
+      queueMicrotask(() => {
+        if (this.mkEndFramePending && this.mk === w) {
+          this.sendMkFrames();
+        }
+      });
+    }
+  }
+
+  private sendMkFrames() {
+    const w = this.mk;
+    if (!w) return;
+    this.mkEndFramePending = false;
+    for (const p of this.players) {
+      if (p.left || !p.connected) continue;
+      this.hooks.mkFrame?.(this, p.id, w.frameFor(p.id));
+    }
+    for (const x of this.spectators) {
+      if (x.connected) this.hooks.mkFrame?.(this, x.id, w.frameFor(x.id));
+    }
+    w.clearTickEvents();
+  }
+
+  private mkView(_id: string): MkRoomView {
+    const heroes: Record<string, MkHeroId> = {};
+    for (const p of this.players) heroes[p.id] = this.mkHeroOf(p.id);
+    const w = this.mk;
+    if (!w) return { config: this.mkConfig, heroes };
+    return {
+      config: this.mkConfig,
+      heroes,
       result: w.result,
     };
   }
@@ -2599,6 +2860,8 @@ export class Game {
     this.thap?.stop();
     this.bansung?.stop();
     this.bansungEndFramePending = false;
+    this.mk?.stop();
+    this.mkEndFramePending = false;
     this.tw?.stop();
     this.tw = undefined;
     this.link?.stop();
@@ -3174,6 +3437,10 @@ export class Game {
     if (this.gameMode === 'bansung') {
       // Rời trận = bỏ cuộc: chiến binh gục ở nhịp mô phỏng kế tiếp, kết quả xử lý trong syncBansung
       this.bansung?.resign(p.id);
+      return;
+    }
+    if (this.gameMode === 'mighty_knight') {
+      this.mk?.resign(p.id);
       return;
     }
     if (this.gameMode === 'thap_hung') {

@@ -9,3 +9,5 @@ client_secret*.json
 service-account*.json
 uploads/
 data/
+__pycache__/
+*.pyc

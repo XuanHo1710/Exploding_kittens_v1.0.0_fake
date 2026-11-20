@@ -10,11 +10,39 @@ import { ACCOUNT_STORE, createAccountStore } from './store/json.store';
 import { AccountsService } from './store/accounts.service';
 import { AccountController } from './store/account.controller';
 
+const REPO_UP_CANDIDATES: readonly string[][] = [
+  ['..', '..', '..', '..'],
+  ['..', '..', '..'],
+  ['..', '..'],
+];
+
+/** Resolve a repository-root path across dev (ts-node/watch) and compiled dist/ layouts. */
+function resolveRepoPath(...segments: string[]): string {
+  for (const up of REPO_UP_CANDIDATES) {
+    const candidate = resolve(__dirname, ...up, ...segments);
+    if (existsSync(candidate)) return candidate;
+  }
+  for (const base of [process.cwd(), resolve(process.cwd(), '..')]) {
+    const candidate = resolve(base, ...segments);
+    if (existsSync(candidate)) return candidate;
+  }
+  const fallbackRoot = REPO_UP_CANDIDATES
+    .map((up) => resolve(__dirname, ...up))
+    .find((root) => existsSync(join(root, 'server', 'package.json')))
+    ?? resolve(__dirname, '..', '..', '..', '..');
+  return join(fallbackRoot, ...segments);
+}
+
 export const BAN_SUNG_STATIC_PREFIX = '/database-ban-sung';
 export const BAN_SUNG_ROOT = resolve(__dirname, '..', '..', '..', '..', 'database-ban-sung');
 export const ALLOWED_BANSUNG_STATIC_EXT = new Set(['.png', '.webp', '.jpg', '.jpeg', '.ogg', '.mp3', '.wav', '.json']);
 
+export const MIGHTY_KNIGHT_STATIC_PREFIX = '/database-mighty-knight-pixel';
+export const MIGHTY_KNIGHT_ROOT = resolveRepoPath('database-mighty-knight-pixel');
+export const ALLOWED_MK_STATIC_EXT = new Set(['.png', '.webp', '.jpg', '.jpeg', '.ogg', '.mp3', '.wav', '.json']);
+
 let cachedBanSungRealRoot: string | undefined;
+let cachedMightyKnightRealRoot: string | undefined;
 
 function resolveRealRoot(rootDir: string): string {
   if (rootDir === BAN_SUNG_ROOT) {
@@ -22,6 +50,12 @@ function resolveRealRoot(rootDir: string): string {
       cachedBanSungRealRoot = realpathSync(BAN_SUNG_ROOT);
     }
     return cachedBanSungRealRoot;
+  }
+  if (rootDir === MIGHTY_KNIGHT_ROOT) {
+    if (!cachedMightyKnightRealRoot) {
+      cachedMightyKnightRealRoot = realpathSync(MIGHTY_KNIGHT_ROOT);
+    }
+    return cachedMightyKnightRealRoot;
   }
   return realpathSync(rootDir);
 }
@@ -37,16 +71,14 @@ export interface StaticGuardResponse {
   json(body: unknown): unknown;
 }
 
-/**
- * Fail-closed static path guard for `/database-ban-sung`:
- * blocks non-GET/HEAD methods, raw/double-encoded traversal, dotfiles,
- * non-whitelisted extensions/JSON metadata, and symlink escapes.
- */
-export async function guardBanSungStaticRequest(
+async function guardSafeStaticRequest(
+  prefix: string,
+  allowedExt: ReadonlySet<string>,
+  allowJsonRelPath: (relPath: string) => boolean,
   req: StaticGuardRequest,
   res: StaticGuardResponse,
   next: (err?: unknown) => void,
-  rootDir = BAN_SUNG_ROOT,
+  rootDir: string,
 ): Promise<void> {
   const method = (req.method ?? '').toUpperCase();
   if (method !== 'GET' && method !== 'HEAD') {
@@ -62,12 +94,12 @@ export async function guardBanSungStaticRequest(
 
   const qIdx = rawUrl.indexOf('?');
   const rawPath = qIdx >= 0 ? rawUrl.slice(0, qIdx) : rawUrl;
-  if (rawPath !== BAN_SUNG_STATIC_PREFIX && !rawPath.startsWith(`${BAN_SUNG_STATIC_PREFIX}/`)) {
+  if (rawPath !== prefix && !rawPath.startsWith(`${prefix}/`)) {
     res.status(403).json({ statusCode: 403, message: 'Forbidden' });
     return;
   }
 
-  const rawRel = rawPath.length > BAN_SUNG_STATIC_PREFIX.length ? rawPath.slice(BAN_SUNG_STATIC_PREFIX.length + 1) : '';
+  const rawRel = rawPath.length > prefix.length ? rawPath.slice(prefix.length + 1) : '';
   let relPath: string;
   try {
     relPath = decodeURIComponent(rawRel);
@@ -95,11 +127,11 @@ export async function guardBanSungStaticRequest(
   }
 
   const ext = extname(relPath).toLowerCase();
-  if (!ALLOWED_BANSUNG_STATIC_EXT.has(ext)) {
+  if (!allowedExt.has(ext)) {
     res.status(403).json({ statusCode: 403, message: 'Forbidden' });
     return;
   }
-  if (ext === '.json' && relPath !== 'manifest.json' && !relPath.startsWith('normalized/')) {
+  if (ext === '.json' && !allowJsonRelPath(relPath)) {
     res.status(403).json({ statusCode: 403, message: 'Forbidden' });
     return;
   }
@@ -153,33 +185,62 @@ export async function guardBanSungStaticRequest(
   next();
 }
 
+/**
+ * Fail-closed static path guard for `/database-ban-sung`:
+ * blocks non-GET/HEAD methods, raw/double-encoded traversal, dotfiles,
+ * non-whitelisted extensions/JSON metadata, and symlink escapes.
+ */
+export async function guardBanSungStaticRequest(
+  req: StaticGuardRequest,
+  res: StaticGuardResponse,
+  next: (err?: unknown) => void,
+  rootDir = BAN_SUNG_ROOT,
+): Promise<void> {
+  await guardSafeStaticRequest(
+    BAN_SUNG_STATIC_PREFIX,
+    ALLOWED_BANSUNG_STATIC_EXT,
+    (relPath) => relPath === 'manifest.json' || relPath.startsWith('normalized/'),
+    req,
+    res,
+    next,
+    rootDir,
+  );
+}
+
+/**
+ * Fail-closed static path guard for `/database-mighty-knight-pixel`:
+ * blocks non-GET/HEAD methods, raw/double-encoded traversal, dotfiles,
+ * non-whitelisted extensions/JSON metadata, and symlink escapes.
+ */
+export async function guardMightyKnightStaticRequest(
+  req: StaticGuardRequest,
+  res: StaticGuardResponse,
+  next: (err?: unknown) => void,
+  rootDir = MIGHTY_KNIGHT_ROOT,
+): Promise<void> {
+  await guardSafeStaticRequest(
+    MIGHTY_KNIGHT_STATIC_PREFIX,
+    ALLOWED_MK_STATIC_EXT,
+    (relPath) => relPath === 'manifest.json',
+    req,
+    res,
+    next,
+    rootDir,
+  );
+}
+
 @Injectable()
 export class BanSungStaticGuard implements NestMiddleware {
   async use(req: StaticGuardRequest, res: StaticGuardResponse, next: (err?: unknown) => void): Promise<void> {
     await guardBanSungStaticRequest(req, res, next);
   }
 }
-const REPO_UP_CANDIDATES: readonly string[][] = [
-  ['..', '..', '..', '..'],
-  ['..', '..', '..'],
-  ['..', '..'],
-];
 
-/** Resolve a repository-root path across dev (ts-node/watch) and compiled dist/ layouts. */
-function resolveRepoPath(...segments: string[]): string {
-  for (const up of REPO_UP_CANDIDATES) {
-    const candidate = resolve(__dirname, ...up, ...segments);
-    if (existsSync(candidate)) return candidate;
+@Injectable()
+export class MightyKnightStaticGuard implements NestMiddleware {
+  async use(req: StaticGuardRequest, res: StaticGuardResponse, next: (err?: unknown) => void): Promise<void> {
+    await guardMightyKnightStaticRequest(req, res, next);
   }
-  for (const base of [process.cwd(), resolve(process.cwd(), '..')]) {
-    const candidate = resolve(base, ...segments);
-    if (existsSync(candidate)) return candidate;
-  }
-  const fallbackRoot = REPO_UP_CANDIDATES
-    .map((up) => resolve(__dirname, ...up))
-    .find((root) => existsSync(join(root, 'server', 'package.json')))
-    ?? resolve(__dirname, '..', '..', '..', '..');
-  return join(fallbackRoot, ...segments);
 }
 
 const miragineDir = resolveRepoPath('database-miraginewar');
@@ -201,6 +262,12 @@ const miragineDir = resolveRepoPath('database-miraginewar');
         serveRoot: BAN_SUNG_STATIC_PREFIX,
         serveStaticOptions: { maxAge: 0, fallthrough: false, dotfiles: 'deny', index: false, redirect: false },
       },
+      // Tài nguyên 2.5D Pixel Mighty Knight (10–15 ảnh/nhân vật) từ database-mighty-knight-pixel/
+      {
+        rootPath: MIGHTY_KNIGHT_ROOT,
+        serveRoot: MIGHTY_KNIGHT_STATIC_PREFIX,
+        serveStaticOptions: { maxAge: 0, fallthrough: false, dotfiles: 'deny', index: false, redirect: false },
+      },
       // Bản build của client (client/dist) được server phục vụ luôn, chỉ cần chạy 1 tiến trình
       {
         rootPath: resolveRepoPath('client', 'dist'),
@@ -211,6 +278,7 @@ const miragineDir = resolveRepoPath('database-miraginewar');
           '/database-miraginewar/{*path}',
           '/database-total-war/{*path}',
           '/database-ban-sung/{*path}',
+          '/database-mighty-knight-pixel/{*path}',
           '/uploads/{*path}',
         ],
       },
@@ -219,7 +287,7 @@ const miragineDir = resolveRepoPath('database-miraginewar');
   controllers: [AvatarController, AccountController],
   providers: [
     { provide: ACCOUNT_STORE, useFactory: () => createAccountStore(DB_FILE) },
-    DbService, AccountsService, RoomsService, GameGateway, BanSungStaticGuard,
+    DbService, AccountsService, RoomsService, GameGateway, BanSungStaticGuard, MightyKnightStaticGuard,
   ],
 })
 export class AppModule implements NestModule, OnModuleInit {
@@ -227,6 +295,7 @@ export class AppModule implements NestModule, OnModuleInit {
 
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(BanSungStaticGuard).forRoutes(BAN_SUNG_STATIC_PREFIX, `${BAN_SUNG_STATIC_PREFIX}/{*path}`);
+    consumer.apply(MightyKnightStaticGuard).forRoutes(MIGHTY_KNIGHT_STATIC_PREFIX, `${MIGHTY_KNIGHT_STATIC_PREFIX}/{*path}`);
   }
 
   /** Warn visibly at startup if Miragine War runtime assets are missing. */

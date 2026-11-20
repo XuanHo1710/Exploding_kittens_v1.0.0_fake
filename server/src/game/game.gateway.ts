@@ -14,6 +14,9 @@ import {
   BANSUNG_EVT_CMD,
   BANSUNG_EVT_CONFIG,
   BANSUNG_EVT_HERO,
+  MK_EVT_CMD,
+  MK_EVT_CONFIG,
+  MK_EVT_HERO,
   isValidAvatar,
   type AntsCommand,
   type BansungCommand,
@@ -29,6 +32,12 @@ import {
   isSafePlainObject,
   isWithinJsonByteBudget,
 } from './bansung/security';
+import {
+  MK_SEC_LIMITS,
+  MkRateLimiter,
+  isSafePlainObject as isMkSafePlainObject,
+  isWithinJsonByteBudget as isMkWithinJsonByteBudget,
+} from './mk/security';
 import { RoomsService } from './rooms.service';
 import { AccountsService } from '../store/accounts.service';
 
@@ -66,6 +75,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   private readonly bansungConfigLimiter = new BansungRateLimiter();
   private readonly bansungHeroLimiter = new BansungRateLimiter();
   private readonly bansungCmdViolationLimiter = new BansungRateLimiter();
+  private readonly mkConfigLimiter = new MkRateLimiter();
+  private readonly mkHeroLimiter = new MkRateLimiter();
+  private readonly mkCmdViolationLimiter = new MkRateLimiter();
 
   @WebSocketServer() server: Server;
 
@@ -123,6 +135,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.bansungConfigLimiter.clearPlayer(client.id);
       this.bansungHeroLimiter.clearPlayer(client.id);
       this.bansungCmdViolationLimiter.clearPlayer(client.id);
+      this.mkConfigLimiter.clearPlayer(client.id);
+      this.mkHeroLimiter.clearPlayer(client.id);
+      this.mkCmdViolationLimiter.clearPlayer(client.id);
     }
     if (!playerId) return;
     const others = await this.server.in(`p:${playerId}`).fetchSockets();
@@ -130,6 +145,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.bansungConfigLimiter.clearPlayer(playerId);
       this.bansungHeroLimiter.clearPlayer(playerId);
       this.bansungCmdViolationLimiter.clearPlayer(playerId);
+      this.mkConfigLimiter.clearPlayer(playerId);
+      this.mkHeroLimiter.clearPlayer(playerId);
+      this.mkCmdViolationLimiter.clearPlayer(playerId);
       this.rooms.disconnected(playerId);
       this.rooms.forget(playerId);
     }
@@ -501,6 +519,85 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
   }
 
+  // --- Mighty Knight Co-op Endless ---
+  @SubscribeMessage(MK_EVT_CMD)
+  mkCmd(@ConnectedSocket() c: Socket, @MessageBody() body: unknown) {
+    return this.handle(c, (me) => {
+      const key = this.socketLimitKey(c, me.playerId);
+      if (
+        !isMkSafePlainObject(body, MK_SEC_LIMITS.MAX_CMD_KEYS) ||
+        !isMkWithinJsonByteBudget(body, MK_SEC_LIMITS.MAX_CMD_JSON_BYTES) ||
+        typeof (body as { t?: unknown }).t !== 'string'
+      ) {
+        this.rejectInvalidBansungPayload(
+          this.mkCmdViolationLimiter,
+          key,
+          'Phát hiện gửi lệnh không hợp lệ quá nhanh, vui lòng chậm lại.',
+          'invalid_command',
+        );
+      }
+      const res = this.game(me).mkCommand(me.playerId, body);
+      if (!res.ok) {
+        throw new SilentRejectError(res.reason === 'rate_limit' ? 'rate_limited' : res.reason ?? 'invalid_command');
+      }
+    });
+  }
+
+  @SubscribeMessage(MK_EVT_CONFIG)
+  mkConfig(@ConnectedSocket() c: Socket, @MessageBody() body: unknown) {
+    return this.handle(c, (me) => {
+      const key = this.socketLimitKey(c, me.playerId);
+      const rl = this.mkConfigLimiter.consume(key, 'config');
+      if (!rl.allowed) {
+        if (rl.shouldKick) {
+          throw new GameKickError('Bạn thay đổi cấu hình quá nhanh.');
+        }
+        throw new SilentRejectError('rate_limited');
+      }
+      if (
+        !isMkSafePlainObject(body, MK_SEC_LIMITS.MAX_CONFIG_KEYS) ||
+        !isMkWithinJsonByteBudget(body, MK_SEC_LIMITS.MAX_CONFIG_JSON_BYTES)
+      ) {
+        this.rejectInvalidBansungPayload(this.mkConfigLimiter, key, 'Cấu hình phòng không hợp lệ.');
+      }
+      let raw: unknown = body;
+      if (Object.hasOwn(body, 'config')) {
+        if (Object.keys(body).length !== 1) {
+          this.rejectInvalidBansungPayload(this.mkConfigLimiter, key, 'Cấu hình phòng không hợp lệ.');
+        }
+        raw = (body as { config: unknown }).config;
+        if (
+          !isMkSafePlainObject(raw, MK_SEC_LIMITS.MAX_CONFIG_KEYS) ||
+          !isMkWithinJsonByteBudget(raw, MK_SEC_LIMITS.MAX_CONFIG_JSON_BYTES)
+        ) {
+          this.rejectInvalidBansungPayload(this.mkConfigLimiter, key, 'Cấu hình phòng không hợp lệ.');
+        }
+      }
+      this.rooms.setMkConfig(me.playerId, raw);
+    });
+  }
+
+  @SubscribeMessage(MK_EVT_HERO)
+  mkHero(@ConnectedSocket() c: Socket, @MessageBody() body: unknown) {
+    return this.handle(c, (me) => {
+      const key = this.socketLimitKey(c, me.playerId);
+      const rl = this.mkHeroLimiter.consume(key, 'config');
+      if (!rl.allowed) {
+        if (rl.shouldKick) {
+          throw new GameKickError('Bạn đổi anh hùng quá nhanh.');
+        }
+        throw new SilentRejectError('rate_limited');
+      }
+      const isValidShape =
+        typeof body === 'string' ||
+        isMkSafePlainObject(body, MK_SEC_LIMITS.MAX_CMD_KEYS);
+      if (!isValidShape || !isMkWithinJsonByteBudget(body, MK_SEC_LIMITS.MAX_CMD_JSON_BYTES)) {
+        this.rejectInvalidBansungPayload(this.mkHeroLimiter, key, 'Anh hùng không hợp lệ.');
+      }
+      this.rooms.setMkHero(me.playerId, body);
+    });
+  }
+
   // --- Lô Tô Cân Đồ ---
   @SubscribeMessage('loto:pick')
   lotoPick(@ConnectedSocket() c: Socket, @MessageBody() body: { sheets?: unknown; colors?: unknown }) {
@@ -508,7 +605,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   private rejectInvalidBansungPayload(
-    limiter: BansungRateLimiter,
+    limiter: { recordViolation(key: string): { shouldKick: boolean } },
     key: string,
     kickMessage: string,
     silentReason?: string,

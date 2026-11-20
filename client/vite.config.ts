@@ -23,6 +23,8 @@ const BANSUNG_DIR = fileURLToPath(new URL('../database-ban-sung', import.meta.ur
 const DIST_BANSUNG_DIR = fileURLToPath(new URL('./dist/database-ban-sung', import.meta.url));
 const TOTAL_WAR_DIR = fileURLToPath(new URL('../database-total-war', import.meta.url));
 const DIST_TOTAL_WAR_DIR = fileURLToPath(new URL('./dist/database-total-war', import.meta.url));
+const MK_DIR = fileURLToPath(new URL('../database-mighty-knight-pixel', import.meta.url));
+const DIST_MK_DIR = fileURLToPath(new URL('./dist/database-mighty-knight-pixel', import.meta.url));
 
 const STATIC_MIME_BY_EXT: Readonly<Record<string, string>> = {
   '.png': 'image/png',
@@ -152,7 +154,12 @@ function databaseStaticPlugin(opts: StaticMountOptions): Plugin {
 
       res.statusCode = 200;
       res.setHeader('Content-Type', mime);
-      res.setHeader('Cache-Control', opts.route === '/database-ban-sung' ? 'no-cache' : 'public, max-age=604800');
+      res.setHeader(
+        'Cache-Control',
+        opts.route === '/database-ban-sung' || opts.route === '/database-mighty-knight-pixel'
+          ? 'no-cache'
+          : 'public, max-age=604800',
+      );
       if (method === 'HEAD') {
         res.end();
         return;
@@ -251,6 +258,18 @@ function databaseBanSungPlugin(): Plugin {
   });
 }
 
+function databaseMightyKnightPlugin(): Plugin {
+  return databaseStaticPlugin({
+    name: 'database-mighty-knight-static',
+    route: '/database-mighty-knight-pixel',
+    srcDir: MK_DIR,
+    distDir: DIST_MK_DIR,
+    allowedExts: new Set(['.png', '.webp', '.jpg', '.jpeg', '.ogg', '.mp3', '.wav', '.json']),
+    failClosed: true,
+    isAllowedJson: (relPath) => relPath === 'manifest.json',
+  });
+}
+
 function databaseTotalWarPlugin(): Plugin {
   const rootPrefix = TOTAL_WAR_DIR.endsWith(sep) ? TOTAL_WAR_DIR : TOTAL_WAR_DIR + sep;
   const serveTotalWar = (middlewares: { use: (route: string, fn: (req: any, res: any, next: () => void) => void) => void }) => {
@@ -324,7 +343,14 @@ export default defineConfig(({ mode }) => {
   };
 
   return {
-    plugins: [react(), databasePikachuPlugin(), databaseMiragineWarPlugin(), databaseBanSungPlugin(), databaseTotalWarPlugin()],
+    plugins: [
+      react(),
+      databasePikachuPlugin(),
+      databaseMiragineWarPlugin(),
+      databaseBanSungPlugin(),
+      databaseTotalWarPlugin(),
+      databaseMightyKnightPlugin(),
+    ],
     // Ảnh lá bài lấy thẳng từ thư mục database/ ở gốc project
     publicDir: fileURLToPath(new URL('../database', import.meta.url)),
     server: {
