@@ -1,0 +1,41 @@
+{
+  "name": "eldoria-forgotten-wilds",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Eldoria: Forgotten Wilds — Classic 16-bit 2D Pixel Art Online Multiplayer Action RPG (100% JSON Primary DB + Local Docker Redis & MinIO)",
+  "workspaces": [
+    "packages/shared",
+    "packages/game-config",
+    "apps/game-server",
+    "apps/client"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "assets:generate": "node tools/asset-pipeline/generate-all-mvp-pngs.mjs",
+    "assets:verify": "node tools/asset-pipeline/pack-and-verify-assets.mjs",
+    "validate:design": "node tools/design-validation/validate-catalog.mjs && node tools/design-validation/validate-animation-pipeline.mjs && node tools/design-validation/audit-workspace.mjs",
+    "docker:config": "node tools/docker/verify-local-stack-boot.mjs --config-only",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:verify": "node tools/docker/verify-local-stack-boot.mjs",
+    "build:shared": "npm run build -w @eldoria/shared",
+    "build:config": "npm run build -w @eldoria/game-config",
+    "build:server": "npm run build -w @eldoria/game-server",
+    "build:client": "npm run build -w @eldoria/client",
+    "build": "npm run build:shared && npm run build:config && npm run build:server && npm run build:client",
+    "dev:server": "npm run dev -w @eldoria/game-server",
+    "dev:client": "npm run dev -w @eldoria/client",
+    "test:shared": "npm run test -w @eldoria/shared",
+    "test:server": "npm run test -w @eldoria/game-server",
+    "test:client": "npm run test -w @eldoria/client",
+    "test:e2e:browser": "tsx tools/testing/run-browser-e2e.ts",
+    "test": "npm run test:shared && npm run test:server && npm run test:client"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.65.1",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  }
+}
