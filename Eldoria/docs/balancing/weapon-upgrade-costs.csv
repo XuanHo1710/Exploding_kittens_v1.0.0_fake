@@ -1,0 +1,11 @@
+from_level,to_level,blacksmith_level_req,success_rate_mvp,break_risk_mvp,downgrade_risk_mvp,atk_bonus_pct_cumulative,bonus_flat_atk_base,milestone_perk,gold_cost,mat_1_id,mat_1_qty,mat_2_id,mat_2_qty,mat_3_id,mat_3_qty,primary_farm_sources,est_farm_hours_casual,est_farm_hours_regular,est_farm_hours_hardcore
+0,1,1,1.00,false,false,8,4,None,150,mat_copper_ingot,3,mat_oak_wood,4,,0,Greenhaven Outskirts & Whispering Forest Edge,0.20,0.12,0.08
+1,2,1,1.00,false,false,16,8,None,300,mat_copper_ingot,5,mat_slime_gel,4,,0,Whispering Forest Slimes & Copper Veins,0.35,0.22,0.15
+2,3,1,1.00,false,false,25,13,None,550,mat_iron_ingot,4,mat_goblin_tooth,6,,0,Whispering Forest Goblins & Iron Veins,0.55,0.35,0.22
+3,4,2,1.00,false,false,35,19,None,900,mat_iron_ingot,7,mat_wolf_pelt,6,mat_coal,5,Whispering Forest Wolves & Mining,0.90,0.55,0.35
+4,5,2,1.00,false,false,48,27,Milestone +5: Weapon Glow I & +3% Crit Rate,1400,mat_iron_ingot,10,mat_spore_cap_dust,8,mat_boar_tusk,6,Deep Whispering Forest & Mossroot Outskirts,1.35,0.85,0.55
+5,6,2,1.00,false,false,60,36,None,2100,mat_steel_ingot,5,mat_crawler_chitin,8,mat_shaman_totem,4,Mossroot Hollow Mob Packs & Smelting,1.80,1.15,0.75
+6,7,3,1.00,false,false,74,47,None,3000,mat_steel_ingot,8,mat_alpha_fang,3,mat_starlight_dust,6,Elite Alpha Direwolf & Deep Dungeon,2.50,1.55,1.00
+7,8,3,1.00,false,false,90,60,None,4200,mat_steel_ingot,12,mat_alpha_fang,5,mat_thornback_heart,1,Mossroot Hollow Boss Clear + Elite Hunts,3.40,2.10,1.35
+8,9,4,1.00,false,false,108,76,None,5800,mat_steel_ingot,16,mat_thornback_heart,2,mat_starlight_dust,12,Repeat Boss Raids + Alchemy Dust Refining,4.80,2.95,1.90
+9,10,4,1.00,false,false,130,96,Milestone +10: Radiant Aura II & +8% Boss Poise Damage & +5% Skill Scaling,8000,mat_steel_ingot,22,mat_thornback_heart,4,mat_starlight_dust,20,Co-op Boss Farm + Blacksmith Lv4 + Mastery Grind,6.50,4.00,2.60

@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eldoria — Co-op Boss Raid (Thornback Elder), Party HUD & Rewards</title>
+<style>
+  :root {
+    --bg-obsidian: #181425;
+    --bg-slate: #262B44;
+    --bg-card: #2f3554;
+    --bg-elevated: #3A4466;
+    --border-dark: #0e0b16;
+    --gold: #F4B41B;
+    --gold-hi: #FFE762;
+    --gold-lo: #B47412;
+    --parchment: #EAD4AA;
+    --text-main: #F4F4F4;
+    --text-muted: #A9B4C9;
+    --emerald: #38B764;
+    --emerald-hi: #63C74D;
+    --crimson: #E43B44;
+    --telegraph: #FF1E42;
+    --azure: #0095E9;
+    --amber: #FEAE34;
+    --font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-px: "Consolas", "Courier New", "Lucida Console", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-obsidian); color: var(--text-main); font-family: var(--font-ui); min-height: 100vh; line-height: 1.45; }
+
+  .studio-nav {
+    position: sticky; top: 0; z-index: 150;
+    background: #141020; border-bottom: 3px solid var(--gold);
+    padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .studio-brand {
+    display: flex; align-items: center; gap: 10px; font-family: var(--font-px);
+    font-weight: 700; color: var(--gold); text-shadow: 2px 2px 0 #000; font-size: 14px; text-decoration: none;
+  }
+  .nav-links { display: flex; flex-wrap: wrap; gap: 6px; }
+  .nav-links a {
+    font-family: var(--font-px); font-size: 12px; font-weight: 700; text-decoration: none;
+    color: var(--parchment); background: var(--bg-slate); padding: 5px 10px; border: 2px solid #0e0b16;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.12), inset -2px -2px 0 rgba(0,0,0,0.45);
+  }
+  .nav-links a:hover { background: var(--bg-elevated); color: var(--gold-hi); }
+  .nav-links a.active { background: var(--gold); color: #181425; }
+
+  .ctrl-strip {
+    background: #1d1930; border-bottom: 2px solid var(--border-dark);
+    padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .px-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    font-family: var(--font-px); font-weight: 700; font-size: 11.5px; padding: 6px 10px;
+    cursor: pointer; border: 2px solid var(--border-dark); color: var(--text-main); background: var(--bg-elevated);
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.45), 0 2px 0 var(--border-dark);
+  }
+  .px-btn:hover { filter: brightness(1.12); }
+  .px-btn.gold { background: var(--gold); color: #181425; }
+  .px-btn.emerald { background: var(--emerald); color: #0e1d12; }
+  .px-btn.crimson { background: var(--crimson); color: #fff; }
+  .px-btn.azure { background: var(--azure); color: #fff; }
+  .px-badge {
+    font-family: var(--font-px); font-size: 10.5px; font-weight: 700; padding: 2px 7px;
+    border: 2px solid var(--border-dark); background: #141122; color: var(--parchment); display: inline-block;
+  }
+  .px-badge.gold { background: #3b2d12; color: var(--gold-hi); border-color: var(--gold-lo); }
+  .px-badge.crimson { background: #3a141c; color: #ff858c; border-color: var(--crimson); }
+  .px-badge.emerald { background: #133122; color: var(--emerald-hi); border-color: var(--emerald); }
+
+  .raid-layout {
+    max-width: 1360px; margin: 14px auto 40px; padding: 0 14px;
+    display: grid; grid-template-columns: 295px 1fr; gap: 14px; align-items: start;
+  }
+  @media (max-width: 1060px) { .raid-layout { grid-template-columns: 1fr; } }
+
+  .px-panel {
+    background: var(--bg-slate); border: 3px solid var(--border-dark);
+    box-shadow: inset 3px 3px 0 rgba(255,255,255,0.09), inset -3px -3px 0 rgba(0,0,0,0.45), 0 6px 0 rgba(0,0,0,0.45);
+    padding: 12px;
+  }
+
+  /* Party Sidebar */
+  .party-member {
+    background: #181425; border: 2px solid #3a4466; padding: 8px; margin-bottom: 8px;
+  }
+  .party-member.aggro { border-color: var(--crimson); box-shadow: inset 0 0 8px rgba(228,59,68,0.28); }
+  .party-member.self { border-color: var(--gold); }
+  .mini-bar { position: relative; height: 11px; background: #0d0a14; border: 1px solid #3a4466; margin-top: 4px; }
+  .mini-bar-fill { height: 100%; transition: width 0.15s; }
+  .mini-bar-txt {
+    position: absolute; inset: 0; font-family: var(--font-px); font-size: 9px; font-weight: 700;
+    display: flex; justify-content: space-between; padding: 0 4px; color: #fff; text-shadow: 1px 1px 0 #000;
+  }
+
+  /* Arena Container */
+  .arena-stage {
+    position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 500px;
+    background: #100d1a; border: 4px solid var(--gold);
+    box-shadow: 0 0 0 3px var(--border-dark), 0 9px 0 rgba(0,0,0,0.6);
+    overflow: hidden;
+  }
+  #bossCanvas {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    image-rendering: pixelated; image-rendering: crisp-edges;
+  }
+
+  /* Top Boss Health & Poise HUD */
+  .boss-hud-top {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 25;
+    width: 82%; max-width: 720px; background: rgba(20, 16, 32, 0.92);
+    border: 2px solid var(--gold-lo); padding: 8px 12px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.65);
+  }
+  .boss-hp-track {
+    position: relative; height: 18px; background: #0e0b16; border: 2px solid var(--border-dark); margin: 5px 0 4px;
+  }
+  .boss-hp-fill { height: 100%; background: linear-gradient(90deg, #a81c28, #E43B44, #ff636b); transition: width 0.25s; }
+  .phase-tick { position: absolute; top: 0; bottom: 0; width: 2px; background: #FFE762; z-index: 3; }
+  .boss-poise-track {
+    position: relative; height: 10px; background: #0e0b16; border: 1px solid #5a6988;
+  }
+  .boss-poise-fill { height: 100%; background: linear-gradient(90deg, #d98218, #FFE762); transition: width 0.2s; }
+
+  .stagger-banner {
+    display: none; position: absolute; top: 96px; left: 50%; transform: translateX(-50%); z-index: 30;
+    background: rgba(244, 180, 27, 0.95); color: #181425; border: 3px solid #0e0b16;
+    font-family: var(--font-px); font-weight: 700; font-size: 13px; padding: 5px 16px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.6);
+  }
+  .stagger-banner.show { display: block; }
+
+  .telegraph-callout {
+    position: absolute; bottom: 12px; left: 12px; z-index: 25;
+    background: rgba(20, 16, 32, 0.92); border: 2px solid var(--telegraph);
+    padding: 7px 10px; font-family: var(--font-px); font-size: 11px; max-width: 440px;
+  }
+
+  .readability-pill {
+    position: absolute; bottom: 12px; right: 12px; z-index: 25;
+    background: rgba(19, 49, 34, 0.94); border: 2px solid var(--emerald);
+    padding: 6px 10px; font-family: var(--font-px); font-size: 10.5px; color: #a7f070;
+  }
+
+  /* Modals: Boss Victory Reward & Death/Respawn */
+  .modal-bg {
+    display: none; position: absolute; inset: 0; z-index: 90;
+    background: rgba(10, 8, 18, 0.86); align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-bg.open { display: flex; }
+  .modal-box {
+    width: 100%; max-width: 650px; background: var(--bg-slate);
+    border: 3px solid var(--gold); box-shadow: 0 0 0 3px var(--border-dark), 0 8px 0 rgba(0,0,0,0.65);
+    padding: 18px;
+  }
+  .loot-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 8px; margin: 12px 0;
+  }
+  .loot-item {
+    background: #181425; border: 2px solid #4a557c; padding: 8px; font-family: var(--font-px); font-size: 11px;
+  }
+  .loot-item.epic { border-color: #C06EFF; box-shadow: inset 0 0 10px rgba(192,110,255,0.22); }
+  .loot-item.gold { border-color: var(--gold); }
+</style>
+</head>
+<body>
+
+<nav class="studio-nav">
+  <a class="studio-brand" href="index.html">
+    <svg width="20" height="20" viewBox="0 0 16 16"><rect x="7" y="1" width="2" height="9" fill="#FFE762"/><rect x="4" y="10" width="8" height="2" fill="#E4A672"/><rect x="7" y="12" width="2" height="3" fill="#733E39"/></svg>
+    ELDORIA UI MOCKUP SUITE
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Hub</a>
+    <a href="auth-character-select.html">1. Auth &amp; Hero</a>
+    <a href="main-hud-world.html">2. HUD &amp; World</a>
+    <a href="inventory-blacksmith-enhance.html">3. Kho đồ &amp; +10 Forge</a>
+    <a href="gacha-collection.html">4. Gacha &amp; 12 Hero</a>
+    <a href="farming-building-grid.html">5. Nông trại &amp; Xây dựng</a>
+    <a href="boss-raid-party.html" class="active">6. Boss Raid &amp; Party</a>
+  </div>
+</nav>
+
+<div class="ctrl-strip">
+  <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+    <span style="font-family:var(--font-px); font-size:11px; color:var(--gold-hi);">PHASE BOSS:</span>
+    <button class="px-btn gold" id="btnP1" onclick="setBossPhase(1)">Phase 1 (100%)</button>
+    <button class="px-btn" id="btnP2" onclick="setBossPhase(2)">Phase 2 (65% • Briar)</button>
+    <button class="px-btn" id="btnP3" onclick="setBossPhase(3)">Phase 3 (30% • Charge)</button>
+    <button class="px-btn emerald" onclick="triggerStagger()">⚡ Phá Poise (STAGGER 6s)</button>
+    <button class="px-btn azure" onclick="firePartyUltimates()">🔥 Tung Ultimate (Test Telegraph)</button>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:6px;">
+    <button class="px-btn gold" onclick="openVictoryModal()">🏆 Boss Victory Modal</button>
+    <button class="px-btn crimson" onclick="openDeathModal()">💀 Death &amp; Respawn Modal</button>
+  </div>
+</div>
+
+<main class="raid-layout">
+  <!-- LEFT: 4-MEMBER PARTY HUD & RAID RULES -->
+  <aside class="px-panel">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid rgba(255,255,255,0.12);">
+      <span style="font-family:var(--font-px); font-weight:700; color:var(--gold-hi); font-size:13.5px;">👥 TỔ ĐỘI CO-OP (4/4)</span>
+      <span class="px-badge emerald">+30% LOOT</span>
+    </div>
+
+    <div id="partyHudList"></div>
+
+    <div style="background:#141122; border:2px solid var(--border-dark); padding:10px; font-size:11.5px; color:var(--parchment); margin-top:10px;">
+      <div style="font-family:var(--font-px); font-weight:700; color:var(--gold-hi); margin-bottom:4px;">
+        📌 CƠ CHẾ BOSS (<code>bosses.json</code>)
+      </div>
+      <div>• <strong>Điểm yếu:</strong> Hệ <strong>FIRE</strong> (-35% Kháng, <strong>×1.5</strong> sát thương lên thanh Poise).</div>
+      <div>• <strong>4 Trụ đá Moss Pillars:</strong> Chặn Spore Volley và bẫy boss đâm vỡ khi dùng <em>Heartwood Charge</em> để tự choáng 2.5s!</div>
+      <div>• <strong>Telegraph Rule:</strong> Lớp cảnh báo Đỏ luôn render <strong>TRÊN</strong> Ultimate VFX (Nguyên tắc V).</div>
+    </div>
+  </aside>
+
+  <!-- RIGHT: LIVE BOSS ARENA + BOSS BAR + MODALS -->
+  <section class="arena-stage">
+    <canvas id="bossCanvas" width="640" height="360"></canvas>
+
+    <!-- TOP BOSS HP & POISE HUD -->
+    <div class="boss-hud-top">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+        <div style="font-family:var(--font-px); font-size:13px; font-weight:700; color:var(--gold-hi);">
+          THORNBACK ELDER <span style="font-size:11px; color:var(--parchment);">— Lv 15 • EARTH (Yếu: FIRE)</span>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <span class="px-badge crimson" id="bossPhaseBadge">PHASE 1: GỐC RỄ THỨC TỈNH</span>
+          <span class="px-badge">⏳ ENRAGE: 04:42</span>
+        </div>
+      </div>
+
+      <div class="boss-hp-track">
+        <div class="boss-hp-fill" id="bossHpFill" style="width:92%;"></div>
+        <div class="phase-tick" style="left:65%;" title="Phase 2: 65%"></div>
+        <div class="phase-tick" style="left:30%;" title="Phase 3: 30%"></div>
+        <div class="mini-bar-txt" style="font-size:10.5px; line-height:14px;">
+          <span id="bossHpText">29,946 / 32,550 HP (4P Scaled ×3.10)</span>
+          <span id="bossHpPct">92%</span>
+        </div>
+      </div>
+
+      <div class="boss-poise-track">
+        <div class="boss-poise-fill" id="bossPoiseFill" style="width:68%;"></div>
+        <div class="mini-bar-txt" style="font-size:8.5px; line-height:8px;">
+          <span>POISE / STAGGER BAR</span>
+          <span id="bossPoiseText">796 / 1,170</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGGER ALERT -->
+    <div class="stagger-banner" id="staggerBanner">
+      ⚡ POISE BROKEN — BOSS STAGGERED! (+40% SÁT THƯƠNG NHẬN VÀO • CÒN <span id="staggerSec">6.0</span>s)
+    </div>
+
+    <!-- ACTIVE TELEGRAPH INFO -->
+    <div class="telegraph-callout" id="telegraphCallout">
+      <strong style="color:#ff858c;">⚠ TELEGRAPH ĐANG HIỂN THỊ:</strong>
+      <span id="telegraphName">Root Slam (CIRCLE • 900ms) — Lướt Dodge ra khỏi vòng đỏ hoặc Cinder Parry!</span>
+    </div>
+
+    <div class="readability-pill">
+      ✓ RENDER LAYER: Ultimate VFX (z:20) &lt; Boss Red Telegraph (z:30)
+    </div>
+
+    <!-- MODAL 1: BOSS VICTORY REWARD (PERSONAL INSTANCED LOOT) -->
+    <div class="modal-bg" id="victoryModal" onclick="if(event.target===this) closeModals()">
+      <div class="modal-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--border-dark); padding-bottom:10px;">
+          <div>
+            <span class="px-badge emerald">PERSONAL INSTANCED LOOT • KHÔNG TRANH CƯỚP</span>
+            <h2 style="font-family:var(--font-px); color:var(--gold-hi); font-size:20px; margin-top:5px;">
+              🏆 CHIẾN THẮNG! THORNBACK ELDER ĐÃ BỊ HẠ GỤC
+            </h2>
+          </div>
+          <button class="px-btn crimson" onclick="closeModals()">✕</button>
+        </div>
+
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; font-family:var(--font-px); font-size:11.5px; color:var(--parchment);">
+          <span>⏱ Thời gian: <strong style="color:#fff;">03:18</strong></span>
+          <span>⚔ Đóng góp cá nhân: <strong style="color:#63C74D;">31% DMG (Đủ điều kiện ≥ 5%)</strong></span>
+          <span>👥 Party Bonus: <strong style="color:#FFE762;">+30% Phần thưởng</strong></span>
+        </div>
+
+        <div class="loot-grid">
+          <div class="loot-item gold">
+            <div style="color:var(--gold-hi); font-weight:700;">✦ +480 Starlight Shards</div>
+            <div style="color:var(--text-muted); font-size:10px;">First Clear Bonus (3 lượt Gacha!)</div>
+          </div>
+          <div class="loot-item gold">
+            <div style="color:var(--gold-hi); font-weight:700;">● +620 Gold &amp; +1,650 EXP</div>
+            <div style="color:var(--text-muted); font-size:10px;">+5 Boss Tokens (ltb_boss_thornback_elder)</div>
+          </div>
+          <div class="loot-item epic">
+            <div style="color:#C06EFF; font-weight:700;">💚 Thornback Elder Heart ×2</div>
+            <div style="color:var(--text-muted); font-size:10px;"><code>mat_thornback_heart</code> (Cường hóa +9/+10)</div>
+          </div>
+          <div class="loot-item epic">
+            <div style="color:#C06EFF; font-weight:700;">🗡 Elderwood Cleaver (+0)</div>
+            <div style="color:var(--text-muted); font-size:10px;"><code>wpn_elderwood_cleaver</code> (EPIC Greatsword)</div>
+          </div>
+          <div class="loot-item epic">
+            <div style="color:#C06EFF; font-weight:700;">🧿 Thornback Heart Charm</div>
+            <div style="color:var(--text-muted); font-size:10px;"><code>eqp_thornback_heart_charm</code> (+130 HP, +18 DEF)</div>
+          </div>
+          <div class="loot-item">
+            <div style="color:#63C74D; font-weight:700;">🪵 Ancient Heartwood ×4</div>
+            <div style="color:var(--text-muted); font-size:10px;"><code>mat_ancient_heartwood</code> (Nâng nhà Lv 4)</div>
+          </div>
+        </div>
+
+        <div style="background:#141122; border:2px dashed #38B764; padding:8px 10px; font-family:var(--font-px); font-size:10.5px; color:#a7f070; margin-bottom:12px;">
+          ✓ Đã ghi nguyên tử phần thưởng cá nhân vào <code>data/db/inventories/chr_kael_001.json</code> (JSON WAL TX#boss_9402).
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;">
+          <a class="px-btn gold" href="inventory-blacksmith-enhance.html">⚒ Mang Heart về Cường hóa +10</a>
+          <a class="px-btn azure" href="gacha-collection.html">✦ Dùng Shard Quay Gacha</a>
+          <button class="px-btn" onclick="closeModals()">Tiếp tục xem Arena</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 2: DEATH & RESPAWN -->
+    <div class="modal-bg" id="deathModal" onclick="if(event.target===this) closeModals()">
+      <div class="modal-box" style="max-width:520px; border-color:var(--crimson);">
+        <div style="text-align:center; margin-bottom:14px;">
+          <span class="px-badge crimson">DOWNED STATE • SERVER AUTHORITATIVE</span>
+          <h2 style="font-family:var(--font-px); color:#ff858c; font-size:24px; text-shadow:3px 3px 0 #000; margin-top:6px;">
+            💀 BẠN ĐÃ GỤC NGÃ
+          </h2>
+          <p style="font-size:13px; color:var(--parchment); margin-top:4px;">
+            Nguyên nhân: <strong>Heartwood Charge</strong> từ <code>boss_thornback_elder</code> (-412 EARTH DMG)
+          </p>
+        </div>
+
+        <div style="background:#181425; border:2px solid var(--border-dark); padding:12px; font-size:12px; color:var(--parchment); margin-bottom:14px;">
+          • <strong>Không rơi đồ hay mất vũ khí vĩnh viễn</strong> khi tử vong trong Boss Raid.<br>
+          • <strong>Seraphina Solis</strong> vẫn còn sống trong đấu trường — bạn có thể chờ đồng đội hồi sinh tại chỗ hoặc quay về cổng <code>dng_mossroot_hollow</code>.<br>
+          • Nếu cả 4 thành viên gục ngã, đấu trường tự động đặt lại Boss về 100% HP &amp; phục hồi 4 trụ đá.
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="px-btn emerald" onclick="closeModals(); healAllParty();">✨ Nhận hồi sinh từ Seraphina Solis (Còn 18s)</button>
+          <button class="px-btn crimson" onclick="closeModals(); setBossPhase(1);">↺ Hồi sinh tại Cổng Greenhaven / Mossroot Hollow</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const canvas = document.getElementById('bossCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+
+  const MAX_BOSS_HP = 32550; // 10,500 * 3.10 (4-player party scaling)
+  const MAX_BOSS_POISE = 1170; // 520 * 2.25 (4-player party scaling)
+
+  const boss = {
+    x: 320, y: 175, hp: 29946, poise: 796, phase: 1,
+    staggerFrames: 0, telegraphTick: 0, attackIdx: 0
+  };
+
+  const pillars = [
+    { id: 'pil_moss_nw', x: 165, y: 120, intact: true },
+    { id: 'pil_moss_ne', x: 475, y: 120, intact: true },
+    { id: 'pil_moss_sw', x: 165, y: 255, intact: true },
+    { id: 'pil_moss_se', x: 475, y: 255, intact: true }
+  ];
+
+  const party = [
+    { name: 'Kael Ironbound', cls: 'WARRIOR', elem: 'FIRE', role: 'MELEE_DPS', hp: 780, maxHp: 850, mp: 118, maxMp: 162, contrib: 31, col: '#C83E2B', x: 255, y: 205, self: true, aggro: false },
+    { name: 'Bram Stoneheart', cls: 'KNIGHT', elem: 'EARTH', role: 'TANK', hp: 920, maxHp: 1140, mp: 92, maxMp: 140, contrib: 22, col: '#8D6E63', x: 320, y: 242, self: false, aggro: true },
+    { name: 'Lyra Galeweaver', cls: 'ARCHER', elem: 'WIND', role: 'RANGED_DPS', hp: 590, maxHp: 640, mp: 135, maxMp: 175, contrib: 29, col: '#2E8B57', x: 145, y: 165, self: false, aggro: false },
+    { name: 'Seraphina Solis', cls: 'HEALER', elem: 'LIGHT', role: 'SUPPORT', hp: 660, maxHp: 710, mp: 185, maxMp: 240, contrib: 18, col: '#F4B41B', x: 495, y: 195, self: false, aggro: false }
+  ];
+
+  let ultEffects = [];
+  let floats = [];
+  let tick = 0;
+
+  function renderPartyHud() {
+    document.getElementById('partyHudList').innerHTML = party.map(p => `
+      <div class="party-member ${p.aggro ? 'aggro' : ''} ${p.self ? 'self' : ''}">
+        <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-px); font-size:11.5px;">
+          <strong style="color:${p.self ? '#FFE762' : '#fff'};">${p.name}</strong>
+          <span style="font-size:9.5px; color:${p.aggro ? '#ff858c' : '#79d2ff'};">${p.aggro ? '🛡 AGGRO' : p.cls}</span>
+        </div>
+        <div class="mini-bar">
+          <div class="mini-bar-fill" style="width:${(p.hp/p.maxHp*100).toFixed(0)}%; background:#E43B44;"></div>
+          <div class="mini-bar-txt"><span>HP</span><span>${Math.round(p.hp)}/${p.maxHp}</span></div>
+        </div>
+        <div class="mini-bar">
+          <div class="mini-bar-fill" style="width:${(p.mp/p.maxMp*100).toFixed(0)}%; background:#0095E9;"></div>
+          <div class="mini-bar-txt"><span>MP</span><span>${Math.round(p.mp)}/${p.maxMp}</span></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:4px; font-family:var(--font-px); font-size:9.5px; color:var(--text-muted);">
+          <span>${p.elem} • ${p.role}</span>
+          <span style="color:#63C74D;">Đóng góp: ${p.contrib}% (✓≥5%)</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function updateBossHud() {
+    const pct = Math.max(0, Math.round(boss.hp / MAX_BOSS_HP * 100));
+    document.getElementById('bossHpFill').style.width = pct + '%';
+    document.getElementById('bossHpText').textContent = `${Math.round(boss.hp).toLocaleString()} / ${MAX_BOSS_HP.toLocaleString()} HP (4P Scaled ×3.10)`;
+    document.getElementById('bossHpPct').textContent = pct + '%';
+
+    const pPct = Math.max(0, Math.round(boss.poise / MAX_BOSS_POISE * 100));
+    document.getElementById('bossPoiseFill').style.width = pPct + '%';
+    document.getElementById('bossPoiseText').textContent = `${Math.round(boss.poise)} / ${MAX_BOSS_POISE}`;
+
+    const pNames = {
+      1: 'PHASE 1: GỐC RỄ THỨC TỈNH',
+      2: 'PHASE 2: TÁN GAI BÙNG NỔ (≤65%)',
+      3: 'PHASE 3: CƠN THỊNH NỘ CỔ THỤ (≤30%)'
+    };
+    document.getElementById('bossPhaseBadge').textContent = pNames[boss.phase];
+    ['btnP1', 'btnP2', 'btnP3'].forEach((id, i) => document.getElementById(id).classList.toggle('gold', i + 1 === boss.phase));
+  }
+
+  function setBossPhase(p) {
+    boss.phase = p;
+    boss.staggerFrames = 0;
+    document.getElementById('staggerBanner').classList.remove('show');
+    if (p === 1) {
+      boss.hp = 29946; boss.poise = 796;
+      pillars.forEach(pl => pl.intact = true);
+      document.getElementById('telegraphName').textContent = 'Root Slam (CIRCLE • 900ms) + Bramble Lash (CONE 120°) — Né khỏi vùng đỏ!';
+    } else if (p === 2) {
+      boss.hp = 19850; boss.poise = 520;
+      document.getElementById('telegraphName').textContent = 'Canopy Thorn Rain (6 VÒNG ĐỎ) + Briar Perimeter + Regrowth Sap Channel!';
+    } else {
+      boss.hp = 8800; boss.poise = 310;
+      pillars[0].intact = false; // Show a smashed pillar in Phase 3
+      document.getElementById('telegraphName').textContent = 'Heartwood Charge (RECTANGLE ĐỎ XUYÊN TRỤ) + Toxic Sap Pools — Bẫy Boss húc vỡ trụ!';
+    }
+    updateBossHud();
+  }
+
+  function triggerStagger() {
+    boss.poise = 0;
+    boss.staggerFrames = 360; // 6 seconds at 60fps
+    document.getElementById('staggerBanner').classList.add('show');
+    floats.push({ x: boss.x, y: boss.y - 54, txt: '⚡ POISE BROKEN! +40% DMG', col: '#FFE762', life: 70 });
+    updateBossHud();
+  }
+
+  function firePartyUltimates() {
+    // Fires Kael's Crimson Crescent AND Seraphina's Solar Judgment underneath Red Telegraph Layer!
+    ultEffects.push({ type: 'crescent', x: boss.x, y: boss.y, life: 95, maxLife: 95 });
+    ultEffects.push({ type: 'solar', x: boss.x + 12, y: boss.y - 10, life: 105, maxLife: 105 });
+    const mult = boss.staggerFrames > 0 ? 1.4 : 1.0;
+    const dmg1 = Math.round(740 * mult);
+    const dmg2 = Math.round(520 * mult);
+    boss.hp = Math.max(400, boss.hp - dmg1 - dmg2);
+    if (boss.staggerFrames === 0) boss.poise = Math.max(0, boss.poise - 260);
+    if (boss.poise === 0 && boss.staggerFrames === 0) triggerStagger();
+    floats.push({ x: boss.x - 24, y: boss.y - 36, txt: `-${dmg1} FIRE CRIT!`, col: '#FFE762', life: 56 });
+    floats.push({ x: boss.x + 28, y: boss.y - 24, txt: `-${dmg2} SOLAR!`, col: '#79d2ff', life: 56 });
+    party.forEach(p => { p.hp = Math.min(p.maxHp, p.hp + 120); });
+    renderPartyHud();
+    updateBossHud();
+  }
+
+  function openVictoryModal() { closeModals(); document.getElementById('victoryModal').classList.add('open'); }
+  function openDeathModal() { closeModals(); document.getElementById('deathModal').classList.add('open'); }
+  function closeModals() {
+    document.getElementById('victoryModal').classList.remove('open');
+    document.getElementById('deathModal').classList.remove('open');
+  }
+  function healAllParty() {
+    party.forEach(p => { p.hp = p.maxHp; p.mp = p.maxMp; });
+    renderPartyHud();
+    floats.push({ x: party[0].x, y: party[0].y - 22, txt: '✨ REVIVED BY SERAPHINA!', col: '#FFE762', life: 55 });
+  }
+
+  function px(x, y, w, h, col) {
+    ctx.fillStyle = col;
+    ctx.fillRect(Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(h));
+  }
+
+  // Main Arena Render Loop (Strict Z-Order: Floor -> Hazards -> ULTIMATE VFX -> HIGH-CONTRAST RED TELEGRAPHS -> Entities!)
+  function loop() {
+    tick++;
+    boss.telegraphTick = (boss.telegraphTick + 1) % 140;
+
+    if (boss.staggerFrames > 0) {
+      boss.staggerFrames--;
+      document.getElementById('staggerSec').textContent = (boss.staggerFrames / 60).toFixed(1);
+      if (boss.staggerFrames === 0) {
+        boss.poise = MAX_BOSS_POISE;
+        document.getElementById('staggerBanner').classList.remove('show');
+        updateBossHud();
+      }
+    }
+
+    // Periodic ambient combat simulation
+    if (tick % 70 === 0 && boss.staggerFrames === 0) {
+      const dmg = 165 + Math.floor(Math.random() * 60);
+      boss.hp = Math.max(400, boss.hp - dmg);
+      floats.push({ x: boss.x + (Math.random() - 0.5) * 40, y: boss.y - 34, txt: `-${dmg}`, col: '#FEAE34', life: 42 });
+      updateBossHud();
+    }
+
+    // 1. ARENA FLOOR (dng_mossroot_hollow)
+    px(0, 0, 640, 360, '#141c1c');
+    for (let ty = 1; ty < 11; ty++) {
+      for (let tx = 1; tx < 19; tx++) {
+        const alt = (tx + ty) % 2 === 0;
+        px(tx * 32, ty * 32, 32, 32, alt ? '#232e33' : '#1e282d');
+        if ((tx * 11 + ty * 7) % 5 === 0) {
+          px(tx * 32 + 6, ty * 32 + 8, 8, 6, '#294738'); // ancient moss patch
+        }
+      }
+    }
+    // Stone sanctuary walls
+    ctx.strokeStyle = '#3a4466'; ctx.lineWidth = 6;
+    ctx.strokeRect(32, 32, 576, 296);
+
+    // Phase 2+ Briar Perimeter Hazard along walls
+    if (boss.phase >= 2) {
+      ctx.strokeStyle = '#63372c'; ctx.lineWidth = 10;
+      ctx.strokeRect(38, 38, 564, 284);
+      for (let i = 0; i < 24; i++) {
+        px(40 + i * 24, 34, 8, 8, '#38B764');
+        px(40 + i * 24, 318, 8, 8, '#38B764');
+      }
+    }
+
+    // Phase 3 Toxic Sap Pools
+    if (boss.phase === 3) {
+      [[230, 145], [405, 235], [275, 275]].forEach(([sx, sy]) => {
+        px(sx - 24, sy - 14, 48, 28, 'rgba(99, 199, 77, 0.35)');
+        px(sx - 16, sy - 8, 32, 16, 'rgba(167, 240, 112, 0.45)');
+      });
+    }
+
+    // 2. ULTIMATE VFX LAYER (STRICTLY BELOW TELEGRAPHS — z:20)
+    for (let i = ultEffects.length - 1; i >= 0; i--) {
+      const u = ultEffects[i];
+      u.life--;
+      if (u.life <= 0) { ultEffects.splice(i, 1); continue; }
+      const alpha = Math.min(0.46, (u.life / u.maxLife) * 0.55); // Controlled translucency
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      if (u.type === 'crescent') {
+        const sweep = (1 - u.life / u.maxLife) * 60;
+        ctx.fillStyle = '#F28C28';
+        ctx.beginPath();
+        ctx.arc(u.x, u.y, 78 + sweep * 0.5, -Math.PI * 0.7, Math.PI * 0.5);
+        ctx.fill();
+        ctx.fillStyle = '#FFE762';
+        ctx.beginPath();
+        ctx.arc(u.x, u.y, 54 + sweep * 0.3, -Math.PI * 0.6, Math.PI * 0.4);
+        ctx.fill();
+      } else {
+        // Solar Judgment pillar
+        ctx.fillStyle = '#FFE762';
+        ctx.fillRect(u.x - 42, 20, 84, u.y + 30);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(u.x - 18, 20, 36, u.y + 30);
+      }
+      ctx.restore();
+    }
+
+    // 3. HIGH-CONTRAST CRIMSON BOSS TELEGRAPH LAYER (STRICTLY ABOVE ULTIMATE VFX — z:30!)
+    if (boss.staggerFrames === 0) {
+      const fillProg = boss.telegraphTick / 140;
+      ctx.save();
+      if (boss.phase === 1) {
+        // Root Slam Circle around Boss
+        const r = 82;
+        ctx.fillStyle = 'rgba(255, 30, 66, 0.22)';
+        ctx.beginPath(); ctx.arc(boss.x, boss.y + 12, r, 0, Math.PI * 2); ctx.fill();
+        // Expanding inner danger fill
+        ctx.fillStyle = 'rgba(255, 30, 66, 0.34)';
+        ctx.beginPath(); ctx.arc(boss.x, boss.y + 12, r * fillProg, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#FF1E42'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(boss.x, boss.y + 12, r, 0, Math.PI * 2); ctx.stroke();
+        // Secondary Cone Telegraph toward Bram
+        ctx.fillStyle = 'rgba(255, 30, 66, 0.20)';
+        ctx.beginPath();
+        ctx.moveTo(boss.x, boss.y + 12);
+        ctx.arc(boss.x, boss.y + 12, 118, Math.PI * 0.22, Math.PI * 0.78);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#FF6B81'; ctx.lineWidth = 2; ctx.stroke();
+      } else if (boss.phase === 2) {
+        // Canopy Thorn Rain (6 high-contrast red circles)
+        const spots = [[210,150],[430,150],[250,245],[390,245],[320,115],[320,275]];
+        spots.forEach(([cx, cy]) => {
+          ctx.fillStyle = 'rgba(255, 30, 66, 0.24)';
+          ctx.beginPath(); ctx.arc(cx, cy, 34, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = 'rgba(255, 30, 66, 0.38)';
+          ctx.beginPath(); ctx.arc(cx, cy, 34 * fillProg, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = '#FF1E42'; ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.arc(cx, cy, 34, 0, Math.PI * 2); ctx.stroke();
+        });
+      } else {
+        // Phase 3 Heartwood Charge Rectangle Telegraph aiming across arena
+        ctx.fillStyle = 'rgba(255, 30, 66, 0.26)';
+        ctx.fillRect(boss.x - 32, boss.y - 24, 240, 68);
+        ctx.fillStyle = 'rgba(255, 30, 66, 0.42)';
+        ctx.fillRect(boss.x - 32, boss.y - 24, 240 * fillProg, 68);
+        ctx.strokeStyle = '#FF1E42'; ctx.lineWidth = 3;
+        ctx.strokeRect(boss.x - 32, boss.y - 24, 240, 68);
+        ctx.fillStyle = '#FFE762'; ctx.font = 'bold 10px Consolas, monospace'; ctx.textAlign = 'center';
+        ctx.fillText('▶▶ HEARTWOOD CHARGE TELEGRAPH ▶▶', boss.x + 88, boss.y + 14);
+      }
+      ctx.restore();
+    }
+
+    // 4. 4 DESTRUCTIBLE MOSS PILLARS
+    pillars.forEach(pl => {
+      if (pl.intact) {
+        px(pl.x - 16, pl.y + 10, 32, 10, 'rgba(0,0,0,0.45)');
+        px(pl.x - 14, pl.y - 28, 28, 42, '#5a6988');
+        px(pl.x - 16, pl.y - 34, 32, 10, '#8b9bb4');
+        px(pl.x - 10, pl.y - 20, 12, 10, '#38B764'); // moss
+      } else {
+        // Rubble
+        px(pl.x - 16, pl.y - 4, 32, 14, '#3a4466');
+        px(pl.x - 8, pl.y - 8, 12, 8, '#5a6988');
+      }
+    });
+
+    // 5. BOSS SPRITE: THORNBACK ELDER (128x128 scale silhouette with glowing core!)
+    const bx = boss.x, by = boss.y;
+    const bossBob = boss.staggerFrames > 0 ? 12 : Math.round(Math.sin(tick * 0.08) * 3);
+    // Ground shadow
+    px(bx - 42, by + 26, 84, 16, 'rgba(0,0,0,0.52)');
+    // Bark trunk & shoulders
+    px(bx - 36, by - 28 + bossBob, 72, 58, '#4a3525');
+    px(bx - 30, by - 24 + bossBob, 60, 48, '#5e432e');
+    // Mossy shoulders & briar horn crown
+    px(bx - 40, by - 34 + bossBob, 80, 16, '#2d5e3b');
+    px(bx - 44, by - 48 + bossBob, 12, 20, '#733E39'); // left horn
+    px(bx + 32, by - 48 + bossBob, 12, 20, '#733E39'); // right horn
+    px(bx - 16, by - 44 + bossBob, 32, 12, '#38B764'); // crown moss
+    // Two Heavy Root Arms
+    const armSwing = boss.staggerFrames > 0 ? 10 : Math.round(Math.sin(tick * 0.1) * 5);
+    px(bx - 56, by - 14 + bossBob + armSwing, 20, 38, '#4a3525');
+    px(bx + 36, by - 14 + bossBob - armSwing, 20, 38, '#4a3525');
+    px(bx - 58, by + 16 + bossBob + armSwing, 22, 14, '#733E39');
+    px(bx + 36, by + 16 + bossBob - armSwing, 22, 14, '#733E39');
+    // Glowing Amber/Emerald/Crimson Chest Core!
+    const coreOuter = boss.staggerFrames > 0 ? '#5a6988' : (boss.phase === 3 ? '#FF1E42' : boss.phase === 2 ? '#FEAE34' : '#F4B41B');
+    const coreInner = boss.staggerFrames > 0 ? '#8b9bb4' : '#FFE762';
+    px(bx - 14, by - 8 + bossBob, 28, 22, coreOuter);
+    px(bx - 8, by - 3 + bossBob, 16, 12, coreInner);
+    // Glowing Eyes
+    px(bx - 14, by - 22 + bossBob, 6, 4, coreInner);
+    px(bx + 8, by - 22 + bossBob, 6, 4, coreInner);
+
+    // 6. 4-PLAYER CO-OP PARTY MEMBERS
+    party.forEach((p, i) => {
+      const pxPos = p.x + Math.sin(tick * 0.04 + i * 1.7) * (p.role === 'RANGED_DPS' ? 16 : 8);
+      const pyPos = p.y + Math.cos(tick * 0.035 + i) * 7;
+      px(pxPos - 7, pyPos + 6, 14, 5, 'rgba(0,0,0,0.45)');
+      px(pxPos - 6, pyPos - 12, 12, 18, p.col);
+      px(pxPos - 4, pyPos - 21, 8, 9, '#f2c9a0');
+      px(pxPos - 5, pyPos - 23, 10, 4, p.self ? '#FFE762' : p.col);
+      ctx.fillStyle = p.self ? '#FFE762' : '#FFFFFF';
+      ctx.font = 'bold 8px Consolas, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.name.split(' ')[0], pxPos, pyPos - 27);
+      // Animated arrow from Lyra to Boss
+      if (i === 2 && tick % 40 < 20) {
+        const prog = (tick % 40) / 20;
+        const ax = pxPos + (boss.x - pxPos) * prog;
+        const ay = pyPos + (boss.y - pyPos) * prog;
+        px(ax, ay, 8, 2, '#7CE0C3');
+      }
+    });
+
+    // 7. FLOATING DAMAGE NUMBERS
+    ctx.textAlign = 'center';
+    for (let i = floats.length - 1; i >= 0; i--) {
+      const f = floats[i];
+      f.y -= 0.65; f.life--;
+      if (f.life <= 0) { floats.splice(i, 1); continue; }
+      ctx.font = 'bold 11px Consolas, monospace';
+      ctx.fillStyle = '#0e0b16'; ctx.fillText(f.txt, f.x + 1, f.y + 1);
+      ctx.fillStyle = f.col; ctx.fillText(f.txt, f.x, f.y);
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  renderPartyHud();
+  updateBossHud();
+  loop();
+</script>
+</body>
+</html>

@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eldoria — Inventory, 10-Slot Equipment & Blacksmith +0→+10 Simulator</title>
+<style>
+  :root {
+    --bg-obsidian: #181425;
+    --bg-slate: #262B44;
+    --bg-card: #2f3554;
+    --bg-elevated: #3A4466;
+    --border-dark: #0e0b16;
+    --border-wood: #733E39;
+    --gold: #F4B41B;
+    --gold-hi: #FFE762;
+    --gold-lo: #B47412;
+    --parchment: #EAD4AA;
+    --text-main: #F4F4F4;
+    --text-muted: #A9B4C9;
+    --emerald: #38B764;
+    --emerald-hi: #63C74D;
+    --crimson: #E43B44;
+    --azure: #0095E9;
+    --amber: #FEAE34;
+    --rarity-common: #C0CBDC;
+    --rarity-uncommon: #63C74D;
+    --rarity-rare: #0095E9;
+    --rarity-epic: #C06EFF;
+    --rarity-legendary: #F4B41B;
+    --font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-px: "Consolas", "Courier New", "Lucida Console", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-obsidian); color: var(--text-main); font-family: var(--font-ui); min-height: 100vh; line-height: 1.45; }
+
+  .studio-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: #141020; border-bottom: 3px solid var(--gold);
+    padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .studio-brand {
+    display: flex; align-items: center; gap: 10px; font-family: var(--font-px);
+    font-weight: 700; color: var(--gold); text-shadow: 2px 2px 0 #000; font-size: 14px; text-decoration: none;
+  }
+  .nav-links { display: flex; flex-wrap: wrap; gap: 6px; }
+  .nav-links a {
+    font-family: var(--font-px); font-size: 12px; font-weight: 700; text-decoration: none;
+    color: var(--parchment); background: var(--bg-slate); padding: 5px 10px; border: 2px solid #0e0b16;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.12), inset -2px -2px 0 rgba(0,0,0,0.45);
+  }
+  .nav-links a:hover { background: var(--bg-elevated); color: var(--gold-hi); }
+  .nav-links a.active { background: var(--gold); color: #181425; }
+
+  .sub-toolbar {
+    background: #1d1930; border-bottom: 2px solid var(--border-dark);
+    padding: 9px 18px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .px-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    font-family: var(--font-px); font-weight: 700; font-size: 12px; padding: 7px 12px;
+    cursor: pointer; border: 2px solid var(--border-dark); color: var(--text-main); background: var(--bg-elevated);
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.16), inset -2px -2px 0 rgba(0,0,0,0.45), 0 3px 0 var(--border-dark);
+  }
+  .px-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+  .px-btn:active { transform: translateY(2px); }
+  .px-btn.gold { background: var(--gold); color: #181425; box-shadow: inset 2px 2px 0 var(--gold-hi), inset -2px -2px 0 var(--gold-lo), 0 3px 0 var(--border-dark); }
+  .px-btn.emerald { background: var(--emerald); color: #0e1d12; }
+  .px-btn.crimson { background: var(--crimson); color: #fff; }
+  .px-btn.azure { background: var(--azure); color: #fff; }
+  .px-btn:disabled { background: #3b3e52; color: #7e859c; cursor: not-allowed; filter: none; transform: none; }
+
+  .px-panel {
+    background: var(--bg-slate); border: 3px solid var(--border-dark);
+    box-shadow: inset 3px 3px 0 rgba(255,255,255,0.09), inset -3px -3px 0 rgba(0,0,0,0.45), 0 6px 0 rgba(0,0,0,0.45);
+    padding: 16px;
+  }
+  .px-panel-gold {
+    background: var(--bg-slate); border: 3px solid var(--gold);
+    box-shadow: 0 0 0 3px var(--border-dark), inset 3px 3px 0 rgba(255,231,98,0.12), inset -3px -3px 0 rgba(0,0,0,0.5), 0 7px 0 rgba(0,0,0,0.5);
+    padding: 16px;
+  }
+  .px-badge {
+    font-family: var(--font-px); font-size: 11px; font-weight: 700; padding: 2px 7px;
+    border: 2px solid var(--border-dark); background: #181425; color: var(--parchment); display: inline-block;
+  }
+  .px-badge.gold { background: #3b2d12; color: var(--gold-hi); border-color: var(--gold-lo); }
+  .px-badge.emerald { background: #133122; color: var(--emerald-hi); border-color: var(--emerald); }
+  .px-badge.crimson { background: #3a141c; color: #ff858c; border-color: var(--crimson); }
+
+  .main-wrap {
+    max-width: 1360px; margin: 18px auto 48px; padding: 0 16px;
+    display: grid; grid-template-columns: 365px 1fr 370px; gap: 16px; align-items: start;
+  }
+  @media (max-width: 1180px) { .main-wrap { grid-template-columns: 1fr; } }
+
+  .sec-title {
+    font-family: var(--font-px); font-size: 14px; font-weight: 700; color: var(--gold-hi);
+    text-shadow: 2px 2px 0 #000; padding-bottom: 7px; margin-bottom: 12px;
+    border-bottom: 2px solid rgba(255,255,255,0.12); display: flex; justify-content: space-between; align-items: center;
+  }
+
+  /* 10-Slot Equipment Paperdoll */
+  .equip-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;
+  }
+  .equip-slot {
+    background: #181425; border: 2px solid #4a557c; padding: 7px 8px; cursor: pointer;
+    display: flex; align-items: center; gap: 8px; position: relative;
+  }
+  .equip-slot:hover { border-color: var(--gold-hi); }
+  .equip-slot.rarity-UNCOMMON { border-left: 4px solid var(--rarity-uncommon); }
+  .equip-slot.rarity-RARE { border-left: 4px solid var(--rarity-rare); }
+  .equip-slot.rarity-EPIC { border-left: 4px solid var(--rarity-epic); }
+  .equip-slot.glow-5 { box-shadow: 0 0 0 1px var(--gold), inset 0 0 12px rgba(244,180,27,0.28); }
+  .equip-slot.glow-10 { box-shadow: 0 0 0 2px var(--gold-hi), inset 0 0 16px rgba(255,231,98,0.45); }
+
+  .slot-ico {
+    width: 32px; height: 32px; background: #262B44; border: 2px solid var(--border-dark);
+    display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .slot-meta { overflow: hidden; }
+  .slot-lbl { font-family: var(--font-px); font-size: 9.5px; color: var(--text-muted); }
+  .slot-name { font-family: var(--font-px); font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Stats Grid */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+  .stat-cell {
+    background: #181425; border: 2px solid var(--border-dark); padding: 6px 8px;
+    font-family: var(--font-px); font-size: 11.5px; display: flex; justify-content: space-between;
+  }
+  .set-bonus-box {
+    background: #142820; border: 2px solid var(--emerald); padding: 9px; font-size: 11.5px; color: var(--parchment);
+  }
+
+  /* Center: Blacksmith +0 -> +10 Forge */
+  .tab-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+  .forge-stage {
+    background: #141122; border: 3px solid var(--border-dark); padding: 14px;
+    display: grid; grid-template-columns: 200px 1fr; gap: 16px; align-items: center; margin-bottom: 14px;
+    box-shadow: inset 0 0 0 2px var(--border-wood);
+  }
+  @media (max-width: 640px) { .forge-stage { grid-template-columns: 1fr; } }
+  #anvilCanvas {
+    width: 196px; height: 196px; display: block; margin: 0 auto;
+    background: #100d1a; border: 2px solid var(--border-dark); image-rendering: pixelated;
+  }
+  .enhance-steps {
+    display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin: 10px 0 12px;
+  }
+  .step-pip {
+    text-align: center; font-family: var(--font-px); font-size: 11px; font-weight: 700;
+    padding: 5px 2px; background: #181425; border: 2px solid #3a4466; color: var(--text-muted);
+  }
+  .step-pip.done { background: #1b4d32; border-color: var(--emerald); color: #fff; }
+  .step-pip.milestone { border-color: var(--gold); }
+  .step-pip.done.milestone { background: var(--gold); color: #181425; box-shadow: 0 0 8px rgba(244,180,27,0.5); }
+  .step-pip.next { border-color: var(--gold-hi); color: var(--gold-hi); animation: pulseBorder 1.2s steps(2) infinite; }
+  @keyframes pulseBorder { 50% { background: #3b2d12; } }
+
+  .req-list { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 14px; }
+  .req-row {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #181425; border: 2px solid var(--border-dark); padding: 7px 10px;
+    font-family: var(--font-px); font-size: 12px;
+  }
+  .req-row.ok { border-left: 4px solid var(--emerald); }
+  .req-row.miss { border-left: 4px solid var(--crimson); background: #2c131b; }
+
+  .gate-banner {
+    padding: 9px 11px; margin-bottom: 12px; font-family: var(--font-px); font-size: 12px;
+    border: 2px solid var(--border-dark);
+  }
+  .gate-banner.locked { background: #3b141c; border-color: var(--crimson); color: #ffb3b8; }
+  .gate-banner.open { background: #133122; border-color: var(--emerald); color: #a7f070; }
+  .gate-banner.capped { background: #3b2d12; border-color: var(--gold); color: var(--gold-hi); }
+
+  /* Full 10-Tier Reference Table */
+  .tier-table {
+    width: 100%; border-collapse: collapse; font-family: var(--font-px); font-size: 11px; margin-top: 12px;
+  }
+  .tier-table th, .tier-table td {
+    border: 1px solid #3a4466; padding: 5px 6px; text-align: left;
+  }
+  .tier-table th { background: #181425; color: var(--gold-hi); }
+  .tier-table tr.active-row { background: #353f66; color: #fff; font-weight: 700; }
+  .tier-table tr.done-row { background: rgba(56,183,100,0.12); color: #a7f070; }
+
+  /* Right: Inventory Grid & WAL Log */
+  .inv-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px;
+  }
+  .inv-cell {
+    background: #181425; border: 2px solid #4a557c; padding: 6px 4px; text-align: center;
+    cursor: pointer; position: relative; min-height: 66px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+  }
+  .inv-cell:hover { border-color: var(--gold-hi); }
+  .inv-cell.selected { border-color: var(--gold); background: #2a3152; }
+  .inv-qty {
+    position: absolute; bottom: 2px; right: 4px; font-family: var(--font-px);
+    font-size: 10px; font-weight: 700; color: var(--gold-hi); text-shadow: 1px 1px 0 #000;
+  }
+  .inv-lbl { font-family: var(--font-px); font-size: 9px; color: var(--parchment); line-height: 1.1; }
+  .tx-log {
+    height: 140px; overflow-y: auto; background: #120f1d; border: 2px solid var(--border-dark);
+    padding: 8px; font-family: var(--font-px); font-size: 10.5px; color: var(--text-muted);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+
+  /* Crafting List */
+  .craft-card {
+    background: #181425; border: 2px solid var(--border-dark); padding: 11px; margin-bottom: 10px;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+</style>
+</head>
+<body>
+
+<nav class="studio-nav">
+  <a class="studio-brand" href="index.html">
+    <svg width="20" height="20" viewBox="0 0 16 16"><rect x="7" y="1" width="2" height="9" fill="#FFE762"/><rect x="4" y="10" width="8" height="2" fill="#E4A672"/><rect x="7" y="12" width="2" height="3" fill="#733E39"/></svg>
+    ELDORIA UI MOCKUP SUITE
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Hub</a>
+    <a href="auth-character-select.html">1. Auth &amp; Hero</a>
+    <a href="main-hud-world.html">2. HUD &amp; World</a>
+    <a href="inventory-blacksmith-enhance.html" class="active">3. Kho đồ &amp; +10 Forge</a>
+    <a href="gacha-collection.html">4. Gacha &amp; 12 Hero</a>
+    <a href="farming-building-grid.html">5. Nông trại &amp; Xây dựng</a>
+    <a href="boss-raid-party.html">6. Boss Raid &amp; Party</a>
+  </div>
+</nav>
+
+<div class="sub-toolbar">
+  <div style="display:flex; flex-wrap:wrap; align-items:center; gap:10px;">
+    <span class="px-badge gold">WALLET: <strong id="walletGold">25,000</strong> GOLD</span>
+    <span class="px-badge emerald">CẤP LÒ RÈN (bld_blacksmith):
+      <select id="selSmithLvl" onchange="setBlacksmithLevel(+this.value)" style="background:#141122; color:#FFE762; border:1px solid #F4B41B; font-family:var(--font-px); font-weight:700; margin-left:4px;">
+        <option value="1">Lv 1 (Mở +1..+3)</option>
+        <option value="2">Lv 2 (Mở +4..+6)</option>
+        <option value="3">Lv 3 (Mở +7..+8)</option>
+        <option value="4">Lv 4 (Mở +9..+10)</option>
+      </select>
+    </span>
+    <span class="px-badge" style="color:#63C74D; border-color:#38B764;">100% CHẮC CHẮN • 0% VỠ ĐỒ • TRẦN CỨNG +10</span>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:6px;">
+    <button class="px-btn azure" onclick="refillMaterials()">+ Nạp đủ Nguyên liệu Test</button>
+    <button class="px-btn crimson" onclick="resetWeaponToZero()">↺ Đặt lại Vũ khí về +0</button>
+  </div>
+</div>
+
+<main class="main-wrap">
+  <!-- LEFT COLUMN: 10-SLOT EQUIPMENT & LIVE CHARACTER STATS -->
+  <section class="px-panel">
+    <div class="sec-title">
+      <span>🛡 TRANG BỊ (10 Ô CHUẨN)</span>
+      <span class="px-badge gold" id="combatRatingBadge">CR: 1,140</span>
+    </div>
+
+    <div class="equip-grid" id="equipGrid"></div>
+
+    <div class="set-bonus-box" style="margin-bottom:14px;">
+      <div style="font-family:var(--font-px); font-weight:700; color:var(--emerald-hi); margin-bottom:4px;">
+        ✦ SET BONUS: Mossroot Guard Regalia (4/4)
+      </div>
+      <div>• (2 món): +24 DEF, +12% Kháng Thổ (EARTH)</div>
+      <div>• (4 món): +140 HP, +20 Poise, hồi +3 HP/giây khi đỡ đòn</div>
+    </div>
+
+    <div class="sec-title">
+      <span>📊 CHỈ SỐ KAEL IRONBOUND (Lv 15)</span>
+      <span style="font-size:10.5px; color:var(--emerald-hi);">Live Sync</span>
+    </div>
+    <div class="stats-grid" id="charStatsGrid"></div>
+  </section>
+
+  <!-- CENTER COLUMN: BLACKSMITH +0 -> +10 INTERACTIVE SIMULATOR & CRAFTING TAB -->
+  <section class="px-panel-gold">
+    <div class="tab-bar">
+      <button class="px-btn gold" id="tabEnhance" onclick="switchCenterTab('enhance')">⚒ Cường hóa Vũ khí (+0 → +10)</button>
+      <button class="px-btn" id="tabCraft" onclick="switchCenterTab('craft')">🔥 Chế tạo &amp; Tinh luyện (Crafting)</button>
+    </div>
+
+    <!-- TAB 1: ENHANCEMENT SIMULATOR -->
+    <div id="center-enhance">
+      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px;">
+        <div style="font-family:var(--font-px); font-size:12px; color:var(--parchment);">Chọn vũ khí đặt lên đe:</div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;" id="weaponSwitchBtns"></div>
+      </div>
+
+      <div class="forge-stage">
+        <canvas id="anvilCanvas" width="98" height="98"></canvas>
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span class="px-badge" id="wpnIdTag">wpn_iron_longsword</span>
+            <span class="px-badge gold" id="wpnPlusBadge">CẤP HIỆN TẠI: +0 / +10</span>
+          </div>
+          <h2 id="wpnTitle" style="font-family:var(--font-px); font-size:20px; color:var(--gold-hi); margin:6px 0 4px;">
+            Iron Longsword +0
+          </h2>
+          <div style="display:flex; gap:14px; font-family:var(--font-px); font-size:13px; margin-bottom:8px;">
+            <span>ATK: <strong id="wpnAtkNow" style="color:#fff;">26</strong></span>
+            <span id="wpnAtkNextWrap" style="color:var(--emerald-hi);">→ <strong id="wpnAtkNext">30 (+4)</strong></span>
+          </div>
+          <div id="milestoneStatus" style="font-size:12px; color:var(--parchment); background:#1d2138; border:1px solid #3a4466; padding:7px 9px;">
+            • Mốc <strong>+5</strong>: Mở Hào quang Vàng nhẹ &amp; +5% Crit Rate.<br>
+            • Mốc <strong>+10</strong>: Mở Hào quang Mặt trời &amp; +10% Boss DMG (Trần cứng).
+          </div>
+        </div>
+      </div>
+
+      <!-- 10-Step Progress Pips -->
+      <div class="enhance-steps" id="enhancePips"></div>
+
+      <!-- Gate Banner -->
+      <div class="gate-banner open" id="gateBanner"></div>
+
+      <!-- Required Materials & Gold -->
+      <div style="font-family:var(--font-px); font-size:12px; color:var(--gold-hi); margin-bottom:4px;" id="reqHeader">
+        NGUYÊN LIỆU CƯỜNG HÓA +0 → +1 (TỶ LỆ THÀNH CÔNG: 100% CHẮC CHẮN):
+      </div>
+      <div class="req-list" id="reqList"></div>
+
+      <!-- Primary Action Button -->
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="px-btn gold" id="btnDoEnhance" onclick="executeEnhance()" style="flex:1; padding:12px; font-size:14px;">
+          ⚒ CƯỜNG HÓA LÊN +1 (100% THÀNH CÔNG)
+        </button>
+        <button class="px-btn emerald" id="btnUpgradeSmithQuick" onclick="quickUpgradeBlacksmith()" style="display:none; padding:12px;">
+          ⬆ Nâng Lò Rèn ngay
+        </button>
+      </div>
+
+      <!-- Complete 10-Step Enhancement Schedule -->
+      <table class="tier-table" aria-label="Bảng yêu cầu cường hóa từ +1 đến +10">
+        <thead>
+          <tr>
+            <th>Cấp</th>
+            <th>Lò Rèn</th>
+            <th>+ATK</th>
+            <th>Gold</th>
+            <th>Nguyên liệu chuẩn (<code>items.json</code>)</th>
+            <th>Mốc đặc biệt</th>
+          </tr>
+        </thead>
+        <tbody id="tierTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- TAB 2: CRAFTING & SMELTING -->
+    <div id="center-craft" style="display:none;">
+      <p style="font-size:13px; color:var(--parchment); margin-bottom:12px;">
+        Mọi công thức chế tạo (<code>recipes.json</code>) được server trừ nguyên liệu và cộng thành phẩm nguyên tử qua khóa JSON mutex + WAL. Click <strong>Chế tạo</strong> để thử trừ/cộng thực tế vào túi đồ bên phải!
+      </p>
+      <div id="craftRecipeList"></div>
+    </div>
+  </section>
+
+  <!-- RIGHT COLUMN: INVENTORY BAG & ATOMIC JSON WAL LOG -->
+  <section class="px-panel">
+    <div class="sec-title">
+      <span>🎒 TÚI ĐỒ (INVENTORY BAG)</span>
+      <span style="font-size:11px; color:var(--text-muted);" id="bagSlotCount">14 / 40 ô</span>
+    </div>
+    <div class="inv-grid" id="invGrid"></div>
+
+    <div style="background:#181425; border:2px solid var(--border-dark); padding:10px; margin-bottom:14px;" id="itemInspector">
+      <div style="font-family:var(--font-px); font-size:12px; font-weight:700; color:var(--gold-hi);">Click ô vật phẩm để xem chi tiết</div>
+      <div style="font-size:11.5px; color:var(--text-muted); margin-top:3px;">Nguồn farm, độ hiếm và công dụng trong chuỗi Cường hóa +1..+10.</div>
+    </div>
+
+    <div class="sec-title">
+      <span>📜 ATOMIC JSON TRANSACTION LOG</span>
+      <span class="px-badge emerald">WAL OK</span>
+    </div>
+    <div class="tx-log" id="txLog">
+      <div><span style="color:#63C74D;">[BOOT]</span> Đã nạp <code>data/db/inventories/chr_kael_001.json</code> (checksum OK).</div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Canonical Enhancement Table (+1 to +10, 100% deterministic, Blacksmith Lv 1..4 gates)
+  const ENHANCE_TABLE = [
+    { to: 1, smithLv: 1, atkPct: 0.12, gold: 120, mats: [{ id: 'mat_copper_ingot', qty: 3 }, { id: 'mat_slime_gel', qty: 4 }], milestone: '' },
+    { to: 2, smithLv: 1, atkPct: 0.25, gold: 220, mats: [{ id: 'mat_copper_ingot', qty: 5 }, { id: 'mat_slime_gel', qty: 6 }], milestone: '' },
+    { to: 3, smithLv: 1, atkPct: 0.40, gold: 360, mats: [{ id: 'mat_copper_ingot', qty: 8 }, { id: 'mat_iron_ingot', qty: 3 }], milestone: '' },
+    { to: 4, smithLv: 2, atkPct: 0.58, gold: 580, mats: [{ id: 'mat_iron_ingot', qty: 6 }, { id: 'mat_wolf_pelt', qty: 5 }], milestone: '' },
+    { to: 5, smithLv: 2, atkPct: 0.78, gold: 880, mats: [{ id: 'mat_iron_ingot', qty: 10 }, { id: 'mat_spore_cap_dust', qty: 6 }], milestone: '✦ +5% Crit Rate & Hào quang Vàng' },
+    { to: 6, smithLv: 2, atkPct: 1.00, gold: 1250, mats: [{ id: 'mat_iron_ingot', qty: 12 }, { id: 'mat_wolf_pelt', qty: 8 }], milestone: '' },
+    { to: 7, smithLv: 3, atkPct: 1.25, gold: 1800, mats: [{ id: 'mat_steel_ingot', qty: 6 }, { id: 'mat_alpha_fang', qty: 3 }], milestone: '' },
+    { to: 8, smithLv: 3, atkPct: 1.52, gold: 2500, mats: [{ id: 'mat_steel_ingot', qty: 10 }, { id: 'mat_starlight_dust', qty: 6 }], milestone: '' },
+    { to: 9, smithLv: 4, atkPct: 1.82, gold: 3600, mats: [{ id: 'mat_steel_ingot', qty: 14 }, { id: 'mat_thornback_heart', qty: 2 }, { id: 'mat_arcane_crystal', qty: 3 }], milestone: '' },
+    { to: 10, smithLv: 4, atkPct: 2.15, gold: 5200, mats: [{ id: 'mat_steel_ingot', qty: 18 }, { id: 'mat_thornback_heart', qty: 4 }, { id: 'mat_arcane_crystal', qty: 6 }], milestone: '★ +10% Boss DMG & Hào quang Mặt trời (MAX)' }
+  ];
+
+  const WEAPONS = [
+    { id: 'wpn_iron_longsword', name: 'Iron Longsword', type: 'SWORD', rarity: 'UNCOMMON', baseAtk: 26, plus: 0, ico: '⚔' },
+    { id: 'wpn_elderwood_cleaver', name: 'Elderwood Cleaver', type: 'GREATSWORD', rarity: 'EPIC', baseAtk: 68, plus: 0, ico: '🗡' },
+    { id: 'wpn_ashwood_shortbow', name: 'Ashwood Shortbow', type: 'BOW', rarity: 'UNCOMMON', baseAtk: 25, plus: 0, ico: '🏹' }
+  ];
+
+  const OTHER_EQUIP = [
+    { slot: 'OFF_HAND', id: 'wpn_thornbark_bulwark', name: 'Thornbark Bulwark', rarity: 'RARE', def: 36, hp: 0, atk: 16, ico: '🛡' },
+    { slot: 'HELMET', id: 'eqp_mossroot_helm', name: 'Mossroot Helm', rarity: 'RARE', def: 24, hp: 85, atk: 0, ico: '⛑' },
+    { slot: 'CHEST_ARMOR', id: 'eqp_mossroot_breastplate', name: 'Mossroot Plate', rarity: 'RARE', def: 36, hp: 145, atk: 0, ico: '🥋' },
+    { slot: 'GLOVES', id: 'eqp_mossroot_gauntlets', name: 'Mossroot Gloves', rarity: 'RARE', def: 20, hp: 0, atk: 8, ico: '🧤' },
+    { slot: 'BOOTS', id: 'eqp_mossroot_greaves', name: 'Mossroot Greaves', rarity: 'RARE', def: 22, hp: 70, atk: 0, ico: '🥾' },
+    { slot: 'RING_1', id: 'eqp_copper_vitality_ring', name: 'Vitality Ring', rarity: 'UNCOMMON', def: 0, hp: 55, atk: 0, ico: '💍' },
+    { slot: 'RING_2', id: 'eqp_copper_vitality_ring', name: 'Vitality Ring II', rarity: 'UNCOMMON', def: 0, hp: 55, atk: 0, ico: '💍' },
+    { slot: 'NECKLACE', id: 'eqp_direwolf_fang_pendant', name: 'Direwolf Pendant', rarity: 'RARE', def: 0, hp: 0, atk: 14, ico: '📿' },
+    { slot: 'ACCESSORY', id: 'eqp_thornback_heart_charm', name: 'Thornback Charm', rarity: 'EPIC', def: 18, hp: 130, atk: 12, ico: '🧿' }
+  ];
+
+  const ITEM_META = {
+    mat_copper_ingot: { name: 'Copper Ingot', ico: '🟧', rarity: 'COMMON', src: 'Nung từ Copper Ore tại Furnace' },
+    mat_slime_gel: { name: 'Slime Gel', ico: '🟢', rarity: 'COMMON', src: 'Rơi từ mob_moss_slime (Whispering Forest)' },
+    mat_iron_ingot: { name: 'Iron Ingot', ico: '⬜', rarity: 'UNCOMMON', src: 'Nung từ Iron Ore + Coal' },
+    mat_wolf_pelt: { name: 'Timber Wolf Pelt', ico: '🐺', rarity: 'UNCOMMON', src: 'Rơi từ mob_timber_wolf' },
+    mat_spore_cap_dust: { name: 'Spore Cap Dust', ico: '🍄', rarity: 'UNCOMMON', src: 'Rơi từ mob_spore_cap' },
+    mat_steel_ingot: { name: 'Steel Ingot', ico: '🔩', rarity: 'RARE', src: 'Tinh luyện từ Iron Ingot + Coal tại Lò Rèn Lv 3' },
+    mat_alpha_fang: { name: 'Alpha Direwolf Fang', ico: '🦷', rarity: 'RARE', src: 'Rơi từ Elite mob_elite_alpha_direwolf' },
+    mat_starlight_dust: { name: 'Starlight Dust', ico: '✨', rarity: 'RARE', src: 'Rơi từ hầm ngục & nhiệm vụ hàng ngày' },
+    mat_thornback_heart: { name: 'Thornback Heart', ico: '💚', rarity: 'EPIC', src: 'Rơi từ Boss boss_thornback_elder (Mossroot Hollow)' },
+    mat_arcane_crystal: { name: 'Arcane Crystal', ico: '💎', rarity: 'RARE', src: 'Rương Boss Raid & mỏ pha lê' },
+    mat_iron_ore: { name: 'Iron Ore', ico: '🪨', rarity: 'UNCOMMON', src: 'Khai thác mỏ đá bìa rừng' },
+    mat_coal: { name: 'Coal', ico: '⬛', rarity: 'COMMON', src: 'Khai thác mạch than' },
+    mat_sunwheat_grain: { name: 'Sunwheat Grain', ico: '🌾', rarity: 'COMMON', src: 'Thu hoạch crp_sunwheat tại nông trại' },
+    mat_moon_herb_leaf: { name: 'Moon Herb Leaf', ico: '🌿', rarity: 'UNCOMMON', src: 'Thu hoạch crp_moon_herb' },
+    csm_herb_stew: { name: 'Herb Stew (+10% ATK)', ico: '🍲', rarity: 'UNCOMMON', src: 'Nấu tại Homestead Kitchen' }
+  };
+
+  const CRAFT_RECIPES = [
+    { id: 'rcp_smelt_iron_ingot', name: 'Tinh luyện Iron Ingot ×2', outId: 'mat_iron_ingot', outQty: 2, gold: 25, req: [{ id: 'mat_iron_ore', qty: 4 }, { id: 'mat_coal', qty: 2 }], station: 'Furnace / Blacksmith Lv 1' },
+    { id: 'rcp_smelt_steel_ingot', name: 'Rèn Steel Ingot ×2', outId: 'mat_steel_ingot', outQty: 2, gold: 80, req: [{ id: 'mat_iron_ingot', qty: 3 }, { id: 'mat_coal', qty: 4 }], station: 'Blacksmith Lv 2' },
+    { id: 'rcp_cook_herb_stew', name: 'Nấu Herb Stew ×2 (+10% ATK)', outId: 'csm_herb_stew', outQty: 2, gold: 30, req: [{ id: 'mat_sunwheat_grain', qty: 2 }, { id: 'mat_moon_herb_leaf', qty: 2 }], station: 'Homestead Kitchen Lv 1' }
+  ];
+
+  // Live Interactive State
+  let gold = 25000;
+  let smithLevel = 1;
+  let activeWeaponIdx = 0;
+  let txCounter = 1041;
+  let inventory = {};
+  let sparks = [];
+  let flashFrames = 0;
+
+  function initFullInventory() {
+    inventory = {
+      mat_copper_ingot: 30,
+      mat_slime_gel: 25,
+      mat_iron_ingot: 45,
+      mat_wolf_pelt: 25,
+      mat_spore_cap_dust: 16,
+      mat_steel_ingot: 60,
+      mat_alpha_fang: 10,
+      mat_starlight_dust: 18,
+      mat_thornback_heart: 10,
+      mat_arcane_crystal: 16,
+      mat_iron_ore: 24,
+      mat_coal: 30,
+      mat_sunwheat_grain: 14,
+      mat_moon_herb_leaf: 10,
+      csm_herb_stew: 4
+    };
+  }
+
+  function calcWeaponAtk(w, plusOverride) {
+    const p = plusOverride !== undefined ? plusOverride : w.plus;
+    if (p === 0) return w.baseAtk;
+    return Math.round(w.baseAtk * (1 + ENHANCE_TABLE[p - 1].atkPct));
+  }
+
+  function logTx(msg, color) {
+    txCounter++;
+    const el = document.getElementById('txLog');
+    const div = document.createElement('div');
+    div.innerHTML = `<span style="color:${color || '#79d2ff'};">[WAL#${txCounter}]</span> ${msg}`;
+    el.prepend(div);
+  }
+
+  function setBlacksmithLevel(lv) {
+    smithLevel = lv;
+    document.getElementById('selSmithLvl').value = String(lv);
+    renderAll();
+  }
+
+  function quickUpgradeBlacksmith() {
+    const w = WEAPONS[activeWeaponIdx];
+    if (w.plus >= 10) return;
+    const needed = ENHANCE_TABLE[w.plus].smithLv;
+    setBlacksmithLevel(needed);
+    logTx(`Đã nâng cấp <code>bld_blacksmith</code> lên <strong>Lv ${needed}</strong> (mở khóa mốc cường hóa mới).`, '#63C74D');
+  }
+
+  function refillMaterials() {
+    gold = 35000;
+    initFullInventory();
+    logTx('Đã nạp đầy đủ nguyên liệu & 35,000 Gold cho phiên thử nghiệm +0 → +10.', '#FFE762');
+    renderAll();
+  }
+
+  function resetWeaponToZero() {
+    WEAPONS[activeWeaponIdx].plus = 0;
+    logTx(`Đặt lại <code>${WEAPONS[activeWeaponIdx].id}</code> về <strong>+0</strong> để review lại từ đầu.`, '#FEAE34');
+    renderAll();
+  }
+
+  function switchCenterTab(tab) {
+    document.getElementById('center-enhance').style.display = tab === 'enhance' ? 'block' : 'none';
+    document.getElementById('center-craft').style.display = tab === 'craft' ? 'block' : 'none';
+    document.getElementById('tabEnhance').classList.toggle('gold', tab === 'enhance');
+    document.getElementById('tabCraft').classList.toggle('gold', tab === 'craft');
+  }
+
+  function executeEnhance() {
+    const w = WEAPONS[activeWeaponIdx];
+    if (w.plus >= 10) return;
+    const step = ENHANCE_TABLE[w.plus];
+    if (smithLevel < step.smithLv) return;
+    if (gold < step.gold) return;
+    for (const m of step.mats) {
+      if ((inventory[m.id] || 0) < m.qty) return;
+    }
+
+    // Atomic Deduct & Upgrade
+    gold -= step.gold;
+    step.mats.forEach(m => { inventory[m.id] -= m.qty; });
+    w.plus += 1;
+
+    // Trigger Hammer Sparks VFX
+    flashFrames = 14;
+    for (let i = 0; i < (w.plus === 5 || w.plus === 10 ? 34 : 18); i++) {
+      const a = Math.random() * Math.PI * 2;
+      const sp = 1.2 + Math.random() * 2.8;
+      sparks.push({
+        x: 49, y: 46,
+        vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 1.2,
+        life: 24 + Math.random() * 18,
+        col: w.plus >= 10 ? '#FFE762' : w.plus >= 5 ? '#F4B41B' : '#FEAE34'
+      });
+    }
+
+    const idemKey = `enh_${w.id}_${w.plus}_${Date.now().toString(36)}`;
+    logTx(
+      `<strong>${w.name} +${w.plus - 1} → +${w.plus}</strong> (100% OK, -${step.gold}G) • <code>idempotencyKey=${idemKey}</code>`,
+      w.plus === 5 || w.plus === 10 ? '#FFE762' : '#63C74D'
+    );
+    renderAll();
+  }
+
+  function doCraft(idx) {
+    const r = CRAFT_RECIPES[idx];
+    if (gold < r.gold) { logTx('✕ Không đủ Gold để chế tạo!', '#E43B44'); return; }
+    for (const m of r.req) {
+      if ((inventory[m.id] || 0) < m.qty) { logTx(`✕ Thiếu nguyên liệu ${ITEM_META[m.id].name}!`, '#E43B44'); return; }
+    }
+    gold -= r.gold;
+    r.req.forEach(m => { inventory[m.id] -= m.qty; });
+    inventory[r.outId] = (inventory[r.outId] || 0) + r.outQty;
+    logTx(`Chế tạo <code>${r.id}</code> → Nhận <strong>+${r.outQty} ${ITEM_META[r.outId].name}</strong> (-${r.gold}G).`, '#63C74D');
+    renderAll();
+  }
+
+  function inspectItem(id) {
+    const meta = ITEM_META[id];
+    const qty = inventory[id] || 0;
+    document.getElementById('itemInspector').innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong style="font-family:var(--font-px); color:var(--gold-hi);">${meta.ico} ${meta.name} (×${qty})</strong>
+        <span class="px-badge">${meta.rarity}</span>
+      </div>
+      <div style="font-family:var(--font-px); font-size:10.5px; color:#79d2ff; margin:3px 0;">ID: ${id}</div>
+      <div style="font-size:12px; color:var(--parchment);">Nguồn thu thập: ${meta.src}</div>
+    `;
+  }
+
+  function renderAll() {
+    document.getElementById('walletGold').textContent = gold.toLocaleString();
+    const w = WEAPONS[activeWeaponIdx];
+    const curAtk = calcWeaponAtk(w);
+
+    // Weapon selector buttons
+    document.getElementById('weaponSwitchBtns').innerHTML = WEAPONS.map((wp, i) => `
+      <button class="px-btn ${i === activeWeaponIdx ? 'gold' : ''}" style="padding:4px 9px; font-size:11px;" onclick="activeWeaponIdx=${i}; renderAll();">
+        ${wp.ico} ${wp.name} +${wp.plus}
+      </button>
+    `).join('');
+
+    // 10-Slot Equipment Grid
+    const allSlots = [
+      { slot: 'MAIN_HAND', id: w.id, name: `${w.name} +${w.plus}`, rarity: w.rarity, ico: w.ico, glow: w.plus >= 10 ? 'glow-10' : w.plus >= 5 ? 'glow-5' : '' },
+      ...OTHER_EQUIP
+    ];
+    document.getElementById('equipGrid').innerHTML = allSlots.map(s => `
+      <div class="equip-slot rarity-${s.rarity} ${s.glow || ''}" title="${s.id}">
+        <div class="slot-ico">${s.ico}</div>
+        <div class="slot-meta">
+          <div class="slot-lbl">${s.slot}</div>
+          <div class="slot-name" style="color:var(--rarity-${s.rarity.toLowerCase()})">${s.name}</div>
+        </div>
+      </div>
+    `).join('');
+
+    // Live Recalculated Hero Stats (Lv 15 Kael + Equipment + Set + Weapon +0..+10)
+    const baseHp = 510, baseDef = 50, baseAtk = 87;
+    const eqHp = OTHER_EQUIP.reduce((a, b) => a + b.hp, 0) + 140; // +140 Set 4p
+    const eqDef = OTHER_EQUIP.reduce((a, b) => a + b.def, 0) + 24; // +24 Set 2p
+    const eqAtk = OTHER_EQUIP.reduce((a, b) => a + b.atk, 0) + curAtk;
+    const totalHp = baseHp + eqHp;
+    const totalDef = baseDef + eqDef;
+    const totalAtk = baseAtk + eqAtk;
+    const critRate = (9.5 + 5 + (w.plus >= 5 ? 5 : 0)).toFixed(1);
+    const bossDmg = w.plus >= 10 ? '+10%' : '0%';
+    const combatRating = Math.round(totalAtk * 5.2 + totalDef * 3.1 + totalHp * 0.45 + (w.plus >= 5 ? 90 : 0) + (w.plus >= 10 ? 180 : 0));
+
+    document.getElementById('combatRatingBadge').textContent = `CR: ${combatRating.toLocaleString()}`;
+    document.getElementById('charStatsGrid').innerHTML = `
+      <div class="stat-cell"><span>ATK</span><strong style="color:#FFE762;">${totalAtk}</strong></div>
+      <div class="stat-cell"><span>DEF</span><strong style="color:#63C74D;">${totalDef}</strong></div>
+      <div class="stat-cell"><span>Max HP</span><strong style="color:#FF858C;">${totalHp}</strong></div>
+      <div class="stat-cell"><span>Max MP</span><strong style="color:#6ad3ff;">162</strong></div>
+      <div class="stat-cell"><span>Crit Rate</span><strong style="color:#FEAE34;">${critRate}%</strong></div>
+      <div class="stat-cell"><span>Boss DMG</span><strong style="color:${w.plus>=10?'#FFE762':'#A9B4C9'};">${bossDmg}</strong></div>
+    `;
+
+    // Forge Header & Stats
+    document.getElementById('wpnIdTag').textContent = w.id;
+    document.getElementById('wpnPlusBadge').textContent = `CẤP HIỆN TẠI: +${w.plus} / +10`;
+    document.getElementById('wpnTitle').textContent = `${w.name} +${w.plus}`;
+    document.getElementById('wpnAtkNow').textContent = curAtk;
+
+    if (w.plus < 10) {
+      const nextAtk = calcWeaponAtk(w, w.plus + 1);
+      document.getElementById('wpnAtkNextWrap').style.display = 'inline';
+      document.getElementById('wpnAtkNext').textContent = `${nextAtk} (+${nextAtk - curAtk})`;
+    } else {
+      document.getElementById('wpnAtkNextWrap').style.display = 'none';
+    }
+
+    document.getElementById('milestoneStatus').innerHTML = `
+      <div style="color:${w.plus>=5?'#FFE762':'#A9B4C9'}">${w.plus>=5?'✓':'○'} Mốc <strong>+5</strong>: Hào quang Vàng pixel &amp; <strong>+5% Crit Rate</strong> ${w.plus>=5?'[ĐÃ KÍCH HOẠT]':''}</div>
+      <div style="color:${w.plus>=10?'#FFE762':'#A9B4C9'}">${w.plus>=10?'✓':'○'} Mốc <strong>+10</strong>: Hào quang Mặt trời &amp; <strong>+10% Boss DMG</strong> ${w.plus>=10?'[HARD CAP +10]':''}</div>
+    `;
+
+    // 10-Step Pips
+    document.getElementById('enhancePips').innerHTML = ENHANCE_TABLE.map(t => {
+      const cls = [
+        'step-pip',
+        t.to <= w.plus ? 'done' : '',
+        (t.to === 5 || t.to === 10) ? 'milestone' : '',
+        t.to === w.plus + 1 ? 'next' : ''
+      ].join(' ');
+      return `<div class="${cls}">+${t.to}</div>`;
+    }).join('');
+
+    // Gate & Requirements
+    const gateEl = document.getElementById('gateBanner');
+    const reqListEl = document.getElementById('reqList');
+    const btnEnh = document.getElementById('btnDoEnhance');
+    const btnQuickSmith = document.getElementById('btnUpgradeSmithQuick');
+
+    if (w.plus >= 10) {
+      gateEl.className = 'gate-banner capped';
+      gateEl.innerHTML = '★ <strong>ĐÃ ĐẠT GIỚI HẠN TỐI ĐA +10 (HARD CAP):</strong> Không thể cường hóa vượt quá +10 theo thiết kế cân bằng chuẩn (Constitution Principle VI).';
+      document.getElementById('reqHeader').textContent = 'TRẠNG THÁI VŨ KHÍ TỐI THƯỢNG (+10):';
+      reqListEl.innerHTML = `<div class="req-row ok"><span>Trần nâng cấp mặc định (+10)</span><strong style="color:#FFE762;">MAX ENHANCEMENT LOCKED</strong></div>`;
+      btnEnh.disabled = true;
+      btnEnh.textContent = '★ ĐÃ ĐẠT TRẦN TỐI ĐA +10 (HARD CAP)';
+      btnQuickSmith.style.display = 'none';
+    } else {
+      const step = ENHANCE_TABLE[w.plus];
+      document.getElementById('reqHeader').textContent = `NGUYÊN LIỆU CƯỜNG HÓA +${w.plus} → +${step.to} (TỶ LỆ THÀNH CÔNG: 100% — KHÔNG VỠ ĐỒ):`;
+
+      const smithOk = smithLevel >= step.smithLv;
+      const goldOk = gold >= step.gold;
+      let matsOk = true;
+
+      const rows = [];
+      rows.push(`<div class="req-row ${goldOk?'ok':'miss'}"><span>● Vàng (GOLD)</span><strong>${gold.toLocaleString()} / ${step.gold.toLocaleString()}</strong></div>`);
+      step.mats.forEach(m => {
+        const have = inventory[m.id] || 0;
+        const ok = have >= m.qty;
+        if (!ok) matsOk = false;
+        const meta = ITEM_META[m.id];
+        rows.push(`<div class="req-row ${ok?'ok':'miss'}"><span>${meta.ico} ${meta.name} (<code>${m.id}</code>)</span><strong>${have} / ${m.qty}</strong></div>`);
+      });
+      reqListEl.innerHTML = rows.join('');
+
+      if (!smithOk) {
+        gateEl.className = 'gate-banner locked';
+        gateEl.innerHTML = `🔒 <strong>KHÓA CẤP CÔNG TRÌNH:</strong> Mốc +${step.to} yêu cầu <code>bld_blacksmith</code> đạt <strong>Lv ${step.smithLv}</strong> (Hiện tại: Lv ${smithLevel}).`;
+        btnEnh.disabled = true;
+        btnEnh.textContent = `🔒 CẦN LÒ RÈN LV ${step.smithLv} ĐỂ CƯỜNG HÓA +${step.to}`;
+        btnQuickSmith.style.display = 'inline-flex';
+        btnQuickSmith.textContent = `⬆ Nâng Lò Rèn → Lv ${step.smithLv}`;
+      } else if (!goldOk || !matsOk) {
+        gateEl.className = 'gate-banner locked';
+        gateEl.innerHTML = '✕ <strong>THIẾU NGUYÊN LIỆU / GOLD:</strong> Thu thập thêm nguyên liệu hoặc bấm "+ Nạp đủ Nguyên liệu Test" phía trên.';
+        btnEnh.disabled = true;
+        btnEnh.textContent = `✕ THIẾU NGUYÊN LIỆU CHO +${step.to}`;
+        btnQuickSmith.style.display = 'none';
+      } else {
+        gateEl.className = 'gate-banner open';
+        gateEl.innerHTML = `✓ <strong>ĐỦ ĐIỀU KIỆN (bld_blacksmith Lv ${smithLevel} ≥ Lv ${step.smithLv}):</strong> Xác nhận cường hóa chắc chắn 100% lên <strong>+${step.to}</strong>.`;
+        btnEnh.disabled = false;
+        btnEnh.textContent = `⚒ CƯỜNG HÓA LÊN +${step.to} (100% CHẮC CHẮN)`;
+        btnQuickSmith.style.display = 'none';
+      }
+    }
+
+    // 10-Tier Table
+    document.getElementById('tierTableBody').innerHTML = ENHANCE_TABLE.map(t => {
+      const cls = t.to === w.plus + 1 ? 'active-row' : (t.to <= w.plus ? 'done-row' : '');
+      const matTxt = t.mats.map(m => `${ITEM_META[m.id].name} ×${m.qty}`).join(', ');
+      return `<tr class="${cls}">
+        <td>+${t.to}</td>
+        <td>Lv ${t.smithLv}</td>
+        <td>+${Math.round(t.atkPct*100)}%</td>
+        <td>${t.gold.toLocaleString()}</td>
+        <td>${matTxt}</td>
+        <td style="color:#FFE762;">${t.milestone || '—'}</td>
+      </tr>`;
+    }).join('');
+
+    // Inventory Bag
+    const keys = Object.keys(inventory);
+    document.getElementById('bagSlotCount').textContent = `${keys.length} / 40 ô`;
+    document.getElementById('invGrid').innerHTML = keys.map(k => {
+      const m = ITEM_META[k];
+      return `
+        <div class="inv-cell" onclick="inspectItem('${k}')" title="${m.name}">
+          <span style="font-size:18px;">${m.ico}</span>
+          <span class="inv-lbl">${m.name.split(' ').slice(0,2).join(' ')}</span>
+          <span class="inv-qty">${inventory[k]}</span>
+        </div>
+      `;
+    }).join('');
+
+    // Crafting Tab
+    document.getElementById('craftRecipeList').innerHTML = CRAFT_RECIPES.map((r, idx) => {
+      const reqStr = r.req.map(m => {
+        const have = inventory[m.id] || 0;
+        return `<span style="color:${have>=m.qty?'#63C74D':'#ff858c'}">${ITEM_META[m.id].name}: ${have}/${m.qty}</span>`;
+      }).join(' • ');
+      return `
+        <div class="craft-card">
+          <div>
+            <div style="font-family:var(--font-px); font-weight:700; color:var(--gold-hi);">${ITEM_META[r.outId].ico} ${r.name}</div>
+            <div style="font-family:var(--font-px); font-size:10.5px; color:#79d2ff;">${r.id} • Trạm: ${r.station}</div>
+            <div style="font-family:var(--font-px); font-size:11px; margin-top:4px;">${reqStr} • <span style="color:#FFE762;">${r.gold}G</span></div>
+          </div>
+          <button class="px-btn emerald" onclick="doCraft(${idx})">🔥 Chế tạo</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Animated Pixel Anvil + Golden Glow (+5 / +10)
+  const aCtx = document.getElementById('anvilCanvas').getContext('2d');
+  aCtx.imageSmoothingEnabled = false;
+  let aTick = 0;
+
+  function animateAnvil() {
+    aTick++;
+    const w = WEAPONS[activeWeaponIdx];
+    aCtx.fillStyle = '#120f1d';
+    aCtx.fillRect(0, 0, 98, 98);
+
+    // Subtle forge glow backdrop
+    const pulse = (Math.sin(aTick * 0.1) + 1) * 0.5;
+    if (w.plus >= 10) {
+      aCtx.fillStyle = `rgba(255, 231, 98, ${0.22 + pulse * 0.18})`;
+      aCtx.fillRect(10, 8, 78, 66);
+      aCtx.fillStyle = `rgba(244, 180, 27, ${0.3 + pulse * 0.2})`;
+      aCtx.fillRect(20, 14, 58, 52);
+    } else if (w.plus >= 5) {
+      aCtx.fillStyle = `rgba(244, 180, 27, ${0.14 + pulse * 0.12})`;
+      aCtx.fillRect(18, 14, 62, 52);
+    }
+
+    // Blacksmith Anvil base
+    aCtx.fillStyle = '#3a4466'; aCtx.fillRect(24, 76, 50, 10);
+    aCtx.fillStyle = '#5a6988'; aCtx.fillRect(30, 68, 38, 9);
+    aCtx.fillStyle = '#8b9bb4'; aCtx.fillRect(18, 60, 62, 9);
+    aCtx.fillStyle = '#c0cbdc'; aCtx.fillRect(20, 60, 58, 2);
+
+    // Floating Pixel Weapon Sprite
+    const floatY = Math.round(Math.sin(aTick * 0.08) * 2);
+    const bladeCol = w.plus >= 10 ? '#FFE762' : w.plus >= 5 ? '#FEAE34' : '#C0CBDC';
+    const edgeCol = w.plus >= 10 ? '#FFFFFF' : w.plus >= 5 ? '#FFE762' : '#8B9BB4';
+
+    if (w.type === 'BOW') {
+      aCtx.fillStyle = '#B86F50';
+      aCtx.fillRect(42, 16 + floatY, 6, 36);
+      aCtx.fillRect(48, 12 + floatY, 8, 6);
+      aCtx.fillRect(48, 50 + floatY, 8, 6);
+      aCtx.fillStyle = bladeCol;
+      aCtx.fillRect(54, 16 + floatY, 2, 36);
+    } else {
+      const bw = w.type === 'GREATSWORD' ? 12 : 8;
+      // Outer golden pixel halo at +5/+10
+      if (w.plus >= 5) {
+        aCtx.fillStyle = w.plus >= 10 ? '#FFE762' : '#F4B41B';
+        aCtx.fillRect(49 - bw/2 - 2, 8 + floatY, bw + 4, 34);
+      }
+      aCtx.fillStyle = bladeCol;
+      aCtx.fillRect(49 - bw/2, 10 + floatY, bw, 30);
+      aCtx.fillStyle = edgeCol;
+      aCtx.fillRect(49 - bw/2 + 2, 12 + floatY, Math.max(2, bw - 5), 26);
+      // Crossguard & Grip
+      aCtx.fillStyle = '#F4B41B'; aCtx.fillRect(37, 40 + floatY, 24, 5);
+      aCtx.fillStyle = '#733E39'; aCtx.fillRect(46, 45 + floatY, 6, 11);
+      aCtx.fillStyle = '#FFE762'; aCtx.fillRect(45, 55 + floatY, 8, 4);
+    }
+
+    // Orbiting pixel motes for +5 / +10
+    if (w.plus >= 5) {
+      const count = w.plus >= 10 ? 8 : 4;
+      for (let i = 0; i < count; i++) {
+        const ang = aTick * 0.06 + (i * Math.PI * 2 / count);
+        const mx = 49 + Math.cos(ang) * 26;
+        const my = 34 + Math.sin(ang) * 18;
+        aCtx.fillStyle = i % 2 === 0 ? '#FFE762' : '#FFFFFF';
+        aCtx.fillRect(Math.floor(mx), Math.floor(my), 3, 3);
+      }
+    }
+
+    // Impact Flash
+    if (flashFrames > 0) {
+      aCtx.fillStyle = `rgba(255, 255, 220, ${flashFrames / 20})`;
+      aCtx.fillRect(0, 0, 98, 98);
+      flashFrames--;
+    }
+
+    // Hammer Sparks
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const s = sparks[i];
+      s.x += s.vx; s.y += s.vy; s.vy += 0.14; s.life--;
+      if (s.life <= 0) { sparks.splice(i, 1); continue; }
+      aCtx.fillStyle = s.col;
+      aCtx.fillRect(Math.floor(s.x), Math.floor(s.y), 3, 3);
+    }
+
+    // Plus Tag inside canvas
+    aCtx.fillStyle = 'rgba(14,11,22,0.85)';
+    aCtx.fillRect(4, 4, 34, 15);
+    aCtx.fillStyle = w.plus >= 10 ? '#FFE762' : w.plus >= 5 ? '#F4B41B' : '#FFFFFF';
+    aCtx.font = 'bold 11px Consolas, monospace';
+    aCtx.fillText(`+${w.plus}`, 10, 15);
+
+    requestAnimationFrame(animateAnvil);
+  }
+
+  initFullInventory();
+  renderAll();
+  inspectItem('mat_copper_ingot');
+  animateAnvil();
+</script>
+</body>
+</html>

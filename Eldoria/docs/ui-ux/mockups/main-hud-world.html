@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eldoria — Main Game HUD & Live 640×360 Pixel World</title>
+<style>
+  :root {
+    --bg-obsidian: #181425;
+    --bg-slate: #262B44;
+    --bg-elevated: #3A4466;
+    --border-dark: #0e0b16;
+    --gold: #F4B41B;
+    --gold-hi: #FFE762;
+    --gold-lo: #B47412;
+    --parchment: #EAD4AA;
+    --text-main: #F4F4F4;
+    --text-muted: #A9B4C9;
+    --emerald: #38B764;
+    --emerald-hi: #63C74D;
+    --crimson: #E43B44;
+    --azure: #0095E9;
+    --amber: #FEAE34;
+    --font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-px: "Consolas", "Courier New", "Lucida Console", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg-obsidian);
+    color: var(--text-main);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Studio Nav */
+  .studio-nav {
+    position: sticky; top: 0; z-index: 200;
+    background: #141020; border-bottom: 3px solid var(--gold);
+    padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .studio-brand {
+    display: flex; align-items: center; gap: 10px; font-family: var(--font-px);
+    font-weight: 700; color: var(--gold); text-shadow: 2px 2px 0 #000; font-size: 14px; text-decoration: none;
+  }
+  .nav-links { display: flex; flex-wrap: wrap; gap: 6px; }
+  .nav-links a {
+    font-family: var(--font-px); font-size: 12px; font-weight: 700; text-decoration: none;
+    color: var(--parchment); background: var(--bg-slate); padding: 5px 10px; border: 2px solid #0e0b16;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.12), inset -2px -2px 0 rgba(0,0,0,0.45);
+  }
+  .nav-links a:hover { background: var(--bg-elevated); color: var(--gold-hi); }
+  .nav-links a.active { background: var(--gold); color: #181425; }
+
+  /* Reviewer Control Toolbar */
+  .control-strip {
+    background: #1d1930; border-bottom: 2px solid var(--border-dark);
+    padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .ctrl-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .px-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--font-px); font-weight: 700; font-size: 11.5px; padding: 5px 10px;
+    cursor: pointer; border: 2px solid var(--border-dark); color: var(--text-main); background: var(--bg-elevated);
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.14), inset -2px -2px 0 rgba(0,0,0,0.45), 0 2px 0 var(--border-dark);
+  }
+  .px-btn:hover { filter: brightness(1.12); }
+  .px-btn.gold { background: var(--gold); color: #181425; }
+  .px-btn.emerald { background: var(--emerald); color: #0e1d12; }
+  .px-btn.crimson { background: var(--crimson); color: #fff; }
+  .px-btn.azure { background: var(--azure); color: #fff; }
+
+  /* Main Viewport Frame (16:9 Scaled Cleanly) */
+  .viewport-outer {
+    max-width: 1280px;
+    margin: 14px auto 28px;
+    padding: 0 14px;
+  }
+  .game-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    min-height: 540px;
+    background: #0d0a14;
+    border: 4px solid var(--gold);
+    box-shadow: 0 0 0 3px var(--border-dark), 0 10px 0 rgba(0,0,0,0.6);
+    overflow: hidden;
+    user-select: none;
+  }
+  #worldCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    cursor: crosshair;
+  }
+
+  /* Disconnected Banner */
+  .disconnect-banner {
+    display: none;
+    position: absolute; top: 0; left: 0; right: 0; z-index: 60;
+    background: rgba(158, 40, 53, 0.96);
+    border-bottom: 3px solid var(--gold);
+    padding: 8px 16px;
+    font-family: var(--font-px); font-size: 12.5px; font-weight: 700; color: #fff;
+    align-items: center; justify-content: space-between;
+  }
+  .disconnect-banner.show { display: flex; }
+
+  /* HUD Panels (Pixel RPG Style) */
+  .hud-box {
+    background: rgba(24, 20, 37, 0.88);
+    border: 2px solid var(--border-dark);
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.12), inset -2px -2px 0 rgba(0,0,0,0.55), 0 3px 0 rgba(0,0,0,0.55);
+  }
+
+  /* Top-Left Player Unit Frame */
+  .hud-topleft {
+    position: absolute; top: 12px; left: 12px; z-index: 20;
+    width: 315px; padding: 8px; display: flex; gap: 9px; align-items: flex-start;
+  }
+  .portrait-frame {
+    width: 54px; height: 54px; flex-shrink: 0; background: #141122;
+    border: 2px solid var(--gold); position: relative;
+  }
+  .portrait-frame canvas { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+  .lvl-tag {
+    position: absolute; bottom: -4px; right: -4px;
+    background: var(--gold); color: #181425; border: 2px solid #000;
+    font-family: var(--font-px); font-size: 10px; font-weight: 700; padding: 0 4px;
+  }
+  .bars-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .hero-name-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--font-px); font-size: 12px; font-weight: 700; color: var(--gold-hi);
+  }
+  .vital-bar {
+    position: relative; height: 13px; background: #0e0b16; border: 1px solid #3a4466;
+  }
+  .vital-fill { height: 100%; transition: width 0.12s; }
+  .vital-txt {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 5px; font-family: var(--font-px); font-size: 9.5px; font-weight: 700;
+    color: #fff; text-shadow: 1px 1px 0 #000;
+  }
+  .mini-vitals { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .currency-row {
+    display: flex; gap: 8px; margin-top: 3px; font-family: var(--font-px); font-size: 10.5px; color: var(--parchment);
+  }
+
+  /* Top-Right Minimap & Clock */
+  .hud-topright {
+    position: absolute; top: 12px; right: 12px; z-index: 20;
+    width: 196px; padding: 7px;
+  }
+  .minimap-wrap {
+    position: relative; border: 2px solid var(--gold-lo); background: #101918; margin-bottom: 5px;
+  }
+  #minimapCanvas { width: 100%; height: 102px; display: block; image-rendering: pixelated; }
+  .zone-meta {
+    font-family: var(--font-px); font-size: 10.5px; display: flex; flex-direction: column; gap: 2px;
+  }
+
+  /* Right Quest Tracker */
+  .hud-quests {
+    position: absolute; top: 184px; right: 12px; z-index: 20;
+    width: 235px; padding: 8px 10px;
+  }
+  .quest-hdr {
+    font-family: var(--font-px); font-size: 11px; font-weight: 700; color: var(--gold);
+    border-bottom: 1px solid rgba(255,255,255,0.14); padding-bottom: 4px; margin-bottom: 6px;
+    display: flex; justify-content: space-between;
+  }
+  .q-item { font-size: 11px; margin-bottom: 6px; color: var(--parchment); }
+  .q-item strong { color: #fff; display: block; font-family: var(--font-px); font-size: 11px; }
+  .q-prog { font-family: var(--font-px); color: var(--emerald-hi); font-size: 10.5px; }
+
+  /* Bottom-Left Chat Box */
+  .hud-chat {
+    position: absolute; bottom: 12px; left: 12px; z-index: 20;
+    width: 315px; padding: 6px; display: flex; flex-direction: column; gap: 5px;
+  }
+  .chat-tabs { display: flex; gap: 4px; }
+  .chat-tab {
+    font-family: var(--font-px); font-size: 10px; font-weight: 700; padding: 2px 7px;
+    background: #1a1e33; color: var(--text-muted); border: 1px solid #0e0b16; cursor: pointer;
+  }
+  .chat-tab.active { background: var(--gold); color: #181425; }
+  .chat-log {
+    height: 82px; overflow-y: auto; font-size: 11px; line-height: 1.38;
+    background: rgba(14, 11, 22, 0.72); padding: 5px; border: 1px solid #303754;
+  }
+  .chat-form { display: flex; gap: 4px; }
+  .chat-form input {
+    flex: 1; background: #0e0b16; border: 1px solid #4a557c; color: #fff;
+    font-family: var(--font-px); font-size: 11px; padding: 4px 6px;
+  }
+
+  /* Interaction Prompt [F] */
+  .interact-prompt {
+    position: absolute; bottom: 108px; left: 50%; transform: translateX(-50%); z-index: 25;
+    background: rgba(24, 20, 37, 0.94); border: 2px solid var(--gold);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.65); padding: 6px 14px;
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    font-family: var(--font-px); font-size: 12px; color: var(--gold-hi);
+  }
+  .keycap {
+    background: var(--gold); color: #181425; font-weight: 700; padding: 1px 6px;
+    border: 2px solid #000; box-shadow: inset 1px 1px 0 var(--gold-hi);
+  }
+
+  /* Bottom-Center Skill Hotbar + EXP */
+  .hud-bottomcenter {
+    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 20;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+  }
+  .hotbar {
+    display: flex; gap: 6px; padding: 6px 8px;
+  }
+  .skill-slot {
+    position: relative; width: 54px; height: 54px; background: #141122;
+    border: 2px solid #5a6988; cursor: pointer; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.12), inset -2px -2px 0 rgba(0,0,0,0.6);
+  }
+  .skill-slot:hover { border-color: var(--gold-hi); transform: translateY(-1px); }
+  .skill-slot.ult { border-color: var(--gold); background: #261624; }
+  .skill-key {
+    position: absolute; top: 2px; left: 3px; font-family: var(--font-px);
+    font-size: 9.5px; font-weight: 700; color: var(--gold-hi); text-shadow: 1px 1px 0 #000; z-index: 4;
+  }
+  .skill-cost {
+    position: absolute; bottom: 1px; right: 3px; font-family: var(--font-px);
+    font-size: 9px; color: #79d2ff; text-shadow: 1px 1px 0 #000; z-index: 4;
+  }
+  .skill-name-mini {
+    font-family: var(--font-px); font-size: 8.5px; color: var(--parchment); margin-top: 2px;
+    text-align: center; line-height: 1.05; z-index: 3;
+  }
+  .cd-sweep {
+    position: absolute; inset: 0; background: rgba(10, 8, 18, 0.78);
+    display: none; align-items: center; justify-content: center;
+    font-family: var(--font-px); font-size: 14px; font-weight: 700; color: var(--gold-hi); z-index: 5;
+  }
+  .cd-sweep.active { display: flex; }
+  .cd-curtain {
+    position: absolute; left: 0; right: 0; bottom: 0; background: rgba(244, 180, 27, 0.25); pointer-events: none;
+  }
+  .exp-bar {
+    width: 440px; max-width: 90vw; height: 12px; background: #0e0b16; border: 2px solid var(--border-dark);
+    position: relative; box-shadow: 0 2px 0 rgba(0,0,0,0.6);
+  }
+  .exp-fill {
+    height: 100%; background: linear-gradient(90deg, #b47412, #F4B41B, #FFE762); transition: width 0.2s;
+  }
+  .exp-txt {
+    position: absolute; inset: 0; text-align: center; font-family: var(--font-px);
+    font-size: 9px; font-weight: 700; color: #fff; text-shadow: 1px 1px 0 #000; line-height: 9px;
+  }
+
+  /* Modals (World Map & NPC Dialogue) */
+  .modal-overlay {
+    display: none; position: absolute; inset: 0; z-index: 80;
+    background: rgba(12, 10, 22, 0.84); align-items: center; justify-content: center; padding: 18px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-card {
+    width: 100%; max-width: 820px; background: var(--bg-slate);
+    border: 3px solid var(--gold); box-shadow: 0 0 0 3px var(--border-dark), 0 8px 0 rgba(0,0,0,0.65);
+    padding: 16px;
+  }
+  .map-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0;
+  }
+  @media (max-width: 720px) { .map-grid { grid-template-columns: repeat(2, 1fr); } }
+  .region-node {
+    background: #181425; border: 2px solid #4a557c; padding: 9px; cursor: pointer;
+    font-family: var(--font-px); font-size: 11px; position: relative;
+  }
+  .region-node.unlocked { border-color: var(--emerald); }
+  .region-node.current { border-color: var(--gold); background: #262e42; }
+  .region-node.fog { opacity: 0.6; border-style: dashed; }
+
+  .hint-footer {
+    max-width: 1280px; margin: 0 auto 30px; padding: 0 14px;
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px;
+    font-family: var(--font-px); font-size: 12px; color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<nav class="studio-nav">
+  <a class="studio-brand" href="index.html">
+    <svg width="20" height="20" viewBox="0 0 16 16"><rect x="7" y="1" width="2" height="9" fill="#FFE762"/><rect x="4" y="10" width="8" height="2" fill="#E4A672"/><rect x="7" y="12" width="2" height="3" fill="#733E39"/></svg>
+    ELDORIA UI MOCKUP SUITE
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Hub</a>
+    <a href="auth-character-select.html">1. Auth &amp; Hero</a>
+    <a href="main-hud-world.html" class="active">2. HUD &amp; World</a>
+    <a href="inventory-blacksmith-enhance.html">3. Kho đồ &amp; +10 Forge</a>
+    <a href="gacha-collection.html">4. Gacha &amp; 12 Hero</a>
+    <a href="farming-building-grid.html">5. Nông trại &amp; Xây dựng</a>
+    <a href="boss-raid-party.html">6. Boss Raid &amp; Party</a>
+  </div>
+</nav>
+
+<div class="control-strip">
+  <div class="ctrl-group">
+    <span style="font-family:var(--font-px); font-size:11.5px; color:var(--gold-hi);">THỜI GIAN:</span>
+    <button class="px-btn gold" id="btnDay" onclick="setTimeOfDay('DAY')">☀ Ngày</button>
+    <button class="px-btn" id="btnDusk" onclick="setTimeOfDay('DUSK')">🌅 Hoàng hôn</button>
+    <button class="px-btn" id="btnNight" onclick="setTimeOfDay('NIGHT')">🌙 Đêm (Đèn lồng)</button>
+  </div>
+  <div class="ctrl-group">
+    <button class="px-btn emerald" id="btnShake" onclick="toggleShake()">Camera Shake: BẬT</button>
+    <button class="px-btn crimson" id="btnDisc" onclick="toggleDisconnect()">Mô phỏng Mất kết nối</button>
+    <button class="px-btn azure" onclick="toggleWorldMap()">🗺 World Map [M]</button>
+    <button class="px-btn" onclick="openNpcDialog()">💬 Hội thoại NPC [F]</button>
+  </div>
+</div>
+
+<div class="viewport-outer">
+  <div class="game-stage" id="gameStage">
+    <canvas id="worldCanvas" width="640" height="360"></canvas>
+
+    <!-- Disconnected / Reconnecting Banner -->
+    <div class="disconnect-banner" id="disconnectBanner">
+      <span>⚠ MẤT KẾT NỐI ZONE SERVER (reg_greenhaven_village) — Đang tự động kết nối lại &amp; khôi phục phiên JSON... (Lần thử 2/5)</span>
+      <button class="px-btn gold" style="padding:3px 9px;" onclick="toggleDisconnect()">Kết nối lại ngay</button>
+    </div>
+
+    <!-- Top-Left Hero HUD -->
+    <div class="hud-box hud-topleft">
+      <div class="portrait-frame">
+        <canvas id="hudPortrait" width="32" height="32"></canvas>
+        <span class="lvl-tag" id="hudLvl">Lv12</span>
+      </div>
+      <div class="bars-col">
+        <div class="hero-name-row">
+          <span>Kael Ironbound</span>
+          <span style="font-size:10px; color:#FF8A65;">FIRE • WARRIOR</span>
+        </div>
+        <div class="vital-bar">
+          <div class="vital-fill" id="barHp" style="width:94%; background:#E43B44;"></div>
+          <div class="vital-txt"><span>HP</span><span id="txtHp">437 / 465</span></div>
+        </div>
+        <div class="vital-bar">
+          <div class="vital-fill" id="barMp" style="width:82%; background:#0095E9;"></div>
+          <div class="vital-txt"><span>MP</span><span id="txtMp">124 / 151</span></div>
+        </div>
+        <div class="mini-vitals">
+          <div class="vital-bar">
+            <div class="vital-fill" id="barSt" style="width:88%; background:#38B764;"></div>
+            <div class="vital-txt"><span>ST</span><span id="txtSt">120</span></div>
+          </div>
+          <div class="vital-bar">
+            <div class="vital-fill" id="barHung" style="width:84%; background:#F77622;"></div>
+            <div class="vital-txt"><span>🍖</span><span id="txtHung">84%</span></div>
+          </div>
+        </div>
+        <div class="currency-row">
+          <span style="color:#FFE762;">● 1,420 Gold</span>
+          <span style="color:#79d2ff;">✦ 1,920 Shard</span>
+          <span style="color:#63C74D;" title="Buff từ Herb Stew">🍲 +10% ATK</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top-Right Minimap -->
+    <div class="hud-box hud-topright">
+      <div class="minimap-wrap" onclick="toggleWorldMap()" style="cursor:pointer;" title="Click mở World Map [M]">
+        <canvas id="minimapCanvas" width="128" height="72"></canvas>
+      </div>
+      <div class="zone-meta">
+        <div style="display:flex; justify-content:space-between; color:var(--gold-hi); font-weight:700;">
+          <span>Greenhaven ↔ Forest</span>
+          <span style="color:var(--emerald-hi);">24ms</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; color:var(--text-muted);">
+          <span id="clockLabel">Xuân • Ngày 4 • 14:20</span>
+          <span>20Hz</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Quest Tracker -->
+    <div class="hud-box hud-quests">
+      <div class="quest-hdr">
+        <span>NHIỆM VỤ ĐANG THEO DÕI</span>
+        <span style="color:var(--text-muted);">[J]</span>
+      </div>
+      <div class="q-item">
+        <strong>[Chính] qst_004: Mossroot Hollow</strong>
+        Lập party &amp; hạ <code>boss_thornback_elder</code>
+        <div class="q-prog">▸ Cổng hầm ngục ở phía Đông rừng</div>
+      </div>
+      <div class="q-item">
+        <strong>[Săn quái] Dọn bìa Whispering Forest</strong>
+        Tiêu diệt Moss Slime (<span id="qSlimeCount">2</span>/5)
+        <div class="q-prog" id="qSlimeStatus">▸ Bấm phím 1–4 để đánh Slime!</div>
+      </div>
+      <div class="q-item" style="margin-bottom:0;">
+        <strong>[Lò Rèn] Cường hóa Iron Longsword</strong>
+        Đạt mốc +5 tại <code>bld_blacksmith</code> (+3/5)
+      </div>
+    </div>
+
+    <!-- Bottom-Left Zone / Party Chat -->
+    <div class="hud-box hud-chat">
+      <div class="chat-tabs">
+        <button class="chat-tab active" onclick="setChatTab('Zone', this)">Zone</button>
+        <button class="chat-tab" onclick="setChatTab('Party', this)">Party (3)</button>
+        <button class="chat-tab" onclick="setChatTab('System', this)">System</button>
+      </div>
+      <div class="chat-log" id="chatLog">
+        <div><span style="color:#63C74D;">[Zone]</span> <strong style="color:#79d2ff;">Lyra_VN:</strong> Mọi người gom xong nguyên liệu chưa, chuẩn bị vào Mossroot Hollow nhé!</div>
+        <div><span style="color:#63C74D;">[Zone]</span> <strong style="color:#FFE762;">SeraDawn:</strong> Mình vừa nấu xong 10 bát Herb Stew buff +10% ATK nè.</div>
+        <div><span style="color:#FEAE34;">[System]</span> Đã đồng bộ lưu trạng thái nhân vật vào <code>data/db/characters/chr_001.json</code>.</div>
+      </div>
+      <form class="chat-form" onsubmit="sendChat(event)">
+        <input id="chatInput" placeholder="Nhập tin nhắn Zone/Party... [Enter]" autocomplete="off">
+        <button type="submit" class="px-btn gold" style="padding:3px 8px; font-size:10px;">Gửi</button>
+      </form>
+    </div>
+
+    <!-- Dynamic Interaction Prompt [F] -->
+    <div class="interact-prompt" id="interactPrompt" onclick="openNpcDialog()">
+      <span class="keycap">F</span>
+      <span id="interactText">Nói chuyện với Thợ Rèn Garrik (bld_blacksmith)</span>
+    </div>
+
+    <!-- Bottom-Center Skill Hotbar & EXP Bar -->
+    <div class="hud-bottomcenter">
+      <div class="hud-box hotbar" id="skillHotbar"></div>
+      <div class="exp-bar">
+        <div class="exp-fill" id="expFill" style="width:68%;"></div>
+        <div class="exp-txt" id="expTxt">EXP: 1,360 / 2,000 (68%) — Lv 12</div>
+      </div>
+    </div>
+
+    <!-- WORLD MAP MODAL OVERLAY -->
+    <div class="modal-overlay" id="worldMapModal" onclick="if(event.target===this) toggleWorldMap()">
+      <div class="modal-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--border-dark); padding-bottom:8px;">
+          <div>
+            <h3 style="font-family:var(--font-px); color:var(--gold-hi); font-size:16px;">🗺 BẢN ĐỒ THẾ GIỚI ELDORIA (8 KHU VỰC CHUẨN)</h3>
+            <span style="font-size:11.5px; color:var(--parchment);">MVP mở khóa Greenhaven Village, Whispering Forest &amp; Mossroot Hollow; 6 vùng còn lại mở theo Boss Milestone (Fog of War).</span>
+          </div>
+          <button class="px-btn crimson" onclick="toggleWorldMap()">✕ Đóng [M]</button>
+        </div>
+        <div class="map-grid" id="worldMapGrid"></div>
+        <div style="background:#181425; border:2px solid var(--border-dark); padding:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-family:var(--font-px); font-size:11.5px;" id="mapSelectedInfo">
+          <span>📍 Đang chọn: <strong style="color:var(--gold-hi);">reg_greenhaven_village</strong> — Vùng an toàn, Lãnh địa cá nhân &amp; Nông trại (Lv 1–5)</span>
+          <button class="px-btn emerald" onclick="fastTravelNotify()">⚡ Dịch chuyển nhanh (Waypoint)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NPC DIALOGUE MODAL -->
+    <div class="modal-overlay" id="npcModal" onclick="if(event.target===this) closeNpcDialog()">
+      <div class="modal-card" style="max-width:560px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-family:var(--font-px); font-weight:700; color:var(--gold-hi);">⚒ NPC: Thợ Rèn Garrik (<code>npc_smith_garrik</code>)</span>
+          <button class="px-btn crimson" onclick="closeNpcDialog()">✕</button>
+        </div>
+        <p style="font-size:13.5px; color:var(--parchment); background:#181425; border:2px solid var(--border-dark); padding:12px; margin-bottom:12px;">
+          "Thanh <strong>Iron Longsword</strong> của cậu đã lên +3 rồi đấy! Nâng cấp Lò Rèn lên Lv 2 để đập tiếp lên +5 — ta cam đoan tay nghề <strong>100% thành công, không bao giờ làm vỡ vũ khí</strong> của người làng Greenhaven đâu!"
+        </p>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end;">
+          <a class="px-btn gold" href="inventory-blacksmith-enhance.html">⚒ Mở Lò Rèn Cường hóa (+0→+10)</a>
+          <a class="px-btn emerald" href="farming-building-grid.html">🏡 Về Lãnh địa Xây dựng</a>
+          <button class="px-btn" onclick="closeNpcDialog()">Tạm biệt [ESC]</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hint-footer">
+  <span>🎮 Điều khiển: <strong>WASD / Mũi tên</strong> hoặc <strong>Click trên bản đồ</strong> để di chuyển • Phím <strong>1–4 / Space</strong> hoặc <strong>Click ô kỹ năng</strong> để tung chiêu chém Slime • Phím <strong>M</strong> mở World Map • Phím <strong>F</strong> tương tác NPC.</span>
+  <span>Logical Viewport: 640×360 px (32×32 tile) • Y-Sorted 2.5D Depth</span>
+</div>
+
+<script>
+  const canvas = document.getElementById('worldCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  const miniCtx = document.getElementById('minimapCanvas').getContext('2d');
+  miniCtx.imageSmoothingEnabled = false;
+
+  // Game State
+  let timeOfDay = 'DAY';
+  let shakeEnabled = true;
+  let shakeTimer = 0;
+  let tick = 0;
+  let chatChannel = 'Zone';
+  let slimesDefeated = 2;
+
+  const player = {
+    x: 245, y: 210, tx: 245, ty: 210, speed: 2.1, dir: 'E', moving: false,
+    hp: 437, maxHp: 465, mp: 124, maxMp: 151, st: 120, maxSt: 136,
+    exp: 1360, maxExp: 2000, lvl: 12,
+    atkAnim: 0, dodgeAnim: 0
+  };
+
+  const skills = [
+    { key: '1', id: 'skl_kael_act_blazing_lunge', name: 'Blazing Lunge', short: 'Lunge', cdMax: 5.5, cd: 0, mp: 14, dmg: 118, col: '#F28C28', icon: '🔥' },
+    { key: '2', id: 'skl_kael_act_cinder_parry', name: 'Cinder Parry', short: 'Parry', cdMax: 8.0, cd: 0, mp: 12, dmg: 96, col: '#FEAE34', icon: '🛡' },
+    { key: '3', id: 'skl_kael_act_sunder_cleave', name: 'Sunder Cleave', short: 'Sunder', cdMax: 9.0, cd: 0, mp: 22, dmg: 164, col: '#E43B44', icon: '⚔' },
+    { key: '4', id: 'skl_kael_ult_crimson_crescent', name: 'Crimson Crescent', short: 'ULT', cdMax: 16.0, cd: 0, mp: 45, dmg: 310, col: '#FF1E42', icon: '🌙', ult: true },
+    { key: 'SPC', id: 'dodge', name: 'Dodge i-Frame', short: 'Dodge', cdMax: 2.0, cd: 0, mp: 0, st: 18, dmg: 0, col: '#63C74D', icon: '💨' },
+    { key: 'Q', id: 'csm_herb_stew', name: 'Herb Stew', short: 'Stew x4', cdMax: 6.0, cd: 0, mp: 0, heal: 90, col: '#38B764', icon: '🍲' }
+  ];
+
+  // World entities
+  const trees = [
+    { x: 40, y: 80 }, { x: 88, y: 65 }, { x: 420, y: 74 }, { x: 485, y: 90 },
+    { x: 545, y: 70 }, { x: 590, y: 112 }, { x: 450, y: 155 }, { x: 575, y: 200 },
+    { x: 435, y: 290 }, { x: 525, y: 315 }, { x: 595, y: 295 }, { x: 52, y: 300 }
+  ];
+
+  const mobs = [
+    { id: 'mob_moss_slime', name: 'Moss Slime Lv.1', x: 480, y: 190, homeX: 480, homeY: 190, hp: 180, maxHp: 180, hitFlash: 0, burn: 0, respawn: 0, type: 'slime' },
+    { id: 'mob_moss_slime', name: 'Moss Slime Lv.2', x: 540, y: 255, homeX: 540, homeY: 255, hp: 200, maxHp: 200, hitFlash: 0, burn: 0, respawn: 0, type: 'slime' },
+    { id: 'mob_timber_wolf', name: 'Timber Wolf Lv.5', x: 520, y: 135, homeX: 520, homeY: 135, hp: 290, maxHp: 290, hitFlash: 0, burn: 0, respawn: 0, type: 'wolf' }
+  ];
+
+  const allies = [
+    { name: 'Lyra_VN', x: 355, y: 185, col: '#2E8B57', hat: '#7CE0C3' },
+    { name: 'SeraDawn', x: 295, y: 245, col: '#EAD4AA', hat: '#F4B41B' }
+  ];
+
+  const npcGarrik = { name: 'Thợ Rèn Garrik', x: 235, y: 145 };
+  const floatingTexts = [];
+  const vfxList = [];
+  const keysDown = {};
+
+  // Build Skill Hotbar UI
+  function buildHotbar() {
+    const hb = document.getElementById('skillHotbar');
+    hb.innerHTML = skills.map((s, i) => `
+      <div class="skill-slot ${s.ult ? 'ult' : ''}" onclick="useSkill(${i})" title="${s.name} (MP: ${s.mp}, CD: ${s.cdMax}s)">
+        <span class="skill-key">${s.key}</span>
+        <span style="font-size:18px; line-height:1; z-index:3;">${s.icon}</span>
+        <span class="skill-name-mini">${s.short}</span>
+        ${s.mp ? `<span class="skill-cost">${s.mp}</span>` : ''}
+        <div class="cd-sweep" id="cdOverlay_${i}">
+          <div class="cd-curtain" id="cdCurtain_${i}"></div>
+          <span id="cdText_${i}" style="position:relative; z-index:2;"></span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function useSkill(idx) {
+    const s = skills[idx];
+    if (s.cd > 0) return;
+    if (s.mp && player.mp < s.mp) {
+      spawnFloat(player.x, player.y - 24, 'KHÔNG ĐỦ MP!', '#0095E9');
+      return;
+    }
+    if (s.st && player.st < s.st) return;
+
+    s.cd = s.cdMax;
+    if (s.mp) player.mp = Math.max(0, player.mp - s.mp);
+    if (s.st) player.st = Math.max(0, player.st - s.st);
+
+    if (s.heal) {
+      player.hp = Math.min(player.maxHp, player.hp + s.heal);
+      player.mp = Math.min(player.maxMp, player.mp + 30);
+      spawnFloat(player.x, player.y - 26, `+${s.heal} HP`, '#63C74D');
+      vfxList.push({ type: 'ring', x: player.x, y: player.y, r: 6, maxR: 30, col: '#63C74D', life: 22 });
+      updateHudBars();
+      return;
+    }
+    if (s.id === 'dodge') {
+      player.dodgeAnim = 14;
+      const dx = player.dir === 'E' ? 42 : player.dir === 'W' ? -42 : 0;
+      const dy = player.dir === 'S' ? 32 : player.dir === 'N' ? -32 : 0;
+      player.tx = Math.max(40, Math.min(600, player.x + dx));
+      player.ty = Math.max(70, Math.min(330, player.y + dy));
+      spawnFloat(player.x, player.y - 22, 'I-FRAME!', '#7CE0C3');
+      updateHudBars();
+      return;
+    }
+
+    // Combat Skill Execution
+    player.atkAnim = 18;
+    if (s.ult && shakeEnabled) shakeTimer = 14;
+    else if (shakeEnabled) shakeTimer = 6;
+
+    // Pick nearest alive mob or aim ahead
+    let targetMob = mobs.find(m => m.respawn === 0 && Math.hypot(m.x - player.x, m.y - player.y) < 170);
+    if (!targetMob) targetMob = mobs.find(m => m.respawn === 0);
+    const vx = targetMob ? targetMob.x : player.x + 55;
+    const vy = targetMob ? targetMob.y : player.y;
+
+    vfxList.push({
+      type: s.ult ? 'crescent' : 'slash',
+      x: player.x, y: player.y - 8,
+      tx: vx, ty: vy,
+      col: s.col, life: s.ult ? 28 : 18, maxLife: s.ult ? 28 : 18
+    });
+
+    // Apply damage to mobs near VFX
+    mobs.forEach(m => {
+      if (m.respawn > 0) return;
+      const d = Math.hypot(m.x - vx, m.y - vy);
+      if (d < (s.ult ? 95 : 70) || m === targetMob) {
+        const crit = Math.random() < 0.35;
+        const dmg = Math.round(s.dmg * (crit ? 1.55 : 1) * (0.92 + Math.random() * 0.16));
+        m.hp -= dmg;
+        m.hitFlash = 10;
+        m.burn = 140;
+        spawnFloat(m.x, m.y - 18, crit ? `-${dmg} CRIT!` : `-${dmg}`, crit ? '#FFE762' : '#FF7755');
+        if (m.hp <= 0) {
+          m.respawn = 240;
+          player.exp += 65;
+          if (player.exp >= player.maxExp) {
+            player.exp -= player.maxExp;
+            player.lvl++;
+            spawnFloat(player.x, player.y - 34, `LEVEL UP! Lv.${player.lvl}`, '#FFE762');
+          }
+          if (m.type === 'slime' && slimesDefeated < 5) {
+            slimesDefeated++;
+            document.getElementById('qSlimeCount').textContent = slimesDefeated;
+            if (slimesDefeated >= 5) document.getElementById('qSlimeStatus').textContent = '✓ Hoàn thành! Báo cáo Elder Rowan';
+          }
+          spawnFloat(m.x, m.y - 30, '+65 EXP  +1 Slime Gel', '#63C74D');
+        }
+      }
+    });
+    updateHudBars();
+  }
+
+  function spawnFloat(x, y, text, color) {
+    floatingTexts.push({ x, y, text, color, life: 52 });
+  }
+
+  function updateHudBars() {
+    document.getElementById('barHp').style.width = (player.hp / player.maxHp * 100) + '%';
+    document.getElementById('txtHp').textContent = `${Math.round(player.hp)} / ${player.maxHp}`;
+    document.getElementById('barMp').style.width = (player.mp / player.maxMp * 100) + '%';
+    document.getElementById('txtMp').textContent = `${Math.round(player.mp)} / ${player.maxMp}`;
+    document.getElementById('barSt').style.width = (player.st / player.maxSt * 100) + '%';
+    document.getElementById('txtSt').textContent = Math.round(player.st);
+    document.getElementById('hudLvl').textContent = 'Lv' + player.lvl;
+    const ep = Math.round(player.exp / player.maxExp * 100);
+    document.getElementById('expFill').style.width = ep + '%';
+    document.getElementById('expTxt').textContent = `EXP: ${player.exp.toLocaleString()} / ${player.maxExp.toLocaleString()} (${ep}%) — Lv ${player.lvl}`;
+  }
+
+  // Controls
+  canvas.addEventListener('click', (e) => {
+    const r = canvas.getBoundingClientRect();
+    player.tx = Math.max(24, Math.min(616, (e.clientX - r.left) / r.width * 640));
+    player.ty = Math.max(54, Math.min(340, (e.clientY - r.top) / r.height * 360));
+  });
+  window.addEventListener('keydown', (e) => {
+    if (document.activeElement.tagName === 'INPUT') return;
+    keysDown[e.key.toLowerCase()] = true;
+    if (e.key === '1') useSkill(0);
+    if (e.key === '2') useSkill(1);
+    if (e.key === '3') useSkill(2);
+    if (e.key === '4') useSkill(3);
+    if (e.key === ' ') { e.preventDefault(); useSkill(4); }
+    if (e.key.toLowerCase() === 'q') useSkill(5);
+    if (e.key.toLowerCase() === 'm') toggleWorldMap();
+    if (e.key.toLowerCase() === 'f') openNpcDialog();
+    if (e.key === 'Escape') {
+      document.getElementById('worldMapModal').classList.remove('open');
+      document.getElementById('npcModal').classList.remove('open');
+    }
+  });
+  window.addEventListener('keyup', (e) => { keysDown[e.key.toLowerCase()] = false; });
+
+  // Toolbar actions
+  function setTimeOfDay(mode) {
+    timeOfDay = mode;
+    ['btnDay', 'btnDusk', 'btnNight'].forEach(id => document.getElementById(id).classList.remove('gold'));
+    document.getElementById(mode === 'DAY' ? 'btnDay' : mode === 'DUSK' ? 'btnDusk' : 'btnNight').classList.add('gold');
+    const lbl = { DAY: 'Xuân • Ngày 4 • 14:20', DUSK: 'Xuân • Ngày 4 • 18:10', NIGHT: 'Xuân • Ngày 4 • 22:45' };
+    document.getElementById('clockLabel').textContent = lbl[mode];
+  }
+  function toggleShake() {
+    shakeEnabled = !shakeEnabled;
+    const b = document.getElementById('btnShake');
+    b.textContent = `Camera Shake: ${shakeEnabled ? 'BẬT' : 'TẮT (A11y)'}`;
+    b.className = 'px-btn ' + (shakeEnabled ? 'emerald' : '');
+  }
+  function toggleDisconnect() {
+    document.getElementById('disconnectBanner').classList.toggle('show');
+  }
+  function toggleWorldMap() {
+    document.getElementById('worldMapModal').classList.toggle('open');
+  }
+  function openNpcDialog() { document.getElementById('npcModal').classList.add('open'); }
+  function closeNpcDialog() { document.getElementById('npcModal').classList.remove('open'); }
+
+  // World Map 8 Canonical Regions
+  const REGIONS = [
+    { id: 'reg_greenhaven_village', name: 'Greenhaven Village', lv: '1–5', status: 'current', boss: 'Vùng an toàn & Lãnh địa', tag: 'MVP • ĐANG Ở ĐÂY' },
+    { id: 'reg_whispering_forest', name: 'Whispering Forest', lv: '1–15', status: 'unlocked', boss: 'boss_thornback_elder', tag: 'MVP • ĐÃ MỞ' },
+    { id: 'reg_ironpeak_mountains', name: 'Ironpeak Mountains', lv: '15–30', status: 'fog', boss: 'boss_ignis_forgelord', tag: 'M2 • SƯƠNG MÙ' },
+    { id: 'reg_crystal_caverns', name: 'Crystal Caverns', lv: '30–45', status: 'fog', boss: 'boss_prism_leviathan', tag: 'M3 • SƯƠNG MÙ' },
+    { id: 'reg_forgotten_ruins', name: 'Forgotten Ruins', lv: '45–60', status: 'fog', boss: 'Ancient Trials', tag: 'M3 • SƯƠNG MÙ' },
+    { id: 'reg_frostbound_highlands', name: 'Frostbound Highlands', lv: '60–75', status: 'fog', boss: 'boss_boreas_frostking', tag: 'M4 • SƯƠNG MÙ' },
+    { id: 'reg_ember_wasteland', name: 'Ember Wasteland', lv: '75–90', status: 'fog', boss: 'Volcanic Raid', tag: 'M4 • SƯƠNG MÙ' },
+    { id: 'reg_abyssal_kingdom', name: 'Abyssal Kingdom', lv: '90–100', status: 'fog', boss: 'boss_malakor_abyss', tag: 'M5 • SƯƠNG MÙ' }
+  ];
+  function buildWorldMap() {
+    document.getElementById('worldMapGrid').innerHTML = REGIONS.map(r => `
+      <div class="region-node ${r.status}" onclick="selectRegion('${r.id}','${r.name}','${r.lv}','${r.boss}','${r.status}')">
+        <div style="color:${r.status==='fog' ? '#8b9bb4' : '#FFE762'}; font-weight:700;">${r.name}</div>
+        <div style="color:#79d2ff; font-size:10px; margin:2px 0;">${r.id}</div>
+        <div style="color:#EAD4AA; font-size:10px;">Lv ${r.lv} • ${r.boss}</div>
+        <div style="margin-top:5px; font-size:9.5px; color:${r.status==='current'?'#FFE762':r.status==='unlocked'?'#63C74D':'#8b9bb4'};">[${r.tag}]</div>
+      </div>
+    `).join('');
+  }
+  let selectedRegionStatus = 'current';
+  function selectRegion(id, name, lv, boss, status) {
+    selectedRegionStatus = status;
+    document.getElementById('mapSelectedInfo').innerHTML = `
+      <span>📍 Đang chọn: <strong style="color:var(--gold-hi);">${name}</strong> (<code>${id}</code>, Lv ${lv}) — ${boss}</span>
+      <button class="px-btn ${status==='fog'?'':'emerald'}" ${status==='fog'?'disabled':''} onclick="fastTravelNotify()">
+        ${status==='fog' ? '🔒 Hạ Boss trước để mở khóa' : '⚡ Dịch chuyển nhanh (Waypoint)'}
+      </button>
+    `;
+  }
+  function fastTravelNotify() {
+    toggleWorldMap();
+    spawnFloat(player.x, player.y - 26, '⚡ FAST TRAVEL READY!', '#FFE762');
+  }
+
+  // Chat
+  function setChatTab(tab, btn) {
+    chatChannel = tab;
+    document.querySelectorAll('.chat-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  function sendChat(e) {
+    e.preventDefault();
+    const inp = document.getElementById('chatInput');
+    const txt = inp.value.trim();
+    if (!txt) return;
+    const log = document.getElementById('chatLog');
+    const col = chatChannel === 'Party' ? '#0095E9' : chatChannel === 'System' ? '#FEAE34' : '#63C74D';
+    const d = document.createElement('div');
+    d.innerHTML = `<span style="color:${col};">[${chatChannel}]</span> <strong style="color:#FFE762;">Kael Ironbound:</strong> ${txt.replace(/</g,'&lt;')}`;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+    inp.value = '';
+  }
+
+  // Draw HUD Hero Portrait
+  (function drawPortrait() {
+    const pc = document.getElementById('hudPortrait').getContext('2d');
+    pc.imageSmoothingEnabled = false;
+    pc.fillStyle = '#262B44'; pc.fillRect(0,0,32,32);
+    pc.fillStyle = '#C83E2B'; pc.fillRect(4,20,24,12);
+    pc.fillStyle = '#5A6988'; pc.fillRect(8,20,16,12);
+    pc.fillStyle = '#F2C9A0'; pc.fillRect(9,7,14,13);
+    pc.fillStyle = '#3B241D'; pc.fillRect(8,4,16,6); pc.fillRect(7,7,3,7); pc.fillRect(22,7,3,7);
+    pc.fillStyle = '#181425'; pc.fillRect(12,13,2,3); pc.fillRect(19,13,2,3);
+    pc.fillStyle = '#F4B41B'; pc.fillRect(25,6,3,16);
+  })();
+
+  // Helper pixel draw
+  function px(x, y, w, h, c) {
+    ctx.fillStyle = c;
+    ctx.fillRect(Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(h));
+  }
+
+  // Main 60 FPS Simulation & Render Loop
+  function loop() {
+    tick++;
+
+    // Passive Regen & Cooldowns
+    player.mp = Math.min(player.maxMp, player.mp + 0.08);
+    player.st = Math.min(player.maxSt, player.st + 0.14);
+    skills.forEach((s, i) => {
+      if (s.cd > 0) {
+        s.cd = Math.max(0, s.cd - 1 / 60);
+        const ov = document.getElementById('cdOverlay_' + i);
+        const cu = document.getElementById('cdCurtain_' + i);
+        const ct = document.getElementById('cdText_' + i);
+        if (s.cd > 0) {
+          ov.classList.add('active');
+          cu.style.height = (s.cd / s.cdMax * 100) + '%';
+          ct.textContent = s.cd.toFixed(1);
+        } else {
+          ov.classList.remove('active');
+        }
+      }
+    });
+    if (tick % 15 === 0) updateHudBars();
+
+    // Movement Input
+    let vx = 0, vy = 0;
+    if (keysDown['w'] || keysDown['arrowup']) vy -= 1;
+    if (keysDown['s'] || keysDown['arrowdown']) vy += 1;
+    if (keysDown['a'] || keysDown['arrowleft']) vx -= 1;
+    if (keysDown['d'] || keysDown['arrowright']) vx += 1;
+    if (vx || vy) {
+      player.x = Math.max(24, Math.min(616, player.x + vx * player.speed));
+      player.y = Math.max(58, Math.min(338, player.y + vy * player.speed));
+      player.tx = player.x; player.ty = player.y;
+      player.moving = true;
+      player.dir = Math.abs(vx) >= Math.abs(vy) ? (vx > 0 ? 'E' : 'W') : (vy > 0 ? 'S' : 'N');
+    } else {
+      const dx = player.tx - player.x, dy = player.ty - player.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 3) {
+        const sp = player.dodgeAnim > 0 ? 5.2 : player.speed;
+        player.x += (dx / dist) * sp;
+        player.y += (dy / dist) * sp;
+        player.moving = true;
+        player.dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'E' : 'W') : (dy > 0 ? 'S' : 'N');
+      } else {
+        player.moving = false;
+      }
+    }
+    if (player.atkAnim > 0) player.atkAnim--;
+    if (player.dodgeAnim > 0) player.dodgeAnim--;
+
+    // Proximity prompt update
+    const dSmith = Math.hypot(player.x - npcGarrik.x, player.y - npcGarrik.y);
+    const dFarm = Math.hypot(player.x - 132, player.y - 245);
+    const pr = document.getElementById('interactPrompt');
+    if (dSmith < 75) {
+      pr.style.display = 'flex';
+      document.getElementById('interactText').textContent = 'Nói chuyện với Thợ Rèn Garrik (bld_blacksmith)';
+    } else if (dFarm < 72) {
+      pr.style.display = 'flex';
+      document.getElementById('interactText').textContent = 'Thu hoạch Sunwheat (bld_farm_plot)';
+    } else {
+      pr.style.display = 'none';
+    }
+
+    // Mob AI patrol & burn ticks
+    mobs.forEach(m => {
+      if (m.respawn > 0) {
+        m.respawn--;
+        if (m.respawn === 0) { m.hp = m.maxHp; m.x = m.homeX; m.y = m.homeY; }
+        return;
+      }
+      if (m.hitFlash > 0) m.hitFlash--;
+      if (m.burn > 0) {
+        m.burn--;
+        if (m.burn % 45 === 0) {
+          m.hp -= 18;
+          spawnFloat(m.x, m.y - 16, 'BURN -18', '#FEAE34');
+          if (m.hp <= 0) m.respawn = 240;
+        }
+      }
+      m.x = m.homeX + Math.sin(tick * 0.02 + m.homeY) * 22;
+      m.y = m.homeY + Math.cos(tick * 0.017 + m.homeX) * 14;
+    });
+
+    // Camera Shake offset
+    ctx.save();
+    if (shakeTimer > 0) {
+      shakeTimer--;
+      if (shakeEnabled) {
+        ctx.translate((Math.random() - 0.5) * 6, (Math.random() - 0.5) * 6);
+      }
+    }
+
+    // 1. GROUND LAYER (Greenhaven Grass Left -> Whispering Forest Deep Moss Right)
+    for (let ty = 0; ty < 12; ty++) {
+      for (let tx = 0; tx < 20; tx++) {
+        const isForest = tx >= 12;
+        const alt = (tx + ty) % 2 === 0;
+        px(tx * 32, ty * 32, 32, 32, isForest ? (alt ? '#224a38' : '#1e4232') : (alt ? '#388e4c' : '#328246'));
+        // Grass blade texture
+        if ((tx * 7 + ty * 13) % 3 === 0) {
+          px(tx * 32 + 10, ty * 32 + 12, 2, 4, isForest ? '#2e6b4e' : '#63c74d');
+          px(tx * 32 + 14, ty * 32 + 14, 2, 3, isForest ? '#2e6b4e' : '#63c74d');
+        }
+      }
+    }
+
+    // Dirt Road connecting Village -> Forest
+    px(0, 196, 640, 34, '#b86f50');
+    px(0, 200, 640, 26, '#d9a066');
+    px(220, 128, 32, 80, '#d9a066');
+    // Cobblestones
+    for (let i = 0; i < 24; i++) {
+      px(i * 28 + 6, 206 + (i % 3) * 6, 6, 3, '#b86f50');
+    }
+
+    // Pond bottom-left
+    px(32, 264, 86, 48, '#124E89');
+    px(36, 268, 78, 40, '#0095E9');
+    const rip = Math.floor(Math.sin(tick * 0.08) * 3);
+    px(52 + rip, 278, 14, 2, '#79d2ff');
+    px(74 - rip, 294, 18, 2, '#79d2ff');
+
+    // Farm Plot (Sunwheat swaying)
+    px(96, 232, 80, 52, '#5a3629');
+    px(98, 234, 76, 48, '#733E39');
+    const sway = Math.round(Math.sin(tick * 0.07));
+    for (let fy = 238; fy < 276; fy += 12) {
+      for (let fx = 104; fx < 170; fx += 12) {
+        px(fx, fy + 4, 6, 4, '#38b764');
+        px(fx + sway, fy, 6, 5, '#f4b41b');
+        px(fx + sway + 1, fy - 1, 4, 2, '#ffe762');
+      }
+    }
+
+    // Mossroot Hollow Dungeon Portal Marker (Far East)
+    px(598, 178, 36, 56, '#262B44');
+    px(604, 186, 24, 42, '#181425');
+    const pGlow = Math.floor(Math.sin(tick * 0.1) * 2);
+    px(608, 192 + pGlow, 16, 30, '#38B764');
+    px(612, 198, 8, 18, '#FFE762');
+
+    // 2. Y-SORTED RENDER QUEUE (2.5D Occlusion!)
+    const drawList = [];
+
+    // Player House (bld_player_house)
+    drawList.push({
+      y: 148,
+      draw: () => {
+        px(94, 142, 92, 10, 'rgba(0,0,0,0.35)');
+        px(98, 96, 84, 50, '#EAD4AA');
+        px(98, 96, 6, 50, '#733E39'); px(176, 96, 6, 50, '#733E39');
+        px(90, 82, 100, 18, '#a83232');
+        px(98, 70, 84, 14, '#c83e2b');
+        px(108, 62, 64, 9, '#e45c44');
+        px(116, 118, 18, 28, '#5a3122'); // Door
+        px(148, 112, 20, 16, timeOfDay === 'DAY' ? '#79d2ff' : '#FFE762'); // Window
+      }
+    });
+
+    // Blacksmith Forge (bld_blacksmith)
+    drawList.push({
+      y: 142,
+      draw: () => {
+        px(210, 134, 72, 10, 'rgba(0,0,0,0.35)');
+        px(214, 98, 64, 40, '#5a6988');
+        px(208, 84, 76, 16, '#3e2731');
+        // Glowing Furnace
+        const fPulse = (tick % 16 < 8) ? '#FEAE34' : '#FFE762';
+        px(222, 112, 18, 20, '#181425');
+        px(225, 118, 12, 12, '#E43B44');
+        px(227, 122, 8, 8, fPulse);
+        // Anvil
+        px(252, 128, 14, 8, '#262B44');
+        px(250, 124, 18, 4, '#8b9bb4');
+      }
+    });
+
+    // NPC Garrik
+    drawList.push({
+      y: npcGarrik.y,
+      draw: () => {
+        px(npcGarrik.x - 6, npcGarrik.y + 4, 12, 4, 'rgba(0,0,0,0.4)');
+        px(npcGarrik.x - 5, npcGarrik.y - 12, 10, 16, '#733E39');
+        px(npcGarrik.x - 4, npcGarrik.y - 20, 8, 8, '#f2c9a0');
+        px(npcGarrik.x - 5, npcGarrik.y - 22, 10, 3, '#c0cbdc');
+        // Quest [!] icon
+        const bob = Math.round(Math.sin(tick * 0.12) * 2);
+        px(npcGarrik.x - 2, npcGarrik.y - 34 + bob, 4, 7, '#FFE762');
+        px(npcGarrik.x - 2, npcGarrik.y - 25 + bob, 4, 2, '#FFE762');
+      }
+    });
+
+    // Trees
+    trees.forEach(tr => {
+      drawList.push({
+        y: tr.y,
+        draw: () => {
+          px(tr.x - 10, tr.y + 2, 20, 6, 'rgba(0,0,0,0.32)');
+          px(tr.x - 4, tr.y - 14, 8, 18, '#5a3629');
+          px(tr.x - 16, tr.y - 34, 32, 22, '#1a4d34');
+          px(tr.x - 12, tr.y - 44, 24, 14, '#2e7d47');
+          px(tr.x - 7, tr.y - 50, 14, 8, '#63c74d');
+        }
+      });
+    });
+
+    // Online Allies
+    allies.forEach((a, idx) => {
+      const ax = a.x + Math.sin(tick * 0.025 + idx * 2) * 14;
+      const ay = a.y + Math.cos(tick * 0.02 + idx) * 6;
+      drawList.push({
+        y: ay,
+        draw: () => {
+          px(ax - 6, ay + 4, 12, 4, 'rgba(0,0,0,0.38)');
+          px(ax - 5, ay - 12, 10, 16, a.col);
+          px(ax - 4, ay - 20, 8, 8, '#f5d3b3');
+          px(ax - 5, ay - 23, 10, 4, a.hat);
+          ctx.fillStyle = '#79d2ff';
+          ctx.font = 'bold 8px Consolas, monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(a.name, ax, ay - 27);
+        }
+      });
+    });
+
+    // Mobs
+    mobs.forEach(m => {
+      if (m.respawn > 0) return;
+      drawList.push({
+        y: m.y,
+        draw: () => {
+          const hop = Math.abs(Math.sin(tick * 0.1 + m.homeX)) * (m.type === 'slime' ? 5 : 2);
+          px(m.x - 8, m.y + 4, 16, 4, 'rgba(0,0,0,0.4)');
+          if (m.type === 'slime') {
+            const col = m.hitFlash > 0 ? '#FFFFFF' : '#63C74D';
+            px(m.x - 9, m.y - 8 - hop, 18, 12, col);
+            px(m.x - 6, m.y - 11 - hop, 12, 4, m.hitFlash > 0 ? '#FFFFFF' : '#A7F070');
+            px(m.x - 4, m.y - 5 - hop, 2, 2, '#181425');
+            px(m.x + 2, m.y - 5 - hop, 2, 2, '#181425');
+          } else {
+            const col = m.hitFlash > 0 ? '#FFFFFF' : '#6c7a89';
+            px(m.x - 11, m.y - 10 - hop, 22, 12, col);
+            px(m.x - 13, m.y - 14 - hop, 8, 8, col);
+            px(m.x - 11, m.y - 11 - hop, 2, 2, '#FFE762');
+          }
+          // Mob HP bar
+          px(m.x - 14, m.y - 20, 28, 4, '#0e0b16');
+          px(m.x - 13, m.y - 19, Math.max(0, 26 * (m.hp / m.maxHp)), 2, '#E43B44');
+          if (m.burn > 0) px(m.x + 15, m.y - 20, 4, 4, '#FEAE34');
+        }
+      });
+    });
+
+    // Main Player Hero (Kael Ironbound)
+    drawList.push({
+      y: player.y,
+      draw: () => {
+        const bob = player.moving ? Math.round(Math.sin(tick * 0.35) * 1.5) : 0;
+        px(player.x - 7, player.y + 4, 14, 5, 'rgba(0,0,0,0.48)');
+        if (player.dodgeAnim > 0) ctx.globalAlpha = 0.55;
+        // Boots & Cape
+        px(player.x - 5, player.y - 1, 4, 6, '#3E2731');
+        px(player.x + 1, player.y - 1, 4, 6, '#3E2731');
+        px(player.x - 7, player.y - 14 + bob, 14, 13, '#C83E2B');
+        px(player.x - 5, player.y - 14 + bob, 10, 12, '#5A6988');
+        // Head
+        px(player.x - 5, player.y - 24 + bob, 10, 10, '#F2C9A0');
+        px(player.x - 6, player.y - 26 + bob, 12, 4, '#3B241D');
+        px(player.x + (player.dir === 'W' ? -3 : 2), player.y - 20 + bob, 2, 2, '#181425');
+        // Ember Sword
+        const sw = player.atkAnim > 0 ? 10 : 0;
+        const sx = player.dir === 'W' ? player.x - 11 - sw : player.x + 8 + sw;
+        px(sx, player.y - 20 + bob, 3, 16, '#F28C28');
+        px(sx + 1, player.y - 19 + bob, 1, 13, '#FFE762');
+        ctx.globalAlpha = 1;
+        // Nameplate
+        ctx.fillStyle = '#FFE762';
+        ctx.font = 'bold 8.5px Consolas, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Kael Ironbound', player.x, player.y - 30);
+      }
+    });
+
+    drawList.sort((a, b) => a.y - b.y);
+    drawList.forEach(item => item.draw());
+
+    // 3. VFX LAYER
+    for (let i = vfxList.length - 1; i >= 0; i--) {
+      const v = vfxList[i];
+      v.life--;
+      if (v.life <= 0) { vfxList.splice(i, 1); continue; }
+      if (v.type === 'ring') {
+        v.r += 1.2;
+        ctx.strokeStyle = v.col;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(v.x - v.r, v.y - v.r * 0.6, v.r * 2, v.r * 1.2);
+      } else if (v.type === 'slash' || v.type === 'crescent') {
+        const prog = 1 - v.life / v.maxLife;
+        const cx = v.x + (v.tx - v.x) * Math.min(1, prog * 1.4);
+        const cy = v.y + (v.ty - v.y) * Math.min(1, prog * 1.4);
+        const sz = v.type === 'crescent' ? 28 : 16;
+        ctx.globalAlpha = 0.8;
+        px(cx - sz, cy - sz * 0.6, sz * 2, sz * 1.2, v.col);
+        px(cx - sz * 0.6, cy - sz * 0.3, sz * 1.2, sz * 0.6, '#FFE762');
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // 4. DAY / DUSK / NIGHT LIGHTING OVERLAY
+    if (timeOfDay === 'DUSK') {
+      ctx.fillStyle = 'rgba(180, 82, 32, 0.24)';
+      ctx.fillRect(0, 0, 640, 360);
+    } else if (timeOfDay === 'NIGHT') {
+      ctx.fillStyle = 'rgba(14, 18, 48, 0.56)';
+      ctx.fillRect(0, 0, 640, 360);
+      // Warm lantern halos
+      [[158, 120, 44], [231, 124, 52], [player.x, player.y - 10, 42]].forEach(([lx, ly, lr]) => {
+        const g = ctx.createRadialGradient(lx, ly, 4, lx, ly, lr);
+        g.addColorStop(0, 'rgba(255, 224, 110, 0.45)');
+        g.addColorStop(1, 'rgba(255, 180, 60, 0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(lx - lr, ly - lr, lr * 2, lr * 2);
+      });
+    }
+
+    // 5. FLOATING DAMAGE NUMBERS
+    ctx.textAlign = 'center';
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+      const f = floatingTexts[i];
+      f.y -= 0.6;
+      f.life--;
+      if (f.life <= 0) { floatingTexts.splice(i, 1); continue; }
+      ctx.font = 'bold 10px Consolas, monospace';
+      ctx.fillStyle = '#0e0b16';
+      ctx.fillText(f.text, f.x + 1, f.y + 1);
+      ctx.fillStyle = f.color;
+      ctx.fillText(f.text, f.x, f.y);
+    }
+
+    ctx.restore();
+
+    // 6. LIVE MINIMAP UPDATE
+    miniCtx.fillStyle = '#2d6e3f'; miniCtx.fillRect(0, 0, 76, 72);
+    miniCtx.fillStyle = '#1b3f2f'; miniCtx.fillRect(76, 0, 52, 72);
+    miniCtx.fillStyle = '#d9a066'; miniCtx.fillRect(0, 39, 128, 7);
+    miniCtx.fillStyle = '#733E39'; miniCtx.fillRect(19, 46, 16, 10); // Farm
+    miniCtx.fillStyle = '#c83e2b'; miniCtx.fillRect(20, 18, 16, 10); // House
+    miniCtx.fillStyle = '#FEAE34'; miniCtx.fillRect(44, 20, 12, 8);  // Forge
+    miniCtx.fillStyle = '#FFE762'; miniCtx.fillRect(120, 35, 6, 10); // Dungeon portal
+    mobs.forEach(m => {
+      if (m.respawn === 0) {
+        miniCtx.fillStyle = '#E43B44';
+        miniCtx.fillRect(m.x / 5 - 1, m.y / 5 - 1, 3, 3);
+      }
+    });
+    allies.forEach(a => {
+      miniCtx.fillStyle = '#0095E9';
+      miniCtx.fillRect(a.x / 5 - 1, a.y / 5 - 1, 3, 3);
+    });
+    miniCtx.fillStyle = '#FFFFFF';
+    miniCtx.fillRect(player.x / 5 - 2, player.y / 5 - 2, 4, 4);
+
+    requestAnimationFrame(loop);
+  }
+
+  buildHotbar();
+  buildWorldMap();
+  updateHudBars();
+  loop();
+</script>
+</body>
+</html>

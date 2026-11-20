@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Eldoria: 2D Pixel Multi-Animation & Anti-Glitch Inspector (Offline Showcase)</title>
+<style>
+  :root {
+    --bg: #12151f;
+    --panel: #1b2030;
+    --panel-border: #5a432c;
+    --gold: #f5c451;
+    --cream: #f4ecd8;
+    --muted: #9aa7bf;
+    --accent: #38bdf8;
+    --danger: #ff3b3b;
+    --ok: #34d399;
+    --purple: #a78bfa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--cream);
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  header {
+    background: linear-gradient(180deg, #251d1a 0%, #171a26 100%);
+    border-bottom: 3px solid var(--panel-border);
+    padding: 12px 18px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--gold);
+    letter-spacing: 0.5px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border: 1px solid var(--ok);
+    color: var(--ok);
+    background: rgba(52, 211, 153, 0.12);
+    font-size: 11px;
+    font-weight: bold;
+  }
+  .back-link {
+    color: var(--gold);
+    text-decoration: none;
+    border: 1px solid var(--panel-border);
+    padding: 4px 10px;
+    background: #241e1b;
+  }
+  .back-link:hover { background: #362a23; }
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 310px;
+    gap: 14px;
+    padding: 14px;
+    max-width: 1480px;
+    margin: 0 auto;
+  }
+  @media (max-width: 1120px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+  .card {
+    background: var(--panel);
+    border: 2px solid var(--panel-border);
+    box-shadow: inset 0 0 0 2px #0d1018;
+    padding: 12px;
+  }
+  .card h2 {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    color: var(--gold);
+    text-transform: uppercase;
+    border-bottom: 1px solid #30374c;
+    padding-bottom: 6px;
+  }
+  .btn-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .btn-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .btn-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  button {
+    background: #252c40;
+    color: var(--cream);
+    border: 2px solid #3c4764;
+    padding: 6px 8px;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    text-align: center;
+  }
+  button:hover { border-color: var(--gold); background: #2e3752; }
+  button.active {
+    background: #4e3819;
+    border-color: var(--gold);
+    color: var(--gold);
+    font-weight: bold;
+  }
+  button.danger {
+    background: #4a1920;
+    border-color: var(--danger);
+    color: #ffd5d5;
+  }
+  button.danger:hover { background: #68212b; }
+  .stage-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  canvas#stage {
+    background: #1d2a1e;
+    border: 3px solid #725536;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    width: 640px;
+    height: 360px;
+    max-width: 100%;
+    cursor: crosshair;
+  }
+  canvas#atlasStrip {
+    background: #0d1017;
+    border: 2px solid #3a425b;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    width: 100%;
+    height: 112px;
+  }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    background: #141824;
+    border: 1px solid #2d354d;
+    padding: 8px 10px;
+  }
+  .toggle-list label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .telemetry {
+    background: #0f131d;
+    border: 1px solid #2b3349;
+    padding: 8px;
+    font-size: 12px;
+  }
+  .telemetry-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed #232a3d;
+    padding: 3px 0;
+  }
+  .telemetry-row:last-child { border-bottom: none; }
+  .val-ok { color: var(--ok); font-weight: bold; }
+  .val-warn { color: var(--gold); font-weight: bold; }
+  .val-err { color: var(--danger); font-weight: bold; }
+  .bar-bg {
+    width: 100%;
+    height: 10px;
+    background: #232a3d;
+    border: 1px solid #3c4663;
+    margin-top: 6px;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--ok);
+    width: 0%;
+    transition: none;
+  }
+  .hint {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>ELDORIA: 2D PIXEL MULTI-ANIMATION &amp; ANTI-GLITCH INSPECTOR</h1>
+    <div style="color:#b8c3d9;font-size:11px;">Logical 320x180 &rarr; Integer 2x/3x Pixel-Perfect (Nearest-Neighbor) &middot; Extrude 1px &middot; Padding 2px &middot; HFSM + Watchdog &middot; 100% Offline</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span class="badge">0 EXTERNAL URLS</span>
+    <span class="badge">MINIO S3 LOCAL READY</span>
+    <a class="back-link" href="./index.html">&larr; Về Hub Mockup</a>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- LEFT CONTROLS -->
+  <section class="card">
+    <h2>1. Chọn Thực thể Pixel 2D</h2>
+    <div class="btn-grid" id="entityButtons"></div>
+
+    <h2>2. Trạng thái Hoạt ảnh (Multi-State)</h2>
+    <div class="btn-grid" id="stateButtons"></div>
+
+    <h2>3. Hướng Nhìn (4-Dir MVP)</h2>
+    <div class="btn-grid cols-4" id="dirButtons"></div>
+
+    <h2>4. Thử nghiệm Chống Kẹt (Watchdog)</h2>
+    <button class="danger" style="width:100%;" id="btnSimulateStuck">Giả lập Mất Gói / Kẹt Hoạt ảnh</button>
+    <div class="hint">Phím <b>W/A/S/D</b> để điều khiển nhân vật đi vòng qua cây &amp; trụ đá kiểm tra Y-Sorting sống. Phím <b>Space</b> tung đòn đánh, <b>Q</b> tung Ultimate.</div>
+  </section>
+
+  <!-- CENTER STAGE -->
+  <section class="card stage-wrap">
+    <div class="toolbar">
+      <div>
+        <strong style="color:var(--gold);">Sân khấu 2D Pixel-Perfect</strong>
+        <span style="color:var(--muted);margin-left:8px;" id="stageModeLabel">Sandbox Y-Sort + Extruded Tiles</span>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button id="btnPlayPause" class="active">Đang chạy</button>
+        <button id="btnStepFrame">+1 Frame</button>
+        <button id="btnZoomToggle">Zoom: 2x (640x360)</button>
+      </div>
+    </div>
+
+    <canvas id="stage" width="320" height="180"></canvas>
+
+    <div style="width:100%;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <strong style="color:var(--gold);font-size:12px;">Sprite Atlas Strip Inspector (Padding 2px + Frame Pivot)</strong>
+        <span style="color:var(--muted);font-size:11px;" id="atlasMetaLabel">48x64 px &middot; padding: 2px &middot; extrude: 1px</span>
+      </div>
+      <canvas id="atlasStrip" width="640" height="112"></canvas>
+    </div>
+  </section>
+
+  <!-- RIGHT INSPECTOR -->
+  <section class="card">
+    <h2>5. Lớp Kiểm định Chống Lỗi 2D</h2>
+    <div class="toggle-list">
+      <label><input type="checkbox" id="chkGrid" checked /> Lưới Tile 32x32 + Extrude Seam Check</label>
+      <label><input type="checkbox" id="chkBoxes" checked /> 4-Box Contract (Frame / Hurt / Foot / Interact)</label>
+      <label><input type="checkbox" id="chkPivot" checked /> Tâm Chân Y-Sort (pivotY = 0.875)</label>
+      <label><input type="checkbox" id="chkTelegraph" checked /> Boss Telegraph (Depth 180-199 Unlit)</label>
+      <label><input type="checkbox" id="chkCanopy" checked /> Tự mờ Tán Cây (Alpha 0.55 khi che Hero)</label>
+      <label><input type="checkbox" id="chkIntegerSnap" checked /> Khóa Pixel Nguyên (Math.round Snap)</label>
+    </div>
+
+    <h2 style="margin-top:12px;">6. Telemetry &amp; Watchdog Live</h2>
+    <div class="telemetry">
+      <div class="telemetry-row"><span>Clip Key</span><span class="val-warn" id="telClip">chr_kael_idle_down</span></div>
+      <div class="telemetry-row"><span>Frame</span><span class="val-ok" id="telFrame">1 / 4 (180ms)</span></div>
+      <div class="telemetry-row"><span>Render Depth</span><span class="val-ok" id="telDepth">1112</span></div>
+      <div class="telemetry-row"><span>Foot Coords</span><span id="telPos">(148, 112)</span></div>
+      <div class="telemetry-row"><span>Sub-pixel Drift</span><span class="val-ok" id="telDrift">0.00 px (LOCKED)</span></div>
+      <div class="telemetry-row"><span>Tile Bleed Check</span><span class="val-ok">0 px (EXTRUDED)</span></div>
+      <div class="telemetry-row"><span>Watchdog Budget</span><span id="telWatchdog">LOOP (Safe)</span></div>
+      <div class="telemetry-row"><span>Auto-Recoveries</span><span class="val-ok" id="telRecover">0</span></div>
+      <div class="bar-bg"><div class="bar-fill" id="watchdogBar"></div></div>
+    </div>
+
+    <h2 style="margin-top:12px;">7. Nguồn Asset &amp; Kiến trúc v2.0</h2>
+    <div class="telemetry" style="font-size:11px;color:#b8c4db;">
+      <div>&bull; <b>Primary DB</b>: 100% JSON (<code>data/db/**/*.json</code>)</div>
+      <div>&bull; <b>Runtime Cache</b>: Local Docker Redis (Presence/TTL)</div>
+      <div>&bull; <b>Atlas Storage</b>: Local Docker MinIO (<code>eldoria-assets/v1/</code>)</div>
+      <div>&bull; <b>Zero-Glitch Gate</b>: <code>validate-animation-pipeline.mjs</code></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  const ENTITIES = [
+    { id: "chr_kael_vanguard", label: "Kael (Warrior)", kind: "hero", w: 48, h: 64, pivotY: 0.875,
+      pal: { cloak: "#c8281e", cloakHi: "#ff6b1a", armor: "#94a3b8", armorDark: "#475569", hair: "#4a2511", skin: "#f4c7a1", weapon: "#e2e8f0", fx: "#ff6b1a", fxCore: "#fff4b8" } },
+    { id: "chr_lyra_windrunner", label: "Lyra (Archer)", kind: "hero", w: 48, h: 64, pivotY: 0.875,
+      pal: { cloak: "#15803d", cloakHi: "#4ade80", armor: "#6b4f3a", armorDark: "#3e2b1f", hair: "#eab308", skin: "#f7d3b5", weapon: "#a16207", fx: "#7ce0c3", fxCore: "#ecfeff" } },
+    { id: "chr_seraphina_dawn", label: "Seraphina (Healer)", kind: "hero", w: 48, h: 64, pivotY: 0.875,
+      pal: { cloak: "#f8fafc", cloakHi: "#fde68a", armor: "#f59e0b", armorDark: "#92400e", hair: "#f4d35e", skin: "#fbe0c8", weapon: "#fbbf24", fx: "#ffe566", fxCore: "#ffffff" } },
+    { id: "mob_moss_slime", label: "Moss Slime (Mob)", kind: "slime", w: 32, h: 32, pivotY: 0.85,
+      pal: { body: "#4ade80", dark: "#166534", hi: "#dcfce7", eye: "#141824", fx: "#86efac", fxCore: "#ffffff" } },
+    { id: "boss_thornback_elder", label: "Thornback (Boss)", kind: "boss", w: 96, h: 96, pivotY: 0.86,
+      pal: { bark: "#5c4033", barkDark: "#2f1e17", moss: "#2e7d32", rune: "#f59e0b", runeHi: "#fff3b0", eye: "#ff3b3b", fx: "#ff3b3b", fxCore: "#ffe5e5" } }
+  ];
+
+  const STATES = [
+    { id: "idle", label: "Idle", frames: 4, ms: 200, loop: true },
+    { id: "walk", label: "Walk", frames: 6, ms: 110, loop: true },
+    { id: "run", label: "Run", frames: 6, ms: 75, loop: true },
+    { id: "attack_combo", label: "Attack 3-Combo", frames: 6, ms: 75, loop: false },
+    { id: "ultimate", label: "Ultimate Skill", frames: 8, ms: 90, loop: false },
+    { id: "dodge", label: "Dodge Roll", frames: 5, ms: 65, loop: false },
+    { id: "block", label: "Block", frames: 2, ms: 220, loop: true },
+    { id: "hit", label: "Hit Flash", frames: 3, ms: 70, loop: false },
+    { id: "death", label: "Death", frames: 5, ms: 130, loop: false },
+    { id: "mining", label: "Mining", frames: 4, ms: 120, loop: true },
+    { id: "farming", label: "Farming", frames: 4, ms: 130, loop: true },
+    { id: "fishing", label: "Fishing", frames: 4, ms: 170, loop: true }
+  ];
+
+  const DIRS = [
+    { id: "down", label: "Down" },
+    { id: "up", label: "Up" },
+    { id: "left", label: "Left" },
+    { id: "right", label: "Right" }
+  ];
+
+  let curEntity = ENTITIES[0];
+  let curState = STATES[0];
+  let curDir = "down";
+  let playing = true;
+  let frameIdx = 0;
+  let frameTimerMs = 0;
+  let stateElapsedMs = 0;
+  let simulatedStuck = false;
+  let recoveryCount = 0;
+  let envClockMs = 0;
+  let zoomScale = 2;
+
+  // Player sandbox foot coordinates in 320x180 logical space
+  let heroX = 148;
+  let heroY = 114;
+  const keys = {};
+
+  // World obstacles for live Y-sort demonstration
+  const TREE = { x: 222, y: 116, footY: 116, canopyR: 22 };
+  const PILLAR = { x: 86, y: 108, footY: 108 };
+
+  const stage = document.getElementById("stage");
+  const ctx = stage.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+
+  const strip = document.getElementById("atlasStrip");
+  const sctx = strip.getContext("2d");
+  sctx.imageSmoothingEnabled = false;
+
+  const chkGrid = document.getElementById("chkGrid");
+  const chkBoxes = document.getElementById("chkBoxes");
+  const chkPivot = document.getElementById("chkPivot");
+  const chkTelegraph = document.getElementById("chkTelegraph");
+  const chkCanopy = document.getElementById("chkCanopy");
+  const chkIntegerSnap = document.getElementById("chkIntegerSnap");
+
+  function px(c, x, y, w, h, color) {
+    c.fillStyle = color;
+    c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+  }
+
+  function drawHeroSprite(c, ox, oy, entity, stateId, dir, fIdx, totalF) {
+    const p = entity.pal;
+    const t = fIdx / Math.max(1, totalF);
+    const bob = (stateId === "idle") ? (fIdx % 2 === 0 ? 0 : -1) :
+                (stateId === "walk" || stateId === "run") ? ((fIdx % 3 === 1) ? -2 : 0) : 0;
+    const hitFlash = (stateId === "hit" && fIdx < 2);
+    const dodgeOffset = (stateId === "dodge") ? Math.round(Math.sin(t * Math.PI) * -5) : 0;
+    const fallAngle = (stateId === "death") ? Math.min(1, fIdx / 3) : 0;
+
+    // Ground shadow
+    px(c, ox + 16, oy + 54, 16, 4, "rgba(20, 16, 36, 0.45)");
+
+    const baseX = ox + 16;
+    const baseY = oy + 20 + bob + dodgeOffset + Math.round(fallAngle * 18);
+
+    const col = (hex) => hitFlash ? "#ffffff" : hex;
+    const legSwing = (stateId === "walk" || stateId === "run") ? Math.round(Math.sin(t * Math.PI * 2) * (stateId === "run" ? 4 : 2)) : 0;
+
+    if (fallAngle >= 0.9) {
+      // Fallen pixel body (death end frame)
+      px(c, ox + 10, oy + 49, 26, 8, "#14111b");
+      px(c, ox + 11, oy + 50, 24, 6, col(p.cloak));
+      px(c, ox + 12, oy + 48, 8, 7, col(p.skin));
+      px(c, ox + 12, oy + 46, 8, 3, col(p.hair));
+      return;
+    }
+
+    // Cloak behind if facing down/left/right
+    if (dir !== "up") {
+      px(c, baseX - 2, baseY + 13, 20, 16, "#14111b");
+      px(c, baseX - 1, baseY + 14, 18, 14, col(p.cloak));
+      px(c, baseX + 1, baseY + 15, 4, 10, col(p.cloakHi));
+    }
+
+    // Legs
+    px(c, baseX + 2, baseY + 26 + Math.max(0, legSwing), 5, 10, "#14111b");
+    px(c, baseX + 3, baseY + 27 + Math.max(0, legSwing), 3, 8, col(p.armorDark));
+    px(c, baseX + 9, baseY + 26 + Math.max(0, -legSwing), 5, 10, "#14111b");
+    px(c, baseX + 10, baseY + 27 + Math.max(0, -legSwing), 3, 8, col(p.armorDark));
+
+    // Torso armor
+    px(c, baseX + 1, baseY + 13, 14, 14, "#14111b");
+    px(c, baseX + 2, baseY + 14, 12, 12, col(p.armor));
+    px(c, baseX + 3, baseY + 15, 10, 4, col(p.cloakHi));
+    if (dir === "up") {
+      px(c, baseX, baseY + 14, 16, 15, col(p.cloak));
+      px(c, baseX + 2, baseY + 16, 12, 4, col(p.cloakHi));
+    }
+
+    // Head + hair + eyes
+    px(c, baseX + 1, baseY, 14, 13, "#14111b");
+    px(c, baseX + 2, baseY + 1, 12, 11, col(p.skin));
+    px(c, baseX + 2, baseY + 1, 12, 4, col(p.hair));
+    if (dir === "up") {
+      px(c, baseX + 2, baseY + 1, 12, 10, col(p.hair));
+    } else if (dir === "down") {
+      px(c, baseX + 4, baseY + 7, 2, 2, "#14111b");
+      px(c, baseX + 10, baseY + 7, 2, 2, "#14111b");
+    } else if (dir === "left") {
+      px(c, baseX + 4, baseY + 7, 2, 2, "#14111b");
+      px(c, baseX + 9, baseY + 2, 5, 8, col(p.hair));
+    } else if (dir === "right") {
+      px(c, baseX + 10, baseY + 7, 2, 2, "#14111b");
+      px(c, baseX + 2, baseY + 2, 5, 8, col(p.hair));
+    }
+
+    // Weapon / Tool / Combat Action VFX
+    const flip = (dir === "left") ? -1 : 1;
+    const wx = (dir === "left") ? baseX - 8 : baseX + 14;
+    const wy = baseY + 14;
+
+    if (stateId === "attack_combo") {
+      const swing = fIdx % 3;
+      px(c, wx + flip * (swing * 3), wy - 6 + swing * 5, 10, 4, col(p.weapon));
+      // Pixel slash arc
+      if (fIdx >= 1 && fIdx <= 4) {
+        const ax = (dir === "left") ? ox + 2 : ox + 28;
+        px(c, ax, oy + 20 + swing * 4, 14, 3, p.fx);
+        px(c, ax + 2, oy + 21 + swing * 4, 10, 1, p.fxCore);
+        px(c, ax + 4, oy + 24 + swing * 4, 8, 2, p.fx);
+      }
+    } else if (stateId === "ultimate") {
+      // Iconic Ultimate Energy Aura & Crescent / Pillar
+      px(c, ox + 10, oy + 14, 28, 3, p.fx);
+      px(c, ox + 12, oy + 15, 24, 1, p.fxCore);
+      if (fIdx >= 2 && fIdx <= 6) {
+        const waveX = ox + 24 + flip * ((fIdx - 2) * 5);
+        px(c, waveX - 4, oy + 18, 8, 26, p.fx);
+        px(c, waveX - 2, oy + 20, 4, 22, p.fxCore);
+        // Pixel particles
+        px(c, ox + 6 + (fIdx * 5) % 34, oy + 16 + (fIdx * 3) % 24, 2, 2, p.fxCore);
+        px(c, ox + 38 - (fIdx * 4) % 32, oy + 22 + (fIdx * 5) % 20, 2, 2, p.fx);
+      }
+    } else if (stateId === "block") {
+      px(c, (dir === "left") ? baseX - 5 : baseX + 13, baseY + 12, 6, 14, "#14111b");
+      px(c, (dir === "left") ? baseX - 4 : baseX + 14, baseY + 13, 4, 12, "#38bdf8");
+    } else if (stateId === "mining") {
+      const lift = (fIdx < 2) ? -8 : 4;
+      px(c, wx, wy + lift, 3, 12, "#8b5a2b");
+      px(c, wx - 3, wy + lift, 9, 3, "#cbd5e1");
+      if (fIdx === 2) {
+        px(c, wx + flip * 6, wy + 12, 2, 2, "#fde047");
+        px(c, wx + flip * 9, wy + 9, 2, 2, "#ffffff");
+      }
+    } else if (stateId === "farming") {
+      const tilt = (fIdx % 2 === 0) ? 0 : 4;
+      px(c, wx, wy + tilt, 7, 5, "#60a5fa");
+      if (fIdx >= 2) {
+        px(c, wx + flip * 6, wy + 12, 2, 3, "#38bdf8");
+        px(c, wx + flip * 9, wy + 16, 2, 3, "#93c5fd");
+      }
+    } else if (stateId === "fishing") {
+      px(c, wx, wy - 4, 14 * flip, 2, "#92400e");
+      const bobY = wy + 12 + (fIdx % 2) * 3;
+      px(c, wx + 13 * flip, wy - 3, 1, bobY - (wy - 3), "#e2e8f0");
+      px(c, wx + 12 * flip, bobY, 3, 3, "#ff3b3b");
+    } else {
+      // Idle/Walk weapon hold
+      px(c, wx, wy - 4, 3, 14, "#14111b");
+      px(c, wx + 1, wy - 3, 1, 12, col(p.weapon));
+    }
+  }
+
+  function drawSlimeSprite(c, ox, oy, entity, stateId, fIdx) {
+    const p = entity.pal;
+    const hitFlash = (stateId === "hit" && fIdx < 2);
+    const squash = (fIdx % 2 === 0) ? 0 : 2;
+    const jump = (stateId === "walk" || stateId === "run" || stateId === "attack_combo") ? ((fIdx % 3 === 1) ? -5 : 0) : 0;
+    px(c, ox + 8, oy + 25, 16, 4, "rgba(20, 16, 36, 0.45)");
+    px(c, ox + 6 - squash, oy + 12 + squash + jump, 20 + squash * 2, 14 - squash, "#14111b");
+    px(c, ox + 7 - squash, oy + 13 + squash + jump, 18 + squash * 2, 12 - squash, hitFlash ? "#ffffff" : p.body);
+    px(c, ox + 9, oy + 15 + squash + jump, 4, 3, hitFlash ? "#ffffff" : p.hi);
+    px(c, ox + 11, oy + 19 + jump, 2, 2, p.eye);
+    px(c, ox + 19, oy + 19 + jump, 2, 2, p.eye);
+  }
+
+  function drawBossSprite(c, ox, oy, entity, stateId, fIdx) {
+    const p = entity.pal;
+    const hitFlash = (stateId === "hit" && fIdx < 2);
+    const sway = (fIdx % 2 === 0) ? 0 : -1;
+    const slam = (stateId === "attack_combo" || stateId === "ultimate") ? (fIdx >= 4 ? 5 : -4) : 0;
+    const col = (hex) => hitFlash ? "#ffffff" : hex;
+
+    px(c, ox + 16, oy + 78, 64, 10, "rgba(20, 16, 36, 0.5)");
+    // Ancient treant trunk & roots
+    px(c, ox + 22, oy + 22 + sway, 52, 58, "#14111b");
+    px(c, ox + 24, oy + 24 + sway, 48, 54, col(p.bark));
+    px(c, ox + 28, oy + 28 + sway, 14, 42, col(p.barkDark));
+    // Moss crown
+    px(c, ox + 14, oy + 10 + sway, 68, 20, "#14111b");
+    px(c, ox + 16, oy + 12 + sway, 64, 16, col(p.moss));
+    // Glowing Phase 2 Runes
+    px(c, ox + 44, oy + 44 + sway, 8, 12, p.rune);
+    px(c, ox + 46, oy + 46 + sway, 4, 8, p.runeHi);
+    // Angry eyes
+    px(c, ox + 34, oy + 32 + sway, 6, 4, p.eye);
+    px(c, ox + 56, oy + 32 + sway, 6, 4, p.eye);
+    // Heavy root fists
+    px(c, ox + 6, oy + 42 + slam, 18, 22, "#14111b");
+    px(c, ox + 8, oy + 44 + slam, 14, 18, col(p.bark));
+    px(c, ox + 72, oy + 42 + slam, 18, 22, "#14111b");
+    px(c, ox + 74, oy + 44 + slam, 14, 18, col(p.bark));
+  }
+
+  function drawEntityAtFoot(c, footX, footY, entity, stateId, dir, fIdx, totalF) {
+    const sx = chkIntegerSnap.checked ? Math.round(footX - entity.w / 2) : (footX - entity.w / 2);
+    const sy = chkIntegerSnap.checked ? Math.round(footY - entity.h * entity.pivotY) : (footY - entity.h * entity.pivotY);
+
+    if (entity.kind === "hero") drawHeroSprite(c, sx, sy, entity, stateId, dir, fIdx, totalF);
+    else if (entity.kind === "slime") drawSlimeSprite(c, sx, sy, entity, stateId, fIdx);
+    else drawBossSprite(c, sx, sy, entity, stateId, fIdx);
+
+    // 4-Box Spatial Contract Overlay
+    if (chkBoxes.checked) {
+      c.lineWidth = 1;
+      // 1. Sprite frame (white dashed)
+      c.strokeStyle = "rgba(255,255,255,0.45)";
+      c.strokeRect(sx + 0.5, sy + 0.5, entity.w - 1, entity.h - 1);
+      // 2. Hurtbox (cyan)
+      const hw = Math.round(entity.w * 0.46), hh = Math.round(entity.h * 0.52);
+      c.strokeStyle = "#38bdf8";
+      c.strokeRect(Math.round(footX - hw / 2) + 0.5, Math.round(footY - hh) + 0.5, hw, hh);
+      // 3. Foot Collision Box (lime)
+      const fw = Math.round(entity.w * 0.38), fh = 10;
+      c.strokeStyle = "#4ade80";
+      c.strokeRect(Math.round(footX - fw / 2) + 0.5, Math.round(footY - fh / 2) + 0.5, fw, fh);
+      // 4. Interaction Box (gold)
+      const iw = fw + 16, ih = 22;
+      c.strokeStyle = "#f5c451";
+      c.strokeRect(Math.round(footX - iw / 2) + 0.5, Math.round(footY - ih / 2) + 0.5, iw, ih);
+    }
+
+    // Pivot crosshair
+    if (chkPivot.checked) {
+      px(c, footX - 4, footY, 9, 1, "#ff3b3b");
+      px(c, footX, footY - 4, 1, 9, "#ff3b3b");
+    }
+  }
+
+  function renderAtlasStrip() {
+    sctx.fillStyle = "#0d1017";
+    sctx.fillRect(0, 0, strip.width, strip.height);
+    const pad = 2;
+    const cellW = Math.min(72, curEntity.w + pad * 2);
+    const cellH = Math.min(96, curEntity.h + pad * 2);
+    const scale = curEntity.kind === "boss" ? 1 : 1;
+    const drawW = curEntity.w * scale;
+    const drawH = curEntity.h * scale;
+    const startY = Math.round((strip.height - drawH) / 2);
+
+    for (let i = 0; i < curState.frames; i++) {
+      const bx = 10 + i * (drawW + 10);
+      // Padding visualization box (2px)
+      sctx.fillStyle = (i === frameIdx) ? "rgba(245,196,81,0.22)" : "#171d2c";
+      sctx.fillRect(bx - pad, startY - pad, drawW + pad * 2, drawH + pad * 2);
+      sctx.strokeStyle = (i === frameIdx) ? "#f5c451" : "#38bdf8";
+      sctx.strokeRect(bx - pad + 0.5, startY - pad + 0.5, drawW + pad * 2 - 1, drawH + pad * 2 - 1);
+
+      if (curEntity.kind === "hero") drawHeroSprite(sctx, bx, startY, curEntity, curState.id, curDir, i, curState.frames);
+      else if (curEntity.kind === "slime") drawSlimeSprite(sctx, bx, startY, curEntity, curState.id, i);
+      else {
+        // Scaled thumbnail for 96x96 boss
+        sctx.save();
+        sctx.translate(bx, startY + 8);
+        sctx.scale(0.75, 0.75);
+        drawBossSprite(sctx, 0, 0, curEntity, curState.id, i);
+        sctx.restore();
+      }
+      sctx.fillStyle = (i === frameIdx) ? "#f5c451" : "#9aa7bf";
+      sctx.font = "10px Consolas, monospace";
+      sctx.fillText("F" + (i + 1), bx + 2, startY + drawH + 10);
+    }
+    document.getElementById("atlasMetaLabel").textContent =
+      curEntity.w + "x" + curEntity.h + " px · " + curState.frames + " frames · padding: 2px · extrude: 1px";
+  }
+
+  function renderWorld(dtMs) {
+    // 1. Depth 0-99: Ground Tile Layers (32x32 pixel grass + animated water pond)
+    const waterFrame = Math.floor(envClockMs / 350) % 3;
+    for (let ty = 0; ty < 6; ty++) {
+      for (let tx = 0; tx < 10; tx++) {
+        const x = tx * 32, y = ty * 32;
+        const isPond = (tx >= 7 && ty <= 1);
+        if (isPond) {
+          px(ctx, x, y, 32, 32, "#1d6fa5");
+          px(ctx, x + 4 + waterFrame * 4, y + 8, 8, 2, "#67e8f9");
+          px(ctx, x + 14 - waterFrame * 3, y + 20, 10, 2, "#38bdf8");
+        } else {
+          px(ctx, x, y, 32, 32, ((tx + ty) % 2 === 0) ? "#2d5a36" : "#31623b");
+          // Small pixel grass tufts (animated gentle wind sway)
+          const sway = (Math.floor(envClockMs / 500 + tx) % 2 === 0) ? 0 : 1;
+          px(ctx, x + 8 + sway, y + 12, 2, 3, "#4e8c4a");
+          px(ctx, x + 22 - sway, y + 24, 2, 3, "#4e8c4a");
+        }
+        if (chkGrid.checked) {
+          ctx.strokeStyle = "rgba(255,255,255,0.08)";
+          ctx.strokeRect(x + 0.5, y + 0.5, 31, 31);
+        }
+      }
+    }
+
+    // Dirt path
+    px(ctx, 0, 96, 320, 32, "#6f533a");
+    px(ctx, 0, 96, 320, 2, "#876649");
+    px(ctx, 0, 126, 320, 2, "#4f3a28");
+
+    // 2. Depth 180-199: Boss Telegraph (ALWAYS ON FLOOR UNDER FEET, UNLIT)
+    if (chkTelegraph.checked) {
+      const pulse = (envClockMs % 1800) / 1800;
+      const tcx = 152, tcy = 112, tr = 34;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(tcx, tcy, tr, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255, 59, 59, 0.25)";
+      ctx.fill();
+      // Expanding timer fill ring
+      ctx.beginPath();
+      ctx.arc(tcx, tcy, Math.max(2, tr * pulse), 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255, 59, 59, 0.28)";
+      ctx.fill();
+      ctx.setLineDash([4, 3]);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#ff3b3b";
+      ctx.beginPath();
+      ctx.arc(tcx, tcy, tr, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 3. Depth 1000..99999: Y-Sorted World Entities (sorted strictly by footY!)
+    const renderables = [
+      {
+        footY: PILLAR.footY,
+        draw: () => {
+          px(ctx, PILLAR.x - 10, PILLAR.y - 34, 20, 36, "#14111b");
+          px(ctx, PILLAR.x - 9, PILLAR.y - 33, 18, 34, "#7c8599");
+          px(ctx, PILLAR.x - 9, PILLAR.y - 33, 6, 34, "#9ca6ba");
+          px(ctx, PILLAR.x - 11, PILLAR.y - 36, 22, 6, "#cbd5e1");
+        }
+      },
+      {
+        footY: TREE.footY,
+        draw: () => {
+          // Trunk sorted at footY
+          px(ctx, TREE.x - 7, TREE.y - 24, 14, 26, "#14111b");
+          px(ctx, TREE.x - 6, TREE.y - 23, 12, 24, "#6d4c3d");
+          px(ctx, TREE.x - 4, TREE.y - 22, 4, 22, "#8c624d");
+        }
+      },
+      {
+        footY: heroY,
+        draw: () => {
+          drawEntityAtFoot(ctx, heroX, heroY, curEntity, curState.id, curDir, frameIdx, curState.frames);
+        }
+      }
+    ];
+
+    renderables.sort((a, b) => a.footY - b.footY);
+    renderables.forEach(r => r.draw());
+
+    // 4. Depth 101000: Overhead Canopy Occlusion (auto alpha 0.55 when hero stands behind crown)
+    const behindCrown = Math.hypot(heroX - TREE.x, (heroY - 18) - (TREE.y - 34)) < 32 && heroY < TREE.footY;
+    ctx.save();
+    ctx.globalAlpha = (chkCanopy.checked && behindCrown) ? 0.55 : 1.0;
+    const crownSway = (Math.floor(envClockMs / 700) % 2 === 0) ? 0 : 1;
+    px(ctx, TREE.x - 24 + crownSway, TREE.y - 54, 48, 32, "#14111b");
+    px(ctx, TREE.x - 22 + crownSway, TREE.y - 52, 44, 28, "#226836");
+    px(ctx, TREE.x - 18 + crownSway, TREE.y - 50, 36, 16, "#349449");
+    px(ctx, TREE.x - 12 + crownSway, TREE.y - 48, 18, 8, "#56b863");
+    ctx.restore();
+
+    // Update Telemetry
+    const clipKey = curEntity.id + "_" + curState.id + "_" + curDir;
+    document.getElementById("telClip").textContent = clipKey;
+    document.getElementById("telFrame").textContent = (frameIdx + 1) + " / " + curState.frames + " (" + curState.ms + "ms)";
+    document.getElementById("telDepth").textContent = String(1000 + Math.round(heroY));
+    document.getElementById("telPos").textContent = "(" + Math.round(heroX) + ", " + Math.round(heroY) + ")";
+    document.getElementById("telDrift").textContent = chkIntegerSnap.checked ? "0.00 px (LOCKED)" : "Sub-pixel (UNSAFE)";
+    document.getElementById("telDrift").className = chkIntegerSnap.checked ? "val-ok" : "val-err";
+    document.getElementById("telRecover").textContent = String(recoveryCount);
+
+    const maxBudget = curState.loop ? 0 : (curState.frames * curState.ms + 150);
+    const bar = document.getElementById("watchdogBar");
+    if (curState.loop && !simulatedStuck) {
+      document.getElementById("telWatchdog").textContent = "LOOP (Safe)";
+      bar.style.width = "100%";
+      bar.style.background = "#34d399";
+    } else {
+      const budget = maxBudget || 650;
+      const pct = Math.min(100, Math.round((stateElapsedMs / budget) * 100));
+      document.getElementById("telWatchdog").textContent = Math.round(stateElapsedMs) + " / " + budget + " ms" + (simulatedStuck ? " [STUCK SIM]" : "");
+      bar.style.width = pct + "%";
+      bar.style.background = pct > 80 ? "#ff3b3b" : "#f5c451";
+    }
+  }
+
+  function setState(st) {
+    curState = st;
+    frameIdx = 0;
+    frameTimerMs = 0;
+    stateElapsedMs = 0;
+    simulatedStuck = false;
+    refreshActiveButtons();
+    renderAtlasStrip();
+  }
+
+  function refreshActiveButtons() {
+    document.querySelectorAll("#entityButtons button").forEach(b => b.classList.toggle("active", b.dataset.id === curEntity.id));
+    document.querySelectorAll("#stateButtons button").forEach(b => b.classList.toggle("active", b.dataset.id === curState.id));
+    document.querySelectorAll("#dirButtons button").forEach(b => b.classList.toggle("active", b.dataset.id === curDir));
+  }
+
+  // Build buttons
+  ENTITIES.forEach(e => {
+    const b = document.createElement("button");
+    b.textContent = e.label;
+    b.dataset.id = e.id;
+    b.onclick = () => { curEntity = e; setState(curState); };
+    document.getElementById("entityButtons").appendChild(b);
+  });
+  STATES.forEach(s => {
+    const b = document.createElement("button");
+    b.textContent = s.label;
+    b.dataset.id = s.id;
+    b.onclick = () => setState(s);
+    document.getElementById("stateButtons").appendChild(b);
+  });
+  DIRS.forEach(d => {
+    const b = document.createElement("button");
+    b.textContent = d.label;
+    b.dataset.id = d.id;
+    b.onclick = () => { curDir = d.id; refreshActiveButtons(); renderAtlasStrip(); };
+    document.getElementById("dirButtons").appendChild(b);
+  });
+
+  document.getElementById("btnPlayPause").onclick = function () {
+    playing = !playing;
+    this.textContent = playing ? "Đang chạy" : "Tạm dừng";
+    this.classList.toggle("active", playing);
+  };
+  document.getElementById("btnStepFrame").onclick = () => {
+    playing = false;
+    document.getElementById("btnPlayPause").textContent = "Tạm dừng";
+    document.getElementById("btnPlayPause").classList.remove("active");
+    frameIdx = (frameIdx + 1) % curState.frames;
+    renderAtlasStrip();
+  };
+  document.getElementById("btnZoomToggle").onclick = function () {
+    zoomScale = zoomScale === 2 ? 3 : 2;
+    stage.style.width = (320 * zoomScale) + "px";
+    stage.style.height = (180 * zoomScale) + "px";
+    this.textContent = "Zoom: " + zoomScale + "x (" + (320 * zoomScale) + "x" + (180 * zoomScale) + ")";
+  };
+  document.getElementById("btnSimulateStuck").onclick = () => {
+    const atk = STATES.find(s => s.id === "ultimate");
+    setState(atk);
+    simulatedStuck = true;
+    frameIdx = 3; // Freeze at mid-frame to prove Watchdog auto-recovery!
+  };
+
+  window.addEventListener("keydown", e => {
+    const k = e.key.toLowerCase();
+    keys[k] = true;
+    if (k === " ") { e.preventDefault(); setState(STATES.find(s => s.id === "attack_combo")); }
+    if (k === "q") { setState(STATES.find(s => s.id === "ultimate")); }
+  });
+  window.addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
+
+  refreshActiveButtons();
+  renderAtlasStrip();
+
+  let lastTs = performance.now();
+  function loop(ts) {
+    const dt = Math.min(50, ts - lastTs);
+    lastTs = ts;
+    envClockMs += dt;
+
+    // Live WASD movement to test Y-Sort & Canopy Occlusion
+    let dx = 0, dy = 0;
+    if (keys["w"]) dy -= 1;
+    if (keys["s"]) dy += 1;
+    if (keys["a"]) dx -= 1;
+    if (keys["d"]) dx += 1;
+    if ((dx !== 0 || dy !== 0) && !simulatedStuck) {
+      const len = Math.hypot(dx, dy);
+      heroX = Math.max(24, Math.min(296, heroX + (dx / len) * 68 * (dt / 1000)));
+      heroY = Math.max(44, Math.min(168, heroY + (dy / len) * 68 * (dt / 1000)));
+      if (Math.abs(dx) >= Math.abs(dy)) curDir = dx < 0 ? "left" : "right";
+      else curDir = dy < 0 ? "up" : "down";
+      if (curState.id === "idle") setState(STATES.find(s => s.id === "walk"));
+    } else if (curState.id === "walk" && !simulatedStuck && (keys["w"] === false || keys["s"] === false || keys["a"] === false || keys["d"] === false)) {
+      if (!keys["w"] && !keys["s"] && !keys["a"] && !keys["d"]) setState(STATES[0]);
+    }
+
+    if (playing) {
+      stateElapsedMs += dt;
+      const watchdogCeiling = curState.loop ? 0 : (curState.frames * curState.ms + 150);
+
+      if (simulatedStuck) {
+        // Deliberately freeze frame advancement; Watchdog MUST recover after ceiling!
+        if (stateElapsedMs >= watchdogCeiling) {
+          recoveryCount++;
+          setState(STATES[0]);
+        }
+      } else {
+        frameTimerMs += dt;
+        if (frameTimerMs >= curState.ms) {
+          frameTimerMs -= curState.ms;
+          if (frameIdx + 1 < curState.frames) {
+            frameIdx++;
+          } else if (curState.loop) {
+            frameIdx = 0;
+          } else {
+            // Non-loop finished cleanly -> return to idle
+            setState(STATES[0]);
+          }
+          renderAtlasStrip();
+        }
+      }
+    }
+
+    renderWorld(dt);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

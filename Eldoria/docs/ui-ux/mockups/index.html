@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eldoria: Forgotten Wilds — Pixel Fantasy UI Mockup Hub</title>
+<style>
+  :root {
+    --bg-void: #120f1d;
+    --bg-obsidian: #181425;
+    --bg-slate: #262B44;
+    --bg-card: #2f3554;
+    --bg-elevated: #3A4466;
+    --border-dark: #0e0b16;
+    --border-wood: #733E39;
+    --border-gold: #F4B41B;
+    --gold: #F4B41B;
+    --gold-hi: #FFE762;
+    --gold-lo: #B47412;
+    --parchment: #EAD4AA;
+    --text-main: #F4F4F4;
+    --text-muted: #A9B4C9;
+    --emerald: #38B764;
+    --emerald-hi: #63C74D;
+    --crimson: #E43B44;
+    --azure: #0095E9;
+    --amber: #FEAE34;
+    --rarity-common: #C0CBDC;
+    --rarity-uncommon: #63C74D;
+    --rarity-rare: #0095E9;
+    --rarity-epic: #C06EFF;
+    --rarity-legendary: #F4B41B;
+    --rarity-mythic: #FF4D6D;
+    --font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-px: "Consolas", "Courier New", "Lucida Console", monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--bg-obsidian);
+    background-image:
+      linear-gradient(45deg, rgba(255,255,255,0.015) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(255,255,255,0.015) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.015) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.015) 75%);
+    background-size: 32px 32px;
+    background-position: 0 0, 0 16px, 16px -16px, -16px 0;
+    color: var(--text-main);
+    font-family: var(--font-ui);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* Studio Top Nav */
+  .studio-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #141020;
+    border-bottom: 3px solid var(--border-gold);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.55);
+    padding: 8px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .studio-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-px);
+    font-weight: 700;
+    color: var(--gold);
+    text-shadow: 2px 2px 0 #000;
+    letter-spacing: 0.5px;
+    font-size: 14px;
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .nav-links a {
+    font-family: var(--font-px);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--parchment);
+    background: var(--bg-slate);
+    padding: 5px 10px;
+    border: 2px solid #0e0b16;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.12), inset -2px -2px 0 rgba(0,0,0,0.45);
+    transition: transform 0.08s, background 0.1s;
+  }
+  .nav-links a:hover {
+    background: var(--bg-elevated);
+    color: var(--gold-hi);
+    transform: translateY(-1px);
+  }
+  .nav-links a.active {
+    background: var(--gold);
+    color: #181425;
+    box-shadow: inset 2px 2px 0 var(--gold-hi), inset -2px -2px 0 var(--gold-lo);
+  }
+
+  /* Pixel Box Utility */
+  .px-panel {
+    background: var(--bg-slate);
+    border: 3px solid var(--border-dark);
+    box-shadow:
+      inset 3px 3px 0 rgba(255,255,255,0.1),
+      inset -3px -3px 0 rgba(0,0,0,0.45),
+      0 6px 0 rgba(0,0,0,0.45);
+  }
+  .px-panel-gold {
+    background: var(--bg-slate);
+    border: 3px solid var(--gold);
+    box-shadow:
+      0 0 0 3px var(--border-dark),
+      inset 3px 3px 0 rgba(255,231,98,0.14),
+      inset -3px -3px 0 rgba(0,0,0,0.5),
+      0 8px 0 rgba(0,0,0,0.5);
+  }
+  .px-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-px);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 8px 14px;
+    cursor: pointer;
+    text-decoration: none;
+    border: 2px solid var(--border-dark);
+    color: var(--text-main);
+    background: var(--bg-elevated);
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.18), inset -2px -2px 0 rgba(0,0,0,0.45), 0 3px 0 var(--border-dark);
+    user-select: none;
+  }
+  .px-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+  .px-btn:active { transform: translateY(2px); box-shadow: inset 2px 2px 0 rgba(0,0,0,0.45); }
+  .px-btn:focus-visible { outline: 3px solid var(--gold-hi); outline-offset: 2px; }
+  .px-btn.gold {
+    background: var(--gold);
+    color: #181425;
+    box-shadow: inset 2px 2px 0 var(--gold-hi), inset -2px -2px 0 var(--gold-lo), 0 3px 0 var(--border-dark);
+  }
+  .px-btn.emerald {
+    background: var(--emerald);
+    color: #0e1d12;
+    box-shadow: inset 2px 2px 0 var(--emerald-hi), inset -2px -2px 0 #1f6b3a, 0 3px 0 var(--border-dark);
+  }
+  .px-btn.crimson {
+    background: var(--crimson);
+    color: #fff;
+    box-shadow: inset 2px 2px 0 #ff757d, inset -2px -2px 0 #911c24, 0 3px 0 var(--border-dark);
+  }
+  .px-btn.disabled, .px-btn:disabled {
+    background: #3a3d4e;
+    color: #7c8299;
+    cursor: not-allowed;
+    filter: none;
+    transform: none;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.06), inset -2px -2px 0 rgba(0,0,0,0.4);
+  }
+
+  .container {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 24px 18px 64px;
+  }
+
+  /* Hero Section */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 20px;
+    padding: 24px;
+    margin-bottom: 28px;
+    align-items: center;
+  }
+  @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .px-badge {
+    font-family: var(--font-px);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border: 2px solid var(--border-dark);
+    background: #1c2036;
+    color: var(--parchment);
+    box-shadow: inset 1px 1px 0 rgba(255,255,255,0.12);
+  }
+  .px-badge.gold { background: #3b2d12; color: var(--gold-hi); border-color: var(--gold-lo); }
+  .px-badge.emerald { background: #133122; color: var(--emerald-hi); border-color: var(--emerald); }
+  .px-badge.azure { background: #102a42; color: #5cd2ff; border-color: var(--azure); }
+  .px-badge.crimson { background: #3a141c; color: #ff858c; border-color: var(--crimson); }
+
+  .hero h1 {
+    font-family: var(--font-px);
+    font-size: 30px;
+    color: var(--gold-hi);
+    text-shadow: 3px 3px 0 #0e0b16;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .hero p {
+    color: var(--parchment);
+    font-size: 14.5px;
+    margin-bottom: 16px;
+  }
+  .hero-canvas-wrap {
+    background: #120f1d;
+    border: 3px solid var(--border-dark);
+    padding: 6px;
+    box-shadow: inset 0 0 0 2px var(--border-wood);
+  }
+  #heroCrestCanvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  /* Section Titles */
+  .section-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 28px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 3px solid var(--bg-elevated);
+  }
+  .section-hdr h2 {
+    font-family: var(--font-px);
+    font-size: 19px;
+    color: var(--gold);
+    text-shadow: 2px 2px 0 #0e0b16;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-hdr span {
+    font-family: var(--font-px);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Screen Cards Grid */
+  .screens-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
+    gap: 18px;
+  }
+  .screen-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 18px;
+    background: var(--bg-card);
+    border: 3px solid var(--border-dark);
+    box-shadow:
+      inset 3px 3px 0 rgba(255,255,255,0.09),
+      inset -3px -3px 0 rgba(0,0,0,0.45),
+      0 5px 0 rgba(0,0,0,0.5);
+    transition: transform 0.1s;
+  }
+  .screen-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--gold);
+  }
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .card-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    background: var(--bg-obsidian);
+    border: 2px solid var(--gold-lo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.1);
+  }
+  .card-title {
+    font-family: var(--font-px);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gold-hi);
+    text-shadow: 2px 2px 0 #0e0b16;
+    margin-bottom: 2px;
+  }
+  .card-file {
+    font-family: var(--font-px);
+    font-size: 11px;
+    color: #79d2ff;
+  }
+  .card-desc {
+    font-size: 13.5px;
+    color: var(--parchment);
+    margin-bottom: 12px;
+  }
+  .card-features {
+    list-style: none;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .card-features li::before {
+    content: "▸ ";
+    color: var(--emerald-hi);
+    font-weight: 700;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 2px dashed rgba(255,255,255,0.1);
+  }
+
+  /* Concept Art Gallery */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 16px;
+  }
+  .concept-card {
+    background: var(--bg-card);
+    border: 3px solid var(--border-dark);
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.1), 0 5px 0 rgba(0,0,0,0.45);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.1s, border-color 0.1s;
+  }
+  .concept-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--gold);
+  }
+  .concept-img-wrap {
+    position: relative;
+    background: #0e0b16;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-bottom: 3px solid var(--border-dark);
+  }
+  .concept-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    image-rendering: pixelated;
+  }
+  .concept-zoom-tag {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    background: rgba(24,20,37,0.88);
+    color: var(--gold-hi);
+    font-family: var(--font-px);
+    font-size: 10px;
+    padding: 2px 6px;
+    border: 1px solid var(--gold);
+  }
+  .concept-meta {
+    padding: 12px;
+  }
+  .concept-meta h3 {
+    font-family: var(--font-px);
+    font-size: 13.5px;
+    color: var(--gold-hi);
+    margin-bottom: 4px;
+  }
+  .concept-meta p {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Viewport & States Grid */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 960px) { .two-col { grid-template-columns: 1fr; } }
+
+  .panel-inner { padding: 18px; }
+
+  .vp-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .vp-preview-box {
+    background: var(--bg-obsidian);
+    border: 2px solid var(--border-dark);
+    padding: 14px;
+    font-family: var(--font-px);
+    font-size: 12.5px;
+  }
+  .vp-meter {
+    margin-top: 10px;
+    height: 22px;
+    background: #100d1a;
+    border: 2px solid #3A4466;
+    position: relative;
+    overflow: hidden;
+  }
+  .vp-meter-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--azure), var(--emerald));
+    transition: width 0.25s;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #0e0b16;
+    white-space: nowrap;
+  }
+
+  /* Component States Showcase */
+  .states-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 10px;
+  }
+  .state-chip {
+    background: var(--bg-obsidian);
+    border: 2px solid var(--border-dark);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .state-label {
+    font-family: var(--font-px);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .mini-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 3px solid var(--bg-elevated);
+    border-top-color: var(--gold);
+    animation: spinStep 0.8s steps(8) infinite;
+  }
+  @keyframes spinStep { to { transform: rotate(360deg); } }
+
+  /* Palette & Rarity Swatches */
+  .swatch-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .swatch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-obsidian);
+    border: 2px solid var(--border-dark);
+    padding: 6px 10px;
+    font-family: var(--font-px);
+    font-size: 11.5px;
+  }
+  .swatch-dot {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #000;
+    flex-shrink: 0;
+  }
+
+  /* Lightbox Modal */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(10, 8, 18, 0.88);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal-box {
+    max-width: 980px;
+    width: 100%;
+    padding: 16px;
+    position: relative;
+  }
+  .modal-box img {
+    width: 100%;
+    max-height: 75vh;
+    object-fit: contain;
+    background: #0d0a14;
+    border: 3px solid var(--border-dark);
+    display: block;
+    margin-bottom: 12px;
+  }
+  .modal-hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .modal-hdr h3 {
+    font-family: var(--font-px);
+    color: var(--gold-hi);
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+
+<nav class="studio-nav" aria-label="Mockup Suite Navigation">
+  <a class="studio-brand" href="index.html">
+    <svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="7" y="1" width="2" height="9" fill="#FFE762"/>
+      <rect x="6" y="2" width="1" height="7" fill="#F4B41B"/>
+      <rect x="9" y="2" width="1" height="7" fill="#B47412"/>
+      <rect x="4" y="10" width="8" height="2" fill="#E4A672"/>
+      <rect x="7" y="12" width="2" height="3" fill="#733E39"/>
+    </svg>
+    ELDORIA UI MOCKUP SUITE
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="active">Hub</a>
+    <a href="auth-character-select.html">1. Auth &amp; Hero</a>
+    <a href="main-hud-world.html">2. HUD &amp; World</a>
+    <a href="inventory-blacksmith-enhance.html">3. Kho đồ &amp; +10 Forge</a>
+    <a href="gacha-collection.html">4. Gacha &amp; 12 Hero</a>
+    <a href="farming-building-grid.html">5. Nông trại &amp; Xây dựng</a>
+    <a href="boss-raid-party.html">6. Boss Raid &amp; Party</a>
+    <a href="pixel-animation-showcase.html">7. 2D Pixel Animations</a>
+  </div>
+</nav>
+
+<main class="container">
+  <!-- HERO BANNER -->
+  <section class="hero px-panel-gold">
+    <div>
+      <div class="badge-row">
+        <span class="px-badge gold">CLASSIC 16-BIT PIXEL FANTASY RPG</span>
+        <span class="px-badge emerald">100% OFFLINE • ZERO EXTERNAL CDN</span>
+        <span class="px-badge azure">JSON PRIMARY DB + LOCAL DOCKER REDIS/MINIO</span>
+        <span class="px-badge">DESIGN_AND_PLANNING_ONLY</span>
+      </div>
+      <h1>ELDORIA: FORGOTTEN WILDS</h1>
+      <p>
+        Bộ <strong>Interactive Pixel Fantasy UI Mockup Suite</strong> chuẩn studio thương mại dành cho hội đồng review thiết kế.
+        Mở trực tiếp bằng trình duyệt không cần máy chủ hay Internet — trải nghiệm đầy đủ vòng lặp
+        <strong>Auth → Starter Hero → 640×360 Pixel World HUD → Cường hóa +0→+10 → Gacha Nội tệ → Nông trại &amp; Xây dựng → Boss Raid 4 người → 2D Pixel Multi-Animation Inspector</strong>.
+      </p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px;">
+        <a class="px-btn gold" href="main-hud-world.html">▶ Trải nghiệm Live World HUD</a>
+        <a class="px-btn emerald" href="pixel-animation-showcase.html">★ Kiểm tra 2D Pixel Animations</a>
+        <a class="px-btn" href="inventory-blacksmith-enhance.html">⚒ Thử Cường hóa +0 → +10</a>
+        <a class="px-btn" href="boss-raid-party.html">⚔ Xem Boss Raid Telegraph</a>
+      </div>
+    </div>
+    <div class="hero-canvas-wrap">
+      <canvas id="heroCrestCanvas" width="320" height="180" aria-label="Animated pixel landscape preview of Greenhaven Village"></canvas>
+    </div>
+  </section>
+
+  <!-- 6 INTERACTIVE MOCKUPS -->
+  <div class="section-hdr">
+    <h2>
+      <svg width="20" height="20" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="11" fill="#3A4466" stroke="#F4B41B" stroke-width="1"/><rect x="3" y="4" width="10" height="7" fill="#181425"/><rect x="5" y="13" width="6" height="2" fill="#F4B41B"/></svg>
+      1. Danh mục 6 Màn hình Tương tác (Interactive Screens)
+    </h2>
+    <span>Click từng thẻ để mở mockup HTML độc lập</span>
+  </div>
+
+  <section class="screens-grid">
+    <!-- Card 1 -->
+    <article class="screen-card">
+      <div>
+        <div class="card-top">
+          <div class="card-icon">
+            <svg width="28" height="28" viewBox="0 0 16 16">
+              <rect x="5" y="2" width="6" height="5" fill="#EAD4AA"/>
+              <rect x="4" y="7" width="8" height="6" fill="#C83E2B"/>
+              <rect x="6" y="3" width="1" height="1" fill="#181425"/>
+              <rect x="9" y="3" width="1" height="1" fill="#181425"/>
+              <rect x="12" y="4" width="2" height="8" fill="#F4B41B"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">1. Auth, Starter Hero &amp; Loading</div>
+            <div class="card-file">auth-character-select.html</div>
+          </div>
+        </div>
+        <p class="card-desc">
+          Luồng đăng nhập/đăng ký qua Local JSON Auth (<code>data/db/accounts/*.json</code>), chọn 1 trong 3 Starter Hero MVP với sprite canvas sống động và màn hình Loading.
+        </p>
+        <ul class="card-features">
+          <li>Toggle trạng thái: Default, Validation Error, Loading, Disconnected</li>
+          <li>Live 48×64 Canvas Sprite cho Kael, Lyra, Seraphina (xoay 4 hướng + Idle/Walk/Attack)</li>
+          <li>Biểu đồ Radar chỉ số gốc + xem trước 5 kỹ năng chuẩn <code>skills.json</code></li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="px-badge azure">3 Starter Heroes</span>
+        <a class="px-btn gold" href="auth-character-select.html">Mở Mockup →</a>
+      </div>
+    </article>
+
+    <!-- Card 2 -->
+    <article class="screen-card">
+      <div>
+        <div class="card-top">
+          <div class="card-icon">
+            <svg width="28" height="28" viewBox="0 0 16 16">
+              <rect x="1" y="1" width="14" height="14" fill="#257179"/>
+              <rect x="2" y="9" width="12" height="5" fill="#38B764"/>
+              <rect x="4" y="4" width="5" height="5" fill="#B86F50"/>
+              <rect x="3" y="3" width="7" height="2" fill="#E43B44"/>
+              <rect x="11" y="7" width="3" height="3" fill="#63C74D"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">2. Main Game HUD &amp; Pixel World</div>
+            <div class="card-file">main-hud-world.html</div>
+          </div>
+        </div>
+        <p class="card-desc">
+          Viewport pixel <code>640×360</code> sống động hiển thị Greenhaven Village giáp Whispering Forest, Y-sorting, nông trại, quái Slime, số sát thương nổi và đầy đủ HUD RPG.
+        </p>
+        <ul class="card-features">
+          <li>4 Skill Hotbar click/phím 1–4 với sweep cooldown &amp; VFX chém lửa trực tiếp</li>
+          <li>Toggle Ngày/Đêm, Camera Shake (Accessibility), Disconnected Banner</li>
+          <li>Minimap live, Quest Tracker, Chat Zone/Party, Prompt <code>[F]</code> &amp; World Map 8 vùng</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="px-badge emerald">Live 640×360 Canvas</span>
+        <a class="px-btn gold" href="main-hud-world.html">Mở Mockup →</a>
+      </div>
+    </article>
+
+    <!-- Card 3 -->
+    <article class="screen-card">
+      <div>
+        <div class="card-top">
+          <div class="card-icon">
+            <svg width="28" height="28" viewBox="0 0 16 16">
+              <rect x="2" y="10" width="12" height="4" fill="#5A6988"/>
+              <rect x="4" y="8" width="8" height="2" fill="#8B9BB4"/>
+              <rect x="6" y="2" width="4" height="5" fill="#F4B41B"/>
+              <rect x="11" y="3" width="2" height="2" fill="#FFE762"/>
+              <rect x="3" y="4" width="2" height="2" fill="#FEAE34"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">3. Kho đồ, Trang bị &amp; Lò Rèn +10</div>
+            <div class="card-file">inventory-blacksmith-enhance.html</div>
+          </div>
+        </div>
+        <p class="card-desc">
+          Hệ thống Kho đồ, 10 ô trang bị chuẩn + Set Bonus, bảng chỉ số cập nhật tức thì và <strong>Trình mô phỏng Cường hóa +0 → +10 chắc chắn 100%</strong>.
+        </p>
+        <ul class="card-features">
+          <li>Click cường hóa từng cấp +0 → +10: trừ Gold/nguyên liệu, tăng ATK &amp; Combat Rating</li>
+          <li>Kiểm chứng khóa cấp <code>bld_blacksmith</code> (Lv 1..4), hào quang vàng +5/+10 &amp; trần cứng +10</li>
+          <li>Tab Chế tạo (Crafting) tương tác cho phép đúc phôi và nấu ăn thật</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="px-badge gold">0% Vỡ đồ • Cap +10</span>
+        <a class="px-btn gold" href="inventory-blacksmith-enhance.html">Mở Mockup →</a>
+      </div>
+    </article>
+
+    <!-- Card 4 -->
+    <article class="screen-card">
+      <div>
+        <div class="card-top">
+          <div class="card-icon">
+            <svg width="28" height="28" viewBox="0 0 16 16">
+              <rect x="7" y="1" width="2" height="14" fill="#FFE762"/>
+              <rect x="1" y="7" width="14" height="2" fill="#FFE762"/>
+              <rect x="4" y="4" width="8" height="8" fill="#F4B41B"/>
+              <rect x="6" y="6" width="4" height="4" fill="#FFF"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">4. Gacha Nội tệ &amp; 12 Anh hùng</div>
+            <div class="card-file">gacha-collection.html</div>
+          </div>
+        </div>
+        <p class="card-desc">
+          Banner Nhân vật (<code>bnr_perm_heroes</code>, Pity 80) &amp; Vũ khí (<code>bnr_perm_arsenal</code>, Pity 70) sử dụng 100% <code>Starlight Shard</code> kiếm từ gameplay.
+        </p>
+        <ul class="card-features">
+          <li>Modal công khai xác suất tổng đúng 100.00% + Soft Pity &amp; Hard Pity minh bạch</li>
+          <li>Quay thật 1x (160) &amp; 10x (1,600) đổi trùng lặp sang <code>Star Essence</code> + Constellation</li>
+          <li>Lịch sử quay &amp; Lưới Bộ sưu tập đủ 12 nhân vật chuẩn <code>characters.json</code></li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="px-badge emerald">Fair In-Game Only</span>
+        <a class="px-btn gold" href="gacha-collection.html">Mở Mockup →</a>
+      </div>
+    </article>
+
+    <!-- Card 5 -->
+    <article class="screen-card">
+      <div>
+        <div class="card-top">
+          <div class="card-icon">
+            <svg width="28" height="28" viewBox="0 0 16 16">
+              <rect x="1" y="9" width="14" height="6" fill="#733E39"/>
+              <rect x="3" y="6" width="2" height="5" fill="#63C74D"/>
+              <rect x="7" y="4" width="2" height="7" fill="#F4B41B"/>
+              <rect x="11" y="5" width="2" height="6" fill="#63C74D"/>
+              <rect x="6" y="2" width="4" height="2" fill="#FFE762"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">5. Lưới Nông trại &amp; Xây dựng</div>
+            <div class="card-file">farming-building-grid.html</div>
+          </div>
+        </div>
+        <p class="card-desc">
+          Lưới lãnh địa <code>16×10</code> (tile 32×32 px) tương tác trực tiếp: cuốc đất, gieo 5 giống cây MVP, tưới nước, thu hoạch, đổi 4 mùa và đặt công trình bằng Ghost Preview.
+        </p>
+        <ul class="card-features">
+          <li>Ghost Preview Xanh (hợp lệ) / Đỏ (chặn đường, đè Spawn, đè công trình) + xoay phím <code>R</code></li>
+          <li>Hỗ trợ 4 mùa <code>SPRING/SUMMER/AUTUMN/WINTER</code> &amp; Mưa tự tưới</li>
+          <li>Chuồng gà &amp; Bò sữa kèm bộ đếm 24h Server Offline Cap (<code>ASM-008</code>)</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="px-badge emerald">16×10 Grid + Ghost</span>
+        <a class="px-btn gold" href="farming-building-grid.html">Mở Mockup →</a>
+      </div>
+    </article>
+
+    <!-- Card 6 -->
+    <article class="screen-card">
+      <div>
+        <div class="card-top">
+          <div class="card-icon">
+            <svg width="28" height="28" viewBox="0 0 16 16">
+              <rect x="3" y="2" width="10" height="10" fill="#4A5D3B"/>
+              <rect x="2" y="1" width="3" height="3" fill="#733E39"/>
+              <rect x="11" y="1" width="3" height="3" fill="#733E39"/>
+              <rect x="6" y="6" width="4" height="4" fill="#FEAE34"/>
+              <rect x="2" y="12" width="12" height="2" fill="#E43B44"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">6. Boss Raid Co-op &amp; Party HUD</div>
+            <div class="card-file">boss-raid-party.html</div>
+          </div>
+        </div>
+        <p class="card-desc">
+          Đấu trường <code>dng_mossroot_hollow</code> đối đầu <code>boss_thornback_elder</code> cùng tổ đội 4 người — chứng minh độ rõ ràng tuyệt đối của Telegraph Đỏ dưới VFX Ultimate.
+        </p>
+        <ul class="card-features">
+          <li>Chuyển Phase 1/2/3, phá thanh Poise kích hoạt Stagger (+40% DMG trong 6 giây)</li>
+          <li>Bấm "Tung Ultimate" kiểm chứng lớp Red Telegraph luôn nằm TRÊN VFX kỹ năng</li>
+          <li>HUD tổ đội 4 người, Modal Boss Victory (Personal Loot) &amp; Death/Respawn</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="px-badge crimson">3 Phases + Stagger</span>
+        <a class="px-btn gold" href="boss-raid-party.html">Mở Mockup →</a>
+      </div>
+    </article>
+
+    <!-- Card 7 -->
+    <article class="screen-card">
+      <div>
+        <div class="card-top">
+          <div class="card-icon">
+            <svg width="28" height="28" viewBox="0 0 16 16">
+              <rect x="2" y="2" width="12" height="12" fill="#1b2030" stroke="#F4B41B" stroke-width="1"/>
+              <rect x="5" y="4" width="6" height="4" fill="#FF6B1A"/>
+              <rect x="4" y="8" width="8" height="5" fill="#38BDF8"/>
+              <rect x="7" y="13" width="2" height="2" fill="#FF3B3B"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">7. 2D Pixel Multi-Animation &amp; Anti-Glitch Inspector</div>
+            <div class="card-file">pixel-animation-showcase.html</div>
+          </div>
+        </div>
+        <p class="card-desc">
+          Phòng kiểm định hoạt ảnh 2D Pixel-Perfect cho 3 Anh hùng MVP, Quái &amp; Boss: đủ 12 trạng thái (Combat + Đời sống), 4 hướng, khóa pixel nguyên, 4-Box Contract, Y-Sort sống (<code>WASD</code>) và nút thử <strong>Anti-Stuck Watchdog</strong>.
+        </p>
+        <ul class="card-features">
+          <li>Kiểm tra trực quan <code>padding: 2px</code>, <code>extrude: 1px</code>, tự mờ tán cây <code>0.55</code> và Boss Telegraph <code>Depth 180-199</code></li>
+          <li>Điều khiển <code>WASD / Space / Q</code> và bấm "Giả lập Kẹt Hoạt ảnh" để thấy Watchdog tự phục hồi 0% lỗi</li>
+          <li>Sẵn sàng đồng bộ lên Local Docker MinIO bucket <code>eldoria-assets/v1/</code></li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="px-badge emerald">Zero-Glitch 2D Pipeline</span>
+        <a class="px-btn gold" href="pixel-animation-showcase.html">Mở Inspector →</a>
+      </div>
+    </article>
+  </section>
+
+  <!-- 4 GENERATED CONCEPT ART GALLERY -->
+  <div class="section-hdr">
+    <h2>
+      <svg width="20" height="20" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="12" fill="#262B44" stroke="#F4B41B"/><polygon points="2,12 6,7 9,10 11,8 14,12" fill="#38B764"/><rect x="10" y="4" width="2" height="2" fill="#FFE762"/></svg>
+      2. Bộ Concept Art Định hướng Mỹ thuật (Art Direction References)
+    </h2>
+    <span>Click vào ảnh để phóng to kiểm tra chi tiết (Local Relative Assets)</span>
+  </div>
+
+  <section class="concept-grid">
+    <div class="concept-card" onclick="openLightbox('../../art-direction/concepts/greenhaven-village-concept.jpg', 'Greenhaven Village — Làng Khởi đầu & Lãnh địa Nông trại', 'Định hướng môi trường hòa bình, nhà gỗ mái ngói ấm, đồng lúa mì Sunwheat, chiều sâu Y-sorting và ánh sáng nắng sớm 16-bit.')">
+      <div class="concept-img-wrap">
+        <img src="../../art-direction/concepts/greenhaven-village-concept.jpg" alt="Greenhaven Village Concept Art">
+        <span class="concept-zoom-tag">PHÓNG TO</span>
+      </div>
+      <div class="concept-meta">
+        <h3>Greenhaven Village</h3>
+        <p>Làng khởi đầu, lãnh địa cá nhân, nhà gỗ &amp; nông trại mẫu (<code>reg_greenhaven_village</code>).</p>
+      </div>
+    </div>
+
+    <div class="concept-card" onclick="openLightbox('../../art-direction/concepts/starter-heroes-sheet-concept.jpg', 'Starter Heroes Reference — Kael, Lyra & Seraphina', 'Thiết kế silhouette khác biệt rõ rệt trên lưới 48×64 px: Kael (Warrior/Fire), Lyra (Archer/Wind) và Seraphina (Healer/Light).')">
+      <div class="concept-img-wrap">
+        <img src="../../art-direction/concepts/starter-heroes-sheet-concept.jpg" alt="Starter Heroes Concept Sheet">
+        <span class="concept-zoom-tag">PHÓNG TO</span>
+      </div>
+      <div class="concept-meta">
+        <h3>3 Starter Heroes MVP</h3>
+        <p>Kael Ironbound, Lyra Galeweaver &amp; Seraphina Solis — màu nhận diện và vũ khí đặc trưng.</p>
+      </div>
+    </div>
+
+    <div class="concept-card" onclick="openLightbox('../../art-direction/concepts/whispering-forest-combat-concept.jpg', 'Whispering Forest — Action Combat & Elemental VFX', 'Khả năng đọc chiến trường (Combat Readability): tương phản nhân vật/quái rõ ràng trên nền tán rừng sâu.')">
+      <div class="concept-img-wrap">
+        <img src="../../art-direction/concepts/whispering-forest-combat-concept.jpg" alt="Whispering Forest Combat Concept">
+        <span class="concept-zoom-tag">PHÓNG TO</span>
+      </div>
+      <div class="concept-meta">
+        <h3>Whispering Forest Combat</h3>
+        <p>Chiến đấu thời gian thực giữa rừng rậm <code>reg_whispering_forest</code>, VFX sắc nét không gây rối mắt.</p>
+      </div>
+    </div>
+
+    <div class="concept-card" onclick="openLightbox('../../art-direction/concepts/dungeon-boss-arena-concept.jpg', 'Mossroot Hollow — Đấu trường Boss Thornback Elder', 'Đấu trường 26×20 tile với 4 trụ đá phòng thủ, lõi phát sáng của Thornback Elder và ranh giới telegraph rõ ràng.')">
+      <div class="concept-img-wrap">
+        <img src="../../art-direction/concepts/dungeon-boss-arena-concept.jpg" alt="Mossroot Hollow Boss Arena Concept">
+        <span class="concept-zoom-tag">PHÓNG TO</span>
+      </div>
+      <div class="concept-meta">
+        <h3>Mossroot Hollow Boss Arena</h3>
+        <p>Đấu trường đột kích <code>boss_thornback_elder</code> trong <code>dng_mossroot_hollow</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEWPORT NOTES & COMPONENT STATE LEGEND -->
+  <div class="section-hdr">
+    <h2>
+      <svg width="20" height="20" viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" fill="#F4B41B"/><rect x="9" y="2" width="5" height="5" fill="#38B764"/><rect x="2" y="9" width="5" height="5" fill="#0095E9"/><rect x="9" y="9" width="5" height="5" fill="#E43B44"/></svg>
+      3. Chuẩn Viewport Pixel-Perfect &amp; Bảng Trạng thái Component (UI States)
+    </h2>
+    <span>Đối chiếu Nguyên tắc V (Pixel-Perfect) &amp; Mục 18 UI/UX</span>
+  </div>
+
+  <section class="two-col">
+    <!-- Viewport Switcher Notes -->
+    <div class="px-panel panel-inner">
+      <h3 style="font-family:var(--font-px); color:var(--gold-hi); margin-bottom:10px;">
+        Viewport &amp; Integer Scaling Inspector
+      </h3>
+      <p style="font-size:13px; color:var(--parchment); margin-bottom:12px;">
+        Phaser 3 sử dụng Logical Viewport gốc <strong>640×360 px</strong> (base tile <code>32×32 px</code>, hiển thị 20×11.25 tile) với <code>nearest-neighbor</code> để tránh mixel. Chọn độ phân giải bên dưới để xem ghi chú thích ứng UI React:
+      </p>
+      <div class="vp-buttons">
+        <button class="px-btn gold" onclick="setViewport('1080p', this)">Desktop 1920×1080 (3x)</button>
+        <button class="px-btn" onclick="setViewport('720p', this)">Desktop 1280×720 (2x)</button>
+        <button class="px-btn" onclick="setViewport('1440p', this)">QHD 2560×1440 (4x)</button>
+        <button class="px-btn" onclick="setViewport('mobile', this)">Touch Roadmap (M3+)</button>
+      </div>
+      <div class="vp-preview-box" id="vpInfoBox">
+        <div style="color:var(--gold-hi); font-weight:700; margin-bottom:6px;">DESKTOP 1920×1080 — 3x INTEGER SCALE (CHUẨN MVP)</div>
+        <div style="color:var(--parchment);">• Game Canvas: 640×360 × 3 = 1920×1080 pixel-perfect (0% sai lệch điểm ảnh).</div>
+        <div style="color:var(--text-muted);">• React HUD Overlay: Tách biệt hoàn toàn khỏi Phaser loop, neo 4 góc (safe-margin 16px), kích thước font ≥ 13px dễ đọc.</div>
+        <div class="vp-meter">
+          <div class="vp-meter-fill" id="vpMeter" style="width:75%;">SCALE 3.0x • PIXEL-PERFECT LOCKED</div>
+        </div>
+      </div>
+
+      <h4 style="font-family:var(--font-px); color:var(--parchment); margin:16px 0 8px; font-size:13px;">
+        Hệ màu Độ hiếm (Rarity Tokens) &amp; Hệ màu RPG
+      </h4>
+      <div class="swatch-row">
+        <div class="swatch"><span class="swatch-dot" style="background:var(--rarity-common)"></span>COMMON</div>
+        <div class="swatch"><span class="swatch-dot" style="background:var(--rarity-uncommon)"></span>UNCOMMON</div>
+        <div class="swatch"><span class="swatch-dot" style="background:var(--rarity-rare)"></span>RARE</div>
+        <div class="swatch"><span class="swatch-dot" style="background:var(--rarity-epic)"></span>EPIC</div>
+        <div class="swatch"><span class="swatch-dot" style="background:var(--rarity-legendary)"></span>LEGENDARY</div>
+        <div class="swatch"><span class="swatch-dot" style="background:var(--rarity-mythic)"></span>MYTHIC</div>
+      </div>
+    </div>
+
+    <!-- Component State Legend -->
+    <div class="px-panel panel-inner">
+      <h3 style="font-family:var(--font-px); color:var(--gold-hi); margin-bottom:10px;">
+        Component States &amp; Accessibility Legend
+      </h3>
+      <p style="font-size:13px; color:var(--parchment); margin-bottom:12px;">
+        Mọi màn hình trong bộ mockup đều hỗ trợ rõ ràng các trạng thái bắt buộc và tiêu chuẩn tiếp cận (không nhấp nháy gây hại thị giác, viền focus bàn phím rõ):
+      </p>
+      <div class="states-grid">
+        <div class="state-chip">
+          <span class="state-label">Default / Hover</span>
+          <button class="px-btn gold" style="padding:5px 8px; font-size:11px;">Xác nhận [Enter]</button>
+        </div>
+        <div class="state-chip">
+          <span class="state-label">Focus Ring (A11y)</span>
+          <button class="px-btn" style="padding:5px 8px; font-size:11px; outline:3px solid #FFE762; outline-offset:2px;">Tab Focus</button>
+        </div>
+        <div class="state-chip">
+          <span class="state-label">Disabled / Locked</span>
+          <button class="px-btn disabled" disabled style="padding:5px 8px; font-size:11px;">Cần Lò Rèn Lv 2</button>
+        </div>
+        <div class="state-chip">
+          <span class="state-label">Loading (Atomic)</span>
+          <div style="display:flex; align-items:center; gap:8px; font-family:var(--font-px); font-size:11px; color:var(--gold-hi);">
+            <span class="mini-spinner"></span> Đang ghi JSON WAL...
+          </div>
+        </div>
+        <div class="state-chip">
+          <span class="state-label">Empty State</span>
+          <div style="border:2px dashed #5A6988; padding:5px; text-align:center; font-size:11px; color:var(--text-muted);">
+            Chưa có vật phẩm phù hợp
+          </div>
+        </div>
+        <div class="state-chip">
+          <span class="state-label">Error State</span>
+          <div style="background:#3a141c; border:2px solid var(--crimson); padding:5px; font-size:11px; color:#ffb3b8;">
+            ✕ Không đủ 160 Shard
+          </div>
+        </div>
+        <div class="state-chip" style="grid-column: span 2;">
+          <span class="state-label">Disconnected / Reconnecting Banner</span>
+          <div style="background:#3b2610; border:2px solid var(--amber); padding:6px 8px; font-family:var(--font-px); font-size:11px; color:var(--gold-hi); display:flex; justify-content:space-between;">
+            <span>⚠ Mất kết nối Game Server (20 Hz) — Đang kết nối lại (3s)...</span>
+            <span style="color:#fff;">[Thử lại]</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- LIGHTBOX MODAL -->
+<div class="modal-backdrop" id="lightboxModal" onclick="if(event.target===this) closeLightbox()">
+  <div class="modal-box px-panel-gold">
+    <div class="modal-hdr">
+      <h3 id="lbTitle">Concept Art</h3>
+      <button class="px-btn crimson" onclick="closeLightbox()" style="padding:4px 10px;">✕ Đóng [ESC]</button>
+    </div>
+    <img id="lbImg" src="" alt="Concept Art Preview">
+    <p id="lbDesc" style="font-size:13px; color:var(--parchment);"></p>
+  </div>
+</div>
+
+<script>
+  // Lightbox controls
+  function openLightbox(src, title, desc) {
+    document.getElementById('lbImg').src = src;
+    document.getElementById('lbTitle').textContent = title;
+    document.getElementById('lbDesc').textContent = desc;
+    document.getElementById('lightboxModal').classList.add('open');
+  }
+  function closeLightbox() {
+    document.getElementById('lightboxModal').classList.remove('open');
+  }
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+
+  // Viewport Inspector
+  const vpSpecs = {
+    '1080p': {
+      title: 'DESKTOP 1920×1080 — 3x INTEGER SCALE (CHUẨN MVP)',
+      line1: '• Game Canvas: 640×360 × 3 = 1920×1080 pixel-perfect (0% sai lệch điểm ảnh).',
+      line2: '• React HUD Overlay: Tách biệt khỏi Phaser loop, neo 4 góc safe-margin 16px, font ≥ 13px sắc nét.',
+      width: '75%',
+      label: 'SCALE 3.0x • PIXEL-PERFECT LOCKED'
+    },
+    '720p': {
+      title: 'DESKTOP 1280×720 — 2x INTEGER SCALE (MINIMUM DESKTOP)',
+      line1: '• Game Canvas: 640×360 × 2 = 1280×720 chuẩn xác, vừa khít laptop 13–14 inch.',
+      line2: '• React HUD Overlay: Chế độ Compact tự thu gọn khung Chat và Quest Tracker tránh che chiến trường.',
+      width: '50%',
+      label: 'SCALE 2.0x • COMPACT HUD MODE'
+    },
+    '1440p': {
+      title: 'QHD 2560×1440 — 4x INTEGER SCALE (HIGH-DPI DESKTOP)',
+      line1: '• Game Canvas: 640×360 × 4 = 2560×1440, sắc nét tuyệt đối với nearest-neighbor filtering.',
+      line2: '• React HUD Overlay: Giới hạn max-width modal ở 1180px giúp khoảng cách lia chuột tự nhiên.',
+      width: '100%',
+      label: 'SCALE 4.0x • ULTRA CRISP PIXELS'
+    },
+    'mobile': {
+      title: 'MOBILE & GAMEPAD ROADMAP (POST-MVP MILESTONE 3+)',
+      line1: '• Virtual Left Joystick + Right Skill Arc (48×48px touch targets), ẩn khung Chat khi combat.',
+      line2: '• Gamepad: D-Pad/Stick di chuyển, X/Y/B/A đánh & né, LB/RB xoay hotbar kỹ năng.',
+      width: '35%',
+      label: 'POST-MVP • TOUCH & GAMEPAD READY'
+    }
+  };
+  function setViewport(key, btn) {
+    document.querySelectorAll('.vp-buttons .px-btn').forEach(b => b.classList.remove('gold'));
+    btn.classList.add('gold');
+    const s = vpSpecs[key];
+    document.getElementById('vpInfoBox').innerHTML = `
+      <div style="color:var(--gold-hi); font-weight:700; margin-bottom:6px;">${s.title}</div>
+      <div style="color:var(--parchment);">${s.line1}</div>
+      <div style="color:var(--text-muted);">${s.line2}</div>
+      <div class="vp-meter"><div class="vp-meter-fill" style="width:${s.width};">${s.label}</div></div>
+    `;
+  }
+
+  // Animated 16-bit Pixel Art Panorama Crest (320x180)
+  (function initHeroCanvas() {
+    const c = document.getElementById('heroCrestCanvas');
+    const ctx = c.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    let t = 0;
+
+    const stars = Array.from({length: 28}, (_, i) => ({
+      x: (i * 47 + 13) % 316,
+      y: (i * 23 + 7) % 62,
+      phase: i * 0.7
+    }));
+    const clouds = [
+      { x: 30, y: 24, w: 42 },
+      { x: 145, y: 16, w: 54 },
+      { x: 250, y: 30, w: 36 }
+    ];
+
+    function px(x, y, w, h, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(h));
+    }
+
+    function drawTree(x, y, scale) {
+      px(x + 5*scale, y + 14*scale, 4*scale, 8*scale, '#5a3629');
+      px(x + 2*scale, y + 8*scale, 10*scale, 8*scale, '#1e5b3a');
+      px(x + 3*scale, y + 4*scale, 8*scale, 6*scale, '#2e8b57');
+      px(x + 5*scale, y + 1*scale, 4*scale, 4*scale, '#63c74d');
+    }
+
+    function drawHouse(x, y) {
+      // Shadow
+      px(x + 2, y + 36, 54, 5, 'rgba(0,0,0,0.35)');
+      // Walls
+      px(x + 4, y + 16, 46, 22, '#d9c398');
+      px(x + 4, y + 16, 46, 3, '#b89f74');
+      // Timber beams
+      px(x + 4, y + 16, 4, 22, '#733E39');
+      px(x + 46, y + 16, 4, 22, '#733E39');
+      px(x + 24, y + 16, 3, 22, '#733E39');
+      // Roof
+      px(x, y + 10, 54, 7, '#a83232');
+      px(x + 4, y + 4, 46, 6, '#c83e2b');
+      px(x + 10, y, 34, 4, '#e45c44');
+      // Chimney & smoke
+      px(x + 38, y - 5, 7, 10, '#5a6988');
+      const sy = (t * 8) % 16;
+      px(x + 40, y - 9 - sy, 3, 3, 'rgba(234,212,170,0.55)');
+      px(x + 42, y - 14 - (sy*0.7), 4, 3, 'rgba(234,212,170,0.3)');
+      // Door & warm glowing window
+      px(x + 10, y + 24, 10, 14, '#5a3122');
+      px(x + 18, y + 31, 1, 2, '#f4b41b');
+      px(x + 31, y + 22, 10, 9, '#ffe762');
+      px(x + 35, y + 22, 2, 9, '#733E39');
+      px(x + 31, y + 26, 10, 2, '#733E39');
+    }
+
+    function drawMiniHero(x, y, frame) {
+      const bob = Math.floor(frame) % 2;
+      // shadow
+      px(x + 1, y + 15, 10, 3, 'rgba(0,0,0,0.4)');
+      // boots
+      px(x + 2, y + 13, 3, 3, '#3e2731');
+      px(x + 7, y + 13, 3, 3, '#3e2731');
+      // cape & armor (Kael)
+      px(x + 1, y + 6 + bob, 10, 7, '#c83e2b');
+      px(x + 3, y + 6 + bob, 6, 7, '#5a6988');
+      // head
+      px(x + 3, y + 1 + bob, 6, 5, '#f2c9a0');
+      px(x + 2, y + bob, 8, 2, '#3b241d');
+      px(x + 7, y + 3 + bob, 1, 1, '#181425');
+      // ember sword
+      px(x + 11, y + 3 + bob, 2, 8, '#ffe762');
+      px(x + 10, y + 9 + bob, 4, 2, '#f4b41b');
+    }
+
+    function loop() {
+      t += 0.04;
+      // Sky gradient bands (classic 16-bit twilight/dawn)
+      px(0, 0, 320, 26, '#181425');
+      px(0, 26, 320, 22, '#262B44');
+      px(0, 48, 320, 20, '#3a4466');
+      px(0, 68, 320, 18, '#733E39');
+      px(0, 86, 320, 14, '#e4a672');
+
+      // Twinkling pixel stars
+      stars.forEach(s => {
+        const bright = Math.sin(t * 2.5 + s.phase) > 0.2;
+        px(s.x, s.y, bright ? 2 : 1, bright ? 2 : 1, bright ? '#FFE762' : '#8b9bb4');
+      });
+
+      // Rising pixel sun
+      px(148, 72, 24, 24, '#FEAE34');
+      px(152, 76, 16, 16, '#FFE762');
+
+      // Drifting clouds
+      clouds.forEach(cl => {
+        const cx = (cl.x + t * 4) % 360 - 40;
+        px(cx, cl.y, cl.w, 6, '#3a4466');
+        px(cx + 6, cl.y - 3, cl.w - 12, 4, '#5a6988');
+      });
+
+      // Distant Ironpeak Mountains parallax
+      for (let i = 0; i < 6; i++) {
+        const mx = i * 60 - 10;
+        for (let h = 0; h < 28; h += 4) {
+          px(mx + h, 96 - h, 56 - h * 2, 4, '#262b44');
+        }
+        px(mx + 22, 68, 12, 6, '#c0cbdc');
+      }
+
+      // Rolling Whispering Forest hills
+      px(0, 96, 320, 14, '#193c3e');
+      px(0, 108, 320, 72, '#265c42');
+      px(0, 122, 320, 58, '#38b764');
+
+      // Dirt village road
+      px(0, 146, 320, 16, '#b86f50');
+      px(0, 148, 320, 12, '#e4a672');
+      for (let i = 0; i < 18; i++) {
+        px(i * 19 + 4, 152 + (i % 2) * 3, 4, 2, '#b86f50');
+      }
+
+      // Sunwheat farm patch (left)
+      px(16, 118, 62, 24, '#5a3629');
+      const sway = Math.round(Math.sin(t * 3));
+      for (let gx = 20; gx < 74; gx += 7) {
+        for (let gy = 121; gy < 139; gy += 6) {
+          px(gx, gy + 2, 4, 3, '#38b764');
+          px(gx + sway, gy, 4, 3, '#f4b41b');
+          px(gx + sway + 1, gy - 1, 2, 1, '#ffe762');
+        }
+      }
+
+      // Trees & House
+      drawTree(88, 92, 1.5);
+      drawTree(228, 90, 1.6);
+      drawTree(264, 98, 1.8);
+      drawTree(292, 106, 1.4);
+      drawHouse(132, 104);
+
+      // Animated Slime bouncing on right
+      const sb = Math.abs(Math.sin(t * 4)) * 5;
+      px(252, 144 - sb, 12, 8, '#63c74d');
+      px(254, 142 - sb, 8, 3, '#a7f070');
+      px(255, 146 - sb, 2, 2, '#181425');
+      px(259, 146 - sb, 2, 2, '#181425');
+
+      // Hero patrolling road
+      const hx = 95 + Math.sin(t * 0.7) * 45;
+      drawMiniHero(hx, 138, t * 5);
+
+      // Floating fireflies
+      for (let i = 0; i < 6; i++) {
+        const fx = (i * 53 + Math.sin(t + i) * 18 + 320) % 320;
+        const fy = 105 + Math.cos(t * 1.3 + i * 2) * 20;
+        px(fx, fy, 2, 2, '#FFE762');
+      }
+
+      // Crisp pixel title watermark
+      ctx.fillStyle = 'rgba(24,20,37,0.78)';
+      ctx.fillRect(6, 6, 174, 16);
+      ctx.fillStyle = '#FFE762';
+      ctx.font = 'bold 9px Consolas, monospace';
+      ctx.fillText('GREENHAVEN VILLAGE • 16-BIT PREVIEW', 11, 17);
+
+      requestAnimationFrame(loop);
+    }
+    loop();
+  })();
+</script>
+</body>
+</html>

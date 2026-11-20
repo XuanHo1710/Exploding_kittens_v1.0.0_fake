@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eldoria — Homestead Farming & Building Placement Grid (16×10)</title>
+<style>
+  :root {
+    --bg-obsidian: #181425;
+    --bg-slate: #262B44;
+    --bg-card: #2f3554;
+    --bg-elevated: #3A4466;
+    --border-dark: #0e0b16;
+    --gold: #F4B41B;
+    --gold-hi: #FFE762;
+    --gold-lo: #B47412;
+    --parchment: #EAD4AA;
+    --text-main: #F4F4F4;
+    --text-muted: #A9B4C9;
+    --emerald: #38B764;
+    --emerald-hi: #63C74D;
+    --crimson: #E43B44;
+    --azure: #0095E9;
+    --amber: #FEAE34;
+    --font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-px: "Consolas", "Courier New", "Lucida Console", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-obsidian); color: var(--text-main); font-family: var(--font-ui); min-height: 100vh; line-height: 1.45; }
+
+  .studio-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: #141020; border-bottom: 3px solid var(--gold);
+    padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .studio-brand {
+    display: flex; align-items: center; gap: 10px; font-family: var(--font-px);
+    font-weight: 700; color: var(--gold); text-shadow: 2px 2px 0 #000; font-size: 14px; text-decoration: none;
+  }
+  .nav-links { display: flex; flex-wrap: wrap; gap: 6px; }
+  .nav-links a {
+    font-family: var(--font-px); font-size: 12px; font-weight: 700; text-decoration: none;
+    color: var(--parchment); background: var(--bg-slate); padding: 5px 10px; border: 2px solid #0e0b16;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.12), inset -2px -2px 0 rgba(0,0,0,0.45);
+  }
+  .nav-links a:hover { background: var(--bg-elevated); color: var(--gold-hi); }
+  .nav-links a.active { background: var(--gold); color: #181425; }
+
+  .ctrl-bar {
+    background: #1d1930; border-bottom: 2px solid var(--border-dark);
+    padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .px-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    font-family: var(--font-px); font-weight: 700; font-size: 11.5px; padding: 6px 11px;
+    cursor: pointer; border: 2px solid var(--border-dark); color: var(--text-main); background: var(--bg-elevated);
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.45), 0 2px 0 var(--border-dark);
+  }
+  .px-btn:hover { filter: brightness(1.12); }
+  .px-btn.gold { background: var(--gold); color: #181425; }
+  .px-btn.emerald { background: var(--emerald); color: #0e1d12; }
+  .px-btn.azure { background: var(--azure); color: #fff; }
+  .px-btn.crimson { background: var(--crimson); color: #fff; }
+  .px-badge {
+    font-family: var(--font-px); font-size: 11px; font-weight: 700; padding: 3px 7px;
+    border: 2px solid var(--border-dark); background: #141122; color: var(--parchment); display: inline-block;
+  }
+  .px-badge.gold { background: #3b2d12; color: var(--gold-hi); border-color: var(--gold-lo); }
+  .px-badge.emerald { background: #133122; color: var(--emerald-hi); border-color: var(--emerald); }
+
+  .px-panel {
+    background: var(--bg-slate); border: 3px solid var(--border-dark);
+    box-shadow: inset 3px 3px 0 rgba(255,255,255,0.09), inset -3px -3px 0 rgba(0,0,0,0.45), 0 6px 0 rgba(0,0,0,0.45);
+    padding: 15px;
+  }
+  .px-panel-gold {
+    background: var(--bg-slate); border: 3px solid var(--gold);
+    box-shadow: 0 0 0 3px var(--border-dark), inset 3px 3px 0 rgba(255,231,98,0.12), inset -3px -3px 0 rgba(0,0,0,0.5), 0 7px 0 rgba(0,0,0,0.5);
+    padding: 15px;
+  }
+
+  .layout {
+    max-width: 1360px; margin: 16px auto 46px; padding: 0 16px;
+    display: grid; grid-template-columns: 1fr 375px; gap: 16px; align-items: start;
+  }
+  @media (max-width: 1080px) { .layout { grid-template-columns: 1fr; } }
+
+  .grid-canvas-wrap {
+    position: relative; background: #0e0b16; border: 3px solid var(--border-dark);
+    overflow: hidden; margin-bottom: 12px;
+  }
+  #homesteadCanvas {
+    width: 100%; height: auto; display: block;
+    image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer;
+  }
+  .status-strip {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+    background: #141122; border: 2px solid var(--border-dark); padding: 8px 11px;
+    font-family: var(--font-px); font-size: 11.5px; margin-bottom: 12px;
+  }
+
+  .tool-row { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; align-items: center; }
+  .seed-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 7px; margin-top: 8px; }
+  .choice-card {
+    background: #181425; border: 2px solid #4a557c; padding: 8px; cursor: pointer;
+    font-family: var(--font-px); font-size: 11px;
+  }
+  .choice-card.active { border-color: var(--gold); background: #2c3252; }
+  .choice-card.offseason { opacity: 0.55; border-style: dashed; }
+
+  /* Animal Cards */
+  .animal-card {
+    background: #181425; border: 2px solid var(--border-dark); padding: 11px; margin-bottom: 10px;
+  }
+  .meter { height: 10px; background: #0d0a14; border: 1px solid #3a4466; margin: 3px 0 6px; }
+  .meter-fill { height: 100%; transition: width 0.2s; }
+  .cap-box {
+    background: #102a42; border: 2px solid var(--azure); padding: 10px;
+    font-size: 11.5px; color: var(--parchment); margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<nav class="studio-nav">
+  <a class="studio-brand" href="index.html">
+    <svg width="20" height="20" viewBox="0 0 16 16"><rect x="7" y="1" width="2" height="9" fill="#FFE762"/><rect x="4" y="10" width="8" height="2" fill="#E4A672"/><rect x="7" y="12" width="2" height="3" fill="#733E39"/></svg>
+    ELDORIA UI MOCKUP SUITE
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Hub</a>
+    <a href="auth-character-select.html">1. Auth &amp; Hero</a>
+    <a href="main-hud-world.html">2. HUD &amp; World</a>
+    <a href="inventory-blacksmith-enhance.html">3. Kho đồ &amp; +10 Forge</a>
+    <a href="gacha-collection.html">4. Gacha &amp; 12 Hero</a>
+    <a href="farming-building-grid.html" class="active">5. Nông trại &amp; Xây dựng</a>
+    <a href="boss-raid-party.html">6. Boss Raid &amp; Party</a>
+  </div>
+</nav>
+
+<div class="ctrl-bar">
+  <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+    <button class="px-btn gold" id="modeFarmBtn" onclick="setMode('FARM')">🌾 Chế độ Nông trại (Farming)</button>
+    <button class="px-btn" id="modeBuildBtn" onclick="setMode('BUILD')">🏗 Chế độ Xây dựng (Ghost Preview)</button>
+    <span class="px-badge gold">● <strong id="goldDisp">2,400</strong> Gold</span>
+    <span class="px-badge emerald">🌾 Đã thu hoạch: <strong id="harvestDisp">0</strong></span>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:5px; align-items:center;">
+    <span style="font-family:var(--font-px); font-size:11px; color:var(--text-muted);">Mùa:</span>
+    <button class="px-btn gold" id="sSPRING" onclick="setSeason('SPRING')">🌸 SPRING</button>
+    <button class="px-btn" id="sSUMMER" onclick="setSeason('SUMMER')">☀ SUMMER</button>
+    <button class="px-btn" id="sAUTUMN" onclick="setSeason('AUTUMN')">🍁 AUTUMN</button>
+    <button class="px-btn" id="sWINTER" onclick="setSeason('WINTER')">❄ WINTER</button>
+    <button class="px-btn azure" id="btnWeather" onclick="toggleRain()">☀ CLEAR</button>
+    <button class="px-btn emerald" onclick="advanceGrowth()">⏩ +1 Giai đoạn</button>
+  </div>
+</div>
+
+<main class="layout">
+  <!-- LEFT: LIVE 16x10 PIXEL GRID -->
+  <section class="px-panel-gold">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+      <div>
+        <h2 style="font-family:var(--font-px); color:var(--gold-hi); font-size:16px;">
+          🏡 LÃNH ĐỊA CÁ NHÂN — <code>zon_player_homestead</code> (LƯỚI 16×10 • TILE 32×32 PX)
+        </h2>
+      </div>
+      <span class="px-badge" id="hoverCoordBadge">Ô chuột: (0, 0)</span>
+    </div>
+
+    <div class="grid-canvas-wrap">
+      <canvas id="homesteadCanvas" width="512" height="320"></canvas>
+    </div>
+
+    <div class="status-strip">
+      <span id="actionFeedback" style="color:var(--emerald-hi);">✓ Chọn công cụ bên dưới rồi click trực tiếp lên ô đất 16×10!</span>
+      <span style="color:var(--text-muted);">Đường đi bắt buộc (nâu) &amp; Ô Spawn [S] bị khóa xây dựng bởi Server</span>
+    </div>
+
+    <!-- FARMING CONTROLS -->
+    <div id="farmToolsPanel">
+      <div class="tool-row">
+        <span style="font-family:var(--font-px); font-size:11.5px; color:var(--gold-hi);">CÔNG CỤ NÔNG TRẠI:</span>
+        <button class="px-btn gold" id="tHoe" onclick="setTool('HOE')">⛏ [1] Cuốc đất (Hoe)</button>
+        <button class="px-btn" id="tPlant" onclick="setTool('PLANT')">🌱 [2] Gieo hạt (Plant)</button>
+        <button class="px-btn" id="tWater" onclick="setTool('WATER')">💧 [3] Tưới nước (Water)</button>
+        <button class="px-btn" id="tHarvest" onclick="setTool('HARVEST')">🌾 [4] Thu hoạch (Harvest)</button>
+      </div>
+      <div style="font-family:var(--font-px); font-size:11.5px; color:var(--parchment);">
+        Chọn hạt giống MVP (<code>game-data/crops.json</code> — tự kiểm tra mùa vụ):
+      </div>
+      <div class="seed-grid" id="seedCards"></div>
+    </div>
+
+    <!-- BUILDING PLACEMENT CONTROLS -->
+    <div id="buildToolsPanel" style="display:none;">
+      <div class="tool-row" style="justify-content:space-between;">
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <span style="font-family:var(--font-px); font-size:11.5px; color:var(--gold-hi);">ĐẶT CÔNG TRÌNH (GRID SNAPPING):</span>
+          <button class="px-btn azure" onclick="rotateGhost()">↻ Xoay công trình [R] (<span id="rotLabel">0°</span>)</button>
+          <button class="px-btn crimson" onclick="undoLastBuilding()">↶ Thu hồi công trình vừa đặt</button>
+        </div>
+        <span class="px-badge emerald">XANH = HỢP LỆ • ĐỎ = CHẶN ĐƯỜNG / ĐÈ VẬT CẢN</span>
+      </div>
+      <div class="seed-grid" id="buildingCards"></div>
+    </div>
+  </section>
+
+  <!-- RIGHT: ANIMAL HUSBANDRY & SERVER OFFLINE CAP (24h) -->
+  <aside class="px-panel">
+    <div style="font-family:var(--font-px); font-size:14px; font-weight:700; color:var(--gold-hi); padding-bottom:6px; margin-bottom:10px; border-bottom:2px solid rgba(255,255,255,0.12);">
+      🐔 CHĂN NUÔI (ANIMAL HUSBANDRY)
+    </div>
+
+    <div id="animalPanel"></div>
+
+    <!-- Server-Time 24h Offline Progression Cap -->
+    <div class="cap-box">
+      <div style="font-family:var(--font-px); font-weight:700; color:#79d2ff; margin-bottom:5px;">
+        ⏱ SERVER TIMESTAMP &amp; 24H OFFLINE CAP (ASM-008)
+      </div>
+      <p style="margin-bottom:8px;">
+        Tiến trình nông trại &amp; chăn nuôi tính theo <strong>đồng hồ Server</strong> (tuyệt đối không tin giờ máy client), giới hạn tối đa <strong>24 giờ offline</strong>. Động vật không bao giờ chết vĩnh viễn khi đói — chỉ tạm dừng sản xuất.
+      </p>
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
+        <button class="px-btn azure" style="font-size:11px; padding:5px 8px;" onclick="simOffline(12)">Mô phỏng 12h Offline</button>
+        <button class="px-btn gold" style="font-size:11px; padding:5px 8px;" onclick="simOffline(30)">Mô phỏng 30h (Test Cap 24h)</button>
+      </div>
+      <div id="offlineResult" style="font-family:var(--font-px); font-size:10.5px; color:var(--gold-hi);">
+        Trạng thái: Đang đồng bộ thực thời gian với Server (0h offline).
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+  const COLS = 16, ROWS = 10, TILE = 32;
+  const canvas = document.getElementById('homesteadCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+
+  // Canonical MVP Crops from game-data/crops.json
+  const CROPS = [
+    { id: 'crp_sunwheat', name: 'Sunwheat', seasons: ['SPRING','SUMMER','AUTUMN'], mins: 12, col: '#F4B41B', regrow: false, yieldTxt: 'Sunwheat Grain' },
+    { id: 'crp_berry_bush', name: 'Wild Berry Bush', seasons: ['SPRING','SUMMER'], mins: 24, col: '#E43B44', regrow: true, yieldTxt: 'Wild Berry (Tái sinh)' },
+    { id: 'crp_moon_herb', name: 'Moon Herb', seasons: ['SPRING','AUTUMN','WINTER'], mins: 36, col: '#7CE0C3', regrow: false, yieldTxt: 'Moon Herb Leaf' },
+    { id: 'crp_golden_carrot', name: 'Golden Carrot', seasons: ['SPRING','AUTUMN'], mins: 48, col: '#FEAE34', regrow: false, yieldTxt: 'Golden Carrot' },
+    { id: 'crp_ember_pepper', name: 'Ember Pepper', seasons: ['SUMMER','AUTUMN'], mins: 60, col: '#FF5722', regrow: false, yieldTxt: 'Ember Pepper' }
+  ];
+
+  // Canonical MVP Buildings from game-data/buildings.json
+  const BUILDINGS = [
+    { id: 'bld_storage', name: 'Storage Warehouse', w: 3, h: 2, rot: true, gold: 100, col: '#8D6E63', roof: '#5D4037', ico: '📦' },
+    { id: 'bld_farm_plot', name: 'Homestead Farm Plot', w: 4, h: 4, rot: true, gold: 80, col: '#733E39', roof: '#38B764', ico: '🌾' },
+    { id: 'bld_chicken_coop', name: 'Chicken Coop', w: 3, h: 3, rot: false, gold: 180, col: '#D9A066', roof: '#C83E2B', ico: '🐔' },
+    { id: 'bld_blacksmith', name: 'Blacksmith Forge', w: 4, h: 3, rot: false, gold: 250, col: '#5A6988', roof: '#3E2731', ico: '⚒' },
+    { id: 'bld_kitchen', name: 'Homestead Kitchen', w: 3, h: 3, rot: false, gold: 150, col: '#EAD4AA', roof: '#B86F50', ico: '🍲' }
+  ];
+
+  // Placed Buildings (Prebuilt Player House at 1,1 footprint 5x4)
+  let placedBuildings = [
+    { id: 'bld_player_house', name: 'Player House Lv.1', x: 1, y: 1, w: 5, h: 4, col: '#EAD4AA', roof: '#C83E2B', prebuilt: true, doorDx: 2, doorDy: 4 }
+  ];
+
+  // Grid state
+  // Tile types: 'grass', 'path', 'spawn', 'tilled'
+  const grid = Array.from({ length: ROWS }, (_, y) => Array.from({ length: COLS }, (_, x) => {
+    let type = 'grass';
+    if (y === 9 || (x === 3 && y >= 5)) type = 'path';
+    if (x === 3 && y === 5) type = 'spawn';
+    return { x, y, type, watered: false, cropId: null, stage: 0, withered: false };
+  }));
+
+  // Seed some starter crops so grid looks lush on first load
+  for (let y = 6; y <= 7; y++) {
+    for (let x = 5; x <= 8; x++) {
+      grid[y][x].type = 'tilled';
+      grid[y][x].watered = true;
+      grid[y][x].cropId = y === 6 ? 'crp_sunwheat' : 'crp_moon_herb';
+      grid[y][x].stage = x === 8 ? 3 : (x - 4);
+    }
+  }
+
+  // Animals State (game-data/animals.json)
+  const animals = [
+    { id: 'anm_meadow_chicken', nick: 'Pip (Meadow Chicken)', bld: 'bld_chicken_coop Lv.1', stage: 'ADULT', happy: 88, hunger: 76, health: 100, feed: 'Sunwheat Grain', prodName: 'Fresh Egg', cycleMin: 48, progPct: 100, ready: 2, ico: '🐔' },
+    { id: 'anm_clover_cow', nick: 'Bessie (Clover Cow)', bld: 'bld_farm_plot Lv.2', stage: 'ADULT', happy: 82, hunger: 68, health: 100, feed: 'Hemp Fiber', prodName: 'Fresh Milk', cycleMin: 72, progPct: 65, ready: 1, ico: '🐄' }
+  ];
+
+  let mode = 'FARM';
+  let activeTool = 'HOE';
+  let activeCropIdx = 0;
+  let activeBldIdx = 0;
+  let ghostRotated = false;
+  let season = 'SPRING';
+  let isRain = false;
+  let gold = 2400;
+  let harvestedTotal = 0;
+  let hoverTile = { x: -1, y: -1 };
+  let floats = [];
+  let tick = 0;
+
+  function setFeedback(msg, ok = true) {
+    const el = document.getElementById('actionFeedback');
+    el.style.color = ok ? '#63C74D' : '#ff858c';
+    el.textContent = msg;
+  }
+
+  function setMode(m) {
+    mode = m;
+    document.getElementById('modeFarmBtn').classList.toggle('gold', m === 'FARM');
+    document.getElementById('modeBuildBtn').classList.toggle('gold', m === 'BUILD');
+    document.getElementById('farmToolsPanel').style.display = m === 'FARM' ? 'block' : 'none';
+    document.getElementById('buildToolsPanel').style.display = m === 'BUILD' ? 'block' : 'none';
+    setFeedback(m === 'FARM' ? '✓ Chế độ Nông trại: Cuốc, gieo hạt, tưới nước hoặc thu hoạch trên lưới.' : '✓ Chế độ Xây dựng: Di chuột xem Ghost Preview Xanh/Đỏ, bấm R để xoay và Click để đặt!');
+  }
+
+  function setTool(t) {
+    activeTool = t;
+    ['tHoe','tPlant','tWater','tHarvest'].forEach(id => document.getElementById(id).classList.remove('gold'));
+    const map = { HOE: 'tHoe', PLANT: 'tPlant', WATER: 'tWater', HARVEST: 'tHarvest' };
+    document.getElementById(map[t]).classList.add('gold');
+  }
+
+  function setSeason(s) {
+    season = s;
+    ['SPRING','SUMMER','AUTUMN','WINTER'].forEach(k => document.getElementById('s'+k).classList.toggle('gold', k === s));
+    let witheredCount = 0;
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        const cell = grid[y][x];
+        if (cell.cropId) {
+          const c = CROPS.find(k => k.id === cell.cropId);
+          cell.withered = !c.seasons.includes(season);
+          if (cell.withered) witheredCount++;
+        }
+      }
+    }
+    renderSeedCards();
+    setFeedback(witheredCount > 0 ? `⚠ Đã chuyển sang ${season}: ${witheredCount} ô cây trái mùa bị héo (theo quy tắc crops.json).` : `✓ Đã chuyển sang mùa ${season}.`, witheredCount === 0);
+  }
+
+  function toggleRain() {
+    isRain = !isRain;
+    const btn = document.getElementById('btnWeather');
+    btn.textContent = isRain ? '🌧 RAIN (Tự tưới)' : '☀ CLEAR';
+    if (isRain) {
+      for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+        if (grid[y][x].type === 'tilled') grid[y][x].watered = true;
+      }
+      setFeedback('🌧 Thời tiết RAIN: Toàn bộ đất đã cuốc được tự động tưới ẩm (rainAutoWatersSoil = true)!', true);
+    }
+  }
+
+  function advanceGrowth() {
+    let grown = 0;
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        const c = grid[y][x];
+        if (c.cropId && !c.withered && c.watered && c.stage < 3) {
+          c.stage++;
+          grown++;
+          if (!isRain) c.watered = false;
+        }
+      }
+    }
+    animals.forEach(a => {
+      if (a.hunger > 15) {
+        a.progPct += 45;
+        if (a.progPct >= 100) { a.progPct -= 100; a.ready++; }
+        a.hunger = Math.max(10, a.hunger - 8);
+      }
+    });
+    renderAnimals();
+    setFeedback(`⏩ Tua nhanh +12 phút Server Time: ${grown} cây đã lớn thêm 1 giai đoạn (cây chưa tưới sẽ tạm dừng lớn).`);
+  }
+
+  function rotateGhost() {
+    const b = BUILDINGS[activeBldIdx];
+    if (!b.rot) {
+      setFeedback(`⚠ Công trình ${b.name} có thuộc tính rotatable: false trong buildings.json!`, false);
+      return;
+    }
+    ghostRotated = !ghostRotated;
+    document.getElementById('rotLabel').textContent = ghostRotated ? '90°' : '0°';
+  }
+
+  function undoLastBuilding() {
+    if (placedBuildings.length <= 1) {
+      setFeedback('⚠ Không thể xóa Player House khởi đầu!', false);
+      return;
+    }
+    const popped = placedBuildings.pop();
+    gold += popped.goldCost || 100;
+    document.getElementById('goldDisp').textContent = gold.toLocaleString();
+    setFeedback(`↶ Đã thu hồi ${popped.name} và hoàn Gold.`);
+  }
+
+  function isTileOccupiedByBuilding(tx, ty) {
+    return placedBuildings.some(b => tx >= b.x && tx < b.x + b.w && ty >= b.y && ty < b.y + b.h);
+  }
+
+  function validatePlacement(gx, gy) {
+    const b = BUILDINGS[activeBldIdx];
+    const bw = (b.rot && ghostRotated) ? b.h : b.w;
+    const bh = (b.rot && ghostRotated) ? b.w : b.h;
+    if (gx < 0 || gy < 0 || gx + bw > COLS || gy + bh > ROWS) {
+      return { valid: false, reason: 'Vượt ngoài ranh giới zon_player_homestead', bw, bh };
+    }
+    for (let y = gy; y < gy + bh; y++) {
+      for (let x = gx; x < gx + bw; x++) {
+        if (grid[y][x].type === 'spawn') return { valid: false, reason: 'CẤM đè lên Spawn Point [S]', bw, bh };
+        if (grid[y][x].type === 'path') return { valid: false, reason: 'CẤM chặn đường đi bắt buộc (NO_BLOCK_MANDATORY_PATH)', bw, bh };
+        if (isTileOccupiedByBuilding(x, y)) return { valid: false, reason: 'Trùng collision footprint với công trình hiện có', bw, bh };
+      }
+    }
+    if (gold < b.gold) return { valid: false, reason: `Không đủ ${b.gold} Gold`, bw, bh };
+    return { valid: true, reason: `Hợp lệ — Đặt ${b.name} (${bw}×${bh}) giá ${b.gold}G`, bw, bh };
+  }
+
+  // Canvas Interaction
+  function getTileFromMouse(e) {
+    const r = canvas.getBoundingClientRect();
+    const tx = Math.floor((e.clientX - r.left) / r.width * COLS);
+    const ty = Math.floor((e.clientY - r.top) / r.height * ROWS);
+    return { x: Math.max(0, Math.min(COLS - 1, tx)), y: Math.max(0, Math.min(ROWS - 1, ty)) };
+  }
+
+  canvas.addEventListener('mousemove', (e) => {
+    hoverTile = getTileFromMouse(e);
+    document.getElementById('hoverCoordBadge').textContent = `Ô chuột: (${hoverTile.x}, ${hoverTile.y})`;
+  });
+  canvas.addEventListener('mouseleave', () => { hoverTile = { x: -1, y: -1 }; });
+
+  canvas.addEventListener('click', (e) => {
+    const { x, y } = getTileFromMouse(e);
+    if (mode === 'BUILD') {
+      const check = validatePlacement(x, y);
+      if (!check.valid) {
+        setFeedback(`✕ TỪ CHỐI ĐẶT CÔNG TRÌNH: ${check.reason}`, false);
+        floats.push({ x: x * TILE + 16, y: y * TILE + 10, txt: 'BLOCKED!', col: '#ff858c', life: 40 });
+        return;
+      }
+      const b = BUILDINGS[activeBldIdx];
+      gold -= b.gold;
+      document.getElementById('goldDisp').textContent = gold.toLocaleString();
+      placedBuildings.push({
+        id: b.id, name: b.name, x, y, w: check.bw, h: check.bh,
+        col: b.col, roof: b.roof, goldCost: b.gold, doorDx: Math.floor(check.bw / 2), doorDy: check.bh
+      });
+      setFeedback(`✓ Đã xây ${b.name} tại (${x},${y}) — Server trừ nguyên tử -${b.gold} Gold & ghi JSON WAL!`);
+      floats.push({ x: x * TILE + check.bw * 16, y: y * TILE + 12, txt: `BUILT ${b.name}!`, col: '#FFE762', life: 50 });
+      return;
+    }
+
+    // FARMING MODE
+    const cell = grid[y][x];
+    if (isTileOccupiedByBuilding(x, y) || cell.type === 'path' || cell.type === 'spawn') {
+      setFeedback('✕ Không thể canh tác trên công trình, đường đi hoặc điểm Spawn!', false);
+      return;
+    }
+
+    if (activeTool === 'HOE') {
+      if (cell.withered) {
+        cell.cropId = null; cell.withered = false; cell.stage = 0;
+        setFeedback('✓ Đã dọn cây héo trái mùa, đất sẵn sàng gieo hạt mới.');
+      } else {
+        cell.type = 'tilled';
+        cell.watered = isRain;
+        setFeedback(`✓ Đã cuốc đất tại (${x},${y}). Chuyển sang công cụ [2] Gieo hạt!`);
+      }
+    } else if (activeTool === 'PLANT') {
+      const crop = CROPS[activeCropIdx];
+      if (cell.type !== 'tilled') {
+        setFeedback('✕ Phải dùng [1] Cuốc đất trước khi gieo hạt!', false);
+        return;
+      }
+      if (!crop.seasons.includes(season)) {
+        setFeedback(`✕ ${crop.name} chỉ trồng được vào mùa ${crop.seasons.join(', ')} (Hiện tại: ${season})!`, false);
+        return;
+      }
+      if (cell.cropId) {
+        setFeedback('✕ Ô đất này đã có cây đang trồng!', false);
+        return;
+      }
+      cell.cropId = crop.id; cell.stage = 0; cell.withered = false;
+      setFeedback(`🌱 Đã gieo ${crop.name} tại (${x},${y}). Đừng quên tưới nước [3] để cây lớn!`);
+    } else if (activeTool === 'WATER') {
+      if (cell.type !== 'tilled') {
+        setFeedback('✕ Chỉ tưới được ô đất đã cuốc!', false);
+        return;
+      }
+      cell.watered = true;
+      floats.push({ x: x * TILE + 16, y: y * TILE + 12, txt: '💧 WET', col: '#79d2ff', life: 32 });
+      setFeedback(`💧 Đã tưới ẩm ô (${x},${y}). Bấm "⏩ +1 Giai đoạn" để xem cây lớn!`);
+    } else if (activeTool === 'HARVEST') {
+      if (!cell.cropId || cell.withered || cell.stage < 3) {
+        setFeedback('✕ Cây chưa chín (cần Stage 3) hoặc chưa có cây để thu hoạch!', false);
+        return;
+      }
+      const crop = CROPS.find(k => k.id === cell.cropId);
+      const roll = Math.random();
+      const qual = roll < 0.12 ? 'GOLD' : roll < 0.38 ? 'SILVER' : 'NORMAL';
+      const qty = 2 + Math.floor(Math.random() * 3);
+      harvestedTotal += qty;
+      const sellGold = Math.round(qty * 18 * (qual === 'GOLD' ? 1.85 : qual === 'SILVER' ? 1.35 : 1));
+      gold += sellGold;
+      document.getElementById('harvestDisp').textContent = harvestedTotal;
+      document.getElementById('goldDisp').textContent = gold.toLocaleString();
+      floats.push({ x: x * TILE + 16, y: y * TILE + 8, txt: `+${qty} [${qual}]`, col: qual === 'GOLD' ? '#FFE762' : '#63C74D', life: 48 });
+      if (crop.regrow) {
+        cell.stage = 1;
+        setFeedback(`🌾 Thu hoạch +${qty} ${crop.name} [${qual}] (+${sellGold}G)! Bụi quả tự tái sinh từ gốc.`);
+      } else {
+        cell.cropId = null; cell.stage = 0;
+        setFeedback(`🌾 Thu hoạch +${qty} ${crop.name} [${qual}] (+${sellGold}G)!`);
+      }
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'r' && mode === 'BUILD') rotateGhost();
+    if (e.key === '1') setTool('HOE');
+    if (e.key === '2') setTool('PLANT');
+    if (e.key === '3') setTool('WATER');
+    if (e.key === '4') setTool('HARVEST');
+  });
+
+  // Animal Actions & 24h Offline Cap Simulation
+  function petAnimal(i) {
+    animals[i].happy = Math.min(100, animals[i].happy + 10);
+    renderAnimals();
+  }
+  function feedAnimal(i) {
+    animals[i].hunger = 100;
+    animals[i].happy = Math.min(100, animals[i].happy + 15);
+    renderAnimals();
+  }
+  function collectAnimal(i) {
+    if (animals[i].ready <= 0) return;
+    const gain = animals[i].ready * 45;
+    gold += gain;
+    document.getElementById('goldDisp').textContent = gold.toLocaleString();
+    setFeedback(`🥚 Đã thu hoạch ×${animals[i].ready} ${animals[i].prodName} từ ${animals[i].nick} (+${gain}G)!`);
+    animals[i].ready = 0;
+    renderAnimals();
+  }
+  function simOffline(hoursRequested) {
+    const capped = Math.min(24, hoursRequested);
+    const wasCapped = hoursRequested > 24;
+    animals.forEach(a => {
+      const cycles = Math.min(4, Math.floor((capped * 60) / a.cycleMin / 2));
+      a.ready += cycles;
+      a.hunger = Math.max(12, Math.round(a.hunger - capped * 2.2));
+      if (a.hunger <= 15) a.happy = Math.max(40, a.happy - 10);
+    });
+    renderAnimals();
+    document.getElementById('offlineResult').innerHTML = wasCapped
+      ? `🔒 Yêu cầu <strong>${hoursRequested}h</strong> → Server giới hạn cứng tại <strong>24h Cap (ASM-008)</strong>! Động vật tạm dừng khi đói nhưng <strong>Health vẫn 100% (không chết)</strong>.`
+      : `✓ Đã tính tiến trình <strong>${capped}h</strong> theo Server Timestamp — cộng thêm sản phẩm trứng/sữa sẵn sàng thu hoạch!`;
+  }
+
+  function renderSeedCards() {
+    document.getElementById('seedCards').innerHTML = CROPS.map((c, idx) => {
+      const ok = c.seasons.includes(season);
+      return `
+        <div class="choice-card ${idx === activeCropIdx ? 'active' : ''} ${!ok ? 'offseason' : ''}" onclick="activeCropIdx=${idx}; setTool('PLANT'); renderSeedCards();">
+          <div style="color:${c.col}; font-weight:700;">● ${c.name}</div>
+          <div style="color:#79d2ff; font-size:9.5px;">${c.id} • ${c.mins}p</div>
+          <div style="color:${ok?'#63C74D':'#ff858c'}; font-size:9.5px; margin-top:2px;">${ok ? '✓ Hợp mùa ' + season : '✕ Trái mùa (' + c.seasons.join('/') + ')'}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderBuildingCards() {
+    document.getElementById('buildingCards').innerHTML = BUILDINGS.map((b, idx) => `
+      <div class="choice-card ${idx === activeBldIdx ? 'active' : ''}" onclick="activeBldIdx=${idx}; ghostRotated=false; document.getElementById('rotLabel').textContent='0°'; renderBuildingCards();">
+        <div style="color:var(--gold-hi); font-weight:700;">${b.ico} ${b.name}</div>
+        <div style="color:#79d2ff; font-size:9.5px;">${b.id} • ${b.w}×${b.h} tiles</div>
+        <div style="color:var(--parchment); font-size:9.5px; margin-top:2px;">${b.gold}G • ${b.rot ? 'Xoay [R]: Có' : 'Cố định hướng'}</div>
+      </div>
+    `).join('');
+  }
+
+  function renderAnimals() {
+    document.getElementById('animalPanel').innerHTML = animals.map((a, i) => `
+      <div class="animal-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong style="font-family:var(--font-px); color:var(--gold-hi); font-size:12.5px;">${a.ico} ${a.nick}</strong>
+          <span class="px-badge emerald">${a.stage} • HP ${a.health}%</span>
+        </div>
+        <div style="font-family:var(--font-px); font-size:10px; color:#79d2ff; margin-bottom:6px;">${a.id} • ${a.bld}</div>
+
+        <div style="font-family:var(--font-px); font-size:10.5px; display:flex; justify-content:space-between;">
+          <span>Hạnh phúc (Quality Bonus)</span><strong>${a.happy}/100</strong>
+        </div>
+        <div class="meter"><div class="meter-fill" style="width:${a.happy}%; background:#F4B41B;"></div></div>
+
+        <div style="font-family:var(--font-px); font-size:10.5px; display:flex; justify-content:space-between;">
+          <span>Độ no (Ưa thích: ${a.feed})</span><strong>${a.hunger}/100</strong>
+        </div>
+        <div class="meter"><div class="meter-fill" style="width:${a.hunger}%; background:${a.hunger<25?'#E43B44':'#38B764'};"></div></div>
+
+        <div style="font-family:var(--font-px); font-size:10.5px; color:var(--parchment); margin:6px 0;">
+          Sản phẩm (${a.cycleMin}p): <strong style="color:#FFE762;">${a.prodName} (Sẵn sàng: ×${a.ready})</strong>
+        </div>
+        <div style="display:flex; gap:5px; flex-wrap:wrap;">
+          <button class="px-btn" style="padding:4px 7px; font-size:10.5px;" onclick="petAnimal(${i})">♥ Vuốt ve +10</button>
+          <button class="px-btn emerald" style="padding:4px 7px; font-size:10.5px;" onclick="feedAnimal(${i})">🌾 Cho ăn</button>
+          <button class="px-btn gold" style="padding:4px 7px; font-size:10.5px;" ${a.ready===0?'disabled':''} onclick="collectAnimal(${i})">🧺 Thu (${a.ready})</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Render Loop for 16x10 Pixel Grid
+  const SEASON_PALETTE = {
+    SPRING: { g1: '#3b8c4a', g2: '#348042', accent: '#63c74d' },
+    SUMMER: { g1: '#4c963e', g2: '#428836', accent: '#a7f070' },
+    AUTUMN: { g1: '#8f6b32', g2: '#7f5d2b', accent: '#e4a672' },
+    WINTER: { g1: '#7d9cb3', g2: '#6d8ca3', accent: '#d9ecfa' }
+  };
+
+  function drawGrid() {
+    tick++;
+    const pal = SEASON_PALETTE[season];
+
+    // 1. Base 16x10 Tiles
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        const cell = grid[y][x];
+        const px = x * TILE, py = y * TILE;
+        if (cell.type === 'path' || cell.type === 'spawn') {
+          ctx.fillStyle = (x + y) % 2 === 0 ? '#c48d5e' : '#b87f52';
+          ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = '#99643d';
+          ctx.fillRect(px + 6, py + 8, 8, 5);
+          ctx.fillRect(px + 18, py + 19, 9, 5);
+          if (cell.type === 'spawn') {
+            ctx.fillStyle = 'rgba(0, 149, 233, 0.35)';
+            ctx.fillRect(px + 2, py + 2, TILE - 4, TILE - 4);
+            ctx.strokeStyle = '#79d2ff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(px + 3, py + 3, TILE - 6, TILE - 6);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 9px Consolas, monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('SPAWN', px + 16, py + 19);
+          }
+        } else {
+          ctx.fillStyle = (x + y) % 2 === 0 ? pal.g1 : pal.g2;
+          ctx.fillRect(px, py, TILE, TILE);
+          if ((x * 5 + y * 7) % 3 === 0) {
+            ctx.fillStyle = pal.accent;
+            ctx.fillRect(px + 10, py + 14, 2, 4);
+            ctx.fillRect(px + 14, py + 16, 2, 3);
+          }
+          if (cell.type === 'tilled') {
+            ctx.fillStyle = cell.watered ? '#4a2b20' : '#734532';
+            ctx.fillRect(px + 2, py + 2, TILE - 4, TILE - 4);
+            ctx.fillStyle = cell.watered ? '#3b2118' : '#5e3525';
+            for (let r = 6; r < 26; r += 6) ctx.fillRect(px + 4, py + r, TILE - 8, 2);
+            if (cell.watered) {
+              ctx.fillStyle = '#79d2ff';
+              ctx.fillRect(px + 24, py + 5, 3, 3);
+            }
+          }
+        }
+
+        // Crop sprite
+        if (cell.cropId) {
+          const c = CROPS.find(k => k.id === cell.cropId);
+          const sway = Math.round(Math.sin(tick * 0.08 + x));
+          if (cell.withered) {
+            ctx.fillStyle = '#5c4b3b';
+            ctx.fillRect(px + 10, py + 14, 12, 10);
+            ctx.fillStyle = '#3a2f26';
+            ctx.fillRect(px + 12, py + 10, 8, 6);
+          } else if (cell.stage === 0) {
+            ctx.fillStyle = '#EAD4AA';
+            ctx.fillRect(px + 10, py + 18, 3, 3);
+            ctx.fillRect(px + 18, py + 15, 3, 3);
+            ctx.fillRect(px + 14, py + 21, 3, 3);
+          } else if (cell.stage === 1) {
+            ctx.fillStyle = '#63C74D';
+            ctx.fillRect(px + 14, py + 16, 4, 8);
+            ctx.fillRect(px + 10, py + 14, 4, 4);
+            ctx.fillRect(px + 18, py + 14, 4, 4);
+          } else if (cell.stage === 2) {
+            ctx.fillStyle = '#38B764';
+            ctx.fillRect(px + 10, py + 10, 12, 14);
+            ctx.fillStyle = c.col;
+            ctx.fillRect(px + 13, py + 12, 6, 4);
+          } else {
+            // Mature glowing ready-to-harvest
+            ctx.fillStyle = '#2e8b57';
+            ctx.fillRect(px + 8, py + 14, 16, 12);
+            ctx.fillStyle = c.col;
+            ctx.fillRect(px + 7 + sway, py + 6, 18, 12);
+            ctx.fillStyle = '#FFE762';
+            ctx.fillRect(px + 12 + sway, py + 4, 8, 4);
+          }
+        }
+
+        // Subtle grid line
+        ctx.strokeStyle = 'rgba(0,0,0,0.16)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(px + 0.5, py + 0.5, TILE, TILE);
+      }
+    }
+
+    // 2. Placed Buildings
+    placedBuildings.forEach(b => {
+      const bx = b.x * TILE, by = b.y * TILE, bw = b.w * TILE, bh = b.h * TILE;
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.fillRect(bx + 4, by + bh - 4, bw - 2, 8);
+      // Walls
+      ctx.fillStyle = b.col;
+      ctx.fillRect(bx + 3, by + 16, bw - 6, bh - 18);
+      // Roof
+      ctx.fillStyle = b.roof;
+      ctx.fillRect(bx + 1, by + 2, bw - 2, Math.min(34, bh * 0.45));
+      ctx.strokeStyle = '#0e0b16';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(bx + 2, by + 2, bw - 4, bh - 4);
+      // Door interaction marker
+      ctx.fillStyle = '#4a2b20';
+      ctx.fillRect(bx + b.doorDx * TILE + 8, by + bh - 18, 16, 16);
+      // Label
+      ctx.fillStyle = 'rgba(14,11,22,0.82)';
+      ctx.fillRect(bx + 4, by + 6, bw - 8, 13);
+      ctx.fillStyle = '#FFE762';
+      ctx.font = 'bold 8.5px Consolas, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(b.name.slice(0, 16), bx + bw / 2, by + 15);
+    });
+
+    // 3. Hover Highlight OR Building Ghost Preview
+    if (hoverTile.x >= 0 && hoverTile.y >= 0) {
+      if (mode === 'FARM') {
+        ctx.strokeStyle = '#FFE762';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(hoverTile.x * TILE + 1, hoverTile.y * TILE + 1, TILE - 2, TILE - 2);
+      } else {
+        const check = validatePlacement(hoverTile.x, hoverTile.y);
+        const gx = hoverTile.x * TILE, gy = hoverTile.y * TILE;
+        const gw = check.bw * TILE, gh = check.bh * TILE;
+        ctx.fillStyle = check.valid ? 'rgba(56, 183, 100, 0.46)' : 'rgba(228, 59, 68, 0.52)';
+        ctx.fillRect(gx, gy, gw, gh);
+        ctx.strokeStyle = check.valid ? '#63C74D' : '#FF4D6D';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(gx + 1.5, gy + 1.5, gw - 3, gh - 3);
+        // Door interaction tile preview
+        const doorX = gx + Math.floor(check.bw / 2) * TILE;
+        const doorY = gy + gh;
+        if (doorY < ROWS * TILE) {
+          ctx.fillStyle = 'rgba(244,180,27,0.45)';
+          ctx.fillRect(doorX + 4, doorY + 4, TILE - 8, TILE - 8);
+          ctx.fillStyle = '#FFE762';
+          ctx.font = 'bold 9px Consolas, monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('[F]', doorX + 16, doorY + 19);
+        }
+        ctx.fillStyle = 'rgba(14,11,22,0.88)';
+        ctx.fillRect(gx + 4, gy + 4, Math.max(88, gw - 8), 16);
+        ctx.fillStyle = check.valid ? '#a7f070' : '#ffb3b8';
+        ctx.font = 'bold 9px Consolas, monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(check.valid ? `✓ OK (${check.bw}×${check.bh})` : '✕ BLOCKED', gx + 8, gy + 15);
+      }
+    }
+
+    // 4. Rain Overlay
+    if (isRain) {
+      ctx.fillStyle = 'rgba(121, 210, 255, 0.45)';
+      for (let i = 0; i < 42; i++) {
+        const rx = (i * 37 + tick * 2) % 512;
+        const ry = (i * 29 + tick * 6) % 320;
+        ctx.fillRect(rx, ry, 2, 7);
+      }
+    }
+
+    // 5. Floating Texts
+    ctx.textAlign = 'center';
+    for (let i = floats.length - 1; i >= 0; i--) {
+      const f = floats[i];
+      f.y -= 0.5; f.life--;
+      if (f.life <= 0) { floats.splice(i, 1); continue; }
+      ctx.font = 'bold 10px Consolas, monospace';
+      ctx.fillStyle = '#0e0b16'; ctx.fillText(f.txt, f.x + 1, f.y + 1);
+      ctx.fillStyle = f.col; ctx.fillText(f.txt, f.x, f.y);
+    }
+
+    requestAnimationFrame(drawGrid);
+  }
+
+  renderSeedCards();
+  renderBuildingCards();
+  renderAnimals();
+  drawGrid();
+</script>
+</body>
+</html>

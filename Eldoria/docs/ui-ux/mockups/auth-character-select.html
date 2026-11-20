@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eldoria — Auth, Starter Hero Selection & Loading Screen</title>
+<style>
+  :root {
+    --bg-obsidian: #181425;
+    --bg-slate: #262B44;
+    --bg-card: #2f3554;
+    --bg-elevated: #3A4466;
+    --border-dark: #0e0b16;
+    --border-wood: #733E39;
+    --gold: #F4B41B;
+    --gold-hi: #FFE762;
+    --gold-lo: #B47412;
+    --parchment: #EAD4AA;
+    --text-main: #F4F4F4;
+    --text-muted: #A9B4C9;
+    --emerald: #38B764;
+    --emerald-hi: #63C74D;
+    --crimson: #E43B44;
+    --azure: #0095E9;
+    --amber: #FEAE34;
+    --font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-px: "Consolas", "Courier New", "Lucida Console", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg-obsidian);
+    color: var(--text-main);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    line-height: 1.45;
+  }
+
+  /* Studio Nav */
+  .studio-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: #141020; border-bottom: 3px solid var(--gold);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.55);
+    padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .studio-brand {
+    display: flex; align-items: center; gap: 10px; font-family: var(--font-px);
+    font-weight: 700; color: var(--gold); text-shadow: 2px 2px 0 #000; font-size: 14px; text-decoration: none;
+  }
+  .nav-links { display: flex; flex-wrap: wrap; gap: 6px; }
+  .nav-links a {
+    font-family: var(--font-px); font-size: 12px; font-weight: 700; text-decoration: none;
+    color: var(--parchment); background: var(--bg-slate); padding: 5px 10px;
+    border: 2px solid #0e0b16;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.12), inset -2px -2px 0 rgba(0,0,0,0.45);
+  }
+  .nav-links a:hover { background: var(--bg-elevated); color: var(--gold-hi); }
+  .nav-links a.active { background: var(--gold); color: #181425; }
+
+  /* Toolbar */
+  .flow-bar {
+    background: #1d1930;
+    border-bottom: 2px solid var(--border-dark);
+    padding: 10px 18px;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .flow-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .px-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    font-family: var(--font-px); font-weight: 700; font-size: 12.5px; padding: 7px 13px;
+    cursor: pointer; border: 2px solid var(--border-dark); color: var(--text-main);
+    background: var(--bg-elevated);
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.16), inset -2px -2px 0 rgba(0,0,0,0.45), 0 3px 0 var(--border-dark);
+  }
+  .px-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+  .px-btn:active { transform: translateY(2px); box-shadow: inset 2px 2px 0 rgba(0,0,0,0.45); }
+  .px-btn:focus-visible { outline: 3px solid var(--gold-hi); outline-offset: 2px; }
+  .px-btn.gold { background: var(--gold); color: #181425; box-shadow: inset 2px 2px 0 var(--gold-hi), inset -2px -2px 0 var(--gold-lo), 0 3px 0 var(--border-dark); }
+  .px-btn.emerald { background: var(--emerald); color: #0e1d12; box-shadow: inset 2px 2px 0 var(--emerald-hi), inset -2px -2px 0 #1f6b3a, 0 3px 0 var(--border-dark); }
+  .px-btn.crimson { background: var(--crimson); color: #fff; }
+  .px-btn.azure { background: var(--azure); color: #fff; }
+  .px-btn:disabled { background: #3b3e52; color: #7f869e; cursor: not-allowed; filter: none; transform: none; }
+
+  .px-panel {
+    background: var(--bg-slate);
+    border: 3px solid var(--border-dark);
+    box-shadow: inset 3px 3px 0 rgba(255,255,255,0.1), inset -3px -3px 0 rgba(0,0,0,0.45), 0 6px 0 rgba(0,0,0,0.5);
+  }
+  .px-panel-gold {
+    background: var(--bg-slate);
+    border: 3px solid var(--gold);
+    box-shadow: 0 0 0 3px var(--border-dark), inset 3px 3px 0 rgba(255,231,98,0.14), inset -3px -3px 0 rgba(0,0,0,0.5), 0 8px 0 rgba(0,0,0,0.55);
+  }
+  .px-badge {
+    font-family: var(--font-px); font-size: 11px; font-weight: 700; padding: 2px 7px;
+    border: 2px solid var(--border-dark); background: #1c2036; color: var(--parchment); display: inline-block;
+  }
+  .px-badge.gold { background: #3b2d12; color: var(--gold-hi); border-color: var(--gold-lo); }
+  .px-badge.emerald { background: #133122; color: var(--emerald-hi); border-color: var(--emerald); }
+  .px-badge.crimson { background: #3a141c; color: #ff858c; border-color: var(--crimson); }
+  .px-badge.azure { background: #102a42; color: #6ad3ff; border-color: var(--azure); }
+
+  .view-section { display: none; padding: 22px 18px 48px; max-width: 1300px; margin: 0 auto; }
+  .view-section.active { display: block; }
+
+  /* VIEW 1: LOGIN / REGISTER */
+  .auth-stage {
+    position: relative;
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    border: 3px solid var(--border-dark);
+    overflow: hidden;
+    background: #120f1d;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.5);
+  }
+  #authBgCanvas {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; image-rendering: pixelated; opacity: 0.72;
+  }
+  .auth-card {
+    position: relative; z-index: 2; width: 100%; max-width: 460px; padding: 24px;
+    background: rgba(30, 34, 56, 0.96);
+  }
+  .auth-title {
+    text-align: center; margin-bottom: 16px;
+  }
+  .auth-title h1 {
+    font-family: var(--font-px); font-size: 24px; color: var(--gold-hi);
+    text-shadow: 3px 3px 0 #0e0b16; letter-spacing: 1px;
+  }
+  .auth-title p { font-size: 12.5px; color: var(--parchment); margin-top: 4px; }
+  .mode-switch {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 16px;
+  }
+  .field-group { margin-bottom: 12px; }
+  .field-group label {
+    display: block; font-family: var(--font-px); font-size: 12px; font-weight: 700;
+    color: var(--parchment); margin-bottom: 5px;
+  }
+  .px-input {
+    width: 100%; padding: 9px 11px; font-family: var(--font-px); font-size: 13.5px;
+    background: #141122; color: #fff; border: 2px solid #4a557c;
+    box-shadow: inset 2px 2px 0 rgba(0,0,0,0.6);
+  }
+  .px-input:focus { outline: none; border-color: var(--gold); }
+  .px-input.err { border-color: var(--crimson); background: #26121a; }
+
+  .alert-box {
+    display: none; padding: 10px 12px; margin-bottom: 14px; font-size: 12.5px;
+    border: 2px solid var(--border-dark); font-family: var(--font-px);
+  }
+  .alert-box.show { display: block; }
+  .alert-box.error { background: #3b141c; border-color: var(--crimson); color: #ffb3b8; }
+  .alert-box.warn { background: #3b2610; border-color: var(--amber); color: var(--gold-hi); }
+  .alert-box.ok { background: #143622; border-color: var(--emerald); color: #9effb8; }
+
+  .json-note {
+    margin-top: 14px; padding: 10px; background: #141122; border: 2px dashed #4a557c;
+    font-family: var(--font-px); font-size: 11px; color: var(--text-muted);
+  }
+  .spinner-px {
+    display: inline-block; width: 14px; height: 14px;
+    border: 3px solid rgba(255,255,255,0.2); border-top-color: #181425;
+    animation: spinStep 0.7s steps(8) infinite;
+  }
+  @keyframes spinStep { to { transform: rotate(360deg); } }
+
+  /* VIEW 2: STARTER HERO SELECTION */
+  .hero-select-grid {
+    display: grid;
+    grid-template-columns: 310px 1fr 370px;
+    gap: 18px;
+    align-items: start;
+  }
+  @media (max-width: 1120px) { .hero-select-grid { grid-template-columns: 1fr; } }
+
+  .roster-list { display: flex; flex-direction: column; gap: 12px; }
+  .hero-pick-card {
+    padding: 14px; cursor: pointer; background: var(--bg-card);
+    border: 3px solid var(--border-dark);
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.08), 0 4px 0 rgba(0,0,0,0.45);
+    display: flex; align-items: center; gap: 12px; transition: transform 0.08s;
+  }
+  .hero-pick-card:hover { transform: translateX(3px); border-color: var(--parchment); }
+  .hero-pick-card.selected {
+    border-color: var(--gold);
+    background: #353c63;
+    box-shadow: 0 0 0 2px var(--border-dark), inset 3px 3px 0 rgba(255,231,98,0.18), 0 4px 0 rgba(0,0,0,0.5);
+  }
+  .mini-portrait {
+    width: 56px; height: 64px; background: #141122; border: 2px solid var(--border-dark);
+    flex-shrink: 0; image-rendering: pixelated;
+  }
+
+  .stage-center {
+    padding: 18px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .sprite-pedestal {
+    width: 100%; max-width: 380px; background: #141122; border: 3px solid var(--border-dark);
+    padding: 14px; position: relative;
+    box-shadow: inset 0 0 0 2px var(--border-wood);
+  }
+  #heroSpriteCanvas {
+    width: 240px; height: 240px; image-rendering: pixelated; image-rendering: crisp-edges;
+    display: block; margin: 0 auto;
+  }
+  .anim-controls {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 8px;
+  }
+  .stat-bars { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; }
+  .stat-item {
+    background: #181425; border: 2px solid var(--border-dark); padding: 6px 8px;
+    font-family: var(--font-px); font-size: 11.5px;
+  }
+  .stat-row-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .bar-track { height: 8px; background: #0d0a14; border: 1px solid #3a4466; }
+  .bar-fill { height: 100%; transition: width 0.25s; }
+
+  .details-right { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .skill-list { display: flex; flex-direction: column; gap: 8px; }
+  .skill-item {
+    background: #181425; border: 2px solid var(--border-dark); padding: 9px 10px;
+  }
+  .skill-item-top {
+    display: flex; justify-content: space-between; align-items: center; gap: 6px;
+    font-family: var(--font-px); font-size: 12px; font-weight: 700; color: var(--gold-hi); margin-bottom: 3px;
+  }
+  .skill-item p { font-size: 12px; color: var(--text-muted); }
+
+  /* VIEW 3: LOADING SCREEN */
+  .loading-stage {
+    min-height: 560px; display: flex; flex-direction: column; justify-content: space-between;
+    padding: 28px; position: relative; overflow: hidden; background: #120f1d;
+    border: 3px solid var(--gold); box-shadow: 0 0 0 3px var(--border-dark), 0 8px 0 rgba(0,0,0,0.55);
+  }
+  #loadingCanvas {
+    width: 100%; max-width: 640px; height: auto; margin: 0 auto; display: block;
+    border: 3px solid var(--border-dark); image-rendering: pixelated;
+  }
+  .load-progress-wrap {
+    margin-top: 16px;
+  }
+  .load-bar-outer {
+    height: 28px; background: #0e0b16; border: 3px solid var(--gold-lo); padding: 3px;
+    box-shadow: inset 2px 2px 0 rgba(0,0,0,0.8);
+  }
+  .load-bar-inner {
+    height: 100%; width: 0%; background: repeating-linear-gradient(90deg, #38B764 0px, #38B764 14px, #63C74D 14px, #63C74D 20px);
+    transition: width 0.2s steps(6);
+  }
+</style>
+</head>
+<body>
+
+<nav class="studio-nav">
+  <a class="studio-brand" href="index.html">
+    <svg width="20" height="20" viewBox="0 0 16 16"><rect x="7" y="1" width="2" height="9" fill="#FFE762"/><rect x="4" y="10" width="8" height="2" fill="#E4A672"/><rect x="7" y="12" width="2" height="3" fill="#733E39"/></svg>
+    ELDORIA UI MOCKUP SUITE
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Hub</a>
+    <a href="auth-character-select.html" class="active">1. Auth &amp; Hero</a>
+    <a href="main-hud-world.html">2. HUD &amp; World</a>
+    <a href="inventory-blacksmith-enhance.html">3. Kho đồ &amp; +10 Forge</a>
+    <a href="gacha-collection.html">4. Gacha &amp; 12 Hero</a>
+    <a href="farming-building-grid.html">5. Nông trại &amp; Xây dựng</a>
+    <a href="boss-raid-party.html">6. Boss Raid &amp; Party</a>
+  </div>
+</nav>
+
+<div class="flow-bar">
+  <div class="flow-tabs">
+    <button class="px-btn gold" id="tabAuth" onclick="switchView('auth')">① Đăng nhập / Đăng ký (Local JSON)</button>
+    <button class="px-btn" id="tabHero" onclick="switchView('hero')">② Chọn Starter Hero (3 MVP)</button>
+    <button class="px-btn" id="tabLoad" onclick="switchView('loading')">③ Màn hình Tải (Loading Screen)</button>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+    <span style="font-family:var(--font-px); font-size:11.5px; color:var(--text-muted);">Mô phỏng trạng thái Auth:</span>
+    <button class="px-btn" style="padding:4px 9px; font-size:11px;" onclick="simAuthState('default')">Default</button>
+    <button class="px-btn crimson" style="padding:4px 9px; font-size:11px;" onclick="simAuthState('error')">Validation Error</button>
+    <button class="px-btn azure" style="padding:4px 9px; font-size:11px;" onclick="simAuthState('loading')">Loading</button>
+    <button class="px-btn" style="padding:4px 9px; font-size:11px; background:#734218;" onclick="simAuthState('disconnected')">Server Offline</button>
+  </div>
+</div>
+
+<!-- VIEW 1: LOGIN / REGISTER -->
+<section class="view-section active" id="view-auth">
+  <div class="auth-stage">
+    <canvas id="authBgCanvas" width="320" height="180"></canvas>
+    <div class="auth-card px-panel-gold">
+      <div class="auth-title">
+        <span class="px-badge gold" style="margin-bottom:6px;">LOCAL JSON AUTH • ZERO 3RD-PARTY</span>
+        <h1>ELDORIA: FORGOTTEN WILDS</h1>
+        <p>Thế giới 16-bit Open-World Pixel RPG — Đăng nhập cục bộ an toàn</p>
+      </div>
+
+      <div class="mode-switch">
+        <button class="px-btn gold" id="btnModeLogin" onclick="setAuthMode('login')">Đăng nhập</button>
+        <button class="px-btn" id="btnModeReg" onclick="setAuthMode('register')">Đăng ký mới</button>
+      </div>
+
+      <div class="alert-box" id="authAlert"></div>
+
+      <form id="authForm" onsubmit="handleAuthSubmit(event)" novalidate>
+        <div class="field-group">
+          <label for="inpUser">Tên tài khoản (Username — 3 đến 16 ký tự)</label>
+          <input class="px-input" id="inpUser" type="text" value="Adventurer_VN" placeholder="vd: KaelPlayer99" autocomplete="off">
+        </div>
+        <div class="field-group">
+          <label for="inpPass">Mật khẩu (băm Argon2id / scrypt tại server)</label>
+          <input class="px-input" id="inpPass" type="password" value="Eldoria@2026" placeholder="Tối thiểu 8 ký tự">
+        </div>
+        <div class="field-group" id="confirmWrap" style="display:none;">
+          <label for="inpConfirm">Xác nhận mật khẩu</label>
+          <input class="px-input" id="inpConfirm" type="password" placeholder="Nhập lại mật khẩu">
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-size:12px; color:var(--text-muted);">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" checked> Lưu phiên cục bộ (HMAC-SHA256)
+          </label>
+          <span style="font-family:var(--font-px); color:var(--emerald-hi);">● Local Server Online</span>
+        </div>
+
+        <button type="submit" class="px-btn gold" id="btnAuthSubmit" style="width:100%; padding:11px; font-size:14px;">
+          ▶ ĐĂNG NHẬP VÀO ELDORIA
+        </button>
+      </form>
+
+      <div class="json-note">
+        <strong style="color:var(--gold-hi);">Kiến trúc Xác thực (Constitution Principle I):</strong><br>
+        • Lưu tài khoản tại <code>data/db/accounts/&lt;accountId&gt;.json</code> + chỉ mục <code>indexes/username-to-account.json</code>.<br>
+        • Không dùng Auth0/Firebase/OAuth bên thứ ba; mật khẩu băm <code>scrypt</code> chuẩn Node.js và ghi WAL nguyên tử khi tạo mới.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VIEW 2: STARTER CHARACTER SELECTION -->
+<section class="view-section" id="view-hero">
+  <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:16px;">
+    <div>
+      <h2 style="font-family:var(--font-px); font-size:21px; color:var(--gold-hi); text-shadow:2px 2px 0 #000;">
+        CHỌN NHÂN VẬT KHỞI ĐẦU (MVP STARTER HEROES)
+      </h2>
+      <p style="font-size:13px; color:var(--parchment);">
+        Chọn miễn phí 1 trong 3 anh hùng chuẩn tại <code>reg_greenhaven_village</code>. Hai nhân vật còn lại có thể mở khóa qua gameplay &amp; Gacha nội tệ (<code>Starlight Shard</code>).
+      </p>
+    </div>
+    <span class="px-badge emerald">SPRITE CHUẨN 48×64 PX • 4-DIRECTION MVP</span>
+  </div>
+
+  <div class="hero-select-grid">
+    <!-- Left: 3 Hero Cards -->
+    <div class="roster-list" id="heroCardList"></div>
+
+    <!-- Center: Live Pixel Sprite Canvas + Stat Bars + Name Input -->
+    <div class="px-panel-gold stage-center">
+      <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:6px;">
+        <span class="px-badge gold" id="selHeroId">chr_kael_vanguard</span>
+        <span class="px-badge azure" id="selHeroClass">WARRIOR • MELEE_DPS</span>
+        <span class="px-badge crimson" id="selHeroElem">FIRE</span>
+        <span class="px-badge" style="color:#0095E9; border-color:#0095E9;" id="selHeroRarity">RARE</span>
+      </div>
+
+      <h3 id="selHeroName" style="font-family:var(--font-px); font-size:22px; color:var(--gold-hi); text-shadow:2px 2px 0 #000;">Kael Ironbound</h3>
+      <div id="selHeroTitle" style="font-size:12.5px; color:var(--parchment); margin-top:-8px;">Vanguard of the Ashen Hearth</div>
+
+      <div class="sprite-pedestal">
+        <canvas id="heroSpriteCanvas" width="96" height="96"></canvas>
+        <div style="font-family:var(--font-px); font-size:11px; color:var(--text-muted); margin-top:4px;" id="spriteMetaLabel">
+          Hướng: SOUTH (S) • State: IDLE • 48×64 Base Frame
+        </div>
+        <div class="anim-controls">
+          <button class="px-btn" style="padding:4px 8px; font-size:11px;" onclick="setSpriteDir('S')">▼ Nam</button>
+          <button class="px-btn" style="padding:4px 8px; font-size:11px;" onclick="setSpriteDir('W')">◀ Tây</button>
+          <button class="px-btn" style="padding:4px 8px; font-size:11px;" onclick="setSpriteDir('E')">▶ Đông</button>
+          <button class="px-btn" style="padding:4px 8px; font-size:11px;" onclick="setSpriteDir('N')">▲ Bắc</button>
+        </div>
+        <div class="anim-controls">
+          <button class="px-btn gold" id="animIdle" style="padding:4px 8px; font-size:11px;" onclick="setSpriteAnim('idle')">Idle</button>
+          <button class="px-btn" id="animWalk" style="padding:4px 8px; font-size:11px;" onclick="setSpriteAnim('walk')">Walk</button>
+          <button class="px-btn" id="animAttack" style="padding:4px 8px; font-size:11px;" onclick="setSpriteAnim('attack')">Attack</button>
+          <button class="px-btn" id="animSkill" style="padding:4px 8px; font-size:11px;" onclick="setSpriteAnim('skill')">Skill VFX</button>
+        </div>
+      </div>
+
+      <!-- Canonical Base Stats Bars -->
+      <div class="stat-bars" id="heroStatBars"></div>
+
+      <!-- Create Character Footer -->
+      <div style="width:100%; background:#181425; border:2px solid var(--border-dark); padding:12px; text-align:left;">
+        <label for="charDisplayName" style="font-family:var(--font-px); font-size:11.5px; color:var(--parchment); display:block; margin-bottom:6px;">
+          Đặt tên hiển thị nhân vật (3–16 ký tự, lưu tại <code>data/db/characters/*.json</code>):
+        </label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input class="px-input" id="charDisplayName" value="Kael_Greenhaven" style="flex:1; min-width:160px;">
+          <button class="px-btn emerald" onclick="startJourney()">▶ BẮT ĐẦU HÀNH TRÌNH</button>
+        </div>
+        <div style="font-family:var(--font-px); font-size:11px; color:var(--text-muted); margin-top:6px;">
+          Điểm xuất phát: <code>reg_greenhaven_village</code> (Căn nhà gỗ <code>bld_player_house</code> Lv 1 + Vũ khí khởi đầu)
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Radar + Lore + 5 Skills -->
+    <div class="px-panel details-right">
+      <div>
+        <div style="font-family:var(--font-px); font-size:13px; font-weight:700; color:var(--gold-hi); margin-bottom:6px;">
+          BIỂU ĐỒ VAI TRÒ (ROLE RADAR)
+        </div>
+        <div style="background:#181425; border:2px solid var(--border-dark); padding:10px; display:flex; align-items:center; justify-content:center;">
+          <svg id="radarSvg" width="240" height="190" viewBox="0 0 240 190" aria-label="Character Role Radar Chart"></svg>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-family:var(--font-px); font-size:13px; font-weight:700; color:var(--gold-hi); margin-bottom:4px;">
+          TIỂU SỬ &amp; BẢN SẮC
+        </div>
+        <p id="selHeroLore" style="font-size:12.5px; color:var(--parchment);"></p>
+      </div>
+
+      <div>
+        <div style="font-family:var(--font-px); font-size:13px; font-weight:700; color:var(--gold-hi); margin-bottom:6px;">
+          BỘ 5 KỸ NĂNG ĐỘC BẢN (<code>skills.json</code>)
+        </div>
+        <div class="skill-list" id="heroSkillList"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VIEW 3: LOADING SCREEN PREVIEW -->
+<section class="view-section" id="view-loading">
+  <div class="loading-stage">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <div>
+        <span class="px-badge gold">LOADING ZONE • REG_GREENHAVEN_VILLAGE</span>
+        <h2 style="font-family:var(--font-px); color:var(--gold-hi); font-size:22px; margin-top:6px;" id="loadHeroHeading">
+          ĐANG TIẾN VÀO GREENHAVEN VILLAGE...
+        </h2>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="px-btn gold" onclick="replayLoading()">↻ Chạy lại Loading (0%→100%)</button>
+        <a class="px-btn emerald" href="main-hud-world.html">Vào Main HUD World →</a>
+      </div>
+    </div>
+
+    <div style="margin:18px 0;">
+      <canvas id="loadingCanvas" width="320" height="140"></canvas>
+    </div>
+
+    <div class="load-progress-wrap">
+      <div style="display:flex; justify-content:space-between; font-family:var(--font-px); font-size:13px; margin-bottom:6px;">
+        <span id="loadStepText" style="color:var(--parchment);">Khởi tạo Texture Atlas 16-bit (nearest-neighbor)...</span>
+        <span id="loadPercent" style="color:var(--gold-hi); font-weight:700;">0%</span>
+      </div>
+      <div class="load-bar-outer">
+        <div class="load-bar-inner" id="loadBarFill"></div>
+      </div>
+      <div style="margin-top:14px; padding:12px; background:#1c2036; border:2px solid var(--border-dark); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div style="font-size:13px; color:var(--parchment);">
+          <strong style="color:var(--gold-hi); font-family:var(--font-px);">MẸO THÁM HIỂM:</strong>
+          <span id="loadTipText">Cường hóa vũ khí tại Lò Rèn từ +1 đến +10 trong MVP có tỷ lệ thành công 100%, không bao giờ vỡ đồ hay tụt cấp!</span>
+        </div>
+        <button class="px-btn" style="padding:4px 10px; font-size:11px;" onclick="nextTip()">Mẹo khác ▸</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Canonical Starter Heroes Data (100% aligned with game-data/characters.json & skills.json)
+  const HEROES = [
+    {
+      id: 'chr_kael_vanguard',
+      name: 'Kael Ironbound',
+      title: 'Vanguard of the Ashen Hearth',
+      class: 'WARRIOR',
+      role: 'MELEE_DPS',
+      element: 'FIRE',
+      elemColor: '#E43B44',
+      rarity: 'RARE',
+      weapon: 'SWORD (Iron Longsword)',
+      colors: { primary: '#C83E2B', accent: '#F28C28', armor: '#5A6988', skin: '#F2C9A0', hair: '#3B241D' },
+      stats: { hp: 195, mp: 85, stamina: 120, atk: 28, def: 18, moveSpeed: 152, critRate: '8%', str: 15, agi: 11, int: 8 },
+      radar: [82, 86, 68, 64, 78], // Sinh tồn, Sát thương, Cơ động, Hỗ trợ/CC, Nguyên tố
+      lore: 'Cựu đội trưởng tuần tra biên giới của Lò Rèn Cổ Ironpeak, Kael chuyển về Greenhaven Village sau trận hỏa hoạn rừng rậm năm xưa. Anh mang theo thanh kiếm rèn từ thép tro tàn, bảo vệ người định cư mới.',
+      skills: [
+        { type: 'PASSIVE', name: 'Forged Resolve', meta: 'Tối đa 5 tầng', desc: 'Đánh kẻ địch bị Thiêu Đốt tích Nhiệt Huyết (+4% ATK & +3% ASPD/tầng); ở 5 tầng tăng +6% ATK cho đồng đội.' },
+        { type: 'ACTIVE [1]', name: 'Blazing Lunge', meta: 'CD 5.5s • 14 MP', desc: 'Lao 160 px bằng kiếm lửa xuyên mục tiêu, gây sát thương Lửa và áp dụng Thiêu Đốt (Burn) 4 giây.' },
+        { type: 'ACTIVE [2]', name: 'Cinder Parry', meta: 'CD 8.0s • 12 MP', desc: 'Đỡ kiếm trong 550 ms giảm 70% sát thương; đỡ chuẩn 300 ms đầu phản sóng lửa, hồi 20 Stamina và gây 45 Poise.' },
+        { type: 'ACTIVE [3]', name: 'Sunder Cleave', meta: 'CD 9.0s • 22 MP', desc: 'Chém quạt 135° phá 20% DEF mục tiêu trong 6 giây và kích nổ thêm sát thương theo số tầng Burn.' },
+        { type: 'ULTIMATE [4]', name: 'Crimson Crescent', meta: 'CD 28s • 45 MP', desc: 'Phóng kiếm khí lưỡi liềm đỏ rực xuyên đội hình địch, gây sát thương Hỏa cực lớn và 70 sát thương Poise.' }
+      ]
+    },
+    {
+      id: 'chr_lyra_windrunner',
+      name: 'Lyra Galeweaver',
+      title: 'Whisper of the Emerald Canopy',
+      class: 'ARCHER',
+      role: 'RANGED_DPS',
+      element: 'WIND',
+      elemColor: '#38B764',
+      rarity: 'RARE',
+      weapon: 'BOW (Ashwood Shortbow)',
+      colors: { primary: '#2E8B57', accent: '#7CE0C3', armor: '#4A5D52', skin: '#F5D3B3', hair: '#C98A4B' },
+      stats: { hp: 155, mp: 100, stamina: 125, atk: 27, def: 13, moveSpeed: 164, critRate: '11%', str: 8, agi: 15, int: 9 },
+      radar: [56, 88, 96, 72, 82],
+      lore: 'Người dẫn đường trẻ tuổi trưởng thành giữa tán cổ thụ Whispering Forest. Lyra đọc hướng gió để lần dấu thú rừng, dẫn đường qua sương mù và khuếch tán nguyên tố cực mạnh.',
+      skills: [
+        { type: 'PASSIVE', name: 'Tailwind Stride', meta: 'Tự kích hoạt', desc: 'Sau khi dùng kỹ năng hoặc né đòn, tăng +12% tốc độ di chuyển và tốc độ bắn trong 4 giây.' },
+        { type: 'ACTIVE [1]', name: 'Gale Volley', meta: 'CD 5.0s • 14 MP', desc: 'Bắn 5 mũi tên gió hình nan quạt xuyên giáp nhẹ, dễ dàng dọn quái rừng tầm xa.' },
+        { type: 'ACTIVE [2]', name: 'Zephyr Vault', meta: 'CD 8.5s • 16 MP', desc: 'Nhảy lùi nhanh tạo i-frame tránh đòn đồng thời bắn mũi tên đẩy lùi mục tiêu áp sát.' },
+        { type: 'ACTIVE [3]', name: 'Cyclone Snare', meta: 'CD 12.0s • 24 MP', desc: 'Tạo lốc xoáy hút quái về tâm và kích hoạt phản ứng Khuếch tán (Swirl) mọi nguyên tố trên chiến trường.' },
+        { type: 'ULTIMATE [4]', name: 'Tempest Arrowstorm', meta: 'CD 30s • 45 MP', desc: 'Triệu hồi cơn mưa tên gió diện rộng liên tục gây sát thương Wind và tăng tốc chạy cho cả party.' }
+      ]
+    },
+    {
+      id: 'chr_seraphina_dawn',
+      name: 'Seraphina Solis',
+      title: 'Keeper of the First Dawn',
+      class: 'HEALER',
+      role: 'SUPPORT',
+      element: 'LIGHT',
+      elemColor: '#F4B41B',
+      rarity: 'RARE',
+      weapon: 'STAFF (Oak Acolyte Staff)',
+      colors: { primary: '#EAD4AA', accent: '#F4B41B', armor: '#5C8FD6', skin: '#F7D7BA', hair: '#F6C945' },
+      stats: { hp: 170, mp: 140, stamina: 105, atk: 21, def: 15, moveSpeed: 148, critRate: '6%', str: 6, agi: 9, int: 17 },
+      radar: [74, 58, 62, 98, 90],
+      lore: 'Tư tế trẻ của Tu viện Bình Minh, Seraphina rời điện thờ để chữa lành cho dân làng và nhà thám hiểm. Cây quyền trượng lồng đèn ánh sáng của cô xua tan bóng tối lẫn độc tố rừng sâu.',
+      skills: [
+        { type: 'PASSIVE', name: 'Radiant Grace', meta: 'CD nội tại 10s', desc: 'Khi đồng đội xuống dưới 35% HP, tự động ban khiên Ánh sáng hấp thụ sát thương và tăng 15% lượng hồi máu.' },
+        { type: 'ACTIVE [1]', name: 'Dawn Mend', meta: 'CD 7.5s • 24 MP', desc: 'Hồi máu tức thì và hồi dần theo giây cho đồng minh trong vùng ánh sáng đồng thời thanh tẩy 1 debuff.' },
+        { type: 'ACTIVE [2]', name: 'Searing Halo', meta: 'CD 7.0s • 18 MP', desc: 'Phóng vòng sáng gây sát thương Light và đánh dấu khiến mục tiêu chịu thêm +12% sát thương từ cả tổ đội.' },
+        { type: 'ACTIVE [3]', name: 'Sanctuary Ward', meta: 'CD 14.0s • 28 MP', desc: 'Dựng kết giới Ánh sáng giúp tổ đội giảm 25% sát thương nhận vào và miễn nhiễm làm chậm/độc.' },
+        { type: 'ULTIMATE [4]', name: 'Solar Judgment', meta: 'CD 32s • 55 MP', desc: 'Gọi cột ánh sáng Bình Minh giáng xuống gây sát thương Light lớn lên Boss và hồi phục mạnh cho toàn party.' }
+      ]
+    }
+  ];
+
+  let selectedHeroIdx = 0;
+  let spriteDir = 'S';
+  let spriteAnim = 'idle';
+  let authMode = 'login';
+
+  function switchView(view) {
+    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    ['tabAuth', 'tabHero', 'tabLoad'].forEach(id => document.getElementById(id).classList.remove('gold'));
+    if (view === 'auth') document.getElementById('tabAuth').classList.add('gold');
+    if (view === 'hero') document.getElementById('tabHero').classList.add('gold');
+    if (view === 'loading') {
+      document.getElementById('tabLoad').classList.add('gold');
+      replayLoading();
+    }
+  }
+
+  // Auth Logic
+  function setAuthMode(mode) {
+    authMode = mode;
+    document.getElementById('btnModeLogin').classList.toggle('gold', mode === 'login');
+    document.getElementById('btnModeReg').classList.toggle('gold', mode === 'register');
+    document.getElementById('confirmWrap').style.display = mode === 'register' ? 'block' : 'none';
+    document.getElementById('btnAuthSubmit').innerHTML = mode === 'login' ? '▶ ĐĂNG NHẬP VÀO ELDORIA' : '✦ TẠO TÀI KHOẢN LOCAL JSON';
+    simAuthState('default');
+  }
+
+  function simAuthState(state) {
+    switchView('auth');
+    const alert = document.getElementById('authAlert');
+    const u = document.getElementById('inpUser');
+    const p = document.getElementById('inpPass');
+    const btn = document.getElementById('btnAuthSubmit');
+    u.classList.remove('err'); p.classList.remove('err');
+    btn.disabled = false;
+    btn.innerHTML = authMode === 'login' ? '▶ ĐĂNG NHẬP VÀO ELDORIA' : '✦ TẠO TÀI KHOẢN LOCAL JSON';
+    alert.className = 'alert-box';
+
+    if (state === 'error') {
+      u.classList.add('err'); p.classList.add('err');
+      alert.className = 'alert-box error show';
+      alert.innerHTML = '✕ <strong>LỖI XÁC THỰC (401):</strong> Mật khẩu phải từ 8 ký tự trở lên hoặc tên tài khoản không khớp trong <code>data/db/accounts/</code>.';
+    } else if (state === 'loading') {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-px"></span> ĐANG XÁC THỰC LOCAL JSON &amp; TẠO PHIÊN...';
+      alert.className = 'alert-box ok show';
+      alert.innerHTML = '⏳ Đang kiểm tra hash scrypt và khóa aggregate mutex <code>acc_9041.json</code>...';
+    } else if (state === 'disconnected') {
+      alert.className = 'alert-box warn show';
+      alert.innerHTML = '⚠ <strong>KHÔNG THỂ KẾT NỐI GAME SERVER (ECONNREFUSED):</strong> Máy chủ NestJS cục bộ chưa phản hồi. Tự động thử lại sau 5 giây...';
+    }
+  }
+
+  function handleAuthSubmit(e) {
+    e.preventDefault();
+    const u = document.getElementById('inpUser').value.trim();
+    const p = document.getElementById('inpPass').value;
+    const c = document.getElementById('inpConfirm').value;
+    if (u.length < 3 || u.length > 16 || p.length < 8) {
+      simAuthState('error');
+      return;
+    }
+    if (authMode === 'register' && p !== c) {
+      const alert = document.getElementById('authAlert');
+      alert.className = 'alert-box error show';
+      alert.innerHTML = '✕ Mật khẩu xác nhận không trùng khớp!';
+      return;
+    }
+    simAuthState('loading');
+    setTimeout(() => {
+      simAuthState('default');
+      document.getElementById('charDisplayName').value = u;
+      switchView('hero');
+    }, 750);
+  }
+
+  // Draw crisp pixel character sprite (base 48x64 centered on canvas)
+  function drawHeroSprite(ctx, hero, dir, anim, tick, scale, ox, oy) {
+    const px = (x, y, w, h, col) => {
+      ctx.fillStyle = col;
+      ctx.fillRect(Math.floor(ox + x * scale), Math.floor(oy + y * scale), Math.ceil(w * scale), Math.ceil(h * scale));
+    };
+    const walkBob = anim === 'walk' ? Math.round(Math.sin(tick * 0.25)) : (anim === 'idle' ? Math.round(Math.sin(tick * 0.08) * 0.6) : 0);
+    const legSwing = anim === 'walk' ? Math.round(Math.sin(tick * 0.25) * 2) : 0;
+    const atkPhase = anim === 'attack' ? Math.sin(tick * 0.35) : 0;
+    const skillPulse = anim === 'skill' ? (Math.sin(tick * 0.3) + 1) * 0.5 : 0;
+    const c = hero.colors;
+
+    // Ground Shadow
+    px(14, 54, 20, 5, 'rgba(0,0,0,0.45)');
+
+    // Skill aura ring under feet
+    if (anim === 'skill') {
+      px(8 - skillPulse * 2, 51, 32 + skillPulse * 4, 8, hero.elemColor);
+      px(11, 53, 26, 4, '#141122');
+    }
+
+    // Cape (behind when facing S/W/E, in front when facing N)
+    if (dir !== 'N') {
+      px(14, 26 + walkBob, 20, 22, c.primary);
+      px(12, 32 + walkBob, 24, 15, c.primary);
+    }
+
+    // Legs & Boots
+    px(17, 46 + legSwing, 5, 9, '#3E2731');
+    px(26, 46 - legSwing, 5, 9, '#3E2731');
+    px(17, 43, 5, 4, c.armor);
+    px(26, 43, 5, 4, c.armor);
+
+    // Torso Armor
+    px(16, 25 + walkBob, 16, 19, c.armor);
+    px(18, 27 + walkBob, 12, 14, c.primary);
+    px(16, 39 + walkBob, 16, 3, c.accent); // belt
+
+    // Shoulder Pauldrons
+    px(13, 25 + walkBob, 5, 6, c.armor);
+    px(30, 25 + walkBob, 5, 6, c.accent);
+
+    // Cape back when facing North
+    if (dir === 'N') {
+      px(14, 27 + walkBob, 20, 21, c.primary);
+      px(16, 29 + walkBob, 16, 3, c.accent);
+    }
+
+    // Head
+    px(17, 11 + walkBob, 14, 13, c.skin);
+    // Hair / Hood
+    if (hero.id === 'chr_lyra_windrunner') {
+      px(15, 8 + walkBob, 18, 8, '#2E8B57');
+      px(14, 12 + walkBob, 4, 12, '#2E8B57');
+      px(30, 12 + walkBob, 4, 12, '#2E8B57');
+      px(17, 13 + walkBob, 14, 3, c.hair);
+    } else {
+      px(16, 8 + walkBob, 16, 6, c.hair);
+      px(15, 11 + walkBob, 3, 7, c.hair);
+      px(30, 11 + walkBob, 3, 7, c.hair);
+      if (hero.id === 'chr_seraphina_dawn') {
+        px(16, 10 + walkBob, 16, 2, '#FFE762'); // dawn circlet
+      }
+    }
+
+    // Eyes based on direction
+    if (dir === 'S') {
+      px(19, 17 + walkBob, 2, 3, '#181425');
+      px(27, 17 + walkBob, 2, 3, '#181425');
+    } else if (dir === 'W') {
+      px(18, 17 + walkBob, 2, 3, '#181425');
+      px(23, 17 + walkBob, 2, 3, '#181425');
+    } else if (dir === 'E') {
+      px(23, 17 + walkBob, 2, 3, '#181425');
+      px(28, 17 + walkBob, 2, 3, '#181425');
+    } else {
+      // North shows back of hair
+      px(16, 12 + walkBob, 16, 11, hero.id === 'chr_lyra_windrunner' ? '#2E8B57' : c.hair);
+    }
+
+    // Iconic Weapon
+    const wShift = Math.round(atkPhase * 6);
+    const wx = dir === 'W' ? 7 - wShift : 35 + wShift;
+    if (hero.id === 'chr_kael_vanguard') {
+      // Ember Sword
+      px(wx, 12 + walkBob - wShift, 4, 24, '#C0CBDC');
+      px(wx + 1, 13 + walkBob - wShift, 2, 20, '#F28C28');
+      px(wx - 2, 34 + walkBob - wShift, 8, 3, '#F4B41B');
+      px(wx + 1, 37 + walkBob - wShift, 2, 5, '#733E39');
+      if (anim === 'attack' || anim === 'skill') {
+        px(wx + 4, 14 + walkBob, 8, 18, 'rgba(242,140,40,0.65)');
+        px(wx + 7, 18 + walkBob, 6, 12, 'rgba(255,231,98,0.8)');
+      }
+    } else if (hero.id === 'chr_lyra_windrunner') {
+      // Gale Recurve Bow
+      px(wx, 16 + walkBob, 3, 24, '#B86F50');
+      px(wx + 2, 14 + walkBob, 3, 4, '#7CE0C3');
+      px(wx + 2, 38 + walkBob, 3, 4, '#7CE0C3');
+      px(wx - 1, 18 + walkBob, 1, 20, '#EAD4AA');
+      if (anim === 'attack' || anim === 'skill') {
+        const ax = wx + 4 + ((tick * 3) % 14);
+        px(ax, 27 + walkBob, 9, 2, '#7CE0C3');
+        px(ax + 7, 26 + walkBob, 3, 4, '#FFFFFF');
+      }
+    } else {
+      // Dawn Lantern Staff
+      px(wx, 14 + walkBob, 3, 34, '#8A6238');
+      px(wx - 2, 10 + walkBob, 7, 7, '#F4B41B');
+      px(wx - 1, 11 + walkBob, 5, 5, '#FFF7E0');
+      if (anim === 'attack' || anim === 'skill') {
+        px(wx - 5, 7 + walkBob, 13, 13, 'rgba(255,231,98,0.35)');
+        px(wx - 2, 4 + walkBob - Math.round(skillPulse*4), 7, 4, '#FFE762');
+      }
+    }
+  }
+
+  function renderHeroCards() {
+    const list = document.getElementById('heroCardList');
+    list.innerHTML = '';
+    HEROES.forEach((h, idx) => {
+      const card = document.createElement('div');
+      card.className = 'hero-pick-card' + (idx === selectedHeroIdx ? ' selected' : '');
+      card.onclick = () => selectHero(idx);
+      card.innerHTML = `
+        <canvas class="mini-portrait" width="48" height="64" id="miniPort_${idx}"></canvas>
+        <div style="flex:1;">
+          <div style="font-family:var(--font-px); font-size:14px; font-weight:700; color:var(--gold-hi);">${h.name}</div>
+          <div style="font-family:var(--font-px); font-size:11px; color:var(--parchment); margin:2px 0;">${h.class} • ${h.role}</div>
+          <div style="display:flex; gap:5px; margin-top:4px;">
+            <span class="px-badge" style="color:${h.elemColor}; border-color:${h.elemColor};">${h.element}</span>
+            <span class="px-badge azure">${h.rarity}</span>
+          </div>
+        </div>
+      `;
+      list.appendChild(card);
+      const mc = card.querySelector('canvas').getContext('2d');
+      mc.imageSmoothingEnabled = false;
+      drawHeroSprite(mc, h, 'S', 'idle', 0, 1, 0, 0);
+    });
+  }
+
+  function renderRadar(values, color) {
+    const labels = ['Sinh tồn', 'Sát thương', 'Cơ động', 'Hỗ trợ', 'Nguyên tố'];
+    const cx = 120, cy = 98, r = 64;
+    let svg = '';
+    // Web rings
+    [0.33, 0.66, 1].forEach(k => {
+      const pts = labels.map((_, i) => {
+        const a = -Math.PI/2 + (i * 2 * Math.PI / 5);
+        return `${(cx + Math.cos(a)*r*k).toFixed(1)},${(cy + Math.sin(a)*r*k).toFixed(1)}`;
+      }).join(' ');
+      svg += `<polygon points="${pts}" fill="none" stroke="#3A4466" stroke-width="1.5"/>`;
+    });
+    // Axes & labels
+    labels.forEach((lb, i) => {
+      const a = -Math.PI/2 + (i * 2 * Math.PI / 5);
+      const x2 = cx + Math.cos(a)*r, y2 = cy + Math.sin(a)*r;
+      const lx = cx + Math.cos(a)*(r+18), ly = cy + Math.sin(a)*(r+15);
+      svg += `<line x1="${cx}" y1="${cy}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#3A4466" stroke-width="1"/>`;
+      svg += `<text x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}" text-anchor="middle" fill="#EAD4AA" font-family="Consolas,monospace" font-size="10" font-weight="700">${lb}</text>`;
+    });
+    // Data polygon
+    const dPts = values.map((v, i) => {
+      const a = -Math.PI/2 + (i * 2 * Math.PI / 5);
+      const rk = (v / 100) * r;
+      return `${(cx + Math.cos(a)*rk).toFixed(1)},${(cy + Math.sin(a)*rk).toFixed(1)}`;
+    }).join(' ');
+    svg += `<polygon points="${dPts}" fill="${color}" fill-opacity="0.32" stroke="${color}" stroke-width="2.5"/>`;
+    values.forEach((v, i) => {
+      const a = -Math.PI/2 + (i * 2 * Math.PI / 5);
+      const rk = (v / 100) * r;
+      svg += `<rect x="${(cx + Math.cos(a)*rk - 3).toFixed(1)}" y="${(cy + Math.sin(a)*rk - 3).toFixed(1)}" width="6" height="6" fill="#FFE762" stroke="#0e0b16"/>`;
+    });
+    document.getElementById('radarSvg').innerHTML = svg;
+  }
+
+  function selectHero(idx) {
+    selectedHeroIdx = idx;
+    const h = HEROES[idx];
+    renderHeroCards();
+    document.getElementById('selHeroId').textContent = h.id;
+    document.getElementById('selHeroClass').textContent = `${h.class} • ${h.role}`;
+    const elemEl = document.getElementById('selHeroElem');
+    elemEl.textContent = h.element;
+    elemEl.style.color = h.elemColor;
+    elemEl.style.borderColor = h.elemColor;
+    document.getElementById('selHeroName').textContent = h.name;
+    document.getElementById('selHeroTitle').textContent = `${h.title} — Vũ khí: ${h.weapon}`;
+    document.getElementById('selHeroLore').textContent = h.lore;
+
+    const bars = [
+      { label: 'HP Gốc', val: h.stats.hp, max: 220, col: '#E43B44' },
+      { label: 'MP Gốc', val: h.stats.mp, max: 160, col: '#0095E9' },
+      { label: 'ATK', val: h.stats.atk, max: 35, col: '#FEAE34' },
+      { label: 'DEF', val: h.stats.def, max: 25, col: '#63C74D' },
+      { label: 'Stamina', val: h.stats.stamina, max: 140, col: '#38B764' },
+      { label: 'Move Speed', val: h.stats.moveSpeed + ' px/s', num: h.stats.moveSpeed, max: 180, col: '#7CE0C3' }
+    ];
+    document.getElementById('heroStatBars').innerHTML = bars.map(b => {
+      const pct = Math.min(100, Math.round(((b.num || b.val) / b.max) * 100));
+      return `
+        <div class="stat-item">
+          <div class="stat-row-top"><span>${b.label}</span><strong style="color:${b.col}">${b.val}</strong></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${b.col};"></div></div>
+        </div>
+      `;
+    }).join('');
+
+    renderRadar(h.radar, h.elemColor);
+
+    document.getElementById('heroSkillList').innerHTML = h.skills.map(s => `
+      <div class="skill-item">
+        <div class="skill-item-top">
+          <span>[${s.type}] ${s.name}</span>
+          <span style="color:#79d2ff; font-size:10.5px;">${s.meta}</span>
+        </div>
+        <p>${s.desc}</p>
+      </div>
+    `).join('');
+  }
+
+  function setSpriteDir(d) {
+    spriteDir = d;
+    updateSpriteMeta();
+  }
+  function setSpriteAnim(a) {
+    spriteAnim = a;
+    ['animIdle', 'animWalk', 'animAttack', 'animSkill'].forEach(id => document.getElementById(id).classList.remove('gold'));
+    document.getElementById('anim' + a.charAt(0).toUpperCase() + a.slice(1)).classList.add('gold');
+    updateSpriteMeta();
+  }
+  function updateSpriteMeta() {
+    const names = { S: 'SOUTH (S)', W: 'WEST (W)', E: 'EAST (E)', N: 'NORTH (N)' };
+    document.getElementById('spriteMetaLabel').textContent = `Hướng: ${names[spriteDir]} • State: ${spriteAnim.toUpperCase()} • 48×64 Base Frame`;
+  }
+
+  function startJourney() {
+    const nm = document.getElementById('charDisplayName').value.trim() || 'Adventurer';
+    document.getElementById('loadHeroHeading').textContent = `CHÀO MỪNG ${nm.toUpperCase()} (${HEROES[selectedHeroIdx].name}) TỚI GREENHAVEN VILLAGE...`;
+    switchView('loading');
+  }
+
+  // Loading Screen Simulator
+  const LOAD_STEPS = [
+    { p: 15, txt: 'Tải Texture Atlas 16-bit (nearest-neighbor filtering)...' },
+    { p: 38, txt: 'Đọc dữ liệu gốc game-data/*.json (Characters, Skills, Items)...' },
+    { p: 64, txt: 'Đồng bộ trạng thái nhân vật từ data/db/characters/*.json...' },
+    { p: 86, txt: 'Kết nối Zone Server 20 Hz — reg_greenhaven_village...' },
+    { p: 100, txt: 'Hoàn tất! Sẵn sàng khám phá Eldoria: Forgotten Wilds.' }
+  ];
+  const TIPS = [
+    'Cường hóa vũ khí tại Lò Rèn từ +1 đến +10 trong MVP có tỷ lệ thành công 100%, không bao giờ vỡ đồ hay tụt cấp!',
+    'Mọi kỹ năng và Ultimate đều được thiết kế không che khuất vùng cảnh báo Đỏ (Telegraph) của Boss.',
+    'Thu hoạch nông sản tại Greenhaven Village để nấu món ăn buff ATK/DEF trước khi vào hầm ngục Mossroot Hollow.',
+    'Gacha trong MVP hoàn toàn dùng Starlight Shard kiếm từ nhiệm vụ, khám phá và hạ Boss — công khai 100% xác suất & Pity.'
+  ];
+  let tipIdx = 0;
+  let loadTimer = null;
+
+  function nextTip() {
+    tipIdx = (tipIdx + 1) % TIPS.length;
+    document.getElementById('loadTipText').textContent = TIPS[tipIdx];
+  }
+
+  function replayLoading() {
+    if (loadTimer) clearInterval(loadTimer);
+    let step = 0;
+    document.getElementById('loadBarFill').style.width = '0%';
+    document.getElementById('loadPercent').textContent = '0%';
+    document.getElementById('loadStepText').textContent = 'Đang khởi tạo...';
+    loadTimer = setInterval(() => {
+      if (step >= LOAD_STEPS.length) { clearInterval(loadTimer); return; }
+      const s = LOAD_STEPS[step++];
+      document.getElementById('loadBarFill').style.width = s.p + '%';
+      document.getElementById('loadPercent').textContent = s.p + '%';
+      document.getElementById('loadStepText').textContent = s.txt;
+    }, 520);
+  }
+
+  // Animation Loops (Auth BG, Hero Sprite, Loading Walk)
+  let tick = 0;
+  const authCtx = document.getElementById('authBgCanvas').getContext('2d');
+  const heroCtx = document.getElementById('heroSpriteCanvas').getContext('2d');
+  const loadCtx = document.getElementById('loadingCanvas').getContext('2d');
+  authCtx.imageSmoothingEnabled = false;
+  heroCtx.imageSmoothingEnabled = false;
+  loadCtx.imageSmoothingEnabled = false;
+
+  function animateAll() {
+    tick++;
+    // 1. Auth Starlit Forest BG
+    authCtx.fillStyle = '#181425'; authCtx.fillRect(0, 0, 320, 180);
+    authCtx.fillStyle = '#262B44'; authCtx.fillRect(0, 45, 320, 50);
+    authCtx.fillStyle = '#193c3e'; authCtx.fillRect(0, 95, 320, 85);
+    for (let i = 0; i < 36; i++) {
+      const sx = (i * 43 + 11) % 316, sy = (i * 19 + 5) % 85;
+      authCtx.fillStyle = (Math.sin(tick * 0.05 + i) > 0) ? '#FFE762' : '#5A6988';
+      authCtx.fillRect(sx, sy, 2, 2);
+    }
+    // Moon
+    authCtx.fillStyle = '#EAD4AA'; authCtx.fillRect(250, 20, 26, 26);
+    authCtx.fillStyle = '#262B44'; authCtx.fillRect(257, 23, 18, 18);
+    // Silhouette trees
+    for (let tx = 0; tx < 320; tx += 28) {
+      const h = 34 + (tx % 3) * 10;
+      authCtx.fillStyle = '#122629';
+      authCtx.fillRect(tx, 118 - h, 22, h + 20);
+      authCtx.fillRect(tx + 5, 110 - h, 12, 10);
+    }
+    // Warm cottage lantern glow
+    authCtx.fillStyle = '#5a3122'; authCtx.fillRect(130, 116, 60, 32);
+    authCtx.fillStyle = '#FFE762'; authCtx.fillRect(154, 128, 12, 10);
+
+    // 2. Hero Pedestal Sprite
+    heroCtx.clearRect(0, 0, 96, 96);
+    // Pixel floor disc
+    heroCtx.fillStyle = '#262B44'; heroCtx.fillRect(18, 70, 60, 16);
+    heroCtx.fillStyle = '#3A4466'; heroCtx.fillRect(22, 72, 52, 12);
+    drawHeroSprite(heroCtx, HEROES[selectedHeroIdx], spriteDir, spriteAnim, tick, 1.35, 16, 6);
+
+    // 3. Loading Screen Walking Hero
+    loadCtx.fillStyle = '#181425'; loadCtx.fillRect(0, 0, 320, 140);
+    loadCtx.fillStyle = '#262B44'; loadCtx.fillRect(0, 48, 320, 42);
+    loadCtx.fillStyle = '#265c42'; loadCtx.fillRect(0, 88, 320, 52);
+    loadCtx.fillStyle = '#b86f50'; loadCtx.fillRect(0, 108, 320, 18);
+    // Scrolling trees
+    for (let i = 0; i < 8; i++) {
+      const tx = ((i * 54 - tick * 1.2) % 432 + 432) % 432 - 40;
+      loadCtx.fillStyle = '#5a3629'; loadCtx.fillRect(tx + 8, 76, 6, 18);
+      loadCtx.fillStyle = '#1e5b3a'; loadCtx.fillRect(tx, 54, 22, 24);
+      loadCtx.fillStyle = '#38b764'; loadCtx.fillRect(tx + 4, 48, 14, 12);
+    }
+    drawHeroSprite(loadCtx, HEROES[selectedHeroIdx], 'E', 'walk', tick, 0.9, 138, 62);
+
+    requestAnimationFrame(animateAll);
+  }
+
+  selectHero(0);
+  animateAll();
+</script>
+</body>
+</html>

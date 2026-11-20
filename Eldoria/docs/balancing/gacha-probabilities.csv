@@ -1,0 +1,25 @@
+banner_id,banner_name,banner_type,mvp,currency_type,single_pull_cost,ten_pull_cost,rarity,base_rate,base_rate_pct,soft_pity_start,soft_pity_slope,hard_pity,pity_conditional_split,epic_pity_guarantee,pool_size,dup_star_essence_base,dup_star_essence_overflow
+bnr_perm_heroes,Heroes of Eldoria,PERMANENT_CHARACTER,true,STARLIGHT_SHARD,160,1600,MYTHIC,0.004,0.40%,65,0.06,80,0.25,10,2,150,300
+bnr_perm_heroes,Heroes of Eldoria,PERMANENT_CHARACTER,true,STARLIGHT_SHARD,160,1600,LEGENDARY,0.012,1.20%,65,0.06,80,0.75,10,2,80,160
+bnr_perm_heroes,Heroes of Eldoria,PERMANENT_CHARACTER,true,STARLIGHT_SHARD,160,1600,EPIC,0.084,8.40%,65,0.06,80,0.00,10,3,30,60
+bnr_perm_heroes,Heroes of Eldoria,PERMANENT_CHARACTER,true,STARLIGHT_SHARD,160,1600,RARE,0.300,30.00%,65,0.06,80,0.00,10,3,12,24
+bnr_perm_heroes,Heroes of Eldoria,PERMANENT_CHARACTER,true,STARLIGHT_SHARD,160,1600,UNCOMMON,0.350,35.00%,65,0.06,80,0.00,10,1,5,10
+bnr_perm_heroes,Heroes of Eldoria,PERMANENT_CHARACTER,true,STARLIGHT_SHARD,160,1600,COMMON,0.250,25.00%,65,0.06,80,0.00,10,1,2,4
+bnr_perm_arsenal,Arsenal of the Wilds,PERMANENT_WEAPON,true,STARLIGHT_SHARD,160,1600,MYTHIC,0.005,0.50%,55,0.065,70,0.25,10,4,120,120
+bnr_perm_arsenal,Arsenal of the Wilds,PERMANENT_WEAPON,true,STARLIGHT_SHARD,160,1600,LEGENDARY,0.015,1.50%,55,0.065,70,0.75,10,10,60,60
+bnr_perm_arsenal,Arsenal of the Wilds,PERMANENT_WEAPON,true,STARLIGHT_SHARD,160,1600,EPIC,0.090,9.00%,55,0.065,70,0.00,10,11,20,20
+bnr_perm_arsenal,Arsenal of the Wilds,PERMANENT_WEAPON,true,STARLIGHT_SHARD,160,1600,RARE,0.300,30.00%,55,0.065,70,0.00,10,8,8,8
+bnr_perm_arsenal,Arsenal of the Wilds,PERMANENT_WEAPON,true,STARLIGHT_SHARD,160,1600,UNCOMMON,0.340,34.00%,55,0.065,70,0.00,10,5,3,3
+bnr_perm_arsenal,Arsenal of the Wilds,PERMANENT_WEAPON,true,STARLIGHT_SHARD,160,1600,COMMON,0.250,25.00%,55,0.065,70,0.00,10,2,1,1
+bnr_lim_storm_sovereign,Sovereign of Storm & Void,LIMITED_CHARACTER,false,STARLIGHT_SHARD,160,1600,MYTHIC,0.004,0.40%,65,0.06,80,0.25,10,2,150,300
+bnr_lim_storm_sovereign,Sovereign of Storm & Void,LIMITED_CHARACTER,false,STARLIGHT_SHARD,160,1600,LEGENDARY,0.012,1.20%,65,0.06,80,0.75,10,2,80,160
+bnr_lim_storm_sovereign,Sovereign of Storm & Void,LIMITED_CHARACTER,false,STARLIGHT_SHARD,160,1600,EPIC,0.084,8.40%,65,0.06,80,0.00,10,3,30,60
+bnr_lim_storm_sovereign,Sovereign of Storm & Void,LIMITED_CHARACTER,false,STARLIGHT_SHARD,160,1600,RARE,0.300,30.00%,65,0.06,80,0.00,10,3,12,24
+bnr_lim_storm_sovereign,Sovereign of Storm & Void,LIMITED_CHARACTER,false,STARLIGHT_SHARD,160,1600,UNCOMMON,0.350,35.00%,65,0.06,80,0.00,10,1,5,10
+bnr_lim_storm_sovereign,Sovereign of Storm & Void,LIMITED_CHARACTER,false,STARLIGHT_SHARD,160,1600,COMMON,0.250,25.00%,65,0.06,80,0.00,10,1,2,4
+bnr_lim_dragonforge,Dragonforge Relics,LIMITED_WEAPON,false,STARLIGHT_SHARD,160,1600,MYTHIC,0.005,0.50%,55,0.065,70,0.25,10,4,120,120
+bnr_lim_dragonforge,Dragonforge Relics,LIMITED_WEAPON,false,STARLIGHT_SHARD,160,1600,LEGENDARY,0.015,1.50%,55,0.065,70,0.75,10,10,60,60
+bnr_lim_dragonforge,Dragonforge Relics,LIMITED_WEAPON,false,STARLIGHT_SHARD,160,1600,EPIC,0.090,9.00%,55,0.065,70,0.00,10,11,20,20
+bnr_lim_dragonforge,Dragonforge Relics,LIMITED_WEAPON,false,STARLIGHT_SHARD,160,1600,RARE,0.300,30.00%,55,0.065,70,0.00,10,8,8,8
+bnr_lim_dragonforge,Dragonforge Relics,LIMITED_WEAPON,false,STARLIGHT_SHARD,160,1600,UNCOMMON,0.340,34.00%,55,0.065,70,0.00,10,5,3,3
+bnr_lim_dragonforge,Dragonforge Relics,LIMITED_WEAPON,false,STARLIGHT_SHARD,160,1600,COMMON,0.250,25.00%,55,0.065,70,0.00,10,2,1,1

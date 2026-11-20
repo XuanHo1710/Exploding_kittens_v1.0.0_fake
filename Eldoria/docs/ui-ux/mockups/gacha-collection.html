@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eldoria — Fair In-Game Gacha & 12-Hero Collection</title>
+<style>
+  :root {
+    --bg-obsidian: #181425;
+    --bg-slate: #262B44;
+    --bg-card: #2f3554;
+    --bg-elevated: #3A4466;
+    --border-dark: #0e0b16;
+    --gold: #F4B41B;
+    --gold-hi: #FFE762;
+    --gold-lo: #B47412;
+    --parchment: #EAD4AA;
+    --text-main: #F4F4F4;
+    --text-muted: #A9B4C9;
+    --emerald: #38B764;
+    --emerald-hi: #63C74D;
+    --crimson: #E43B44;
+    --azure: #0095E9;
+    --rarity-COMMON: #C0CBDC;
+    --rarity-UNCOMMON: #63C74D;
+    --rarity-RARE: #0095E9;
+    --rarity-EPIC: #C06EFF;
+    --rarity-LEGENDARY: #F4B41B;
+    --rarity-MYTHIC: #FF4D6D;
+    --font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-px: "Consolas", "Courier New", "Lucida Console", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-obsidian); color: var(--text-main); font-family: var(--font-ui); min-height: 100vh; line-height: 1.45; }
+
+  .studio-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: #141020; border-bottom: 3px solid var(--gold);
+    padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .studio-brand {
+    display: flex; align-items: center; gap: 10px; font-family: var(--font-px);
+    font-weight: 700; color: var(--gold); text-shadow: 2px 2px 0 #000; font-size: 14px; text-decoration: none;
+  }
+  .nav-links { display: flex; flex-wrap: wrap; gap: 6px; }
+  .nav-links a {
+    font-family: var(--font-px); font-size: 12px; font-weight: 700; text-decoration: none;
+    color: var(--parchment); background: var(--bg-slate); padding: 5px 10px; border: 2px solid #0e0b16;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.12), inset -2px -2px 0 rgba(0,0,0,0.45);
+  }
+  .nav-links a:hover { background: var(--bg-elevated); color: var(--gold-hi); }
+  .nav-links a.active { background: var(--gold); color: #181425; }
+
+  .wallet-strip {
+    background: #1d1930; border-bottom: 2px solid var(--border-dark);
+    padding: 9px 18px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .px-badge {
+    font-family: var(--font-px); font-size: 11px; font-weight: 700; padding: 3px 8px;
+    border: 2px solid var(--border-dark); background: #141122; color: var(--parchment); display: inline-block;
+  }
+  .px-badge.gold { background: #3b2d12; color: var(--gold-hi); border-color: var(--gold-lo); }
+  .px-badge.emerald { background: #133122; color: var(--emerald-hi); border-color: var(--emerald); }
+  .px-badge.azure { background: #102a42; color: #79d2ff; border-color: var(--azure); }
+
+  .px-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    font-family: var(--font-px); font-weight: 700; font-size: 12px; padding: 7px 13px;
+    cursor: pointer; border: 2px solid var(--border-dark); color: var(--text-main); background: var(--bg-elevated);
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.16), inset -2px -2px 0 rgba(0,0,0,0.45), 0 3px 0 var(--border-dark);
+  }
+  .px-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+  .px-btn:active { transform: translateY(2px); }
+  .px-btn.gold { background: var(--gold); color: #181425; box-shadow: inset 2px 2px 0 var(--gold-hi), inset -2px -2px 0 var(--gold-lo), 0 3px 0 var(--border-dark); }
+  .px-btn.emerald { background: var(--emerald); color: #0e1d12; }
+  .px-btn.azure { background: var(--azure); color: #fff; }
+  .px-btn.crimson { background: var(--crimson); color: #fff; }
+
+  .px-panel {
+    background: var(--bg-slate); border: 3px solid var(--border-dark);
+    box-shadow: inset 3px 3px 0 rgba(255,255,255,0.09), inset -3px -3px 0 rgba(0,0,0,0.45), 0 6px 0 rgba(0,0,0,0.45);
+    padding: 16px;
+  }
+  .px-panel-gold {
+    background: var(--bg-slate); border: 3px solid var(--gold);
+    box-shadow: 0 0 0 3px var(--border-dark), inset 3px 3px 0 rgba(255,231,98,0.12), inset -3px -3px 0 rgba(0,0,0,0.5), 0 7px 0 rgba(0,0,0,0.5);
+    padding: 16px;
+  }
+
+  .container { max-width: 1320px; margin: 18px auto 48px; padding: 0 16px; }
+  .main-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+
+  /* Summon Layout */
+  .summon-grid { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 960px) { .summon-grid { grid-template-columns: 1fr; } }
+
+  .banner-item {
+    background: #181425; border: 3px solid #3a4466; padding: 12px; cursor: pointer; margin-bottom: 10px;
+  }
+  .banner-item.active { border-color: var(--gold); background: #2a2f4d; }
+  .banner-stage {
+    position: relative; background: #120f1d; border: 3px solid var(--border-dark); overflow: hidden; margin-bottom: 14px;
+  }
+  #altarCanvas { width: 100%; height: 220px; display: block; image-rendering: pixelated; }
+  .banner-overlay {
+    position: absolute; inset: 0; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;
+    pointer-events: none;
+  }
+  .pity-bar-wrap {
+    background: #181425; border: 2px solid var(--border-dark); padding: 10px 12px; margin-bottom: 14px;
+  }
+  .pity-track {
+    height: 14px; background: #0e0b16; border: 2px solid #3a4466; margin: 6px 0; position: relative;
+  }
+  .pity-fill { height: 100%; background: linear-gradient(90deg, #0095E9, #C06EFF, #F4B41B); transition: width 0.25s; }
+  .soft-marker {
+    position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--gold-hi);
+  }
+
+  .pull-actions {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;
+  }
+  @media (max-width: 600px) { .pull-actions { grid-template-columns: 1fr; } }
+
+  .error-inline {
+    display: none; background: #3b141c; border: 2px solid var(--crimson); padding: 9px 12px;
+    font-family: var(--font-px); font-size: 12px; color: #ffb3b8; margin-bottom: 12px;
+  }
+  .error-inline.show { display: block; }
+
+  /* Pull Results Cards */
+  .results-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px;
+  }
+  .pull-card {
+    background: #181425; border: 3px solid var(--border-dark); padding: 10px; text-align: center;
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px;
+    animation: popIn 0.2s steps(4);
+  }
+  @keyframes popIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .pull-card.r-COMMON { border-color: var(--rarity-COMMON); }
+  .pull-card.r-UNCOMMON { border-color: var(--rarity-UNCOMMON); }
+  .pull-card.r-RARE { border-color: var(--rarity-RARE); }
+  .pull-card.r-EPIC { border-color: var(--rarity-EPIC); box-shadow: 0 0 12px rgba(192,110,255,0.28); }
+  .pull-card.r-LEGENDARY { border-color: var(--rarity-LEGENDARY); box-shadow: 0 0 16px rgba(244,180,27,0.42); background: #262018; }
+  .pull-card.r-MYTHIC { border-color: var(--rarity-MYTHIC); box-shadow: 0 0 18px rgba(255,77,109,0.5); background: #2c1522; }
+
+  .dup-tag {
+    font-family: var(--font-px); font-size: 9.5px; font-weight: 700; padding: 2px 5px;
+    background: #133122; color: #a7f070; border: 1px solid #38B764;
+  }
+  .new-tag {
+    font-family: var(--font-px); font-size: 9.5px; font-weight: 700; padding: 2px 5px;
+    background: var(--gold); color: #181425; border: 1px solid #000;
+  }
+
+  /* 12-Hero Collection Grid */
+  .hero-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(235px, 1fr)); gap: 12px;
+  }
+  .hero-col-card {
+    background: #181425; border: 3px solid #3a4466; padding: 12px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .hero-col-card.owned { background: #222742; }
+  .hero-col-card.locked { opacity: 0.62; border-style: dashed; }
+
+  /* History Table */
+  .hist-table { width: 100%; border-collapse: collapse; font-family: var(--font-px); font-size: 11.5px; }
+  .hist-table th, .hist-table td { border: 1px solid #3a4466; padding: 7px 8px; text-align: left; }
+  .hist-table th { background: #141122; color: var(--gold-hi); }
+
+  /* Modal */
+  .modal-bg {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(10, 8, 18, 0.86); align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-bg.open { display: flex; }
+  .modal-content { max-width: 720px; width: 100%; max-height: 88vh; overflow-y: auto; }
+</style>
+</head>
+<body>
+
+<nav class="studio-nav">
+  <a class="studio-brand" href="index.html">
+    <svg width="20" height="20" viewBox="0 0 16 16"><rect x="7" y="1" width="2" height="9" fill="#FFE762"/><rect x="4" y="10" width="8" height="2" fill="#E4A672"/><rect x="7" y="12" width="2" height="3" fill="#733E39"/></svg>
+    ELDORIA UI MOCKUP SUITE
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Hub</a>
+    <a href="auth-character-select.html">1. Auth &amp; Hero</a>
+    <a href="main-hud-world.html">2. HUD &amp; World</a>
+    <a href="inventory-blacksmith-enhance.html">3. Kho đồ &amp; +10 Forge</a>
+    <a href="gacha-collection.html" class="active">4. Gacha &amp; 12 Hero</a>
+    <a href="farming-building-grid.html">5. Nông trại &amp; Xây dựng</a>
+    <a href="boss-raid-party.html">6. Boss Raid &amp; Party</a>
+  </div>
+</nav>
+
+<div class="wallet-strip">
+  <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px;">
+    <span class="px-badge emerald">100% TIỀN TỆ IN-GAME • KHÔNG NẠP TIỀN THẬT (MVP)</span>
+    <span class="px-badge azure">✦ Starlight Shards: <strong id="shardBal">16,000</strong></span>
+    <span class="px-badge gold">★ Star Essence (Đổi trùng lặp): <strong id="essenceBal">120</strong></span>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:6px;">
+    <button class="px-btn emerald" onclick="addShards(1600)">+1,600 Shard (Thưởng Boss/Quest)</button>
+    <button class="px-btn gold" onclick="openRatesModal()">📋 Công khai Xác suất (100.00%)</button>
+  </div>
+</div>
+
+<main class="container">
+  <div class="main-tabs">
+    <button class="px-btn gold" id="subSummon" onclick="switchTab('summon')">✦ Triệu hồi (Gacha Altar)</button>
+    <button class="px-btn" id="subRoster" onclick="switchTab('roster')">👥 Bộ sưu tập 12 Anh hùng (<span id="ownedHeroCount">3</span>/12)</button>
+    <button class="px-btn" id="subHistory" onclick="switchTab('history')">📜 Lịch sử Quay (<span id="histCount">0</span>)</button>
+  </div>
+
+  <!-- TAB 1: SUMMON ALTAR -->
+  <section id="tab-summon" class="summon-grid">
+    <!-- Banner Sidebar -->
+    <aside class="px-panel">
+      <div style="font-family:var(--font-px); font-size:13px; font-weight:700; color:var(--gold-hi); margin-bottom:10px;">
+        CHỌN BANNER CỐ ĐỊNH (MVP)
+      </div>
+      <div class="banner-item active" id="bnrBtnHeroes" onclick="selectBanner('bnr_perm_heroes')">
+        <span class="px-badge gold">CHARACTER BANNER</span>
+        <div style="font-family:var(--font-px); font-weight:700; font-size:14px; color:#fff; margin-top:4px;">Vọng Âm Anh Hùng</div>
+        <div style="font-family:var(--font-px); font-size:10.5px; color:#79d2ff;">ID: bnr_perm_heroes</div>
+        <div style="font-size:11.5px; color:var(--parchment); margin-top:4px;">Hard Pity: <strong>80</strong> • Soft Pity từ <strong>65</strong> • 10x bảo đảm EPIC+</div>
+      </div>
+
+      <div class="banner-item" id="bnrBtnArsenal" onclick="selectBanner('bnr_perm_arsenal')">
+        <span class="px-badge azure">WEAPON BANNER</span>
+        <div style="font-family:var(--font-px); font-weight:700; font-size:14px; color:#fff; margin-top:4px;">Kho Vũ Khí Cổ Đại</div>
+        <div style="font-family:var(--font-px); font-size:10.5px; color:#79d2ff;">ID: bnr_perm_arsenal</div>
+        <div style="font-size:11.5px; color:var(--parchment); margin-top:4px;">Hard Pity: <strong>70</strong> • Soft Pity từ <strong>55</strong> • 10x bảo đảm EPIC+</div>
+      </div>
+
+      <div class="banner-item" style="opacity:0.65; border-style:dashed; cursor:default;">
+        <span class="px-badge">ROADMAP M2+</span>
+        <div style="font-family:var(--font-px); font-weight:700; font-size:13px; color:var(--parchment); margin-top:4px;">Limited Event Banner</div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Bảo đảm 50/50 Featured — dự kiến mở ở phiên bản mở rộng sau MVP.</div>
+      </div>
+
+      <div style="background:#141122; border:2px dashed #4a557c; padding:9px; font-family:var(--font-px); font-size:10.5px; color:var(--text-muted);">
+        <strong style="color:var(--gold-hi);">Lưu ý minh bạch:</strong><br>
+        • Trang này chạy mô phỏng xác suất client-side để review UX.<br>
+        • Bản chạy thật (Production) dùng <code>crypto.randomInt</code> trên Server + khóa JSON WAL chống quay lặp.
+      </div>
+    </aside>
+
+    <!-- Main Banner Showcase & Pull Controls -->
+    <div class="px-panel-gold">
+      <div class="banner-stage">
+        <canvas id="altarCanvas" width="480" height="160"></canvas>
+        <div class="banner-overlay">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:6px;">
+            <div>
+              <span class="px-badge gold" id="bnrIdTag">bnr_perm_heroes</span>
+              <h2 id="bnrTitle" style="font-family:var(--font-px); font-size:22px; color:var(--gold-hi); text-shadow:3px 3px 0 #000; margin-top:4px;">
+                VỌNG ÂM ANH HÙNG — PERMANENT CHARACTER BANNER
+              </h2>
+            </div>
+            <span class="px-badge emerald">PUBLIC RATES • ZERO DARK PATTERNS</span>
+          </div>
+          <div id="bnrSubtext" style="font-size:12.5px; color:var(--parchment); background:rgba(14,11,22,0.78); padding:6px 10px; border-left:3px solid var(--gold); max-width:650px;">
+            Nhân vật COMMON/UNCOMMON/RARE đều hoàn thành 100% nội dung cốt lõi &amp; Boss Raid. Trùng lặp tự chuyển thành Constellation (C1–C6) và Star Essence.
+          </div>
+        </div>
+      </div>
+
+      <!-- Transparent Pity Bar -->
+      <div class="pity-bar-wrap">
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-family:var(--font-px); font-size:12px;">
+          <span>BỘ ĐẾM BẢO HIỂM (PITY): <strong id="pityCounterTxt" style="color:var(--gold-hi);">0 / 80</strong></span>
+          <span id="softPityStatus" style="color:#79d2ff;">Soft Pity kích hoạt từ lượt 65 • 10-Pull EPIC+: <strong id="epicCounterTxt">0 / 10</strong></span>
+        </div>
+        <div class="pity-track">
+          <div class="pity-fill" id="pityFill" style="width:0%;"></div>
+          <div class="soft-marker" id="softMarker" style="left:81.25%;" title="Mốc kích hoạt Soft Pity"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-family:var(--font-px); font-size:10px; color:var(--text-muted);">
+          <span>0</span>
+          <span id="softLabel">Soft Pity: 65</span>
+          <span id="hardLabel">Hard Pity (LEGENDARY/MYTHIC): 80</span>
+        </div>
+      </div>
+
+      <div class="error-inline" id="pullError"></div>
+
+      <!-- Pull Buttons -->
+      <div class="pull-actions">
+        <button class="px-btn azure" onclick="doPull(1)" style="padding:12px; font-size:14px;">
+          ✦ QUAY 1 LẦN (160 Starlight Shards)
+        </button>
+        <button class="px-btn gold" onclick="doPull(10)" style="padding:12px; font-size:14px;">
+          ★ QUAY 10 LẦN (1,600 Shards • Bảo đảm EPIC+)
+        </button>
+      </div>
+
+      <!-- Results Grid -->
+      <div style="font-family:var(--font-px); font-size:12.5px; color:var(--gold-hi); margin-bottom:8px;" id="resultsHeader">
+        KẾT QUẢ TRIỆU HỒI (Bấm Quay 1 lần hoặc Quay 10 lần để thử Pity &amp; Chuyển đổi Trùng lặp):
+      </div>
+      <div class="results-grid" id="resultsGrid">
+        <div style="grid-column:1/-1; border:2px dashed #4a557c; padding:26px; text-align:center; font-family:var(--font-px); font-size:12.5px; color:var(--text-muted);">
+          [Empty State] Chưa có lượt triệu hồi nào — bấm nút phía trên để kiểm chứng xác suất &amp; bộ đếm Pity!
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 2: 12-HERO COLLECTION -->
+  <section id="tab-roster" class="px-panel" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+      <div>
+        <h2 style="font-family:var(--font-px); color:var(--gold-hi); font-size:18px;">BỘ SƯU TẬP 12 ANH HÙNG CHUẨN (<code>game-data/characters.json</code>)</h2>
+        <p style="font-size:12.5px; color:var(--parchment);">3 Starter Hero khởi đầu mở sẵn. Quay trên <code>bnr_perm_heroes</code> sẽ mở khóa trực tiếp hoặc tăng Constellation (C1–C6) ngay tại đây!</p>
+      </div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="px-btn gold" onclick="filterRoster('ALL', this)">Tất cả (12)</button>
+        <button class="px-btn" onclick="filterRoster('OWNED', this)">Đã sở hữu</button>
+        <button class="px-btn" onclick="filterRoster('MYTHIC', this)">MYTHIC</button>
+        <button class="px-btn" onclick="filterRoster('LEGENDARY', this)">LEGENDARY</button>
+      </div>
+    </div>
+    <div class="hero-grid" id="heroRosterGrid"></div>
+  </section>
+
+  <!-- TAB 3: GACHA HISTORY LOG -->
+  <section id="tab-history" class="px-panel" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2 style="font-family:var(--font-px); color:var(--gold-hi); font-size:17px;">LỊCH SỬ TRIỆU HỒI (Lưu bất biến tại <code>data/db/gacha-history/*.json</code>)</h2>
+      <span class="px-badge emerald">MINH BẠCH • CÓ TX ID</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="hist-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Banner ID</th>
+            <th>Vật phẩm / Nhân vật</th>
+            <th>Độ hiếm</th>
+            <th>Pity lúc quay</th>
+            <th>Trạng thái / Đổi trùng</th>
+            <th>TX ID</th>
+          </tr>
+        </thead>
+        <tbody id="historyTableBody">
+          <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">Chưa có lịch sử quay nào trong phiên này.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<!-- PROBABILITY DISCLOSURE MODAL (SUMS TO 100.00%) -->
+<div class="modal-bg" id="ratesModal" onclick="if(event.target===this) closeRatesModal()">
+  <div class="modal-content px-panel-gold">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h3 style="font-family:var(--font-px); color:var(--gold-hi); font-size:16px;">📋 BẢNG CÔNG KHAI XÁC SUẤT &amp; QUY TẮC PITY</h3>
+      <button class="px-btn crimson" onclick="closeRatesModal()">✕ Đóng</button>
+    </div>
+    <p style="font-size:12.5px; color:var(--parchment); margin-bottom:12px;">
+      Tuân thủ Nguyên tắc VI Hiến pháp dự án: toàn bộ tỷ lệ cơ sở công khai minh bạch, tổng đúng <strong>100.00%</strong>, sử dụng 100% <code>STARLIGHT_SHARD</code> kiếm trong gameplay (MVP không có thanh toán tiền thật).
+    </p>
+    <table class="hist-table" style="margin-bottom:14px;">
+      <thead>
+        <tr>
+          <th>Độ hiếm (Rarity)</th>
+          <th>Tỷ lệ cơ sở</th>
+          <th>Chuyển đổi Trùng lặp (<code>STAR_ESSENCE</code>)</th>
+          <th>Constellation / Tinh luyện</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="color:var(--rarity-MYTHIC); font-weight:700;">MYTHIC</td><td><strong>0.40%</strong> (Hero) / <strong>0.50%</strong> (Wpn)</td><td>+150 / +300 (C6+) Hero • +120 Wpn</td><td>+1 Shard (tối đa C6)</td></tr>
+        <tr><td style="color:var(--rarity-LEGENDARY); font-weight:700;">LEGENDARY</td><td><strong>1.20%</strong> (Hero) / <strong>1.50%</strong> (Wpn)</td><td>+80 / +160 (C6+) Hero • +60 Wpn</td><td>+1 Shard (tối đa C6)</td></tr>
+        <tr><td style="color:var(--rarity-EPIC); font-weight:700;">EPIC</td><td><strong>8.40%</strong> (Hero) / <strong>9.00%</strong> (Wpn)</td><td>+30 / +60 (C6+) Hero • +20 Wpn</td><td>+1 Shard (tối đa C6)</td></tr>
+        <tr><td style="color:var(--rarity-RARE); font-weight:700;">RARE</td><td><strong>30.00%</strong></td><td>+12 / +24 (C6+) Hero • +8 Wpn</td><td>+1 Shard (tối đa C6)</td></tr>
+        <tr><td style="color:var(--rarity-UNCOMMON); font-weight:700;">UNCOMMON</td><td><strong>35.00%</strong> (Hero) / <strong>34.00%</strong> (Wpn)</td><td>+5 / +10 (C6+) Hero • +3 Wpn</td><td>+1 Shard (tối đa C6)</td></tr>
+        <tr><td style="color:var(--rarity-COMMON); font-weight:700;">COMMON</td><td><strong>25.00%</strong></td><td>+2 / +4 (C6+) Hero • +1 Wpn</td><td>+1 Shard (tối đa C6)</td></tr>
+        <tr style="background:#133122; color:#a7f070; font-weight:700;">
+          <td>TỔNG XÁC SUẤT (VERIFIED SUM)</td>
+          <td>100.00%</td>
+          <td colspan="2">Khớp 100% game-data/gacha-banners.json: Hero 0.40+1.20+8.40+30+35+25 = 100.00% | Weapon 0.50+1.50+9.00+30+34+25 = 100.00%</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="background:#141122; border:2px solid var(--border-dark); padding:10px; font-size:12px; color:var(--parchment);">
+      <strong>Cơ chế Bảo hiểm (Pity Rules — ASM-009):</strong><br>
+      • <strong>Character Banner (<code>bnr_perm_heroes</code>):</strong> Soft Pity bắt đầu từ lượt <strong>65</strong> (cộng thêm +6% tỷ lệ LEGENDARY/MYTHIC mỗi lượt); Hard Pity tại lượt <strong>80</strong> chắc chắn ra LEGENDARY hoặc MYTHIC.<br>
+      • <strong>Weapon Banner (<code>bnr_perm_arsenal</code>):</strong> Soft Pity bắt đầu từ lượt <strong>55</strong>; Hard Pity tại lượt <strong>70</strong>.<br>
+      • <strong>10-Pull Guarantee:</strong> Mỗi chuỗi 10 lượt bảo đảm tối thiểu 1 vật phẩm từ <strong>EPIC</strong> trở lên.
+    </div>
+  </div>
+</div>
+
+<script>
+  // All 12 Canonical Characters from game-data/characters.json
+  const ALL_HEROES = [
+    { id: 'chr_kael_vanguard', name: 'Kael Ironbound', cls: 'WARRIOR', role: 'MELEE_DPS', elem: 'FIRE', rarity: 'RARE', wpn: 'SWORD', mvp: true, col: '#C83E2B' },
+    { id: 'chr_lyra_windrunner', name: 'Lyra Galeweaver', cls: 'ARCHER', role: 'RANGED_DPS', elem: 'WIND', rarity: 'RARE', wpn: 'BOW', mvp: true, col: '#2E8B57' },
+    { id: 'chr_seraphina_dawn', name: 'Seraphina Solis', cls: 'HEALER', role: 'SUPPORT', elem: 'LIGHT', rarity: 'RARE', wpn: 'STAFF', mvp: true, col: '#F4B41B' },
+    { id: 'chr_bram_bastion', name: 'Bram Stoneheart', cls: 'KNIGHT', role: 'TANK', elem: 'EARTH', rarity: 'EPIC', wpn: 'SHIELD', mvp: false, col: '#8D6E63' },
+    { id: 'chr_vex_nightblade', name: 'Vex Duskveil', cls: 'ASSASSIN', role: 'MELEE_DPS', elem: 'SHADOW', rarity: 'EPIC', wpn: 'DAGGER', mvp: false, col: '#8E44AD' },
+    { id: 'chr_freya_frostveil', name: 'Freya Glaciersong', cls: 'MAGE', role: 'MAGIC_DPS', elem: 'FROST', rarity: 'EPIC', wpn: 'WAND', mvp: false, col: '#2CE8F5' },
+    { id: 'chr_orin_stormcaller', name: 'Orin Voltspire', cls: 'MAGE', role: 'MAGIC_DPS', elem: 'LIGHTNING', rarity: 'LEGENDARY', wpn: 'STAFF', mvp: false, col: '#FFE762' },
+    { id: 'chr_torvald_rageborn', name: 'Torvald Bloodforge', cls: 'BERSERKER', role: 'MELEE_DPS', elem: 'FIRE', rarity: 'LEGENDARY', wpn: 'GREATSWORD', mvp: false, col: '#E43B44' },
+    { id: 'chr_nyx_voidcaller', name: 'Nyx Umbramancer', cls: 'SUMMONER', role: 'MAGIC_DPS', elem: 'SHADOW', rarity: 'MYTHIC', wpn: 'WAND', mvp: false, col: '#FF4D6D' },
+    { id: 'chr_aurelia_starbow', name: 'Aurelia Astralforge', cls: 'ARCHER', role: 'RANGED_DPS', elem: 'LIGHT', rarity: 'MYTHIC', wpn: 'CROSSBOW', mvp: false, col: '#FFD166' },
+    { id: 'chr_rowan_tidewarden', name: 'Rowan Mistbreaker', cls: 'KNIGHT', role: 'TANK', elem: 'WATER', rarity: 'UNCOMMON', wpn: 'SPEAR', mvp: false, col: '#0095E9' },
+    { id: 'chr_mira_ironfist', name: 'Mira Crankbolt', cls: 'WARRIOR', role: 'HYBRID', elem: 'NEUTRAL', rarity: 'COMMON', wpn: 'GAUNTLET', mvp: false, col: '#C0CBDC' }
+  ];
+
+  // Canonical Weapons Pool from game-data/items.json
+  const ALL_WEAPONS = [
+    { id: 'wpn_woodcutter_handaxe', name: 'Woodcutter Handaxe', cls: 'AXE', elem: 'NEUTRAL', rarity: 'COMMON' },
+    { id: 'wpn_copper_knuckle_gauntlet', name: 'Copper Knuckle Gauntlet', cls: 'GAUNTLET', elem: 'NEUTRAL', rarity: 'COMMON' },
+    { id: 'wpn_iron_longsword', name: 'Iron Longsword', cls: 'SWORD', elem: 'NEUTRAL', rarity: 'UNCOMMON' },
+    { id: 'wpn_ashwood_shortbow', name: 'Ashwood Shortbow', cls: 'BOW', elem: 'WIND', rarity: 'UNCOMMON' },
+    { id: 'wpn_oak_acolyte_staff', name: 'Oak Acolyte Staff', cls: 'STAFF', elem: 'LIGHT', rarity: 'UNCOMMON' },
+    { id: 'wpn_wolf_fang_dagger', name: 'Wolf Fang Dagger', cls: 'DAGGER', elem: 'SHADOW', rarity: 'RARE' },
+    { id: 'wpn_mossroot_pike', name: 'Mossroot Pike', cls: 'SPEAR', elem: 'EARTH', rarity: 'RARE' },
+    { id: 'wpn_thornbark_bulwark', name: 'Thornbark Bulwark', cls: 'SHIELD', elem: 'EARTH', rarity: 'RARE' },
+    { id: 'wpn_elderwood_cleaver', name: 'Elderwood Cleaver', cls: 'GREATSWORD', elem: 'EARTH', rarity: 'EPIC' },
+    { id: 'wpn_runic_ruin_saber', name: 'Runic Ruin Saber', cls: 'SWORD', elem: 'LIGHTNING', rarity: 'EPIC' },
+    { id: 'wpn_prism_recurve_bow', name: 'Prism Recurve Bow', cls: 'BOW', elem: 'LIGHT', rarity: 'EPIC' },
+    { id: 'wpn_starbloom_scepter', name: 'Starbloom Scepter', cls: 'WAND', elem: 'LIGHT', rarity: 'LEGENDARY' },
+    { id: 'wpn_voltspire_stormstaff', name: 'Voltspire Stormstaff', cls: 'STAFF', elem: 'LIGHTNING', rarity: 'LEGENDARY' },
+    { id: 'wpn_bloodforge_colossus', name: 'Bloodforge Colossus', cls: 'GREATSWORD', elem: 'FIRE', rarity: 'LEGENDARY' },
+    { id: 'wpn_abyssal_sovereign_claymore', name: 'Abyssal Sovereign Claymore', cls: 'GREATSWORD', elem: 'SHADOW', rarity: 'MYTHIC' },
+    { id: 'wpn_astralforge_starbow', name: 'Astralforge Starbow', cls: 'CROSSBOW', elem: 'LIGHT', rarity: 'MYTHIC' }
+  ];
+
+  const ESSENCE_REWARD_HERO = { COMMON: 2, UNCOMMON: 5, RARE: 12, EPIC: 30, LEGENDARY: 80, MYTHIC: 150 };
+  const ESSENCE_REWARD_WPN = { COMMON: 1, UNCOMMON: 3, RARE: 8, EPIC: 20, LEGENDARY: 60, MYTHIC: 120 };
+  const BANNERS = {
+    bnr_perm_heroes: {
+      id: 'bnr_perm_heroes',
+      title: 'LỜI HIỆU TRIỆU ELDORIA — PERMANENT CHARACTER BANNER',
+      hardPity: 80, softPity: 65, slope: 0.06, baseTop: 0.016, baseEpic: 0.084, baseRare: 0.300, baseUncommon: 0.350,
+      pity: 0, epicPity: 0, pool: ALL_HEROES, isHero: true
+    },
+    bnr_perm_arsenal: {
+      id: 'bnr_perm_arsenal',
+      title: 'KHO BINH KHÍ CỔ XƯA — PERMANENT WEAPON BANNER',
+      hardPity: 70, softPity: 55, slope: 0.065, baseTop: 0.020, baseEpic: 0.090, baseRare: 0.300, baseUncommon: 0.340,
+      pity: 0, epicPity: 0, pool: ALL_WEAPONS, isHero: false
+    }
+  };
+
+  let activeBannerId = 'bnr_perm_heroes';
+  let shards = 16000;
+  let starEssence = 120;
+  let ownedHeroes = { chr_kael_vanguard: 0, chr_lyra_windrunner: 0, chr_seraphina_dawn: 0 }; // value = Constellation 0..6
+  let ownedWeapons = { wpn_iron_longsword: 1, wpn_ashwood_shortbow: 1, wpn_oak_acolyte_staff: 1 };
+  let historyLog = [];
+  let rosterFilter = 'ALL';
+  let altarBurst = [];
+
+  function selectBanner(id) {
+    activeBannerId = id;
+    document.getElementById('bnrBtnHeroes').classList.toggle('active', id === 'bnr_perm_heroes');
+    document.getElementById('bnrBtnArsenal').classList.toggle('active', id === 'bnr_perm_arsenal');
+    updateUI();
+  }
+
+  function switchTab(tab) {
+    ['summon', 'roster', 'history'].forEach(t => {
+      document.getElementById('tab-' + t).style.display = t === tab ? (t === 'summon' ? 'grid' : 'block') : 'none';
+    });
+    document.getElementById('subSummon').classList.toggle('gold', tab === 'summon');
+    document.getElementById('subRoster').classList.toggle('gold', tab === 'roster');
+    document.getElementById('subHistory').classList.toggle('gold', tab === 'history');
+    if (tab === 'roster') renderRoster();
+    if (tab === 'history') renderHistory();
+  }
+
+  function addShards(amt) {
+    shards += amt;
+    document.getElementById('pullError').classList.remove('show');
+    updateUI();
+  }
+
+  function openRatesModal() { document.getElementById('ratesModal').classList.add('open'); }
+  function closeRatesModal() { document.getElementById('ratesModal').classList.remove('open'); }
+
+  function rollSingle(banner) {
+    banner.pity++;
+    banner.epicPity++;
+    let rarity = 'COMMON';
+
+    // Exact Transparent Probability Math + Soft/Hard Pity matching game-data/gacha-banners.json
+    let topRate = banner.baseTop;
+    if (banner.pity >= banner.hardPity) {
+      topRate = 1.0;
+    } else if (banner.pity >= banner.softPity) {
+      topRate = Math.min(1.0, banner.baseTop + (banner.pity - banner.softPity + 1) * banner.slope);
+    }
+
+    const r = Math.random();
+    if (r < topRate) {
+      rarity = Math.random() < 0.25 ? 'MYTHIC' : 'LEGENDARY';
+    } else if (banner.epicPity >= 10) {
+      rarity = 'EPIC';
+    } else {
+      const scale = (1 - topRate) / (1 - banner.baseTop);
+      const u = r - topRate;
+      const pE = banner.baseEpic * scale;
+      const pR = banner.baseRare * scale;
+      const pU = banner.baseUncommon * scale;
+      if (u < pE) rarity = 'EPIC';
+      else if (u < pE + pR) rarity = 'RARE';
+      else if (u < pE + pR + pU) rarity = 'UNCOMMON';
+      else rarity = 'COMMON';
+    }
+
+    const pitySnapshot = banner.pity;
+    if (rarity === 'MYTHIC' || rarity === 'LEGENDARY') { banner.pity = 0; banner.epicPity = 0; }
+    else if (rarity === 'EPIC') { banner.epicPity = 0; }
+
+    const candidates = banner.pool.filter(x => x.rarity === rarity);
+    const picked = candidates[Math.floor(Math.random() * candidates.length)];
+
+    let isDup = false;
+    let essenceGain = 0;
+    let constStr = '';
+
+    if (banner.isHero) {
+      if (ownedHeroes[picked.id] !== undefined) {
+        isDup = true;
+        const overflow = ownedHeroes[picked.id] >= 6;
+        ownedHeroes[picked.id] = Math.min(6, ownedHeroes[picked.id] + 1);
+        essenceGain = ESSENCE_REWARD_HERO[rarity] * (overflow ? 2 : 1);
+        starEssence += essenceGain;
+        constStr = `${overflow ? 'C6 Overflow' : 'C' + ownedHeroes[picked.id]} +${essenceGain} Essence`;
+      } else {
+        ownedHeroes[picked.id] = 0;
+      }
+    } else {
+      essenceGain = ESSENCE_REWARD_WPN[rarity];
+      starEssence += essenceGain;
+      if (ownedWeapons[picked.id]) {
+        isDup = true;
+        ownedWeapons[picked.id]++;
+        constStr = `×${ownedWeapons[picked.id]} +${essenceGain} Essence`;
+      } else {
+        ownedWeapons[picked.id] = 1;
+        constStr = `+${essenceGain} Essence`;
+      }
+    }
+
+    const txId = 'gch_' + Math.random().toString(36).slice(2, 8);
+    historyLog.unshift({
+      num: historyLog.length + 1,
+      bannerId: banner.id,
+      item: picked,
+      pity: pitySnapshot,
+      isDup,
+      constStr,
+      txId
+    });
+    return { item: picked, isDup, constStr, pity: pitySnapshot };
+  }
+
+  function doPull(count) {
+    const cost = count * 160;
+    const errEl = document.getElementById('pullError');
+    if (shards < cost) {
+      errEl.textContent = `✕ KHÔNG ĐỦ STARLIGHT SHARDS! Cần ${cost.toLocaleString()} Shard (hiện có ${shards.toLocaleString()}). Hãy nhận thêm qua nhiệm vụ/Boss hoặc bấm "+1,600 Shard".`;
+      errEl.classList.add('show');
+      return;
+    }
+    errEl.classList.remove('show');
+    shards -= cost;
+
+    const banner = BANNERS[activeBannerId];
+    const results = [];
+    for (let i = 0; i < count; i++) results.push(rollSingle(banner));
+
+    // Altar Starburst VFX colored by highest rarity
+    const order = ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC'];
+    const best = results.reduce((a, b) => order.indexOf(b.item.rarity) > order.indexOf(a.item.rarity) ? b : a).item.rarity;
+    const colMap = { COMMON: '#C0CBDC', UNCOMMON: '#63C74D', RARE: '#0095E9', EPIC: '#C06EFF', LEGENDARY: '#F4B41B', MYTHIC: '#FF4D6D' };
+    for (let i = 0; i < 40; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const sp = 1.5 + Math.random() * 4.5;
+      altarBurst.push({ x: 240, y: 80, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 40, col: colMap[best] });
+    }
+
+    document.getElementById('resultsHeader').textContent = `KẾT QUẢ ${count}x TRIỆU HỒI — ĐỘ HIẾM CAO NHẤT: ${best}`;
+    document.getElementById('resultsGrid').innerHTML = results.map(r => `
+      <div class="pull-card r-${r.item.rarity}">
+        <span style="font-family:var(--font-px); font-size:10px; font-weight:700; color:var(--rarity-${r.item.rarity});">${r.item.rarity}</span>
+        <div style="width:42px; height:42px; background:#120f1d; border:2px solid var(--rarity-${r.item.rarity}); display:flex; align-items:center; justify-content:center; font-size:20px;">
+          ${banner.isHero ? '⚔' : '🗡'}
+        </div>
+        <div style="font-family:var(--font-px); font-size:12px; font-weight:700; color:#fff;">${r.item.name}</div>
+        <div style="font-family:var(--font-px); font-size:10px; color:var(--text-muted);">${r.item.cls} • ${r.item.elem}</div>
+        ${r.isDup ? `<span class="dup-tag">TRÙNG → ${r.constStr}</span>` : `<span class="new-tag">★ MỚI!</span>`}
+      </div>
+    `).join('');
+
+    updateUI();
+  }
+
+  function updateUI() {
+    const b = BANNERS[activeBannerId];
+    document.getElementById('shardBal').textContent = shards.toLocaleString();
+    document.getElementById('essenceBal').textContent = starEssence.toLocaleString();
+    document.getElementById('ownedHeroCount').textContent = Object.keys(ownedHeroes).length;
+    document.getElementById('histCount').textContent = historyLog.length;
+
+    document.getElementById('bnrIdTag').textContent = b.id;
+    document.getElementById('bnrTitle').textContent = b.title;
+    document.getElementById('pityCounterTxt').textContent = `${b.pity} / ${b.hardPity}`;
+    document.getElementById('epicCounterTxt').textContent = `${b.epicPity} / 10`;
+    document.getElementById('pityFill').style.width = `${Math.min(100, (b.pity / b.hardPity) * 100)}%`;
+    document.getElementById('softMarker').style.left = `${(b.softPity / b.hardPity) * 100}%`;
+    document.getElementById('softLabel').textContent = `Soft Pity: ${b.softPity}` + (b.pity >= b.softPity ? ' [ĐANG KÍCH HOẠT!]' : '');
+    document.getElementById('hardLabel').textContent = `Hard Pity (LEGENDARY/MYTHIC): ${b.hardPity}`;
+    document.getElementById('softPityStatus').innerHTML =
+      (b.pity >= b.softPity ? `<strong style="color:#FFE762;">★ SOFT PITY ĐANG TĂNG TỶ LỆ!</strong> • ` : `Soft Pity từ lượt ${b.softPity} • `) +
+      `10-Pull EPIC+: <strong id="epicCounterTxt">${b.epicPity} / 10</strong>`;
+  }
+
+  function filterRoster(f, btn) {
+    rosterFilter = f;
+    btn.parentElement.querySelectorAll('.px-btn').forEach(x => x.classList.remove('gold'));
+    btn.classList.add('gold');
+    renderRoster();
+  }
+
+  function renderRoster() {
+    const list = ALL_HEROES.filter(h => {
+      if (rosterFilter === 'OWNED') return ownedHeroes[h.id] !== undefined;
+      if (rosterFilter === 'MYTHIC' || rosterFilter === 'LEGENDARY') return h.rarity === rosterFilter;
+      return true;
+    });
+    document.getElementById('heroRosterGrid').innerHTML = list.map(h => {
+      const owned = ownedHeroes[h.id] !== undefined;
+      const cLvl = owned ? ownedHeroes[h.id] : 0;
+      return `
+        <div class="hero-col-card ${owned ? 'owned' : 'locked'}" style="border-color:var(--rarity-${h.rarity});">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-family:var(--font-px); font-size:10.5px; font-weight:700; color:var(--rarity-${h.rarity});">${h.rarity}</span>
+            ${owned ? `<span class="px-badge emerald">ĐÃ SỞ HỮU • C${cLvl}</span>` : `<span class="px-badge">CHƯA MỞ KHÓA</span>`}
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; margin:4px 0;">
+            <div style="width:40px; height:40px; background:${h.col}; border:2px solid #000; display:flex; align-items:center; justify-content:center; font-family:var(--font-px); font-weight:700; color:#fff; text-shadow:1px 1px 0 #000;">
+              ${h.name.slice(0,2).toUpperCase()}
+            </div>
+            <div>
+              <div style="font-family:var(--font-px); font-weight:700; color:#fff; font-size:13.5px;">${h.name}</div>
+              <div style="font-family:var(--font-px); font-size:10px; color:#79d2ff;">${h.id}</div>
+            </div>
+          </div>
+          <div style="font-family:var(--font-px); font-size:11px; color:var(--parchment);">
+            ${h.cls} (${h.role}) • <strong>${h.elem}</strong> • ${h.wpn}
+          </div>
+          <div style="font-size:10.5px; color:var(--text-muted);">
+            ${h.mvp ? '✦ Starter MVP (Mở miễn phí / Banner)' : '✦ Roster Mở rộng (Mở qua bnr_perm_heroes / Star Essence)'}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderHistory() {
+    const tbody = document.getElementById('historyTableBody');
+    if (historyLog.length === 0) return;
+    tbody.innerHTML = historyLog.slice(0, 60).map(h => `
+      <tr>
+        <td>#${h.num}</td>
+        <td><code>${h.bannerId}</code></td>
+        <td><strong>${h.item.name}</strong> (<code>${h.item.id}</code>)</td>
+        <td style="color:var(--rarity-${h.item.rarity}); font-weight:700;">${h.item.rarity}</td>
+        <td>${h.pity}</td>
+        <td>${h.isDup ? `<span style="color:#a7f070;">Trùng → ${h.constStr}</span>` : '<span style="color:#FFE762;">★ Nhận mới</span>'}</td>
+        <td><code>${h.txId}</code></td>
+      </tr>
+    `).join('');
+  }
+
+  // Animated Pixel Starlight Altar Canvas
+  const ctx = document.getElementById('altarCanvas').getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  let tick = 0;
+  function animateAltar() {
+    tick++;
+    ctx.fillStyle = '#120f1d'; ctx.fillRect(0, 0, 480, 160);
+    // Nebula pixel bands
+    ctx.fillStyle = activeBannerId === 'bnr_perm_heroes' ? '#1f1938' : '#13243b';
+    ctx.fillRect(0, 35, 480, 90);
+    // Starfield
+    for (let i = 0; i < 45; i++) {
+      const sx = (i * 59 + Math.floor(tick * 0.2)) % 480;
+      const sy = (i * 31 + 9) % 156;
+      const bright = Math.sin(tick * 0.08 + i) > 0.2;
+      ctx.fillStyle = bright ? '#FFE762' : '#5A6988';
+      ctx.fillRect(sx, sy, bright ? 2 : 1, bright ? 2 : 1);
+    }
+    // Glowing Starlight Crystal in center-right
+    const bob = Math.round(Math.sin(tick * 0.07) * 4);
+    const cx = 365, cy = 76 + bob;
+    ctx.fillStyle = 'rgba(244,180,27,0.22)'; ctx.fillRect(cx - 26, cy - 26, 52, 52);
+    ctx.fillStyle = activeBannerId === 'bnr_perm_heroes' ? '#F4B41B' : '#0095E9';
+    ctx.fillRect(cx - 10, cy - 22, 20, 44);
+    ctx.fillRect(cx - 18, cy - 10, 36, 20);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(cx - 5, cy - 12, 10, 24);
+
+    // Burst particles on summon
+    for (let i = altarBurst.length - 1; i >= 0; i--) {
+      const p = altarBurst[i];
+      p.x += p.vx; p.y += p.vy; p.life--;
+      if (p.life <= 0) { altarBurst.splice(i, 1); continue; }
+      ctx.fillStyle = p.col;
+      ctx.fillRect(Math.floor(p.x), Math.floor(p.y), 4, 4);
+    }
+    requestAnimationFrame(animateAltar);
+  }
+
+  updateUI();
+  renderRoster();
+  animateAltar();
+</script>
+</body>
+</html>
