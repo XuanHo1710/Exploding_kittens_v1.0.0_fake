@@ -1,0 +1,1205 @@
+{
+ "about": "Research behind data/pokemon/pokemon-capture-rules.json and pokemon-catch-rates.json (prose: docs/explanation/research/capture.md). 'engine' = the reference engine's capture code that the game ports, step by step with verbatim code; 'gen3' = the official Emerald rules; 'species' = only species whose rates differ somewhere. Built by tools/data/catch_rates.py on 2026-11-19.",
+ "license": "Reference engine code quoted under MPL-2.0 (see LICENSES/MPL-2.0.txt, THIRD_PARTY_NOTICES.md); Gen 3 facts from pret/pokeemerald; official values from PokeAPI pokemon_species.csv.",
+ "sources": {
+  "pokeemerald": [
+   "src/battle_script_commands.c",
+   "src/battle_main.c",
+   "src/battle_util.c",
+   "src/data/pokemon/species_info.h",
+   "include/constants/pokedex.h",
+   "include/random.h",
+   "include/gba/syscall.h"
+  ],
+  "official": "PokeAPI data/v2/csv/pokemon_species.csv",
+  "snippetsChecked": 92
+ },
+ "engine": {
+  "what": "the reference engine's default capture calculator, an 'almost exact copy of Generation 9' with a Gen 8 difficulty modifier (its own class comment). This is what the game ports (game/src/capture.ts).",
+  "selectable": {
+   "text": "the reference engine can switch to generation_1, generation_2, generation_2_fixed, generation_3_and_4, generation_5 ... generation_9, its default, or debug (always a critical success) via its captureCalculator setting.",
+   "evidence": {
+    "file": "reference engine: calculator registry",
+    "code": [
+     "this.register(Gen3And4CaptureCalculator)"
+    ]
+   }
+  },
+  "beforeTheRoll": {
+   "text": "the ball drops back without a roll when the target is not wild, is marked uncatchable, is in a battle the thrower is not in, the battle is not singles or the wild side still has more than one healthy Pokémon, or it is not the thrower's turn. In battle the throw is the turn's action.",
+   "evidence": {
+    "file": "reference engine: thrown ball",
+    "code": [
+     "lang(\"capture.not_wild\"",
+     "UncatchableProperty.isCatchable(pokemonEntity)",
+     "battle.format.battleType != BattleTypes.SINGLES || hitActor.pokemonList.count { it.health > 0 } > 1",
+     "throwerActor.forceChoose(ForcePassActionResponse())"
+    ]
+   }
+  },
+  "steps": [
+   {
+    "step": 1,
+    "name": "guaranteed balls",
+    "text": "Master / Origin Ball: caught, no roll.",
+    "evidence": {
+     "file": "reference engine: default calculator",
+     "code": [
+      "if (pokeBall.catchRateModifier.isGuaranteed()) {"
+     ]
+    }
+   },
+   {
+    "step": 2,
+    "name": "species catch rate",
+    "text": "the form's catchRate, else the species' (default 45), then a catch-rate event other code may change.",
+    "evidence": [
+     {
+      "file": "reference engine: default calculator",
+      "code": [
+       "pokemon.form.catchRate.toFloat()"
+      ]
+     },
+     {
+      "file": "reference engine: calculator interface",
+      "code": [
+       "POKEMON_CATCH_RATE.post(event)"
+      ]
+     },
+     {
+      "file": "reference engine: form data",
+      "code": [
+       "get() = _catchRate ?: species.catchRate"
+      ]
+     },
+     {
+      "file": "reference engine: species",
+      "code": [
+       "var catchRate = 45"
+      ]
+     }
+    ]
+   },
+   {
+    "step": 3,
+    "name": "HP term, ball, out-of-battle factor",
+    "formula": "a = (3 maxHP - 2 HP) x darkGrass x rate x inBattle x ball / (3 maxHP)",
+    "text": "floats; darkGrass fixed at 1; inBattle 0.5 for a throw outside a battle; a ball whose condition fails counts x1.",
+    "evidence": {
+     "file": "reference engine: default calculator",
+     "code": [
+      "val darkGrass = 1F",
+      "val ballBonus = if (validModifier) pokeBall.catchRateModifier.value(thrower, pokemon) else 1F",
+      ".mutator((3F * pokemon.maxHealth - 2F * pokemon.currentHealth) * darkGrass * catchRate * inBattleModifier, ballBonus) / (3F * pokemon.maxHealth)"
+     ]
+    }
+   },
+   {
+    "step": 4,
+    "name": "status",
+    "values": {
+     "sleep / freeze": 2.5,
+     "paralysis / burn / poison": 1.5
+    }
+   },
+   {
+    "step": 5,
+    "name": "low-level bonus",
+    "text": "integer form of Gen 9's (36 - 2L)/10: x3 Lv 1-3, x2 Lv 4-8."
+   },
+   {
+    "step": 6,
+    "name": "level-gap penalty, inactive",
+    "text": "meant as -2% per level above your Pokémon (max -90%), but the lookup searches the player's own active Pokémon for the wild target, never finds it, and the division is Int / Int (0 below a 50-level gap). Not ported.",
+    "evidence": {
+     "file": "reference engine: default calculator",
+     "code": [
+      "active.battlePokemon?.effectedPokemon?.uuid == pokemon.uuid",
+      "modifiedCatchRate *= max(0.1F, min(1F, 1F - ((pokemon.level - highestLevelThrower) / (config.maxPokemonLevel / 2))))"
+     ]
+    }
+   },
+   {
+    "step": 7,
+    "name": "critical capture",
+    "text": "from 31 species caught; Catching Charm not implemented."
+   },
+   {
+    "step": 8,
+    "name": "shake checks",
+    "text": "65536 / (255/a)^(3/16) per check: P is about (a/255)^0.75."
+   },
+   {
+    "step": 9,
+    "name": "owned display",
+    "text": "a success on an owned form is shown as a 1-shake critical capture."
+   },
+   {
+    "step": 10,
+    "name": "failed throw outside battle",
+    "text": "the target wakes up and reacts (may flee or attack).",
+    "evidence": {
+     "file": "reference engine: thrown ball",
+     "code": [
+      "PokemonBrain.onCaptureFailed(pokemon, it)"
+     ]
+    }
+   }
+  ],
+  "numbers": [
+   {
+    "file": "reference engine: default calculator",
+    "code": [
+     "val inBattleModifier = if (target.battleId != null) 1F else 0.5F",
+     "is SleepStatus, is FrozenStatus -> 2.5F",
+     "is ParalysisStatus, is BurnStatus, is PoisonStatus, is PoisonBadlyStatus -> 1.5F",
+     "val bonusLevel = if (pokemon.level < 13) max((36 - (2 * pokemon.level)) / 10, 1) else 1",
+     "modifiedCatchRate *= bonusStatus * bonusLevel",
+     "val shakeProbability = (65536F / (255F / modifiedCatchRate).pow(0.1875F)).roundToInt()",
+     "val n = Random.nextInt(65537)",
+     "if (it == 0 && critical) {",
+     "isSuccessfulCapture = shakes == 4"
+    ]
+   },
+   {
+    "file": "reference engine: critical capture provider",
+    "code": [
+     "caughtCount <= 30 -> 0F",
+     "caughtCount <= 150 -> 0.5F",
+     "caughtCount <= 300 -> 1F",
+     "caughtCount <= 450 -> 1.5F",
+     "caughtCount <= 600 -> 2F",
+     "else -> 2.5F",
+     "val c = ((b * 1F) / 6F).roundToInt()",
+     "return Random.nextInt(256) < c"
+    ]
+   },
+   {
+    "file": "reference engine: owned-entry influencer",
+    "code": [
+     "knowledge == PokedexEntryProgress.OWNED"
+    ]
+   },
+   {
+    "file": "reference engine: capture result",
+    "code": [
+     "return CaptureContext(numberOfShakes = 4, isSuccessfulCapture = true, isCriticalCapture = false)"
+    ]
+   },
+   {
+    "file": "reference engine: thrown ball",
+    "code": [
+     "if (rollsRemaining == 4) { rollsRemaining-- }"
+    ]
+   },
+   {
+    "file": "reference engine: battle-only condition",
+    "code": [
+     "?: return 1F"
+    ]
+   }
+  ],
+  "balls": {
+   "poke_ball": {
+    "condition": "x1",
+    "gen3": "x1"
+   },
+   "great_ball": {
+    "condition": "x1.5",
+    "gen3": "x1.5",
+    "evidence": {
+     "file": "reference engine: ball table",
+     "code": [
+      "createDefault(\"great_ball\", MultiplierModifier(1.5F))"
+     ]
+    }
+   },
+   "ultra_ball": {
+    "condition": "x2",
+    "gen3": "x2",
+    "evidence": {
+     "file": "reference engine: ball table",
+     "code": [
+      "createDefault(\"ultra_ball\", MultiplierModifier(2F))"
+     ]
+    }
+   },
+   "master_ball": {
+    "condition": "always caught, no roll",
+    "gen3": "always caught",
+    "evidence": {
+     "file": "reference engine: ball table",
+     "code": [
+      "createDefault(\"master_ball\", GuaranteedModifier())"
+     ]
+    }
+   },
+   "safari_ball": {
+    "condition": "x1.5 only when the target is not in a battle",
+    "gen3": "x1.5, Safari Zone only, rate from the Safari catch factor",
+    "evidence": {
+     "file": "reference engine: ball conditions",
+     "code": [
+      "val SAFARI = MultiplierModifier(1.5f) { _, poke -> !poke.entity?.isBattling!! }"
+     ]
+    }
+   },
+   "fast_ball": {
+    "condition": "x4 if base Speed >= 100",
+    "gen3": "not in Gen 3",
+    "evidence": {
+     "file": "reference engine: ball table",
+     "code": [
+      "createDefault(\"fast_ball\", BaseStatModifier(Stats.SPEED, { it >= 100 }, 4F))"
+     ]
+    }
+   },
+   "level_ball": {
+    "condition": "x4 / x3 / x2 if your active Pokémon's level is above 4x / 2x / 1x the target's",
+    "gen3": "not in Gen 3",
+    "evidence": {
+     "file": "reference engine: ball conditions",
+     "code": [
+      "highestLevel > (pokemon.level * 4) -> 4F",
+      "highestLevel > (pokemon.level * 2) -> 3F",
+      "highestLevel > pokemon.level -> 2F"
+     ]
+    }
+   },
+   "lure_ball": {
+    "condition": "x4 if the target was hooked with a fishing rod",
+    "gen3": "not in Gen 3",
+    "evidence": {
+     "file": "reference engine: ball conditions",
+     "code": [
+      "FISHED_ASPECT in entity.aspects) 4F"
+     ]
+    }
+   },
+   "heavy_ball": {
+    "condition": "x4 at >= 300 kg, x2.5 at 200-299.9 kg, x1.5 at 100-199.9 kg",
+    "gen3": "not in Gen 3",
+    "evidence": {
+     "file": "reference engine: ball conditions",
+     "code": [
+      "pokemon.form.weight >= 3000F -> 4F",
+      "pokemon.form.weight in 2000F..2999F -> 2.5F",
+      "pokemon.form.weight in 1000F..1999F -> 1.5F",
+      "{ _, pokemon -> pokemon.form.weight >= 1000F }"
+     ]
+    }
+   },
+   "love_ball": {
+    "condition": "x8 vs your active Pokémon of the same species and opposite gender, x2.5 opposite gender",
+    "gen3": "not in Gen 3",
+    "evidence": {
+     "file": "reference engine: ball conditions",
+     "code": [
+      "oppositeGender.any { it.species.resourceIdentifier == pokemon.species.resourceIdentifier } -> 8F",
+      "oppositeGender.isNotEmpty() -> 2.5F"
+     ]
+    }
+   },
+   "friend_ball": {
+    "condition": "x1; the caught Pokémon starts at 150 friendship",
+    "gen3": "not in Gen 3"
+   },
+   "moon_ball": {
+    "condition": "at night only: full moon x4, phases 1 / 7 x2.5, 2 / 6 x1.5",
+    "gen3": "not in Gen 3",
+    "evidence": {
+     "file": "reference engine: ball conditions",
+     "code": [
+      "dayTime % 24000 < 12000",
+      "2, 6 -> 1.5F",
+      "1, 7 -> 2.5F",
+      "0 -> 4F"
+     ]
+    }
+   },
+   "sport_ball": {
+    "condition": "x1.5",
+    "gen3": "not in Gen 3",
+    "evidence": {
+     "file": "reference engine: ball table",
+     "code": [
+      "createDefault(\"sport_ball\", MultiplierModifier(1.5F))"
+     ]
+    }
+   },
+   "net_ball": {
+    "condition": "x3 on Bug or Water types",
+    "gen3": "x3 on Water or Bug",
+    "evidence": {
+     "file": "reference engine: ball table",
+     "code": [
+      "typeBoosting(3F, ElementalTypes.BUG, ElementalTypes.WATER)"
+     ]
+    }
+   },
+   "dive_ball": {
+    "condition": "x3.5 if the target is under water",
+    "gen3": "x3.5 on underwater maps",
+    "evidence": {
+     "file": "reference engine: ball conditions",
+     "code": [
+      "if (entity.isUnderWater) 3.5F else 1F"
+     ]
+    }
+   },
+   "nest_ball": {
+    "condition": "(41 - level) / 10 below Lv 30",
+    "gen3": "(40 - level) / 10 below Lv 40, never below x1",
+    "evidence": {
+     "file": "reference engine: ball conditions",
+     "code": [
+      "(41 - pokemon.level) / 10F }) { _, pokemon -> pokemon.level < 30 }"
+     ]
+    }
+   },
+   "repeat_ball": {
+    "condition": "x3.5 if the species is already caught",
+    "gen3": "x3 if already caught",
+    "evidence": {
+     "file": "reference engine: ball conditions",
+     "code": [
+      "PokedexEntryProgress.OWNED -> 3.5F"
+     ]
+    }
+   },
+   "timer_ball": {
+    "condition": "1 + turn x 0.3 (1229/4096), max x4",
+    "gen3": "(turn counter + 10) / 10, max x4",
+    "evidence": {
+     "file": "reference engine: ball table",
+     "code": [
+      "turnBased { turn -> (1F + turn * (1229F / 4096F)).coerceAtMost(4F) }"
+     ]
+    }
+   },
+   "luxury_ball": {
+    "condition": "x1; friendship gains x2",
+    "gen3": "x1"
+   },
+   "premier_ball": {
+    "condition": "x1",
+    "gen3": "x1"
+   },
+   "dusk_ball": {
+    "condition": "x3.5 at light level 0, x3 at 1-7",
+    "gen3": "not in Gen 3",
+    "evidence": {
+     "file": "reference engine: ball conditions",
+     "code": [
+      "0 -> 3.5F",
+      "in 1..7 -> 3F"
+     ]
+    }
+   },
+   "heal_ball": {
+    "condition": "x1; heals the caught Pokémon",
+    "gen3": "not in Gen 3"
+   },
+   "quick_ball": {
+    "condition": "x5 on battle turn 1",
+    "gen3": "not in Gen 3",
+    "evidence": {
+     "file": "reference engine: ball table",
+     "code": [
+      "turnBased { turn -> if (turn == 1) 5F else 1F }"
+     ]
+    }
+   },
+   "cherish_ball": {
+    "condition": "x1",
+    "gen3": "not in Gen 3"
+   },
+   "park_ball": {
+    "condition": "x2.5 in temperate areas",
+    "gen3": "not in Gen 3",
+    "evidence": {
+     "file": "reference engine: ball conditions",
+     "code": [
+      "IS_TEMPERATE)) 2.5F else 1F"
+     ]
+    }
+   },
+   "dream_ball": {
+    "condition": "x4 if asleep",
+    "gen3": "not in Gen 3",
+    "evidence": {
+     "file": "reference engine: ball table",
+     "code": [
+      "statusBoosting(4F, Statuses.SLEEP)"
+     ]
+    }
+   },
+   "beast_ball": {
+    "condition": "x5 on Ultra Beasts, x0.1 on the rest",
+    "gen3": "not in Gen 3",
+    "evidence": {
+     "file": "reference engine: ball table",
+     "code": [
+      "ULTRA_BEAST)) 5F else 0.1F"
+     ]
+    }
+   },
+   "slate_ball": {
+    "condition": "x1",
+    "gen3": "not in Gen 3"
+   },
+   "azure_ball": {
+    "condition": "x1",
+    "gen3": "not in Gen 3"
+   },
+   "verdant_ball": {
+    "condition": "x1",
+    "gen3": "not in Gen 3"
+   },
+   "roseate_ball": {
+    "condition": "x1",
+    "gen3": "not in Gen 3"
+   },
+   "citrine_ball": {
+    "condition": "x1",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_poke_ball": {
+    "condition": "x1 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_citrine_ball": {
+    "condition": "x1 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_verdant_ball": {
+    "condition": "x1 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_azure_ball": {
+    "condition": "x1 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_roseate_ball": {
+    "condition": "x1 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_slate_ball": {
+    "condition": "x1 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_ivory_ball": {
+    "condition": "x1 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_great_ball": {
+    "condition": "x1.5 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_ultra_ball": {
+    "condition": "x2 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_heavy_ball": {
+    "condition": "x1 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_leaden_ball": {
+    "condition": "x1.5 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_gigaton_ball": {
+    "condition": "x2 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_feather_ball": {
+    "condition": "x1 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_wing_ball": {
+    "condition": "x1.5 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_jet_ball": {
+    "condition": "x2 (ancient style)",
+    "gen3": "not in Gen 3"
+   },
+   "ancient_origin_ball": {
+    "condition": "always caught (ancient style)",
+    "gen3": "not in Gen 3",
+    "evidence": {
+     "file": "reference engine: ball table",
+     "code": [
+      "createDefault(\"ancient_origin_ball\", GuaranteedModifier(), ancient = true)"
+     ]
+    }
+   }
+  },
+  "gen3And4Calculator": {
+   "text": "the optional Gen 3/4 calculator uses floats with rounding, a 0..65536 roll, the modern ball table, no Safari factor, and sets rate = 1 when a Johto ball's condition fails (bug).",
+   "evidence": {
+    "file": "reference engine: Gen 3/4 calculator",
+    "code": [
+     "is SleepStatus, is FrozenStatus -> 2F",
+     "rate = if (validModifier) pokeBall.catchRateModifier.modifyCatchRate(catchRate, thrower, pokemon) else 1F"
+    ]
+   }
+  }
+ },
+ "gen3": {
+  "source": "pret/pokeemerald src/battle_script_commands.c Cmd_handleballthrow",
+  "steps": [
+   {
+    "step": 1,
+    "name": "no catching from Trainers",
+    "evidence": {
+     "file": "pokeemerald/src/battle_script_commands.c",
+     "code": [
+      "gBattlescriptCurrInstr = BattleScript_TrainerBallBlock;"
+     ]
+    }
+   },
+   {
+    "step": 2,
+    "name": "catch rate (Safari: catch factor x 1275 / 100, factor = rate x 100 / 1275, Go Near +4/+3/+2/+1, max 20)",
+    "evidence": [
+     {
+      "file": "pokeemerald/src/battle_script_commands.c",
+      "code": [
+       "catchRate = gBattleStruct->safariCatchFactor * 1275 / 100;"
+      ]
+     },
+     {
+      "file": "pokeemerald/src/battle_main.c",
+      "code": [
+       "catchRate * 100 / 1275;"
+      ]
+     },
+     {
+      "file": "pokeemerald/src/battle_util.c",
+      "code": [
+       "static const u8 sGoNearCounterToCatchFactor[] = {4, 3, 2, 1};"
+      ]
+     }
+    ]
+   },
+   {
+    "step": 3,
+    "name": "a = (rate x ball10 / 10) x (3 maxHP - 2 HP) / (3 maxHP), integers",
+    "evidence": {
+     "file": "pokeemerald/src/battle_script_commands.c",
+     "code": [
+      "odds = (catchRate * ballMultiplier / 10) * (gBattleMons[gBattlerTarget].maxHP * 3 - gBattleMons[gBattlerTarget].hp * 2) / (3 * gBattleMons[gBattlerTarget].maxHP);"
+     ]
+    }
+   },
+   {
+    "step": 4,
+    "name": "status: sleep / freeze x2, poison / burn / paralysis x1.5",
+    "evidence": {
+     "file": "pokeemerald/src/battle_script_commands.c",
+     "code": [
+      "odds *= 2;",
+      "odds = (odds * 15) / 10;"
+     ]
+    }
+   },
+   {
+    "step": 5,
+    "name": "a > 254: caught",
+    "evidence": {
+     "file": "pokeemerald/src/battle_script_commands.c",
+     "code": [
+      "if (odds > 254) // mon caught"
+     ]
+    }
+   },
+   {
+    "step": 6,
+    "name": "b = 1048560 / Sqrt(Sqrt(16711680 / a)); 4 checks Random() < b (P about a/255)",
+    "evidence": [
+     {
+      "file": "pokeemerald/src/battle_script_commands.c",
+      "code": [
+       "odds = Sqrt(Sqrt(16711680 / odds)); odds = 1048560 / odds;",
+       "for (shakes = 0; shakes < BALL_3_SHAKES_SUCCESS && Random() < odds; shakes++);"
+      ]
+     },
+     {
+      "file": "pokeemerald/include/gba/syscall.h",
+      "code": [
+       "u16 Sqrt(u32 num);"
+      ]
+     },
+     {
+      "file": "pokeemerald/include/random.h",
+      "code": [
+       "u16 Random(void);"
+      ]
+     }
+    ]
+   }
+  ],
+  "balls": {
+   "Poké 1, Great 1.5, Ultra 2, Safari 1.5": {
+    "file": "pokeemerald/src/battle_script_commands.c",
+    "code": [
+     "[ITEM_ULTRA_BALL - ITEM_ULTRA_BALL] = 20,",
+     "[ITEM_GREAT_BALL - ITEM_ULTRA_BALL] = 15,",
+     "[ITEM_POKE_BALL - ITEM_ULTRA_BALL] = 10,",
+     "[ITEM_SAFARI_BALL - ITEM_ULTRA_BALL] = 15"
+    ]
+   },
+   "Net 3, Dive 3.5, Nest, Repeat 3, Timer, Luxury / Premier 1, Master": {
+    "file": "pokeemerald/src/battle_script_commands.c",
+    "code": [
+     "ballMultiplier = 30;",
+     "ballMultiplier = 35;",
+     "ballMultiplier = 40 - gBattleMons[gBattlerTarget].level;",
+     "ballMultiplier = gBattleResults.battleTurnCounter + 10;",
+     "if (gLastUsedItem == ITEM_MASTER_BALL) shakes = BALL_3_SHAKES_SUCCESS;"
+    ]
+   }
+  }
+ },
+ "differences": [
+  {
+   "what": "shake rule",
+   "game": "65536 / (255/a)^(3/16) on 0..65536: P about (a/255)^0.75",
+   "gen3": "1048560 / sqrt(sqrt(16711680/a)) with integer roots on 0..65535: P about a/255"
+  },
+  {
+   "what": "integer math",
+   "game": "floats",
+   "gen3": "every '/' truncates"
+  },
+  {
+   "what": "sleep / freeze",
+   "game": "x2.5",
+   "gen3": "x2"
+  },
+  {
+   "what": "low-level bonus",
+   "game": "x3 Lv 1-3, x2 Lv 4-8",
+   "gen3": "none"
+  },
+  {
+   "what": "critical capture",
+   "game": "from 31 species caught",
+   "gen3": "none"
+  },
+  {
+   "what": "throw outside battle",
+   "game": "allowed at x0.5 (the game itself only throws in battle)",
+   "gen3": "no"
+  },
+  {
+   "what": "Repeat / Timer / Nest / Dive",
+   "game": "x3.5 / +0.3 per turn / (41-L)/10 below 30 / under water",
+   "gen3": "x3 / +0.1 per turn / (40-L)/10 below 40 / underwater maps"
+  },
+  {
+   "what": "Safari Ball",
+   "game": "x1.5 outside battle",
+   "gen3": "Safari Zone with its catch factor"
+  }
+ ],
+ "sourcePack": {
+  "settings": {
+   "aggressive_pokemon_catchable": [
+    "false"
+   ],
+   "captureCalculator": [
+    "default calculator"
+   ],
+   "catchMultiplier": [
+    "2.0"
+   ],
+   "catchRateEffectDuration": [
+    "6000"
+   ],
+   "catchRateMultiplier": [
+    "1.5"
+   ],
+   "catch_rate": [
+    "1.0"
+   ],
+   "failed_capture_counted_as_provocation": [
+    "true"
+   ],
+   "maxPokemonLevel": [
+    "100"
+   ],
+   "noCatchOnFull": [
+    "false"
+   ],
+   "outOfBattleCaptureBallBypass": [
+    "{\"overrides\": {}, \"value\": [\"safari_ball\", \"master_ball\"]}"
+   ],
+   "outOfBattleCaptures": [
+    "{\"overrides\": {}, \"value\": true}"
+   ],
+   "preventQuickBallSpam": [
+    "true"
+   ]
+  },
+  "archives": [
+   {
+    "label": "pack data archive 1",
+    "speciesFilesWithCatchRate": 30
+   },
+   {
+    "label": "pack add-on 1",
+    "speciesFilesWithCatchRate": 56
+   },
+   {
+    "label": "outside the pack 1",
+    "speciesFilesWithCatchRate": 4
+   }
+  ],
+  "engineArchiveCheck": {
+   "species": 1025,
+   "differFromSource": []
+  },
+  "speciesChanges": [
+   {
+    "dex": 800,
+    "name": "Necrozma",
+    "form": "Ultra",
+    "game": 255,
+    "override": 5,
+    "archive": "pack data archive 1",
+    "kind": "pack"
+   },
+   {
+    "dex": 1024,
+    "name": "Terapagos",
+    "form": null,
+    "game": 255,
+    "override": 3,
+    "archive": "pack data archive 1",
+    "kind": "pack"
+   },
+   {
+    "dex": 890,
+    "name": "Eternatus",
+    "form": null,
+    "game": 255,
+    "override": 3,
+    "archive": "outside the pack 1",
+    "kind": "outside"
+   },
+   {
+    "dex": 1024,
+    "name": "Terapagos",
+    "form": null,
+    "game": 255,
+    "override": 3,
+    "archive": "outside the pack 1",
+    "kind": "outside"
+   }
+  ],
+  "addOnRules": [
+   "first-turn ball repeat rule: from the second Quick Ball on the same Pokémon, the catch rate is divided by the Quick Ball multiplier (setting preventQuickBallSpam)",
+   "food boosts: catch-boost meals multiply the catch rate through the catch-rate event",
+   "aggressive Pokémon cannot be caught (aggressive_pokemon_catchable = false); a failed throw counts as provocation",
+   "raid bosses: catch_rate multiplier 1.0 (unchanged)"
+  ]
+ },
+ "counts": {
+  "gameDiffersFromOfficial": 14,
+  "gen3DiffersFromOfficial": 3,
+  "sourcePackChanged": 2
+ },
+ "species": [
+  {
+   "dex": 382,
+   "name": "Kyogre",
+   "game": 3,
+   "official": 3,
+   "gen3": 5,
+   "flags": [
+    "gen3!=official"
+   ]
+  },
+  {
+   "dex": 383,
+   "name": "Groudon",
+   "game": 3,
+   "official": 3,
+   "gen3": 5,
+   "flags": [
+    "gen3!=official"
+   ]
+  },
+  {
+   "dex": 384,
+   "name": "Rayquaza",
+   "game": 3,
+   "official": 45,
+   "gen3": 3,
+   "gameForms": {
+    "Mega": 45
+   },
+   "flags": [
+    "game!=official",
+    "gen3!=official"
+   ]
+  },
+  {
+   "dex": 550,
+   "name": "Basculin",
+   "game": 190,
+   "official": 25,
+   "flags": [
+    "game!=official"
+   ]
+  },
+  {
+   "dex": 774,
+   "name": "Minior",
+   "game": 255,
+   "official": 30,
+   "gameForms": {
+    "Meteor": 30
+   },
+   "flags": [
+    "game!=official"
+   ]
+  },
+  {
+   "dex": 789,
+   "name": "Cosmog",
+   "game": 3,
+   "official": 45,
+   "flags": [
+    "game!=official"
+   ]
+  },
+  {
+   "dex": 790,
+   "name": "Cosmoem",
+   "game": 3,
+   "official": 45,
+   "flags": [
+    "game!=official"
+   ]
+  },
+  {
+   "dex": 791,
+   "name": "Solgaleo",
+   "game": 3,
+   "official": 45,
+   "flags": [
+    "game!=official"
+   ]
+  },
+  {
+   "dex": 792,
+   "name": "Lunala",
+   "game": 3,
+   "official": 45,
+   "flags": [
+    "game!=official"
+   ]
+  },
+  {
+   "dex": 800,
+   "name": "Necrozma",
+   "game": 3,
+   "official": 255,
+   "gameForms": {
+    "Ultra": 255
+   },
+   "sourcePack": {
+    "Ultra": 5
+   },
+   "flags": [
+    "game!=official",
+    "sourcePack!=game"
+   ]
+  },
+  {
+   "dex": 899,
+   "name": "Wyrdeer",
+   "game": 45,
+   "official": 135,
+   "flags": [
+    "game!=official"
+   ]
+  },
+  {
+   "dex": 900,
+   "name": "Kleavor",
+   "game": 15,
+   "official": 115,
+   "flags": [
+    "game!=official"
+   ]
+  },
+  {
+   "dex": 901,
+   "name": "Ursaluna",
+   "game": 20,
+   "official": 75,
+   "gameForms": {
+    "Bloodmoon": 5
+   },
+   "flags": [
+    "game!=official"
+   ]
+  },
+  {
+   "dex": 902,
+   "name": "Basculegion",
+   "game": 45,
+   "official": 135,
+   "flags": [
+    "game!=official"
+   ]
+  },
+  {
+   "dex": 903,
+   "name": "Sneasler",
+   "game": 20,
+   "official": 135,
+   "flags": [
+    "game!=official"
+   ]
+  },
+  {
+   "dex": 904,
+   "name": "Overqwil",
+   "game": 45,
+   "official": 135,
+   "flags": [
+    "game!=official"
+   ]
+  },
+  {
+   "dex": 1024,
+   "name": "Terapagos",
+   "game": 255,
+   "official": 255,
+   "sourcePack": {
+    "": 3
+   },
+   "flags": [
+    "sourcePack!=game"
+   ]
+  }
+ ],
+ "examples": {
+  "note": "maxHP from the Gen 3 HP formula (IV 15, EV 0); 'game' = pokemon-capture-rules.json, checked by game/tools/check_capture.ts (Monte Carlo); 'p' = chance one throw catches.",
+  "cases": [
+   {
+    "case": "Pidgey Lv 3, full HP, Poké Ball",
+    "species": "Pidgey",
+    "input": {
+     "catchRate": 255,
+     "hp": 15,
+     "maxHp": 15,
+     "level": 3,
+     "status": "",
+     "ball": "poke_ball",
+     "inBattle": true,
+     "caughtCount": 0
+    },
+    "game": {
+     "a": 255.0,
+     "shakeValue": 65536,
+     "criticalChance": 0.0,
+     "p": 0.9999
+    },
+    "gen3": {
+     "rate": 255,
+     "a": 85,
+     "b": 49931,
+     "p": 0.3369
+    }
+   },
+   {
+    "case": "Pidgey Lv 3, full HP, Poké Ball, thrown outside a battle",
+    "species": "Pidgey",
+    "input": {
+     "catchRate": 255,
+     "hp": 15,
+     "maxHp": 15,
+     "level": 3,
+     "status": "",
+     "ball": "poke_ball",
+     "inBattle": false,
+     "caughtCount": 0
+    },
+    "game": {
+     "a": 127.5,
+     "shakeValue": 57549,
+     "criticalChance": 0.0,
+     "p": 0.5946
+    },
+    "gen3": {
+     "rate": 255,
+     "a": 85,
+     "b": 49931,
+     "p": 0.3369
+    }
+   },
+   {
+    "case": "Pidgey Lv 15, full HP, Poké Ball",
+    "species": "Pidgey",
+    "input": {
+     "catchRate": 255,
+     "hp": 39,
+     "maxHp": 39,
+     "level": 15,
+     "status": "",
+     "ball": "poke_ball",
+     "inBattle": true,
+     "caughtCount": 0
+    },
+    "game": {
+     "a": 85.0,
+     "shakeValue": 53336,
+     "criticalChance": 0.0,
+     "p": 0.4387
+    },
+    "gen3": {
+     "rate": 255,
+     "a": 85,
+     "b": 49931,
+     "p": 0.3369
+    }
+   },
+   {
+    "case": "Bulbasaur Lv 5, full HP, Poké Ball",
+    "species": "Bulbasaur",
+    "input": {
+     "catchRate": 45,
+     "hp": 20,
+     "maxHp": 20,
+     "level": 5,
+     "status": "",
+     "ball": "poke_ball",
+     "inBattle": true,
+     "caughtCount": 0
+    },
+    "game": {
+     "a": 30.0,
+     "shakeValue": 43875,
+     "criticalChance": 0.0,
+     "p": 0.2009
+    },
+    "gen3": {
+     "rate": 45,
+     "a": 15,
+     "b": 32767,
+     "p": 0.0625
+    }
+   },
+   {
+    "case": "Bulbasaur Lv 5, half HP, Great Ball, paralysed",
+    "species": "Bulbasaur",
+    "input": {
+     "catchRate": 45,
+     "hp": 10,
+     "maxHp": 20,
+     "level": 5,
+     "status": "par",
+     "ball": "great_ball",
+     "inBattle": true,
+     "caughtCount": 0
+    },
+    "game": {
+     "a": 135.0,
+     "shakeValue": 58169,
+     "criticalChance": 0.0,
+     "p": 0.6206
+    },
+    "gen3": {
+     "rate": 45,
+     "a": 66,
+     "b": 47661,
+     "p": 0.2797
+    }
+   },
+   {
+    "case": "Bulbasaur Lv 5, half HP, Great Ball, paralysed, 151 species caught (critical possible)",
+    "species": "Bulbasaur",
+    "input": {
+     "catchRate": 45,
+     "hp": 10,
+     "maxHp": 20,
+     "level": 5,
+     "status": "par",
+     "ball": "great_ball",
+     "inBattle": true,
+     "caughtCount": 151
+    },
+    "game": {
+     "a": 135.0,
+     "shakeValue": 58169,
+     "criticalChance": 0.0859,
+     "p": 0.6436
+    },
+    "gen3": {
+     "rate": 45,
+     "a": 66,
+     "b": 47661,
+     "p": 0.2797
+    }
+   },
+   {
+    "case": "Mewtwo Lv 70, 1 HP, asleep, Ultra Ball",
+    "species": "Mewtwo",
+    "input": {
+     "catchRate": 3,
+     "hp": 1,
+     "maxHp": 238,
+     "level": 70,
+     "status": "slp",
+     "ball": "ultra_ball",
+     "inBattle": true,
+     "caughtCount": 0
+    },
+    "game": {
+     "a": 14.958,
+     "shakeValue": 38507,
+     "criticalChance": 0.0,
+     "p": 0.1192
+    },
+    "gen3": {
+     "rate": 3,
+     "a": 10,
+     "b": 29958,
+     "p": 0.0437
+    }
+   },
+   {
+    "case": "Mewtwo Lv 70, full HP, Ultra Ball",
+    "species": "Mewtwo",
+    "input": {
+     "catchRate": 3,
+     "hp": 238,
+     "maxHp": 238,
+     "level": 70,
+     "status": "",
+     "ball": "ultra_ball",
+     "inBattle": true,
+     "caughtCount": 0
+    },
+    "game": {
+     "a": 2.0,
+     "shakeValue": 26406,
+     "criticalChance": 0.0,
+     "p": 0.0264
+    },
+    "gen3": {
+     "rate": 3,
+     "a": 2,
+     "b": 19784,
+     "p": 0.0083
+    }
+   }
+  ]
+ }
+}

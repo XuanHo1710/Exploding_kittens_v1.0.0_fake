@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="vi">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Duyệt chuyển động · Astral Expedition</title>
+<style>
+:root{color-scheme:dark;font:16px system-ui;background:#171a22;color:#f3eee6}body{max-width:950px;margin:4vh auto;padding:0 16px}h1{font-family:Georgia,serif;font-weight:500}label,button,output{display:inline-flex;align-items:center;gap:6px;margin:4px}select,button{font:inherit;color:inherit;background:#313843;border:1px solid #606979;padding:7px;border-radius:4px}canvas{display:block;background:#29303b;width:min(100%,768px);height:auto;image-rendering:pixelated;border:1px solid #525964;margin:16px 0}input{accent-color:#e8b867}p{color:#c3cbd5}
+</style>
+<h1>Duyệt chuyển động</h1>
+<label>Nhân vật <select id="actor"></select></label>
+<label>Động tác <select id="action"></select></label>
+<canvas width="768" height="336" aria-label="Khung xem hoạt ảnh pixel"></canvas>
+<button id="play">Tạm dừng</button>
+<label>Khung <input id="scrub" type="range" min="1" max="6" value="1"></label>
+<output id="counter"></output>
+<label><input id="slow" type="checkbox">Chậm ½ tốc độ</label>
+<label id="effects"><input id="fx" type="checkbox" checked>Hiệu ứng kỹ năng</label>
+<p id="note"></p>
+<script>
+const models = [
+  {name:'Seraphina',file:'seraphina-battle',size:256,rows:['Thở','Tam Tinh Quang Kiếm','Quét nặng','Chuyển phase','Vỡ thế','Gục'],note:'Theo dõi hai bàn tay khi đầu cọ đổi hướng. Chọn Tam Tinh Quang Kiếm để xem ba nhịp phát sao.'},
+  {name:'Seraphina · kiếm kết tinh',file:'seraphina-starblade',size:256,rows:['Quét kiếm'],note:'Xem hai tay ôm cán, điểm đổi hướng ở khuỷu và cách hông hạ theo gối.'},
+  {name:'Lâm Phong · chiến đấu',file:'gustave-battle',size:192,rows:['Thở','Lao kiếm','Dùng kỹ năng','Đỡ phản kích','Né','Trúng đòn và ngã'],note:'Bản duyệt động tác. Hàng dùng kỹ năng còn lỗi hình bàn tay.'},
+  {name:'Lâm Phong · khám phá',file:'gustave-movement',size:64,rows:['Đứng · xuống','Đứng · trái','Đứng · phải','Đứng · lên','Đi · xuống','Đi · trái','Đi · phải','Đi · lên'],note:'Kéo thanh khung để so vị trí gót chân và hai tay ở bốn hướng.'},
+  {name:'Phong Lang · chiến đấu',file:'gale-wolf-battle',size:192,rows:['Thở','Vồ','Loạng choạng','Gục'],note:'Theo dõi thứ tự chạm đất của bốn chân và cách đuôi giữ thăng bằng.'},
+  {name:'Phong Lang · cú nhảy',file:'gale-wolf-leap',size:192,rows:['Bật nhảy'],note:'So sánh lúc chân trước chạm đất với lúc chân sau thu về dưới hông.'}
+];
+const actor=document.querySelector('#actor'), action=document.querySelector('#action'), scrub=document.querySelector('#scrub'), play=document.querySelector('#play'), fx=document.querySelector('#fx'), slow=document.querySelector('#slow');
+const ctx=document.querySelector('canvas').getContext('2d');
+ctx.imageSmoothingEnabled=false;
+const loadImage=path=>{const img=new Image();img.src=path;return img};
+const sprites=models.map(m=>loadImage('../../../database-astral-expedition/art-source/motion/'+m.file+'.png'));
+const vfx=['cast','effect'].map(k=>loadImage('../../../database-astral-expedition/vfx/skills/astral_slash-'+k+'.png'));
+const options=(menu,names)=>menu.replaceChildren(...names.map((n,i)=>new Option(n,i)));
+const beats=[390,680,970];
+const tip=[[34,218],[30,50],[40,22],[20,110],[22,194],[34,218]];
+let playing=!matchMedia('(prefers-reduced-motion: reduce)').matches, time=0, last=0;
+const model=()=>models[actor.selectedIndex];
+const spell=()=>actor.selectedIndex===0 && action.selectedIndex===1;
+function setPlaying(on){playing=on;play.textContent=on?'Tạm dừng':'Phát'}
+function changeMotion(){time=0;scrub.value=1;document.querySelector('#effects').hidden=!spell();document.querySelector('#note').textContent=model().note}
+function changeActor(){options(action,model().rows);changeMotion()}
+options(actor,models.map(m=>m.name));changeActor();setPlaying(playing);
+actor.onchange=changeActor;action.onchange=changeMotion;play.onclick=()=>setPlaying(!playing);
+scrub.oninput=()=>setPlaying(false);
+function drawStrip(image,frame,x,y,size,mirror=false){
+  if(!image.naturalWidth)return;
+  ctx.save();ctx.translate(Math.round(x),Math.round(y));if(mirror)ctx.scale(-1,1);
+  ctx.drawImage(image,96*frame,0,96,96,-size/2,-size/2,size,size);ctx.restore();
+}
+function draw(now){
+  if(playing)time+=Math.min(now-last,100)*(slow.checked ? 0.5 : 1);
+  last=now;
+  const t=time%(spell()?1350:900);
+  let frame=Math.floor(t/150)%6;
+  if(spell())frame=t<160?0:t<270?1:t<390?2:t<970?((t-390)%290<115?3:2):t<1090?3:t<1210?4:5;
+  if(playing)scrub.value=frame+1;else frame=Number(scrub.value)-1;
+  const m=model(), img=sprites[actor.selectedIndex],size=m.size, drawSize=size===64?192:size, x=spell()?432:Math.floor((768-drawSize)/2), y=272-drawSize;
+  ctx.clearRect(0,0,768,336);ctx.fillStyle='#434954';ctx.fillRect(40,272,688,1);
+  if(img.naturalWidth)ctx.drawImage(img,frame*size,action.selectedIndex*size,size,size,x,y,drawSize,drawSize);
+  if(spell() && fx.checked && playing){
+    const [sx,sy]=tip[frame];
+    if(t<390)drawStrip(vfx[0],Math.min(7,Math.floor(t/49)),x+sx,y+sy,64);
+    for(const beat of beats){
+      const p=(t-beat)/210;
+      if(p>=0 && p<1)drawStrip(vfx[1],Math.floor(p*8),x+tip[3][0]-(x+tip[3][0]-160)*Math.min(1,p*2),y+tip[3][1]+88*Math.min(1,p*2),96,true);
+    }
+  }
+  document.querySelector('#counter').value=(frame+1)+' / 6';
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+</script>
+</html>

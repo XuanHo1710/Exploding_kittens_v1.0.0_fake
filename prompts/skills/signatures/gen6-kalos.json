@@ -1,0 +1,245 @@
+{
+ "flying-press": {
+  "cast": "the Pokémon leaps up to dive: white wind lines and orange impact glints (#962814, #d25a28, #aac8f0, white) swirl upward around it, dust at the bottom; frames 1-8 build up then release; keep the middle half of every frame mostly empty",
+  "effect": "8 frames ON the target: a big diving body-press shockwave from the top, frames 2-4 a large white impact star with orange and pale blue edges, wind slashes and orange impact bursts, frames 5-8 the star breaks apart and fades"
+ },
+ "mat-block": {
+  "cast": "the Pokémon pulls up a mat: a flat rectangular orange-brown mat edge (#962814, #d25a28, #faa05a, #ffe6be) rises in front of it, dust puffing at the bottom; frames 1-8 it rises then holds; keep the middle half of every frame mostly empty",
+  "effect": "8 frames around the user: a tall orange-brown mat / tatami wall with a dark outline flips up in front of the body, white shine glinting across it, small dust puffs at the bottom, a faint red glow; loops from frame 8 back to frame 1"
+ },
+ "belch": {
+  "cast": "the Pokémon gathers a gassy burp: purple sludge bubbles (#5a1e78, #9646b4, #cd8ce6, #f5d7ff) gather around its mouth area and green-purple gas puffs swell, brighter from frame 1 to frame 8; keep the middle half of every frame mostly empty",
+  "effect": "frames 1-4: ONE big puffy cloud of purple-green gas flying to the RIGHT, wobbling with small purple bubbles in it, a loop; frames 5-8: it bursts over the target in a purple gas cloud and popping bubbles, then fading"
+ },
+ "rototiller": {
+  "cast": "the Pokémon tills the soil: brown earth clods and tan dust (#6e5028, #aa8246, #dcbe78, #f5e6b4) churn up from the ground around its feet, small green sprouts popping up; frames 1-8 a loop; keep the middle half of every frame mostly empty",
+  "effect": "8 frames ON the target: brown earth is churned up at the bottom of the frame, small green sprouts grow out of it, a red-orange upward glow rising around the target with small red upward arrows; loops"
+ },
+ "sticky-web": {
+  "cast": "the Pokémon spins sticky silk: thin white-grey web threads (#5a7814, #c8e15a, #f0fabe, white) spool out around its outline with small glistening dots; frames 1-8 the threads grow, a loop; keep the middle half of every frame mostly empty",
+  "effect": "8 frames ON the target's side of the field: a large white spider web with a yellow-green tint spreads out flat on the ground at the bottom of the frame, glistening sticky dots shining along its threads, a dim blue ring and small blue downward arrows; loops"
+ },
+ "fell-stinger": {
+  "cast": "the Pokémon readies its stinger: a sharp yellow-green stinger point (#5a7814, #96b428, #c8e15a, #f0fabe) gleams in front of it with white glints, small orbs drawn in; frames 1-8 build up then release; keep the middle half of every frame mostly empty",
+  "effect": "8 frames ON the target: a long sharp yellow-green stinger stabs into the centre from the left, frames 2-4 a white impact star with green edges, frames 5-8 the star fades and small red-orange sparkles rise upward"
+ },
+ "phantom-force": {
+  "cast": "the Pokémon vanishes into shadow: purple ghostly wisps (#3c286e, #6e50aa, #aa8cdc, #e6d7ff) swirl around its outline and it fades into a dark purple smoke; frames 1-8 the smoke thickens; keep the middle half of every frame mostly empty",
+  "effect": "8 frames ON the target: a dark purple shadow form strikes out of thin air, frames 2-4 a big white impact star with purple edges and ghostly wisps bursting outward, frames 5-8 the wisps swirl and fade into dark smoke"
+ },
+ "trick-or-treat": {
+  "cast": "the Pokémon plays a spooky trick: purple ghostly wisps (#3c286e, #6e50aa, #aa8cdc, #e6d7ff) and tiny orange jack-o'-lantern faces bob around its outline; frames 1-8 a loop; keep the middle half of every frame mostly empty",
+  "effect": "8 frames ON the target: small orange pumpkin lanterns with glowing faces and purple ghostly wisps circle the target, a dim purple ring shrinking around the centre; loops"
+ },
+ "noble-roar": {
+  "cast": "the Pokémon roars proudly: wide white sound arcs (#968c78, #d2c8b4, #faf8eb, white) burst from its mouth area with small white sparkle stars; frames 1-8 a loop; keep the middle half of every frame mostly empty",
+  "effect": "frames 1-4: big curved white sound arcs travelling to the RIGHT with small white stars, a loop; frames 5-8: concentric white sound rings hitting the target, a few blue downward arrows appearing, then fading"
+ },
+ "ion-deluge": {
+  "effect": "8 frames of a small electric field tile scattered over the whole screen: little falling yellow-white electric sparks and short zig-zag bolts (#c89600, #fad21e, #fff578, #ffffe6), with tiny blue-white ion dots drifting down, each frame shifted so it loops"
+ },
+ "parabolic-charge": {
+  "cast": "the Pokémon sends out electric waves: yellow curved arcs and zig-zag sparks (#c89600, #fad21e, #fff578, #ffffe6) pulse outward from its body like a satellite dish, brighter from frame 1 to frame 8; keep the middle half of every frame mostly empty",
+  "effect": "frames 1-4: a wide band of yellow electric arc waves (parabolic curves) and sparks rolling to the RIGHT, a loop; frames 5-8: the waves crash over the target with sparks crackling, then small green-white orbs float back to the LEFT, fading"
+ },
+ "forests-curse": {
+  "cast": "the Pokémon casts a forest curse: dark green leaves and twigs (#1e6e28, #46aa3c, #8cdc64, #dcfab4) swirl around its outline with a faint dark purple glow; frames 1-8 a loop; keep the middle half of every frame mostly empty",
+  "effect": "8 frames ON the target: dark green leaves and twisted vines spiral inward around the target, a dim green-purple ring shrinking around the centre, small leaves falling; loops"
+ },
+ "petal-blizzard": {
+  "cast": "the Pokémon whips up petals: pink and white flower petals (#d25096, #f58cc3, #ffc8e6, white) swirl around its outline in a whirlwind, faster from frame 1 to frame 8; keep the middle half of every frame mostly empty",
+  "effect": "frames 1-4: a heavy storm of pink and white flower petals falling DOWN, vertical, filling the cell from the top edge to the bottom edge, swirling slightly each frame, a loop; frames 5-8: the petals swirl around the target in a burst, then scatter and fade"
+ },
+ "freeze-dry": {
+  "cast": "the Pokémon chills the air: pale blue frost mist and ice crystals (#468cbe, #82c8eb, #c8f0ff, white) gather around its outline, snowflakes sparkling, brighter from frame 1 to frame 8; keep the middle half of every frame mostly empty",
+  "effect": "frames 1-4: ONE cold pale blue-white cloud of frost flying to the RIGHT, ice crystals sparkling in it, a loop; frames 5-8: on the target, pale blue ice crystals grow in a ring and freeze into a cracked ice block shape, then shatter and fade"
+ },
+ "disarming-voice": {
+  "cast": "the Pokémon cries out charmingly: pink sound arcs and pink hearts (#d25096, #f58cc3, #ffc8e6, #fff5fa) burst from its mouth area, small sparkles; frames 1-8 a loop; keep the middle half of every frame mostly empty",
+  "effect": "frames 1-4: curved pink sound arcs and small pink hearts travelling to the RIGHT, bobbing, a loop; frames 5-8: concentric pink sound rings hitting the target with hearts popping into sparkles, then fading"
+ },
+ "parting-shot": {
+  "cast": "the Pokémon taunts as it leaves: dark jagged sound arcs and black shadow shards (#1e1923, #4b3c4b, #826e78, #c8b4be) puff from its mouth area; frames 1-8 a loop; keep the middle half of every frame mostly empty",
+  "effect": "frames 1-4: dark jagged sound arcs travelling to the RIGHT with small black shards, a loop; frames 5-8: dark sound rings hitting the target, small blue downward arrows appearing, then fading"
+ },
+ "topsy-turvy": {
+  "cast": "the Pokémon twists the air: dark shadow shards (#1e1923, #4b3c4b, #826e78, #c8b4be) swirl around its outline in a spinning circle; frames 1-8 a loop; keep the middle half of every frame mostly empty",
+  "effect": "8 frames ON the target: a dark swirl spins around the target, an upward arrow and a downward arrow turning upside down and swapping places, a dim purple ring around the centre; loops"
+ },
+ "draining-kiss": {
+  "cast": "the Pokémon blows a kiss: pink hearts and pink sparkles (#d25096, #f58cc3, #ffc8e6, #fff5fa) float up around its mouth area; frames 1-8 build up then release; keep the middle half of every frame mostly empty",
+  "effect": "8 frames ON the target: a big pink heart-shaped kiss mark stamps on the centre, frames 2-4 biggest with a white glint, frames 5-8 small pink hearts and sparkles of drained energy float up and drift to the LEFT, fading"
+ },
+ "crafty-shield": {
+  "cast": "the Pokémon raises a crafty shield: pink sparkles and a pale pink glow (#d25096, #f58cc3, #ffc8e6, #fff5fa) gather in front of it, small stars twinkling; loops from frame 8 back to frame 1; keep the middle half of every frame mostly empty",
+  "effect": "8 frames around the user: a round pink shield with a white rim and sparkly pink stars glows in front of the body, glinting white as it spins slowly, a faint pink glow at the feet; loops from frame 8 back to frame 1"
+ },
+ "flower-shield": {
+  "cast": "the Pokémon raises flowers: pink and white flower petals (#d25096, #f58cc3, #ffc8e6, #fff5fa) bloom and float up around its outline; frames 1-8 a loop; keep the middle half of every frame mostly empty",
+  "effect": "8 frames ON the target: pink flower petals spiral around the target and close up into a soft pink flower bud around it, a red-orange upward glow and small red upward arrows; loops"
+ },
+ "grassy-terrain": {
+  "effect": "8 frames of a small grassy field tile scattered over the whole screen: short bright green grass blades sprouting from the bottom, little green leaves and pale green sparkles (#1e6e28, #46aa3c, #8cdc64, #dcfab4) drifting up, each frame shifted so it loops"
+ },
+ "misty-terrain": {
+  "effect": "8 frames of a small misty field tile scattered over the whole screen: soft pink-white mist puffs and pale pink sparkles (#d25096, #f58cc3, #ffc8e6, #fff5fa) drifting slowly sideways, each frame shifted so it loops"
+ },
+ "electrify": {
+  "cast": "the Pokémon sends out electricity: yellow zig-zag sparks (#c89600, #fad21e, #fff578, #ffffe6) crackle around its outline, a yellow ring pulsing; frames 1-8 a loop; keep the middle half of every frame mostly empty",
+  "effect": "8 frames ON the target: yellow zig-zag sparks circle inward around the target and small bolts crackle across its body area, a dim yellow-blue ring shrinking around the centre; loops"
+ },
+ "play-rough": {
+  "cast": "the Pokémon gets playful: pink sparkles and small hearts (#d25096, #f58cc3, #ffc8e6, #fff5fa) bounce around its outline, white speed lines; frames 1-8 build up then release; keep the middle half of every frame mostly empty",
+  "effect": "8 frames ON the target: a pink dust-cloud brawl, a rolling pink-white cloud with small stars, hearts and white impact stars popping out of it in random spots, frames 2-4 biggest, frames 5-8 the cloud breaks apart and fades"
+ },
+ "fairy-wind": {
+  "cast": "the Pokémon stirs a fairy breeze: pink sparkles and soft white wind curls (#d25096, #f58cc3, #ffc8e6, #fff5fa) swirl around its outline, brighter from frame 1 to frame 8; keep the middle half of every frame mostly empty",
+  "effect": "frames 1-4: ONE swirl of pink fairy wind flying to the RIGHT, curled pink-white wind lines with sparkles and small stars, a loop; frames 5-8: the wind swirls around the target, pink sparkles bursting outward, then fading"
+ },
+ "moonblast": {
+  "cast": "the Pokémon draws on the moon: a pale pink-white moon disc glows above it, pink sparkles (#d25096, #f58cc3, #ffc8e6, #fff5fa) drawn in toward its body, brighter from frame 1 to frame 8; keep the middle half of every frame mostly empty",
+  "effect": "frames 1-4: ONE big glowing pink-white moon orb flying to the RIGHT, a white core with pale pink rings and a sparkle trail on its left, a loop; frames 5-8: it bursts on the target in a large pink-white flash with sparkles and star shapes, then fading"
+ },
+ "boomburst": {
+  "cast": "the Pokémon draws in a huge breath: white and pale grey sound rings (#ffffff, #d8d8d0, #a8a090) contract inward toward its body, small speaker-like pulse lines flicker on both sides; frames 6-8 a bright white flash as the sound is released; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: a wide band of thick white-grey shockwave arcs (bright white core, pale grey #d8d8d0 and tan-grey #a8a090 edges, dark outline) rolling to the RIGHT, three stacked curved fronts with small debris specks, a loop; frames 5-8: the shockwave slams over the target, giant concentric white rings bursting outward with dust, biggest at frame 6, fading by frame 8"
+ },
+ "fairy-lock": {
+  "effect": "8 frames of a small looping field tile: pink chain links and tiny golden padlocks (#f8a8d0 pink, #e060a0 deep pink, #f8d860 gold, white glint) drift slowly downward with soft pink sparkles, a padlock clicking shut and twinkling at frame 4, each frame shifted so the tile loops"
+ },
+ "kings-shield": {
+  "cast": "a royal shield materialises: thin silver-white light lines (#ffffff, #d0d8e8, #8890a8) trace a tall kite-shield outline in front of the Pokémon, gold sparkles at its corners; frames 1-8 the outline draws in and shimmers; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames around the user: a tall translucent steel shield wall in front of the body, a silver-blue kite shape (pale blue-grey #c8d0e0 face, white rim, gold #e8c048 trim and a small crown emblem at the top), white glints sweeping across it from left to right, faint blue hex shimmer, a loop"
+ },
+ "play-nice": {
+  "cast": "the Pokémon smiles: small pink hearts and white sparkles (#f8b0c8, #e06090, white) pop up around its head and float upward; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames ON the target: soft pink hearts (light pink #f8c0d8, pink #e870a0, dark rose outline) float in and circle the target with white twinkles, a dim blue ring shrinking around the centre and one small blue down arrow, a loop"
+ },
+ "confide": {
+  "cast": "the Pokémon leans in to whisper: a small pale speech-bubble puff and three tiny white dots appear at the right side of its head, faint grey sound arcs; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: small soft whisper arcs (pale grey-white #f0f0e8, light grey #c8c8c0) and a tiny speech bubble with three dots drifting to the RIGHT, a loop; frames 5-8: the bubble pops beside the target, little white rings and a sheepish blue sweat drop, fading out"
+ },
+ "diamond-storm": {
+  "cast": "glittering diamonds gather: pale cyan and white gem shards (#ffffff, #c8f0ff, #78c8e8, #4890b8) spin in an orbit around the Pokémon, sparkling one after another, growing brighter to frame 8; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: a storm of large faceted diamonds (white, pale cyan, sky blue, deep blue edges, dark outline) falling DOWN, vertical, filling the cell from the top edge to the bottom edge with white sparkle stars between them, a loop; frames 5-8: the diamonds shatter on the target into a burst of glittering shards and white starbursts, biggest at frame 6, fading by frame 8"
+ },
+ "steam-eruption": {
+  "cast": "scalding steam builds up: puffs of white-grey steam and orange-red heat ripples (#ffffff, #d8d8d8, #f07848, #3878d0) rise from the bottom of the frame around the Pokémon, boiling water bubbles at the sides; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: a wide rolling band of boiling water and white steam clouds moving to the RIGHT (blue #3878d0 and light blue #90c8f0 water with red-orange #e86040 heat edges, big white steam puffs on top), a loop; frames 5-8: a scalding geyser of steam and hot water crashes over the target, splashing outward, white clouds expanding and fading"
+ },
+ "hyperspace-hole": {
+  "cast": "a small ring-shaped portal flickers open beside the Pokémon: a gold-rimmed hoop (#f8d048 gold, #c89020, inner purple #6038a0) with pink psychic sparkles; frames 1-8 it widens and spins; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: ONE golden ring portal (gold #f8d048 rim, dark gold #a87010 shading, swirling violet #7048c0 and black centre) spinning and flying to the RIGHT with a short pink sparkle trail, a loop; frames 5-8: the portal opens on the target and a burst of violet-pink space energy and stars blasts out of it, then the ring shrinks to nothing"
+ },
+ "water-shuriken": {
+  "cast": "water spins into blades: blue droplets (#3878d0, #78b8f0, #c8e8ff, white) whirl around the Pokémon and flatten into small four-point star shapes at its sides; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: ONE spinning four-point water shuriken (blue body #3878d0, light blue #78b8f0 edges, white core and highlights, dark outline) flying to the RIGHT, rotating 45° each frame with a short spray trail, a loop; frames 5-8: it strikes the target and splashes into a burst of water droplets and white foam rings, fading"
+ },
+ "mystical-fire": {
+  "cast": "a mystical flame flickers: small pink-violet and orange flames (#f07030, #f8b040, #c060d0, #f8e0ff) dance around the Pokémon's head and hands, a faint magic ring pulses; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: ONE swirling ball of magical fire (orange #f07030 and yellow #f8c040 flames with a violet-pink #c060d0 inner core and white sparkles) flying to the RIGHT with a curling flame trail, a loop; frames 5-8: it bursts on the target into a ring of orange and purple flames with sparkles, shrinking and fading"
+ },
+ "spiky-shield": {
+  "cast": "thorny vines spring up: green spikes (#205818, #48a038, #98d860) jut out of the ground in an arc around the Pokémon; frames 1-8 the spikes grow taller; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames around the user: a ring of sharp green thorn spikes (dark green #205818, green #48a038, pale yellow-green #c8f088 tips, dark outline) bristling outward from behind a translucent pale-green dome, the spikes extend and retract slightly, white glints on the tips, a loop"
+ },
+ "aromatic-mist": {
+  "cast": "a sweet scent rises: soft pink mist puffs and tiny flower petals (#ffe0f0, #f8a8d0, #e070b0) drift upward around the Pokémon; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames around the user: a gentle swirling cloud of pink-white aromatic mist (white, pale pink #ffe0f0, pink #f8a8d0, rose #e070b0) with small floating petals and sparkles rising, a red-orange glow at the bottom and one small red upward arrow, a loop"
+ },
+ "eerie-impulse": {
+  "cast": "strange electric pulses: concentric yellow and violet rings (#f8e048, #c8a020, #9060d0) ripple out from around the Pokémon with small sparks; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames ON the target: eerie wavy electric rings (yellow #f8e048, pale yellow, violet #9060d0 edges) pulse inward toward the target with jittery spark dots and zig-zags, a dim blue ring shrinking and two blue down arrows, a loop"
+ },
+ "venom-drench": {
+  "cast": "poison drips: purple slime drops (#583078, #9048b8, #d098f0) ooze and bubble around the Pokémon, a few dripping down; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames ON the target: a heavy shower of purple poison liquid splashing over the target (dark purple #583078, purple #9048b8, lilac #d098f0, white glints), thick drops falling and bursting into bubbles around it, a dim blue ring and down arrows, a loop"
+ },
+ "powder": {
+  "cast": "the Pokémon shakes out fine dust: tiny pale yellow-brown powder specks (#f8f0b0, #d8c070, #a08838) puff out from its sides; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: a drifting cloud of fine pale yellow-brown powder (cream #f8f0b0, sand #d8c070, ochre #a08838 specks) moving to the RIGHT in soft clumps, a loop; frames 5-8: the powder settles over the target and sparkles faintly, thin dust layers falling and fading"
+ },
+ "geomancy": {
+  "cast": "the Pokémon gathers energy from the earth: rainbow-tinted light motes (pink #f8a0d0, cyan #90e0f8, gold #f8e070, white) rise from the ground and are drawn toward it, glowing brighter; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames around the user: a dazzling vortex of rainbow light streams (pink, sky blue, gold, white) spiralling up around the body, glittering sparkles and a bright pink-gold glow at the feet, three red up arrows climbing, a loop"
+ },
+ "magnetic-flux": {
+  "cast": "magnetic field lines appear: curved blue and yellow arcs (#4880e0, #a8c8f8, #f8e048) loop around the Pokémon like a magnet field, small sparks at the ends; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames around the user: looping magnetic field lines (blue #4880e0, pale blue #a8c8f8, yellow #f8e048 sparks) circling the body in ovals with small horseshoe-magnet glints, a red-orange glow at the bottom and one red up arrow, a loop"
+ },
+ "happy-hour": {
+  "cast": "confetti bursts: small coloured confetti pieces and gold coins (#f8d048, #f06060, #60a0f0, #70d070) pop up around the Pokémon; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames around the user: a festive shower of confetti, streamers and gold coins (gold #f8d048, red #f06060, blue #60a0f0, green #70d070, white sparkles) raining down and twirling, little stars popping, a loop"
+ },
+ "electric-terrain": {
+  "effect": "8 frames of a small looping field tile: crackling yellow electric sparks and short zig-zag bolts (bright yellow #f8e048, pale yellow #fff8b0, gold #c8a020, white) skittering along the ground with tiny glowing dots, each frame shifted so the tile loops"
+ },
+ "dazzling-gleam": {
+  "cast": "a powerful light gathers: pink and white sparkle stars (#ffffff, #ffd0e8, #f890c8, #d058a0) gather around the Pokémon and glow brighter until a flash at frame 8; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: a wide band of dazzling pink-white light rolling to the RIGHT, filled with big four-point sparkle stars (white cores, pale pink, pink, magenta-rose edges), a loop; frames 5-8: the light washes over the target in a bright flash of sparkles and star rays, biggest at frame 6, fading"
+ },
+ "celebrate": {
+  "cast": "the Pokémon cheers: small party streamers and coloured sparkles (#f06060, #f8d048, #60a0f0) pop above its head; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames around the user: colourful confetti, curling party streamers and small gift-box sparkles (red #f06060, gold #f8d048, blue #60a0f0, green #70d070, white) bursting up and drifting down, a loop"
+ },
+ "hold-hands": {
+  "cast": "small pink hearts and white sparkles (#f8c0d8, #e870a0, white) float up around the Pokémon's hand; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames around the user: a pair of pink hearts (light pink #f8c0d8, pink #e870a0, dark rose outline) meeting in the centre and pulsing, surrounded by tiny twinkling stars and rising sparkles, a loop"
+ },
+ "baby-doll-eyes": {
+  "cast": "the Pokémon makes big cute eyes: pink sparkles and a soft glow (#ffe0f0, #f8a0d0, #e06098) twinkle near its face; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames ON the target: pink heart and star sparkles (white, light pink #ffe0f0, pink #f8a0d0, rose #e06098) twinkle and circle the target, a dim blue ring shrinking and one blue down arrow, a loop"
+ },
+ "nuzzle": {
+  "cast": "the Pokémon's cheeks spark: little yellow electric sparks (#f8e048, #fff8b0, #c8a020) crackle from the left and right of its upper body, a faint yellow glow; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames of the hit ON the target: a soft rounded rubbing impact with small pink hearts and crackling yellow electric sparks (bright yellow #f8e048, pale yellow, orange-gold #c8a020, white zig-zags), frames 2-4 biggest and brightest with a jolt of lightning, frames 5-8 sparks break apart and fade"
+ },
+ "hold-back": {
+  "cast": "the Pokémon readies a careful strike: white speed lines and a gentle dust swirl around it, small grey glints; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames of the hit ON the target: a soft white 4-point impact star (white, cream #f0e8d0, grey-tan #a8a090 edges) that appears, peaks at frames 2-4 not too big, then breaks into a few small stars and fades"
+ },
+ "infestation": {
+  "cast": "tiny bugs swarm: small dark green-brown insect specks (#506018, #90a830, #d0e070) buzz around the Pokémon in a circle; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames ON the target: a swarm of small bugs (olive #506018, yellow-green #90a830, pale lime #d0e070 wings, dark outline) buzzing in tight circles around the target, swirling inward with tiny bite flashes at frames 2-4, then flitting around and fading out"
+ },
+ "power-up-punch": {
+  "cast": "the fist powers up: orange-red energy flames (#c03018, #f07830, #f8c060, white) swirl around the Pokémon's arms with speed lines; frames 1-8 brighter; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames of the hit ON the target: a big orange fist impact (orange #f07830, red #c03018 outline, yellow-white core, flying sparks), frames 2-4 biggest with a white star, a red up arrow rising out of the burst at frames 5-7, breaking apart and fading by frame 8"
+ },
+ "oblivion-wing": {
+  "cast": "crimson energy gathers on the wings: dark red and pink light streaks (#701020, #d03040, #f890a0) pull in from the edges and pulse around the Pokémon; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: ONE dark red energy orb shaped like a spiralling wing beam (crimson #d03040, dark red #701020, pink #f890a0, white core) flying to the RIGHT with a trail of red feathers, a loop; frames 5-8: it erupts on the target into a crimson spiral burst with red feathers, then green-white drain sparkles fly back left, fading"
+ },
+ "thousand-arrows": {
+  "cast": "the ground stirs: brown earth chunks and green-tinted energy streaks (#704828, #b88848, #e0c088, #50c060) rise up and around the Pokémon; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: ONE volley of sharp earthen arrow spikes (dark brown #704828, tan #b88848, pale sand #e0c088 tips, faint green #50c060 glow) shooting to the RIGHT in a tight cluster with dust trails, a loop; frames 5-8: the arrows rain down on the target and burst into brown rock shards and dust clouds, fading"
+ },
+ "thousand-waves": {
+  "cast": "the ground ripples under the Pokémon: brown earth swells and green energy lines (#704828, #b88848, #50c060) spread at the bottom of the frame; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: ONE rolling ridge of earth (brown #704828, tan #b88848, sand #e0c088, green #50c060 glow edges) surging to the RIGHT like a wave with flying dirt clods, a loop; frames 5-8: the earth wave crashes up around the target, brown rock walls closing in with dust, then settling and fading"
+ },
+ "lands-wrath": {
+  "cast": "the land's power gathers: brown and green energy motes (#704828, #b88848, #50c060, #a8e890) rise from the ground toward the Pokémon; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: ONE orb of earthen energy (green #50c060 glow around a brown #704828 / tan #b88848 core with spinning rock chunks) flying to the RIGHT, a loop; frames 5-8: it slams down on the target, a huge column of brown earth and green light bursting upward with rocks, fading"
+ },
+ "light-of-ruin": {
+  "cast": "the Pokémon draws power from the Eternal Flower: pink-white light petals and sparkles (#ffffff, #ffd0e8, #f070b0, #b02870) spiral in toward its centre; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: ONE blazing pink-white light blast (white core, pale pink #ffd0e8, hot pink #f070b0, deep rose #b02870 rim) with a short streaking tail flying to the RIGHT, sparkles shedding off it, a loop; frames 5-8: a massive pink explosion on the target with rays and flower-petal sparkles, biggest at frame 6, fading"
+ },
+ "origin-pulse": {
+  "cast": "glowing blue water rings form: luminous cyan circuit-like lines and droplets (#1848a0, #3890e8, #90e0ff, white) swirl around the Pokémon; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: a wide band of countless glowing blue pulse beams and water ripples rolling to the RIGHT (deep blue #1848a0, blue #3890e8, cyan #90e0ff, white highlights), a loop; frames 5-8: the pulses crash over the target in a flood of shining blue water and white foam rings, biggest at frame 6, fading"
+ },
+ "precipice-blades": {
+  "cast": "the ground cracks open around the Pokémon's feet: glowing red-orange magma lines and brown rock shards (#702010, #d05020, #f8a040, #885838) split along the bottom third of the frame, spreading sideways, small sharp rocks rising",
+  "effect": "frames 1-4: giant jagged stone blades (dark brown #503020, brown #885838, red-orange magma #d05020 cracks, yellow #f8a040 glow) thrusting DOWN in a vertical column, filling the cell from the top edge to the bottom edge, a loop; frames 5-8: the blades smash into the ground under the target, a fiery burst of rock spikes and lava sparks, fading"
+ },
+ "dragon-ascent": {
+  "cast": "the Pokémon soars up with dragon energy: green-blue wind streaks and white speed lines (#208860, #50c890, #c0f8e0, white) swirl upward around it; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "8 frames of the hit ON the target: a meteor-like dive impact, a huge green and white streak slamming in (dark green #208860, emerald #50c890, mint #c0f8e0, white core), frames 2-4 a big shining star burst with wind rings, frames 5-8 green feathers and sparks scatter and fade"
+ },
+ "hyperspace-fury": {
+  "cast": "many golden ring portals open around the Pokémon: small gold hoops (#f8d048, #a87010, #502878) with dark purple centres spin around it; keep the middle half of every frame mostly empty so the Pokémon shows through",
+  "effect": "frames 1-4: ONE dark arm-shaped punch of shadow (black-purple #301838, purple #6038a0, gold ring #f8d048 around the wrist) bursting out of a ring and flying to the RIGHT, a loop; frames 5-8: a rapid barrage of dark impacts on the target, several purple-black stars with gold sparks, biggest at frame 6, fading"
+ }
+}

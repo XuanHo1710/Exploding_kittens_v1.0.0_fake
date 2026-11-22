@@ -1,0 +1,253 @@
+{
+  "version": "proposal-1",
+  "weightUnit": "basisPoints",
+  "hunt": {
+    "minDistanceFromRestAnchor": 10,
+    "minDistanceFromOtherLandmarks": 4,
+    "maxActiveHunts": 1,
+    "maxOptionalEncountersPerRealm": 2,
+    "cooldownSeconds": 600,
+    "maxRewardedWinsPerRealmPerDay": 2,
+    "maxRewardedWinsPerAccountPerDay": 6,
+    "eliteGuaranteeOnEligibleHunt": 6,
+    "eliteGuaranteeScope": "account-realm",
+    "tierOrder": [
+      "normal",
+      "elite",
+      "champion"
+    ],
+    "realms": {
+      "01-dawn-meadow": {
+        "weights": [
+          10000,
+          0,
+          0
+        ],
+        "unlock": "realmBossClear",
+        "candidateSites": [
+          [
+            47,
+            21
+          ],
+          [
+            16,
+            3
+          ]
+        ]
+      },
+      "02-everfrost-peaks": {
+        "weights": [
+          9200,
+          800,
+          0
+        ],
+        "unlock": "realmBossClear",
+        "candidateSites": [
+          [
+            47,
+            3
+          ],
+          [
+            20,
+            21
+          ]
+        ]
+      },
+      "03-sunken-dunes": {
+        "weights": [
+          8800,
+          1200,
+          0
+        ],
+        "unlock": "realmBossClear",
+        "candidateSites": [
+          [
+            47,
+            3
+          ],
+          [
+            5,
+            21
+          ]
+        ]
+      },
+      "04-abyssal-sanctum": {
+        "weights": [
+          8200,
+          1600,
+          200
+        ],
+        "unlock": "realmBossClear",
+        "candidateSites": [
+          [
+            47,
+            3
+          ],
+          [
+            20,
+            21
+          ]
+        ]
+      },
+      "05-cinder-caldera": {
+        "weights": [
+          7900,
+          1800,
+          300
+        ],
+        "unlock": "realmBossClear",
+        "candidateSites": [
+          [
+            47,
+            21
+          ],
+          [
+            11,
+            3
+          ]
+        ]
+      },
+      "06-nocturne-veil": {
+        "weights": [
+          7400,
+          2200,
+          400
+        ],
+        "unlock": "realmBossClear",
+        "candidateSites": [
+          [
+            47,
+            21
+          ],
+          [
+            5,
+            3
+          ]
+        ]
+      },
+      "07-aurora-zenith": {
+        "weights": [
+          7000,
+          2500,
+          500
+        ],
+        "unlock": "realmBossClear",
+        "candidateSites": [
+          [
+            47,
+            21
+          ],
+          [
+            13,
+            3
+          ]
+        ]
+      }
+    },
+    "enemyModifiers": {
+      "normal": {
+        "hp": 1.0,
+        "atk": 1.0,
+        "maxFollowUps": 0
+      },
+      "elite": {
+        "hp": 1.35,
+        "atk": 1.12,
+        "maxFollowUps": 1
+      },
+      "champion": {
+        "hp": 1.6,
+        "atk": 1.2,
+        "maxFollowUps": 1
+      }
+    }
+  },
+  "loot": {
+    "baseRollOrder": [
+      "enhancementMaterial",
+      "weaponFragment",
+      "utilityItem"
+    ],
+    "baseWeightsByHuntTier": {
+      "normal": [
+        7300,
+        700,
+        2000
+      ],
+      "elite": [
+        5500,
+        3000,
+        1500
+      ],
+      "champion": [
+        4000,
+        5000,
+        1000
+      ]
+    },
+    "bonusWeaponOrder": [
+      "none",
+      "R",
+      "SR",
+      "SSR"
+    ],
+    "bonusWeaponWeightsByHuntTier": {
+      "normal": [
+        9900,
+        100,
+        0,
+        0
+      ],
+      "elite": [
+        9400,
+        500,
+        100,
+        0
+      ],
+      "champion": [
+        8500,
+        1000,
+        450,
+        50
+      ]
+    },
+    "guaranteedRegionalFragmentByTier": {
+      "normal": 1,
+      "elite": 2,
+      "champion": 3
+    },
+    "craftSrCostFragments": 16,
+    "craftSsrCostFragments": 40,
+    "craftSsrRequiredRealm": "07-aurora-zenith"
+  },
+  "equipmentBanner": {
+    "currency": "forgePermit",
+    "costPerPull": 1,
+    "weeklyEarnLimit": 8,
+    "outcomeOrder": [
+      "materialPack",
+      "utilityPack",
+      "R",
+      "SR",
+      "SSR"
+    ],
+    "baseWeights": [
+      4500,
+      2500,
+      1800,
+      1000,
+      200
+    ],
+    "guaranteeEquipmentPull": 5,
+    "softPityStart": 45,
+    "ssrStepBp": 400,
+    "hardPitySSR": 60,
+    "wishlistedShareOfSsr": 5000,
+    "guaranteeWishlistAfterMiss": true,
+    "duplicateFragments": {
+      "R": 1,
+      "SR": 4,
+      "SSR": 12
+    }
+  }
+}

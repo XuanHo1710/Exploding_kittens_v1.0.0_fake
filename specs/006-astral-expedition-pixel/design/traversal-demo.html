@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="vi">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thử vượt địa hình · Astral Expedition</title>
+<style>
+:root{color-scheme:dark;background:#141724;color:#f4e8d8;font:16px system-ui}
+body{max-width:850px;margin:5vh auto;padding:0 18px}
+h1{font:36px Georgia,serif}select,button{font:inherit;color:inherit;background:#282c3e;border:1px solid #7a7d91;padding:8px;margin-right:8px}
+canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border:1px solid #57596f;margin-top:16px;background:#25263c}
+p{max-width:66ch;line-height:1.6}kbd{border:1px solid #7a7d91;border-radius:3px;padding:2px 5px}
+</style>
+<h1>Thử vượt địa hình</h1>
+<label>Vùng <select id="theme"></select></label>
+<button id="reset">Về điểm xuất phát</button>
+<canvas width="512" height="288" aria-label="Sân thử vượt địa hình"></canvas>
+<p><kbd>←</kbd> <kbd>↑</kbd> <kbd>↓</kbd> <kbd>→</kbd> đi bộ qua dốc và bậc. Tại mép nhảy, giữ <kbd>Space</kbd> rồi nhấn mũi tên để bám. Nhấn tiếp để leo. Tại ấn hình thoi, nhấn <kbd>E</kbd> để lao qua vực.</p>
+<p id="status" aria-live="polite"></p>
+<script src="traversal-course-data.js"></script>
+<script>
+const regions = {
+  meadow:'Đồng Cỏ', snow:'Tuyết', desert:'Sa Mạc', underwater:'Thủy Cung',
+  volcano:'Núi Lửa', night:'Ban Đêm', aurora:'Quang Phổ'
+};
+const direction = {ArrowDown:[0,1,0], ArrowLeft:[-1,0,1], ArrowRight:[1,0,2], ArrowUp:[0,-1,3]};
+const path = '../../../database-astral-expedition/';
+const canvas = document.querySelector('canvas');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+const select = document.querySelector('#theme');
+const status = document.querySelector('#status');
+for (const [key, name] of Object.entries(regions)) select.add(new Option(name, key));
+const load = url => Object.assign(new Image(), {src:path+url});
+const hero = load('units/heroes/gustave_blade-movement.png');
+const {width, height, ground, decor} = traversalCourse;
+const elevations = [0,0,0,3,7,8,0,12,16,16,0,0,20,12,8,0];
+let terrain, tiles, x, y, face, hanging, animation;
+const pressed = new Set();
+const clock = () => performance.now();
+const say = message => { status.textContent = message };
+function reset() {
+  x = 2; y = 5; face = 2; hanging = false; animation = null;
+  pressed.clear();
+  say('Đi sang phải để thử dốc và cầu thang.');
+}
+function loadRegion() {
+  terrain = load('overworld/'+select.value+'-tileset.png');
+  tiles = load('overworld/traversal/'+select.value+'-traversal.png');
+  reset();
+}
+function move(nx, ny, duration, lift, mode) {
+  animation = {nx, ny, started:clock(), duration, lift, mode};
+}
+function walkable(nx, ny) {
+  if (nx < 0 || ny < 0 || nx >= width || ny >= height) return false;
+  const gid = ground[ny * width + nx];
+  return gid !== 4 && gid !== 5;
+}
+function jump(dx) {
+  if (y !== 5) return;
+  if (x === 5 && dx === 1) return move(7,5,360,16,'grip');
+  if (x === 7 && hanging && dx === 1) return move(8,5,260,10,'mantle');
+  if ((x === 7 || x === 8) && dx === -1) return move(5,5,360,16,'return');
+  say('Đứng trên dấu mép bậc và nhấn mũi tên hướng qua khe.');
+}
+function dash() {
+  if (hanging || y !== 5 || (x !== 9 && x !== 12)) {
+    say('Ấn hình thoi là điểm dùng E để lao.');
+    return;
+  }
+  face = x === 9 ? 2 : 1;
+  move(x === 9 ? 12 : 9,5,240,8,'dash');
+}
+window.addEventListener('keydown', event => {
+  if (event.target.matches('select,button')) return;
+  if (!(event.code in direction) && event.code !== 'Space' && event.code !== 'KeyE') return;
+  event.preventDefault();
+  pressed.add(event.code);
+  if (animation) return;
+  if (event.code === 'KeyE' && !event.repeat) return dash();
+  if (event.code === 'Space' && !event.repeat) {
+    const arrow = [...pressed].find(code => code in direction);
+    if (arrow) jump(direction[arrow][0]);
+    return;
+  }
+  if (!(event.code in direction)) return;
+  const [dx,dy,dir] = direction[event.code];
+  face = dir;
+  if (pressed.has('Space')) {
+    if (!event.repeat) jump(dx);
+    return;
+  }
+  if (hanging) {
+    say('Đang bám. Giữ Space + → để leo hoặc Space + ← để quay lại.');
+    return;
+  }
+  if (walkable(x+dx,y+dy)) move(x+dx,y+dy,115,0,'walk');
+});
+window.addEventListener('keyup', event => pressed.delete(event.code));
+window.addEventListener('blur', () => pressed.clear());
+select.addEventListener('change', loadRegion);
+document.querySelector('#reset').onclick = () => {reset();document.activeElement.blur()};
+select.addEventListener('change', () => select.blur());
+function finish(step) {
+  x = step.nx; y = step.ny; hanging = step.mode === 'grip'; animation = null;
+  if (hanging) say('Đã bám. Giữ Space + → để leo.');
+  else if (x === 5 && y === 5) say('Giữ Space + → để nhảy bám mép đối diện.');
+  else if ((x === 9 || x === 12) && y === 5) say('Nhấn E để lao qua khe.');
+  else if (x === 14 && y === 5) say('Đã hoàn thành đường thử.');
+  else if (step.mode === 'mantle') say('Đã leo lên bậc. Tiến một ô đến ấn lao.');
+}
+function draw(now) {
+  ctx.clearRect(0,0,512,288);
+  for (let i = 0; i < ground.length; i += 1) {
+    const left = (i % width)*32, top = Math.floor(i/width)*32;
+    const groundFrame = ground[i] === 5 ? 8+Math.floor(now/135)%8 : ground[i]-1;
+    if (terrain.naturalWidth) ctx.drawImage(terrain,groundFrame*32,0,32,32,left,top,32,32);
+    const gid = decor[i]-17;
+    if (gid >= 0 && tiles.naturalWidth) {
+      ctx.drawImage(tiles,(gid%8)*32,Math.floor(gid/8)*32,32,32,left,top,32,32);
+    }
+  }
+  let px = x, py = y, lift = 0;
+  let elevation = y === 5 ? elevations[x] - (hanging ? 8 : 0) : 0;
+  const moving = animation;
+  if (moving) {
+    const progress = Math.max(0,Math.min(1,(now-moving.started)/moving.duration));
+    px += (moving.nx-x)*progress; py += (moving.ny-y)*progress;
+    lift = moving.lift*Math.sin(Math.PI*progress);
+    const goal = moving.ny === 5 ? elevations[moving.nx] - (moving.mode === 'grip' ? 8 : 0) : 0;
+    elevation += (goal-elevation)*progress;
+    if (progress === 1) finish(moving);
+  }
+  if (hero.naturalWidth) {
+    const row = (moving?.mode === 'walk' ? 4 : 0)+face;
+    const frame = Math.floor(now/100)%6;
+    ctx.drawImage(hero,frame*64,row*64,64,64,Math.round(px*32-4),Math.round(py*32-14-lift-elevation),40,40);
+  }
+  window.requestAnimationFrame(draw);
+}
+loadRegion();
+window.requestAnimationFrame(draw);
+</script>
+</html>
