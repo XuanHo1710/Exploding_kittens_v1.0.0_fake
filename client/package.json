@@ -8,10 +8,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/three": "^0.170.0",
     "lucide-react": "^1.59.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "three": "^0.170.0"
   },
   "devDependencies": {
     "@types/react": "^19.1.0",

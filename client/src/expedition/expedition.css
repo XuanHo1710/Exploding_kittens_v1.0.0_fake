@@ -1,0 +1,278 @@
+/* Astral Expedition Pixel — giao diện pixel fantasy (đá tối, viền đồng, chữ vàng). */
+.exp-root {
+  --exp-bg: #14121f;
+  --exp-panel: #1f1b2e;
+  --exp-panel2: #2a2540;
+  --exp-line: #4a3f63;
+  --exp-bronze: #c4925a;
+  --exp-gold: #f0c96a;
+  --exp-text: #eee6d8;
+  --exp-dim: #a99fbd;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 30% 0%, #2a2244 0%, var(--exp-bg) 60%);
+  color: var(--exp-text);
+  font-family: system-ui, 'Segoe UI', sans-serif;
+  overflow: auto;
+  z-index: 5;
+}
+.exp-root button {
+  font: inherit;
+  color: var(--exp-text);
+  background: var(--exp-panel2);
+  border: 1px solid var(--exp-line);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.exp-root button:hover:not(:disabled) { border-color: var(--exp-bronze); }
+.exp-root button.on { background: #4a3a22; border-color: var(--exp-gold); color: var(--exp-gold); }
+.exp-root button:disabled { opacity: 0.45; cursor: default; }
+.exp-root select { background: var(--exp-panel2); color: var(--exp-text); border: 1px solid var(--exp-line); border-radius: 6px; padding: 5px; }
+.exp-root kbd { background: #312a47; border: 1px solid var(--exp-line); border-radius: 4px; padding: 0 5px; font-size: 12px; }
+
+.exp-top { display: flex; align-items: center; gap: 14px; padding: 8px 14px; background: #100e19cc; border-bottom: 1px solid var(--exp-line); flex-wrap: wrap; }
+.exp-brand { font-weight: 800; letter-spacing: 0.5px; color: var(--exp-gold); }
+.exp-currency { display: flex; gap: 12px; font-weight: 700; }
+.exp-currency span { background: #2a2540; padding: 3px 9px; border-radius: 12px; border: 1px solid var(--exp-line); }
+.exp-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.exp-top-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.exp-leave { background: #4a2229 !important; }
+
+.exp-loading { align-items: center; justify-content: center; gap: 12px; }
+.exp-spinner { width: 42px; height: 42px; border: 4px solid var(--exp-line); border-top-color: var(--exp-gold); border-radius: 50%; animation: exp-spin 1s linear infinite; }
+@keyframes exp-spin { to { transform: rotate(360deg); } }
+
+.exp-explore, .exp-battle, .exp-party, .exp-bag, .exp-summon, .exp-rates { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.exp-realm-title b { color: var(--exp-gold); font-size: 18px; }
+.exp-realm-title span { color: var(--exp-dim); margin-left: 8px; }
+.exp-canvas-wrap { position: relative; width: min(100%, 1100px); align-self: center; }
+.exp-canvas { width: 100%; height: auto; image-rendering: pixelated; border: 2px solid var(--exp-line); border-radius: 8px; background: #0c0a14; display: block; }
+.exp-canvas-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--exp-dim); }
+.exp-hint { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); background: #1b1629ee !important; border-color: var(--exp-gold) !important; color: var(--exp-gold) !important; font-weight: 700; }
+.exp-explore-foot { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center; color: var(--exp-dim); font-size: 14px; }
+.exp-progress { color: var(--exp-text); }
+.exp-dpad { display: grid; justify-items: center; gap: 4px; touch-action: none; user-select: none; }
+.exp-dpad div { display: flex; gap: 34px; }
+.exp-dpad button { width: 44px; height: 40px; padding: 0; }
+
+/* battle */
+.exp-turnbar { display:flex; gap:8px; align-items:center; padding:2px 0 8px; }
+.exp-turn-chip { display:grid; place-items:center; width:27px; height:27px; background:#201a24; border:1px solid #77624f; color:#e59b86; }
+.exp-turn-chip:first-child { border-color:#ead399; }
+.exp-turn-chip img { width:25px; height:25px; image-rendering:pixelated; }
+.exp-battle-main { position:relative; }
+.exp-canvas-wrap.battle { width:100%; border-color:#766046; }
+.exp-enemy-bars { position:absolute; top:8px; right:8px; display:grid; gap:4px; width:min(180px, 28%); }
+.exp-root .exp-enemy-bar { display:grid; gap:2px; text-align:left; background:#14111cdd; padding:3px 7px; border-radius:2px; font-size:.78rem; }
+.exp-root .exp-enemy-bar.target { border-color:#b68e69; }
+.exp-enemy-bar.dead { display:none !important; }
+.exp-bar { height:8px; background:#0c0a14; border:1px solid var(--exp-line); border-radius:4px; overflow:hidden; }
+.exp-bar.thin { height:4px; }
+.exp-bar i { display:block; height:100%; transition:width .25s; }
+
+.exp-skill-menu, .exp-defense-controls { position:absolute; right:16px; bottom:68px; display:grid; gap:4px; }
+.exp-skill-menu { width:min(242px, 34%); }
+.exp-battle-ap { justify-self:end; padding:2px 7px; background:#1a1423ed; border:1px solid #745f47; color:var(--exp-gold); }
+.exp-battle-ap small { font-size:.68em; }
+.exp-root .exp-skill, .exp-root .exp-defense-controls button { display:flex; align-items:center; gap:8px; text-align:left; background:#17131fea; border:1px solid #806444; border-radius:2px; padding:6px 8px; }
+.exp-skill .nm { flex:1; line-height:1.1; }
+.exp-skill .meta, .exp-battle-weak { color:var(--exp-gold); font-size:.78rem; }
+.exp-defense-controls { grid-auto-flow:column; }
+.exp-party-bars { display:flex; gap:8px; min-height:50px; margin-top:5px; }
+.exp-party-bar { display:flex; gap:6px; align-items:center; width:min(132px, 29%); padding:4px; background:#191421; border:1px solid #504236; }
+.exp-party-bar.active { border-color:var(--exp-gold); }
+.exp-party-bar.dead { opacity:.4; }
+.exp-party-bar img { width:34px; height:34px; image-rendering:pixelated; }
+.exp-party-bar > div { flex:1; display:grid; gap:2px; }
+.exp-party-bar small { color:var(--exp-dim); font-size:11px; }
+
+@media (max-width: 680px) {
+  .exp-skill-menu, .exp-defense-controls { position:static; }
+  .exp-skill-menu { width:auto; grid-template-columns:repeat(2, minmax(0, 1fr)); padding-top:4px; }
+  .exp-battle-ap { grid-column:1 / -1; }
+  .exp-defense-controls { padding-top:4px; justify-content:end; }
+}
+
+.exp-root.exp-fullscreen { overflow: hidden; background: #110f15; }
+.exp-fullscreen .exp-field, .exp-fullscreen .exp-battle { position: absolute; inset: 0; display: block; margin: 0; padding: 0; }
+.exp-fullscreen .exp-field-stage, .exp-fullscreen .exp-battle-main, .exp-fullscreen .exp-canvas-wrap.battle {
+  width: 100%; height: 100%; max-width: none; border: 0; border-radius: 0; margin: 0;
+}
+.exp-fullscreen .exp-field-stage > .exp-canvas, .exp-fullscreen .exp-canvas-wrap.battle > .exp-canvas {
+  display: block; width: 100%; height: 100%; border: 0; border-radius: 0; object-fit: cover;
+}
+.exp-fullscreen .exp-turnbar { position: absolute; z-index: 2; top: 16px; left: 18px; }
+.exp-fullscreen .exp-party-bars { position: absolute; left: 18px; bottom: 18px; width: min(560px, 54vw); }
+.exp-fullscreen .exp-skill-menu, .exp-fullscreen .exp-defense-controls { right: clamp(12px, 4vw, 60px); bottom: clamp(24px, 10vh, 115px); }
+.exp-fullscreen .exp-enemy-bars { top: 18px; right: 18px; }
+.exp-mini { position: absolute; left: clamp(8px, 2vw, 22px); bottom: clamp(8px, 2vw, 22px); width: clamp(96px, 14vw, 176px); height: auto; image-rendering: pixelated; border: 1px solid #b09060; box-shadow: 0 2px 18px #000a; }
+.exp-pause { position: absolute; inset: 0; z-index: 6; overflow: auto; background: linear-gradient(140deg, #1c1927fa, #100d17f7); padding: clamp(8px, 3vw, 38px); }
+.exp-pause .exp-tabs { position: sticky; top: 0; z-index: 2; display:flex; justify-content:center; background: #191523; border-bottom: 1px solid #715d49; padding: 10px 0; margin-bottom: 14px; }
+.exp-lobby { width: min(960px, 100%); margin: 0 auto; }
+.exp-lobby-row, .exp-lobby-actions, .exp-lobby-change { flex: 1 0 100%; display: flex; flex-wrap: wrap; gap: 10px; }
+.exp-root .exp-lobby-hero { display: grid; place-items: center; width: min(130px, 20vw); min-height: 100px; padding: 6px; }
+.exp-lobby-hero img { width: 100%; max-width: 96px; image-rendering: pixelated; }
+.exp-lobby-change > div, .exp-supply-list, .exp-settings { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.exp-paused-map { display:block; max-width:min(900px,100%); margin: 0 auto 14px; image-rendering:pixelated; }
+.exp-settings { width:min(560px,100%); margin:auto; align-items:stretch; flex-direction:column; }
+.exp-settings label { display:flex; justify-content:space-between; gap:8px; padding:8px; border-bottom:1px solid var(--exp-line); }
+.exp-control-settings { padding: 12px; border: 1px solid #675540; background: #191522; }
+.exp-control-settings h3 { margin: 0 0 10px; color: var(--exp-gold); }
+.exp-control-settings fieldset { border: 1px solid var(--exp-line); margin: 0 0 10px; padding: 6px 10px; }
+.exp-control-settings legend { color: var(--exp-dim); }
+.exp-control-row { display: flex; align-items: center; justify-content: space-between; min-height: 36px; gap: 12px; }
+.exp-control-row button { min-width: 80px; padding-block: 3px; }
+.exp-hint.hint-ladder { color: #e5aa64 !important; }
+.exp-hint.hint-grip { color: #83d1e5 !important; }
+.exp-hint.hint-rope { color: #b7de91 !important; }
+.exp-skill-icon { display:inline-block; flex:0 0 26px; width:26px; height:26px; vertical-align:middle; margin-right:4px; background-repeat:no-repeat; background-size:800% 100%; background-position:57.1429% center; image-rendering:pixelated; }
+.exp-charm-icon { display:inline-block; width:25px; height:25px; flex:0 0 auto; margin-right:4px; vertical-align:middle; background-repeat:no-repeat; image-rendering:pixelated; }
+.exp-weapon-icon { width: 36px; height: 36px; object-fit: contain; image-rendering: pixelated; flex: none; vertical-align: middle; margin-inline-end: 6px; }
+.exp-item .exp-weapon-icon, .ui-gear-detail .exp-weapon-icon { width: 60px; height: 60px; }
+.exp-weapon-pool { display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); gap: 6px; margin-block: 8px; }
+.exp-weapon-entry { display: grid; place-items: center; border: 1px solid; padding: 2px; background: radial-gradient(ellipse at 50% 40%, #303a4a, #11151e 75%); }
+.exp-weapon-entry img { width: 58px; height: 58px; image-rendering: pixelated; object-fit: contain; filter: drop-shadow(0 0 2px #c8d4ed3b); }
+.exp-weapon-entry b { font-size: .85em; }
+.exp-skill-ap-green .nm { color:#9fdba8; }
+.exp-skill-ap-gold .nm { color:#f2ce83; }
+.exp-skill-ap-red .nm { color:#f09a8b; }
+.exp-skill-ap-violet .nm { color:#d3b5fb; }
+.exp-skill:disabled .nm { color:#b9b6bd; }
+@media (max-width: 680px) {
+  .exp-fullscreen .exp-skill-menu, .exp-fullscreen .exp-defense-controls { position:absolute; grid-template-columns:1fr; right:8px; bottom:16vh; width:min(203px,42vw); }
+  .exp-fullscreen .exp-defense-controls { grid-template-columns:auto auto; width:auto; }
+  .exp-fullscreen .exp-party-bars { left:8px; bottom:8px; width:75vw; }
+  .exp-fullscreen .exp-canvas-wrap.battle > .exp-canvas { object-fit:contain; }
+}
+@media (max-aspect-ratio: 3/2) {
+  .exp-fullscreen .exp-canvas-wrap.battle > .exp-canvas { object-fit:contain; }
+}
+
+/* party */
+.exp-party { flex-direction: row !important; align-items: flex-start; flex-wrap: wrap; }
+.exp-roster { display: flex; flex-direction: column; gap: 6px; width: 200px; }
+.exp-roster-card { display: grid !important; grid-template-columns: 40px 1fr; grid-template-rows: auto auto; text-align: left; gap: 0 8px; }
+.exp-roster-card img { grid-row: span 2; width: 40px; height: 40px; image-rendering: pixelated; }
+.exp-roster-card small { color: var(--exp-dim); }
+.exp-roster-card.r-SSR { border-left: 4px solid #f0b44c !important; }
+.exp-roster-card.r-SR { border-left: 4px solid #b57cf0 !important; }
+.exp-roster-card.r-R { border-left: 4px solid #5fa8f0 !important; }
+.exp-hero-detail { flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 10px; }
+.exp-hero-head { display: flex; gap: 14px; align-items: center; }
+.exp-hero-head img { width: 112px; height: 112px; image-rendering: pixelated; border-radius: 10px; border: 2px solid var(--exp-bronze); }
+.exp-hero-head h2 { margin: 0; color: var(--exp-gold); }
+.exp-hero-head h2 small { color: var(--exp-dim); font-size: 14px; }
+.exp-hero-head p { margin: 4px 0; color: var(--exp-dim); }
+.exp-lv { display: grid; grid-template-columns: auto 200px auto; gap: 8px; align-items: center; margin: 6px 0; }
+.exp-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.exp-card { background: var(--exp-panel); border: 1px solid var(--exp-line); border-radius: 10px; padding: 10px 12px; }
+.exp-card h3 { margin: 0 0 8px; font-size: 15px; color: var(--exp-gold); }
+.exp-card h3 small { color: var(--exp-dim); font-weight: 400; }
+.exp-stats { width: 100%; border-collapse: collapse; font-size: 14px; }
+.exp-stats td { padding: 3px 6px; border-bottom: 1px solid #2c2640; }
+.exp-stats em { color: #86efac; font-style: normal; }
+.exp-stats td.pts { color: var(--exp-dim); }
+.exp-stats button { padding: 2px 8px; margin-left: 4px; }
+.exp-skill-row { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid #2c2640; }
+.exp-skill-row p { margin: 2px 0; color: var(--exp-dim); font-size: 13px; }
+.exp-skill-row .right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 200px; font-size: 13px; }
+.exp-skill-row.locked { opacity: 0.55; }
+.exp-equip { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+.exp-equip-slot { display: flex; flex-direction: column; gap: 6px; }
+.exp-equip-slot em { color: var(--exp-dim); }
+
+.exp-item { border: 1px solid; border-radius: 8px; padding: 6px 8px; display: flex; flex-direction: column; gap: 2px; background: #181425; font-size: 13px; }
+.exp-item small { color: var(--exp-dim); }
+.exp-item .main { color: var(--exp-gold); }
+.exp-item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.exp-item-grid.small { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); margin: 8px 0; }
+.exp-item-cell { display: flex; flex-direction: column; gap: 6px; }
+.exp-item-cell .eq { color: #86efac; }
+.exp-empty { color: var(--exp-dim); text-align: center; }
+
+.exp-summon .banner h2 { margin: 0 0 6px; color: var(--exp-gold); }
+.exp-summon .banner.b-hero { background: linear-gradient(120deg, #2b2247, #1f1b2e); }
+.exp-summon .banner.b-item { background: linear-gradient(120deg, #3a2a1a, #1f1b2e); }
+.exp-history { list-style: none; padding: 0; margin: 0; columns: 2; font-size: 13px; }
+.exp-history .r-SSR { color: #f0b44c; }
+.exp-history .r-SR { color: #b57cf0; }
+.exp-rate-table td { padding: 2px 10px 2px 0; }
+
+.exp-modal { position: fixed; inset: 0; background: #0009; display: grid; place-items: center; z-index: 20; }
+.exp-modal-box { background: var(--exp-panel); border: 2px solid var(--exp-bronze); border-radius: 12px; padding: 18px 22px; width: min(92vw, 560px); max-height: 86vh; overflow: auto; display: flex; flex-direction: column; gap: 8px; }
+.exp-modal-box.wide { width: min(94vw, 900px); }
+.exp-modal-box h2 { margin: 0; text-align: center; letter-spacing: 2px; }
+.exp-modal-box h2.victory { color: var(--exp-gold); }
+.exp-modal-box h2.defeat { color: #f87171; }
+.exp-modal-box .hl { color: #86efac; margin: 0; }
+.exp-summon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.exp-summon-card { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px; border-radius: 8px; background: #181425; border: 2px solid var(--exp-line); }
+.exp-summon-card img { width: 72px; height: 72px; image-rendering: pixelated; }
+.exp-summon-card.r-SSR { border-color: #f0b44c; box-shadow: 0 0 14px #f0b44c66; }
+.exp-summon-card.r-SR { border-color: #b57cf0; }
+.exp-toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #2a1f3d; border: 1px solid var(--exp-gold); padding: 8px 16px; border-radius: 8px; z-index: 30; max-width: 90vw; }
+
+.exp-story, .exp-transition { position: fixed; inset: 0; overflow: hidden; isolation: isolate; }
+.exp-story { z-index: 38; display: grid; place-items: center; background: #111018; }
+.exp-story.phase-out { opacity: 0; transition: opacity 480ms ease; }
+.exp-story-bg, .exp-story-mood { position: absolute; inset: 0; z-index: -1; }
+.exp-story-bg { background-size: cover; background-position: center; image-rendering: pixelated; }
+.exp-story-bar { position: absolute; width: 100%; height: 7vh; background: #08080c; pointer-events: none; }
+.exp-story-bar.top { top: 0; }
+.exp-story-bar.bottom { bottom: 0; }
+.exp-story-card, .exp-story-credits { text-align: center; padding: 18px 26px; background: #181524e8; border: 1px solid var(--exp-bronze); }
+.exp-story-card h2, .exp-story-credits h2 { color: var(--exp-gold); font-family: Georgia, serif; }
+.exp-story-dialog { position: absolute; bottom: 12vh; width: min(90vw, 780px); display: flex; align-items: center; gap: 14px; background: #171320ee; border: 1px solid var(--exp-bronze); padding: 12px; }
+.exp-story-portrait { flex: 0 0 72px; width: 72px; height: 72px; image-rendering: pixelated; }
+.exp-story-portrait.boss { background-size: 600% 600%; background-repeat: no-repeat; }
+.exp-story-text { flex: 1; }
+.exp-story-text p { line-height: 1.55; margin: 6px 0; }
+.exp-story-next { display: block; text-align: right; color: var(--exp-gold); min-height: 1em; }
+.exp-story-ui { position: absolute; right: 5vw; top: 9vh; }
+.exp-transition { z-index: 37; display: grid; place-items: center; background: #181221; animation: exp-dissolve 440ms ease both; }
+.exp-transition-label { padding: 12px 30px; border-block: 1px solid var(--exp-bronze); color: var(--exp-gold); font: 1.3rem Georgia, serif; text-align: center; }
+@keyframes exp-dissolve { 0%, 42% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .exp-transition { animation: none; }
+  .exp-story.phase-out { transition: none; }
+}
+.exp-journal, .exp-charms { width: min(96%, 1120px); margin: 12px auto; display: grid; gap: 10px; }
+.exp-journal-progress, .exp-journal-scenes { display: flex; flex-wrap: wrap; gap: 8px; }
+.exp-journal-progress span { padding: 5px 10px; border: 1px solid var(--exp-line); }
+.exp-journal-progress .on { color: var(--exp-gold); border-color: var(--exp-bronze); }
+.exp-journal-scenes .locked, .exp-dim { color: var(--exp-dim); }
+.exp-skill-tree { background: radial-gradient(ellipse at 30% 5%, #302a3d, #171323 78%); }
+.exp-tree-head, .exp-tree-detail { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.exp-tree-head h3 { margin: 0; }
+.exp-tree-points { white-space: nowrap; color: #e9c487; border: 1px solid #745337; padding: 3px 9px; font-variant-numeric: tabular-nums; }
+.exp-tree-scroll { overflow-x: auto; }
+.exp-tree { position: relative; display: grid; grid-template-columns: repeat(6, minmax(54px, 1fr)); min-width: 324px; max-width: 780px; margin-inline: auto; }
+.exp-tree::before, .exp-tree-tier::before, .exp-tree-tier.reachable::after { content: ''; position: absolute; pointer-events: none; background: #71637f; }
+.exp-tree::before { left: calc(100% / 12); right: calc(100% / 12); top: 50%; height: 1px; }
+.exp-tree-tier { position: relative; display: grid; grid-template-rows: repeat(2, 72px); justify-items: center; align-items: center; }
+.exp-tree-tier:not(.root)::before { inset-block: 36px; left: 50%; width: 1px; }
+.exp-tree-tier.reachable::before, .exp-tree-tier.reachable::after { background: #bd9463; }
+.exp-tree-tier.reachable::after { left: -50%; width: 100%; top: 50%; height: 1px; }
+.exp-tree-tier.root .exp-tree-node { grid-row: 1 / -1; }
+.exp-root .exp-tree-node { position: relative; isolation: isolate; z-index: 1; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: #ded3dc; }
+.exp-tree-node::before { content: ''; position: absolute; z-index: -1; inset: 3px; transform: rotate(45deg); background: #292337; border: 1px solid #786880; box-shadow: inset 0 0 0 3px #1b1726; }
+.exp-tree-icon { line-height: 1; font-size: 18px; }
+.exp-tree-badge { position: absolute; top: 33px; right: -5px; min-width: 19px; padding: 1px 3px; border-radius: 3px; border: 1px solid #594a64; background: #1b1625; font-size: 10px; text-align: center; }
+.exp-tree-node.locked .exp-tree-icon { filter: grayscale(.85); opacity: .65; }
+.exp-tree-node.ready::before { background: #523828; border-color: #d8a36c; }
+.exp-tree-node.owned::before { background: #2c463d; border-color: #76b49a; }
+.exp-tree-node.owned .exp-tree-badge { color: #a3dbc0; }
+.exp-tree-node[aria-pressed="true"]::before, .exp-tree-node:hover::before { border-color: #f5d6a0; }
+.exp-tree-node[aria-pressed="true"]::before { box-shadow: inset 0 0 0 2px #1b1726, 0 0 11px #efbf735c; }
+.exp-tree-detail { min-height: 66px; border-top: 1px solid var(--exp-line); padding-top: 8px; }
+.exp-tree-detail p { margin: 3px 0; }
+.exp-tree-detail small { display: block; color: var(--exp-dim); }
+.exp-tree-unlock { flex: 0 0 auto; }
+.exp-root .exp-tree-reset { align-self: flex-start; margin-top: 8px; padding: 3px 7px; font-size: .8rem; }
+.exp-charm-grid, .exp-charm-slots { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); }
+.exp-charm-card, .exp-charm-slot { padding: 10px; border: 1px solid var(--exp-line); background: var(--exp-panel2); }
+.exp-charm-card.unknown, .exp-charm-slot.locked { opacity: 0.62; }
+.exp-charm-slot select { width: 100%; margin-top: 6px; }

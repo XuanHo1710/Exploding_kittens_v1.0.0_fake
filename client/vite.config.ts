@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
-import { cpSync, createReadStream, existsSync, realpathSync, statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { cpSync, createReadStream, existsSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { basename, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -25,6 +26,8 @@ const TOTAL_WAR_DIR = fileURLToPath(new URL('../database-total-war', import.meta
 const DIST_TOTAL_WAR_DIR = fileURLToPath(new URL('./dist/database-total-war', import.meta.url));
 const MK_DIR = fileURLToPath(new URL('../database-mighty-knight-pixel', import.meta.url));
 const DIST_MK_DIR = fileURLToPath(new URL('./dist/database-mighty-knight-pixel', import.meta.url));
+const EXPEDITION_DIR = fileURLToPath(new URL('../database-astral-expedition', import.meta.url));
+const DIST_EXPEDITION_DIR = fileURLToPath(new URL('./dist/database-astral-expedition', import.meta.url));
 
 const STATIC_MIME_BY_EXT: Readonly<Record<string, string>> = {
   '.png': 'image/png',
@@ -35,6 +38,8 @@ const STATIC_MIME_BY_EXT: Readonly<Record<string, string>> = {
   '.mp3': 'audio/mpeg',
   '.wav': 'audio/wav',
   '.json': 'application/json; charset=utf-8',
+  '.tmj': 'application/json; charset=utf-8',
+  '.tsj': 'application/json; charset=utf-8',
 };
 
 interface StaticMountOptions {
@@ -156,9 +161,7 @@ function databaseStaticPlugin(opts: StaticMountOptions): Plugin {
       res.setHeader('Content-Type', mime);
       res.setHeader(
         'Cache-Control',
-        opts.route === '/database-ban-sung' || opts.route === '/database-mighty-knight-pixel'
-          ? 'no-cache'
-          : 'public, max-age=604800',
+        opts.failClosed ? 'no-cache' : 'public, max-age=604800',
       );
       if (method === 'HEAD') {
         res.end();
@@ -270,6 +273,17 @@ function databaseMightyKnightPlugin(): Plugin {
   });
 }
 
+function databaseAstralExpeditionPlugin(): Plugin {
+  return databaseStaticPlugin({
+    name: 'database-astral-expedition-static',
+    route: '/database-astral-expedition',
+    srcDir: EXPEDITION_DIR,
+    distDir: DIST_EXPEDITION_DIR,
+    allowedExts: new Set(['.png', '.webp', '.json', '.tmj', '.tsj']),
+    failClosed: true,
+  });
+}
+
 function databaseTotalWarPlugin(): Plugin {
   const rootPrefix = TOTAL_WAR_DIR.endsWith(sep) ? TOTAL_WAR_DIR : TOTAL_WAR_DIR + sep;
   const serveTotalWar = (middlewares: { use: (route: string, fn: (req: any, res: any, next: () => void) => void) => void }) => {
@@ -335,6 +349,10 @@ export default defineConfig(({ mode }) => {
   // Backend mà proxy dev/preview chuyển tiếp /api, /avatars, /socket.io tới
   const BACKEND_URL = (env.BACKEND_URL || 'http://localhost:3001').replace(/\/+$/, '');
   const PUBLIC_HOSTS = [...DEFAULT_PUBLIC_HOSTS, ...list(env.ALLOWED_HOSTS)];
+  const expeditionManifest = join(EXPEDITION_DIR, 'manifest.json');
+  const expeditionRevision = existsSync(expeditionManifest)
+    ? createHash('sha256').update(readFileSync(expeditionManifest)).digest('hex').slice(0, 16)
+    : '';
 
   const proxy = {
     '/socket.io': { target: BACKEND_URL, ws: true, changeOrigin: true },
@@ -343,6 +361,9 @@ export default defineConfig(({ mode }) => {
   };
 
   return {
+    define: {
+      'import.meta.env.VITE_EXPEDITION_ASSET_REVISION': JSON.stringify(expeditionRevision),
+    },
     plugins: [
       react(),
       databasePikachuPlugin(),
@@ -350,6 +371,7 @@ export default defineConfig(({ mode }) => {
       databaseBanSungPlugin(),
       databaseTotalWarPlugin(),
       databaseMightyKnightPlugin(),
+      databaseAstralExpeditionPlugin(),
     ],
     // Ảnh lá bài lấy thẳng từ thư mục database/ ở gốc project
     publicDir: fileURLToPath(new URL('../database', import.meta.url)),

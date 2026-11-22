@@ -1,0 +1,198 @@
+/* ---------------------------------------------------------------- Màn nghỉ ngơi lửa trại */
+.rx-rest {
+  position: fixed; inset: 0; z-index: 80; display: grid; place-items: center;
+  background: radial-gradient(ellipse at 50% 62%, rgba(70, 30, 12, .72), rgba(10, 6, 8, .96) 70%);
+  animation: rx-rest-in .55s ease-out both; cursor: pointer;
+}
+.rx-rest.out { animation: rx-rest-out .38s ease-in both; }
+.rx-rest-canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.rx-rest-text {
+  position: relative; margin-top: 46vh; text-align: center; color: #f6e7c8;
+  text-shadow: 0 2px 10px #000, 0 0 18px rgba(255, 140, 60, .35);
+  font-family: var(--sans, system-ui, sans-serif);
+}
+.rx-rest-text small { display: block; letter-spacing: .22em; text-transform: uppercase; font-size: 12px; color: #e6b877; opacity: .85; }
+.rx-rest-text h2 {
+  margin: 6px 0 14px; font-size: clamp(20px, 3.2vw, 34px); font-variant: small-caps; letter-spacing: .06em; color: #ffe2a8;
+  animation: rx-breathe 2.4s ease-in-out infinite;
+}
+.rx-rest-text ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.rx-rest-text li {
+  font-size: clamp(13px, 1.6vw, 17px); opacity: 0; transform: translateY(8px);
+  animation: rx-line-in .45s cubic-bezier(.2, .8, .2, 1) forwards;
+}
+.rx-rest-text li i { color: #ffb45c; margin-right: 8px; font-style: normal; }
+.rx-rest-text li em { display: block; font-style: normal; font-size: .78em; color: #d8c4a0; opacity: .8; margin-top: 2px; }
+.rx-rest-skip { margin-top: 18px; font-size: 12px; opacity: .55; animation: rx-blink 1.6s ease-in-out infinite; }
+
+@keyframes rx-rest-in { from { opacity: 0; backdrop-filter: blur(0); } to { opacity: 1; backdrop-filter: blur(2px); } }
+@keyframes rx-rest-out { to { opacity: 0; } }
+@keyframes rx-line-in { to { opacity: 1; transform: none; } }
+@keyframes rx-breathe { 50% { text-shadow: 0 2px 10px #000, 0 0 28px rgba(255, 150, 70, .65); } }
+@keyframes rx-blink { 50% { opacity: .25; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .rx-rest, .rx-rest.out, .rx-rest-text h2, .rx-rest-skip { animation-duration: .01s; animation-iteration-count: 1; }
+  .rx-rest-text li { animation-duration: .01s; animation-delay: 0s !important; }
+}
+
+/* ---------------------------------------------------------------- Bùa rơi sau trận */
+.ui-loot.rx-charm { --glow: #9fd3ff; animation-name: rx-charm-drop; animation-duration: .7s; animation-timing-function: cubic-bezier(.2, 1.4, .4, 1); animation-fill-mode: both; position: relative; }
+.ui-loot.rx-charm.r-common { --glow: #cfd8e3; }
+.ui-loot.rx-charm.r-rare { --glow: #6fb6ff; }
+.ui-loot.rx-charm.r-epic { --glow: #c07cff; }
+.ui-loot.rx-charm.r-legendary { --glow: #ffcf5a; }
+.ui-loot.rx-charm::after {
+  content: ''; position: absolute; inset: -3px; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 0 1px var(--glow), 0 0 18px var(--glow); opacity: 0; animation: rx-charm-glow 1.6s ease-out .35s both;
+}
+.rx-lucky {
+  margin: 2px 0 8px; text-align: center; font-weight: 700; letter-spacing: .08em; color: #ffd76a;
+  text-shadow: 0 0 12px rgba(255, 200, 80, .8), 0 2px 4px #000; animation: rx-lucky-pop .6s cubic-bezier(.2, 1.6, .4, 1) both;
+}
+@keyframes rx-charm-drop {
+  0% { opacity: 0; transform: translateY(-38px) rotate(-6deg) scale(.8); }
+  70% { opacity: 1; transform: translateY(4px) rotate(1deg) scale(1.03); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes rx-charm-glow { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: .35; } }
+@keyframes rx-lucky-pop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .ui-loot.rx-charm, .ui-loot.rx-charm::after, .rx-lucky { animation-duration: .01s; }
+}
+
+/* ---------------------------------------------------------------- Cinematic Triệu hồi */
+.sc-root {
+  position: fixed; inset: 0; z-index: 90; overflow: hidden; cursor: pointer; color: #fff;
+  background: radial-gradient(ellipse at 50% 110%, #1a1440 0%, #0a0a1e 55%, #04040c 100%);
+  animation: sc-in .45s ease-out both; font-family: var(--sans, system-ui, sans-serif);
+}
+.sc-sky { position: absolute; inset: 0; width: 100%; height: 100%; }
+.sc-comet { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
+.sc-comet i, .sc-comet b { position: absolute; left: 50%; top: 52%; }
+/* đầu sao chổi lao từ góc phải trên xuống tâm, đuôi màu theo độ hiếm */
+.sc-comet b {
+  width: 22px; height: 22px; margin: -11px; border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 30%, var(--tier) 60%, transparent 72%);
+  box-shadow: 0 0 30px 10px var(--tier), 0 0 80px 30px color-mix(in srgb, var(--tier) 45%, transparent);
+  animation: sc-head 1.7s cubic-bezier(.55, .05, .7, .35) both;
+}
+.sc-comet i {
+  width: 52vmax; height: 6px; margin-top: -3px; transform-origin: 0 50%; border-radius: 6px;
+  background: linear-gradient(90deg, #fff, var(--tier) 18%, color-mix(in srgb, var(--tier) 40%, transparent) 55%, transparent);
+  filter: blur(1px); rotate: -32deg;
+  animation: sc-tail 1.7s cubic-bezier(.55, .05, .7, .35) both;
+}
+@keyframes sc-head { from { translate: 62vw -78vh; scale: .5; } to { translate: 0 0; scale: 1.4; } }
+@keyframes sc-tail { from { translate: 62vw -78vh; opacity: 0; scale: .3 1; } 20% { opacity: 1; } to { translate: 0 0; scale: 1 1; opacity: 1; } }
+.sc-flash {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle at 50% 52%, #fff 0 8%, var(--tier) 30%, transparent 70%);
+  animation: sc-flash .45s ease-out both;
+}
+@keyframes sc-flash { 0% { opacity: 0; scale: .2; } 35% { opacity: 1; scale: 1.2; } 100% { opacity: 0; scale: 2.4; } }
+
+.sc-card { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.sc-orb {
+  position: absolute; width: 46vmin; height: 46vmin; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--c) 65%, transparent) 0, transparent 65%);
+  animation: sc-orb .9s ease-out both;
+}
+@keyframes sc-orb { 0% { scale: .1; opacity: 1; } 60% { opacity: .9; } 100% { scale: 1.6; opacity: .35; } }
+.sc-face {
+  position: relative; display: grid; justify-items: center; gap: 6px; width: min(260px, 62vw); padding: 18px 16px 16px;
+  border-radius: 14px; background: linear-gradient(180deg, rgba(20, 18, 40, .92), rgba(8, 8, 20, .95));
+  box-shadow: 0 0 0 2px var(--c), 0 0 34px color-mix(in srgb, var(--c) 70%, transparent), inset 0 0 26px color-mix(in srgb, var(--c) 25%, transparent);
+  animation: sc-flip .65s cubic-bezier(.2, 1.3, .4, 1) both; transform-style: preserve-3d;
+}
+@keyframes sc-flip {
+  0% { transform: perspective(700px) rotateY(90deg) scale(.6); filter: brightness(3); opacity: 0; }
+  60% { transform: perspective(700px) rotateY(-8deg) scale(1.04); filter: brightness(1.4); opacity: 1; }
+  100% { transform: none; filter: none; opacity: 1; }
+}
+.sc-face img { width: 150px; height: 150px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 0 12px var(--c)); }
+.sc-item-glyph { font-size: 86px; line-height: 150px; height: 150px; color: var(--c); text-shadow: 0 0 24px var(--c); }
+.sc-face small { letter-spacing: .3em; font-weight: 700; color: var(--c); }
+.sc-face h3 { margin: 0; font-size: 22px; text-align: center; text-shadow: 0 2px 6px #000; }
+.sc-face em { font-style: normal; font-size: 13px; padding: 2px 10px; border-radius: 99px; background: color-mix(in srgb, var(--c) 30%, transparent); }
+.sc-card.tier-gold .sc-face { animation-duration: .9s; }
+.sc-motes { position: absolute; inset: 0; pointer-events: none; }
+.sc-motes i {
+  position: absolute; left: 50%; top: 55%; width: 6px; height: 6px; border-radius: 50%; background: #ffe28a;
+  box-shadow: 0 0 10px 3px #ffc94a; opacity: 0;
+  animation: sc-mote 1.6s ease-out calc(var(--i) * 60ms) infinite;
+  --a: calc(var(--i) * 25.7deg);
+}
+@keyframes sc-mote {
+  0% { opacity: 0; transform: rotate(var(--a)) translateX(30px); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(var(--a)) translateX(34vmin) translateY(-6vmin); }
+}
+.sc-count { position: absolute; bottom: 9vh; font-size: 13px; opacity: .6; }
+.sc-skip {
+  position: absolute; top: 18px; right: 20px; z-index: 2; padding: 6px 14px; border-radius: 99px; cursor: pointer;
+  color: #e8e6ff; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .25); font: inherit;
+}
+.sc-skip:hover, .sc-skip:focus-visible { background: rgba(255, 255, 255, .18); outline: 2px solid var(--tier); }
+@keyframes sc-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .sc-root, .sc-face, .sc-orb { animation-duration: .01s; }
+  .sc-motes { display: none; }
+}
+
+/* ---------------------------------------------------------------- Chương mới — kỹ năng mới */
+.ct-root {
+  position: fixed; inset: 0; z-index: 85; display: grid; place-items: center; padding: 16px;
+  background: radial-gradient(ellipse at 50% 40%, rgba(40, 30, 70, .82), rgba(5, 4, 12, .94)); animation: sc-in .4s ease-out both;
+}
+.ct-card {
+  width: min(620px, 100%); padding: 26px 28px 22px; border-radius: 16px; color: #f4efe2;
+  background: linear-gradient(180deg, rgba(28, 24, 48, .96), rgba(12, 10, 24, .98));
+  box-shadow: 0 0 0 1px #e9c98a88, 0 0 40px rgba(233, 201, 138, .25); animation: ct-rise .55s cubic-bezier(.2, 1.2, .4, 1) both;
+  font-family: var(--sans, system-ui, sans-serif);
+}
+.ct-kicker { letter-spacing: .2em; text-transform: uppercase; font-size: 11px; color: #e9c98a; }
+.ct-card h2 { margin: 6px 0 16px; font-size: clamp(20px, 3vw, 28px); color: #ffe2a8; text-shadow: 0 0 14px rgba(255, 200, 120, .4); }
+.ct-card ul { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 12px; }
+.ct-card li { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; opacity: 0; animation: rx-line-in .45s ease-out forwards; }
+.ct-card li i {
+  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; font-style: normal; font-weight: 800; font-size: 18px;
+  color: #1a0f05; background: linear-gradient(#fff3c4, #ffc94a); box-shadow: 0 0 14px rgba(255, 201, 74, .4);
+}
+.ct-card li b { display: block; color: #fff; margin-bottom: 2px; }
+.ct-card li span { color: #d6cfe6; font-size: 14px; line-height: 1.45; }
+.ct-card button {
+  display: block; margin-left: auto; padding: 8px 18px; border-radius: 99px; border: 0; cursor: pointer; font: 700 14px inherit;
+  color: #1a0f05; background: linear-gradient(#fff3c4, #ffc94a);
+}
+.ct-card button kbd { margin-left: 6px; font-size: 11px; opacity: .7; }
+@keyframes ct-rise { from { opacity: 0; transform: translateY(24px) scale(.96); } to { opacity: 1; transform: none; } }
+
+/* ---------------------------------------------------------------- Triệu hồi: Bỏ qua → lật cả loạt thẻ cùng lúc */
+.sc-all {
+  position: absolute; inset: 0; display: grid; align-content: center; justify-content: center; gap: 14px;
+  grid-template-columns: repeat(5, min(170px, 17vw)); padding: 60px 16px 40px; pointer-events: none;
+}
+.sc-all.n1 { grid-template-columns: min(260px, 62vw); }
+.sc-all.n1 .sc-mini .sc-face img { width: 150px; height: 150px; }
+.sc-mini { position: relative; display: grid; }
+.sc-mini .sc-face {
+  width: auto; padding: 10px 8px 10px; gap: 4px; border-radius: 10px;
+  animation: sc-flip .6s cubic-bezier(.2, 1.3, .4, 1) var(--d) both;
+}
+.sc-mini .sc-face img { width: min(96px, 9vw); height: min(96px, 9vw); }
+.sc-mini .sc-item-glyph { font-size: 48px; line-height: 84px; height: 84px; }
+.sc-mini .sc-face h3 { font-size: 14px; }
+.sc-mini .sc-face small { font-size: 10px; letter-spacing: .2em; }
+.sc-mini .sc-face em { font-size: 11px; }
+.sc-mini.tier-gold .sc-face { box-shadow: 0 0 0 2px var(--c), 0 0 30px var(--c), inset 0 0 22px color-mix(in srgb, var(--c) 35%, transparent); }
+.sc-mini-burst {
+  position: absolute; left: 50%; top: 50%; width: 220%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--c) 70%, transparent) 0, transparent 60%);
+  animation: sc-orb 1s ease-out calc(var(--d) + 120ms) both;
+}
+.sc-all .sc-count { grid-column: 1 / -1; position: static; text-align: center; margin-top: 6px; animation: sc-in .4s ease-out 1.1s both; }
+@media (max-width: 640px) {
+  .sc-all { grid-template-columns: repeat(3, 28vw); gap: 8px; }
+}
+.sc-mini.tier-red .sc-face, .sc-card.tier-red .sc-face { box-shadow: 0 0 0 2px #ff3b3b, 0 0 36px #ff3b3b, inset 0 0 24px rgba(255,59,59,.4); }

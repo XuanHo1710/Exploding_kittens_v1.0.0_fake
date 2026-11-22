@@ -1,6 +1,6 @@
 import { useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from 'react';
 import { ArrowRight, Eye, Plus, Sliders, Sparkles, Users } from 'lucide-react';
-import { BANSUNG_STATIC_ROOT, GAME_MODES, MK_STATIC_ROOT, TW_MAX_PLAYERS, type GameMode, type RoomRules } from '../../../shared/src';
+import { ASTRAL_EXPEDITION_STATIC_ROOT, BANSUNG_STATIC_ROOT, GAME_MODES, MK_STATIC_ROOT, TW_MAX_PLAYERS, type GameMode, type RoomRules } from '../../../shared/src';
 import Backdrop3D from './Backdrop3D';
 import CardView from './CardView';
 import RoomSettings, { getSavedRoomRules } from './RoomSettings';
@@ -15,6 +15,7 @@ interface GameMeta {
 }
 
 const HUB_GAME_ORDER: readonly GameMode[] = [
+  'astral_expedition',
   'mighty_knight',
   'bansung',
   'thap_hung',
@@ -28,6 +29,29 @@ const HUB_GAME_ORDER: readonly GameMode[] = [
 ];
 
 const HUB_META: Record<GameMode, GameMeta> = {
+  astral_expedition: {
+    title: 'Astral Expedition Pixel',
+    tag: 'RPG theo lượt · Gacha',
+    blurb: 'Bấm nhịp Timed Hit, Đỡ / Né phản đòn · 7 vùng đất, 7 Đại Trùm · Gacha anh hùng & trang bị · Cộng điểm chỉ số',
+    accent: '#a78bfa',
+    art: () => (
+      <div className="gcard-art-mk">
+        <img
+          src={`${ASTRAL_EXPEDITION_STATIC_ROOT}/units/heroes/gustave_blade-portrait.png`}
+          alt="Lâm Phong"
+          className="gcard-mk-portrait left"
+          style={{ imageRendering: 'pixelated' }}
+        />
+        <img
+          src={`${ASTRAL_EXPEDITION_STATIC_ROOT}/units/heroes/lumina_chrono-portrait.png`}
+          alt="Tinh Hà"
+          className="gcard-mk-portrait right"
+          style={{ imageRendering: 'pixelated' }}
+        />
+        <span className="gcard-core-badge">✨</span>
+      </div>
+    ),
+  },
   mighty_knight: {
     title: 'Mighty Knight 2.5D Pixel',
     tag: 'Pixel 2.5D · 30 Skill',
@@ -259,7 +283,7 @@ function GameCard3D({
           >
             {active ? (
               <>
-                Tạo phòng <ArrowRight size={14} />
+                {info.maxPlayers === 1 ? 'Vào chơi' : 'Tạo phòng'} <ArrowRight size={14} />
               </>
             ) : (
               <>
@@ -306,7 +330,7 @@ export default function Home({
               ? TW_MAX_PLAYERS
               : mode === 'bansung'
               ? Math.max(4, Math.min(10, GAME_MODES.bansung.maxPlayers))
-              : mode === 'mighty_knight' || mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'thap_hung' || mode === 'exploding_kittens' || mode === 'link_duel' || mode === 'loto'
+              : mode === 'astral_expedition' || mode === 'mighty_knight' || mode === 'blackjack_21' || mode === 'ant_empire' || mode === 'thap_hung' || mode === 'exploding_kittens' || mode === 'link_duel' || mode === 'loto'
                 ? GAME_MODES[mode].maxPlayers
                 : 6,
       },

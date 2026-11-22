@@ -27,6 +27,7 @@ import LotoBoard from './components/LotoBoard';
 import BansungBoard from './components/BansungBoard';
 import { bansungStore } from './bansung/store';
 import MkBoard from './components/MkBoard';
+import ExpeditionBoard from './components/ExpeditionBoard';
 import { mkStore } from './mk/store';
 import { stopMkBgm, syncMkMute } from './mk/sound';
 import Rules from './components/Rules';
@@ -263,7 +264,17 @@ export default function App() {
             onWatch={(code) => emit('room:watch', { code })}
           />
         )}
-        {loggedIn && view?.phase === 'lobby' && <Lobby view={view} meId={identity.playerId} emit={emit} chat={chatProps} account={account}
+        {loggedIn && view?.phase === 'lobby' && view.gameMode === 'astral_expedition' && (
+          // Game một người: server tự bắt đầu ngay khi tạo phòng, màn này chỉ hiện trong tích tắc (hoặc khi bắt đầu lỗi).
+          <div className="exp-boot">
+            <p>Đang mở chiến dịch Astral Expedition…</p>
+            <div>
+              <button type="button" onClick={() => emit('game:start')}>Vào game</button>
+              <button type="button" onClick={() => emit('room:leave')}>Quay lại</button>
+            </div>
+          </div>
+        )}
+        {loggedIn && view?.phase === 'lobby' && view.gameMode !== 'astral_expedition' && <Lobby view={view} meId={identity.playerId} emit={emit} chat={chatProps} account={account}
           onSaveRules={(rules) => emitConfirmed('room:rules', { rules })} />}
         {inGame && identity && view && (
           view.gameMode === 'ant_empire' && view.ants ? (
@@ -278,6 +289,8 @@ export default function App() {
             <LotoBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'bansung' ? (
             <BansungBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
+          ) : view.gameMode === 'astral_expedition' ? (
+            <ExpeditionBoard socket={socket} onLeave={() => emit('room:leave')} dock={dock} />
           ) : view.gameMode === 'mighty_knight' ? (
             <MkBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'blackjack_21' ? (
