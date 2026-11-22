@@ -1,0 +1,77 @@
+{
+ "slug": "mechbad-1f",
+ "kind": "cave",
+ "theme": "moon-cave",
+ "size": [
+  30,
+  20
+ ],
+ "seed": 1,
+ "cave": {
+  "group": "mechbad",
+  "name": "HANG THỬ",
+  "floor": "1F",
+  "dark": false
+ },
+ "ops": [
+  {
+   "op": "carve",
+   "rough": false,
+   "shapes": [
+    [
+     "floor",
+     2,
+     2,
+     26,
+     15
+    ]
+   ],
+   "after": [
+    [
+     "floor",
+     14,
+     17,
+     1,
+     2
+    ],
+    [
+     "lava",
+     21,
+     2,
+     1,
+     4
+    ],
+    [
+     "lava",
+     21,
+     6,
+     7,
+     1
+    ]
+   ]
+  },
+  {
+   "op": "cave_exit",
+   "cells": [
+    [
+     14,
+     18
+    ]
+   ],
+   "to": "route-6"
+  }
+ ],
+ "events": {
+  "items": [
+   {
+    "at": [
+     25,
+     3
+    ],
+    "name": "potion"
+   }
+  ],
+  "npcs": [],
+  "trainers": []
+ }
+}

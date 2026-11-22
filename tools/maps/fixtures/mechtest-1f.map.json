@@ -1,0 +1,298 @@
+{
+ "slug": "mechtest-1f",
+ "kind": "cave",
+ "theme": "moon-cave",
+ "size": [
+  48,
+  30
+ ],
+ "seed": 1,
+ "cave": {
+  "group": "mechtest",
+  "name": "HANG THỬ",
+  "floor": "1F",
+  "dark": false,
+  "below": "mechtest-b1f"
+ },
+ "ops": [
+  {
+   "op": "carve",
+   "rough": false,
+   "shapes": [
+    [
+     "floor",
+     2,
+     2,
+     44,
+     25
+    ]
+   ],
+   "after": [
+    [
+     "floor",
+     23,
+     27,
+     1,
+     2
+    ],
+    [
+     "floor",
+     43,
+     27,
+     3,
+     1
+    ],
+    [
+     "wall",
+     8,
+     2,
+     1,
+     5
+    ],
+    [
+     "lava",
+     41,
+     2,
+     1,
+     4
+    ],
+    [
+     "lava",
+     41,
+     6,
+     5,
+     1
+    ],
+    [
+     "ice",
+     4,
+     16,
+     12,
+     7
+    ],
+    [
+     "ledge_n",
+     30,
+     34,
+     20
+    ],
+    [
+     "ledge_e",
+     38,
+     14,
+     18
+    ],
+    [
+     "ledge_w",
+     42,
+     14,
+     18
+    ],
+    [
+     "ledge",
+     30,
+     34,
+     23
+    ]
+   ]
+  },
+  {
+   "op": "boulder",
+   "at": [
+    40,
+    4
+   ],
+   "id": "lava"
+  },
+  {
+   "op": "barrier",
+   "cells": [
+    [
+     2,
+     6
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     4,
+     6
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     6,
+     6
+    ],
+    [
+     7,
+     6
+    ]
+   ],
+   "id": "a"
+  },
+  {
+   "op": "switch",
+   "at": [
+    12,
+    10
+   ],
+   "id": "a"
+  },
+  {
+   "op": "boulder",
+   "at": [
+    12,
+    12
+   ],
+   "id": "switch"
+  },
+  {
+   "op": "hole",
+   "at": [
+    20,
+    4
+   ]
+  },
+  {
+   "op": "boulder",
+   "at": [
+    20,
+    6
+   ],
+   "id": "hole"
+  },
+  {
+   "op": "smash_rock",
+   "at": [
+    26,
+    10
+   ]
+  },
+  {
+   "op": "cut_tree",
+   "at": [
+    28,
+    10
+   ]
+  },
+  {
+   "op": "crystal",
+   "at": [
+    12,
+    18
+   ]
+  },
+  {
+   "op": "rail",
+   "points": [
+    [
+     17,
+     24
+    ],
+    [
+     17,
+     20
+    ],
+    [
+     24,
+     20
+    ]
+   ]
+  },
+  {
+   "op": "lever",
+   "at": [
+    36,
+    24
+   ],
+   "bit": 0
+  },
+  {
+   "op": "gate",
+   "at": [
+    40,
+    24
+   ],
+   "bit": 0,
+   "open": true
+  },
+  {
+   "op": "gate",
+   "at": [
+    42,
+    24
+   ],
+   "bit": 0,
+   "open": false
+  },
+  {
+   "op": "ladder",
+   "at": [
+    44,
+    26
+   ],
+   "dir": "down",
+   "to": "mechtest-b1f",
+   "id": 1
+  },
+  {
+   "op": "cave_exit",
+   "cells": [
+    [
+     23,
+     28
+    ]
+   ],
+   "to": "route-6"
+  }
+ ],
+ "events": {
+  "items": [
+   {
+    "at": [
+     44,
+     3
+    ],
+    "name": "super-potion"
+   },
+   {
+    "at": [
+     3,
+     3
+    ],
+    "name": "repel"
+   }
+  ],
+  "npcs": [
+   {
+    "at": [
+     6,
+     25
+    ],
+    "name": "hiker",
+    "gift": "hm04"
+   },
+   {
+    "at": [
+     8,
+     25
+    ],
+    "name": "hiker",
+    "gift": "hm06"
+   },
+   {
+    "at": [
+     10,
+     25
+    ],
+    "name": "hiker",
+    "gift": "hm01"
+   }
+  ],
+  "trainers": []
+ }
+}

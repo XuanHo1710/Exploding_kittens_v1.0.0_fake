@@ -1,0 +1,112 @@
+{
+ "slug": "mechtide-1f",
+ "kind": "cave",
+ "theme": "moon-cave",
+ "size": [
+  40,
+  24
+ ],
+ "seed": 1,
+ "cave": {
+  "group": "mechtide",
+  "name": "HANG TRIỀU THỬ",
+  "floor": "1F",
+  "dark": false
+ },
+ "ops": [
+  {
+   "op": "carve",
+   "rough": false,
+   "shapes": [
+    [
+     "floor",
+     2,
+     2,
+     36,
+     18
+    ]
+   ],
+   "after": [
+    [
+     "floor",
+     20,
+     20,
+     1,
+     2
+    ],
+    [
+     "wall",
+     2,
+     13,
+     6,
+     1
+    ],
+    [
+     "wall",
+     7,
+     13,
+     1,
+     7
+    ],
+    [
+     "floor",
+     7,
+     17,
+     1,
+     1
+    ]
+   ]
+  },
+  {
+   "op": "tide",
+   "flood": [
+    [
+     10,
+     6,
+     29,
+     12
+    ]
+   ],
+   "seal": [
+    [
+     7,
+     17,
+     7,
+     17
+    ]
+   ]
+  },
+  {
+   "op": "cave_exit",
+   "cells": [
+    [
+     20,
+     21
+    ]
+   ],
+   "to": "route-8"
+  }
+ ],
+ "events": {
+  "items": [
+   {
+    "at": [
+     3,
+     17
+    ],
+    "name": "potion",
+    "tide": "low"
+   },
+   {
+    "at": [
+     25,
+     4
+    ],
+    "name": "ball",
+    "tide": "high"
+   }
+  ],
+  "npcs": [],
+  "trainers": []
+ }
+}

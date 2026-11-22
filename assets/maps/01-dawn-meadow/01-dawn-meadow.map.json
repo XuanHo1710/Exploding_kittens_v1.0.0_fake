@@ -1,0 +1,245 @@
+{
+  "mapId": "01-dawn-meadow",
+  "theme": "meadow",
+  "width": 120,
+  "height": 76,
+  "spawn": {
+    "x": 4,
+    "y": 12
+  },
+  "bossAltar": {
+    "x": 111,
+    "y": 12,
+    "bossId": "sylvan_warden"
+  },
+  "exitPortal": {
+    "x": 115,
+    "y": 12,
+    "toMapId": "02-everfrost-peaks",
+    "requiresBossId": "sylvan_warden"
+  },
+  "restAnchors": [
+    {
+      "anchorId": "meadow_anchor_1",
+      "x": 8,
+      "y": 12
+    },
+    {
+      "anchorId": "meadow_anchor_2",
+      "x": 47,
+      "y": 24
+    },
+    {
+      "anchorId": "meadow_anchor_3",
+      "x": 79,
+      "y": 55
+    },
+    {
+      "anchorId": "meadow_anchor_4",
+      "x": 108,
+      "y": 46
+    }
+  ],
+  "chests": [
+    {
+      "chestId": "meadow_chest_1",
+      "x": 14,
+      "y": 6
+    },
+    {
+      "chestId": "meadow_chest_2",
+      "x": 32,
+      "y": 28
+    },
+    {
+      "chestId": "meadow_chest_3",
+      "x": 73,
+      "y": 28
+    },
+    {
+      "chestId": "meadow_chest_4",
+      "x": 16,
+      "y": 60
+    },
+    {
+      "chestId": "meadow_chest_5",
+      "x": 50,
+      "y": 68
+    },
+    {
+      "chestId": "meadow_chest_6",
+      "x": 106,
+      "y": 66
+    }
+  ],
+  "traversal": [
+    {
+      "id": "ladder-bank",
+      "kind": "ladder",
+      "from": [
+        16,
+        30
+      ],
+      "to": [
+        16,
+        23
+      ]
+    },
+    {
+      "id": "grip-ridge",
+      "kind": "grip",
+      "from": [
+        43,
+        44
+      ],
+      "to": [
+        46,
+        44
+      ]
+    },
+    {
+      "id": "rope-fen",
+      "kind": "rope",
+      "from": [
+        73,
+        55
+      ],
+      "to": [
+        82,
+        61
+      ]
+    },
+    {
+      "id": "ladder-ruin",
+      "kind": "ladder",
+      "from": [
+        107,
+        28
+      ],
+      "to": [
+        107,
+        22
+      ]
+    },
+    {
+      "id": "rope-north",
+      "kind": "rope",
+      "from": [
+        40,
+        9
+      ],
+      "to": [
+        50,
+        9
+      ]
+    },
+    {
+      "id": "grip-quarry",
+      "kind": "grip",
+      "from": [
+        102,
+        58
+      ],
+      "to": [
+        106,
+        58
+      ]
+    }
+  ],
+  "wildSpots": [
+    [
+      10,
+      17
+    ],
+    [
+      25,
+      7
+    ],
+    [
+      43,
+      13
+    ],
+    [
+      32,
+      23
+    ],
+    [
+      86,
+      27
+    ],
+    [
+      17,
+      49
+    ],
+    [
+      53,
+      52
+    ],
+    [
+      99,
+      56
+    ]
+  ],
+  "gks": [
+    {
+      "gkId": "01-dawn-meadow_gk_1",
+      "x": 28,
+      "y": 12,
+      "aggroRadius": 3,
+      "gateBarrierTiles": [
+        [
+          29,
+          11
+        ],
+        [
+          29,
+          12
+        ],
+        [
+          29,
+          13
+        ]
+      ]
+    },
+    {
+      "gkId": "01-dawn-meadow_gk_2",
+      "x": 61,
+      "y": 12,
+      "aggroRadius": 3,
+      "gateBarrierTiles": [
+        [
+          62,
+          11
+        ],
+        [
+          62,
+          12
+        ],
+        [
+          62,
+          13
+        ]
+      ]
+    },
+    {
+      "gkId": "01-dawn-meadow_gk_3",
+      "x": 93,
+      "y": 12,
+      "aggroRadius": 3,
+      "gateBarrierTiles": [
+        [
+          94,
+          11
+        ],
+        [
+          94,
+          12
+        ],
+        [
+          94,
+          13
+        ]
+      ]
+    }
+  ]
+}

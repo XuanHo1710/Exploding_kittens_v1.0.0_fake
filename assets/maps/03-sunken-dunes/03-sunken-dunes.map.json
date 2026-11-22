@@ -1,0 +1,112 @@
+{
+  "mapId": "03-sunken-dunes",
+  "theme": "desert",
+  "width": 52,
+  "height": 25,
+  "spawn": {
+    "x": 4,
+    "y": 12
+  },
+  "backPortal": {
+    "x": 2,
+    "y": 12,
+    "toMapId": "02-everfrost-peaks"
+  },
+  "bossAltar": {
+    "x": 46,
+    "y": 12,
+    "bossId": "chronos_khepri"
+  },
+  "exitPortal": {
+    "x": 49,
+    "y": 12,
+    "toMapId": "04-abyssal-sanctum",
+    "requiresBossId": "chronos_khepri"
+  },
+  "restAnchors": [
+    {
+      "anchorId": "desert_anchor_1",
+      "x": 8,
+      "y": 12
+    },
+    {
+      "anchorId": "desert_anchor_2",
+      "x": 34,
+      "y": 6
+    }
+  ],
+  "chests": [
+    {
+      "chestId": "desert_chest_1",
+      "x": 14,
+      "y": 6
+    },
+    {
+      "chestId": "desert_chest_2",
+      "x": 26,
+      "y": 18
+    }
+  ],
+  "gks": [
+    {
+      "gkId": "03-sunken-dunes_gk_1",
+      "x": 18,
+      "y": 12,
+      "aggroRadius": 3,
+      "gateBarrierTiles": [
+        [
+          19,
+          11
+        ],
+        [
+          19,
+          12
+        ],
+        [
+          19,
+          13
+        ]
+      ]
+    },
+    {
+      "gkId": "03-sunken-dunes_gk_2",
+      "x": 30,
+      "y": 12,
+      "aggroRadius": 3,
+      "gateBarrierTiles": [
+        [
+          31,
+          11
+        ],
+        [
+          31,
+          12
+        ],
+        [
+          31,
+          13
+        ]
+      ]
+    },
+    {
+      "gkId": "03-sunken-dunes_gk_3",
+      "x": 40,
+      "y": 12,
+      "aggroRadius": 3,
+      "gateBarrierTiles": [
+        [
+          41,
+          11
+        ],
+        [
+          41,
+          12
+        ],
+        [
+          41,
+          13
+        ]
+      ]
+    }
+  ]
+}

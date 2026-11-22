@@ -1,0 +1,86 @@
+{
+  "mapId": "07-aurora-zenith",
+  "theme": "aurora",
+  "width": 52,
+  "height": 25,
+  "spawn": {
+    "x": 4,
+    "y": 12
+  },
+  "backPortal": {
+    "x": 2,
+    "y": 12,
+    "toMapId": "06-nocturne-veil"
+  },
+  "bossAltar": {
+    "x": 46,
+    "y": 12,
+    "bossId": "astral_painter_seraphina"
+  },
+  "restAnchors": [
+    {
+      "anchorId": "aurora_anchor_1",
+      "x": 8,
+      "y": 12
+    },
+    {
+      "anchorId": "aurora_anchor_2",
+      "x": 29,
+      "y": 6
+    }
+  ],
+  "chests": [
+    {
+      "chestId": "aurora_chest_1",
+      "x": 15,
+      "y": 6
+    },
+    {
+      "chestId": "aurora_chest_2",
+      "x": 29,
+      "y": 18
+    }
+  ],
+  "gks": [
+    {
+      "gkId": "07-aurora-zenith_gk_1",
+      "x": 22,
+      "y": 12,
+      "aggroRadius": 3,
+      "gateBarrierTiles": [
+        [
+          23,
+          11
+        ],
+        [
+          23,
+          12
+        ],
+        [
+          23,
+          13
+        ]
+      ]
+    },
+    {
+      "gkId": "07-aurora-zenith_gk_2",
+      "x": 36,
+      "y": 12,
+      "aggroRadius": 3,
+      "gateBarrierTiles": [
+        [
+          37,
+          11
+        ],
+        [
+          37,
+          12
+        ],
+        [
+          37,
+          13
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,170 @@
+{
+ "slug": "mechtest-b1f",
+ "kind": "cave",
+ "theme": "moon-cave",
+ "size": [
+  48,
+  30
+ ],
+ "seed": 1,
+ "cave": {
+  "group": "mechtest",
+  "name": "HANG THỬ",
+  "floor": "B1F",
+  "dark": true
+ },
+ "ops": [
+  {
+   "op": "carve",
+   "rough": false,
+   "shapes": [
+    [
+     "floor",
+     2,
+     2,
+     44,
+     25
+    ]
+   ],
+   "after": [
+    [
+     "floor",
+     43,
+     27,
+     3,
+     1
+    ],
+    [
+     "wall",
+     8,
+     2,
+     1,
+     5
+    ],
+    [
+     "wall",
+     20,
+     12,
+     1,
+     6
+    ],
+    [
+     "wall",
+     28,
+     12,
+     1,
+     6
+    ],
+    [
+     "wall",
+     21,
+     12,
+     7,
+     1
+    ],
+    [
+     "wall",
+     21,
+     17,
+     7,
+     1
+    ]
+   ]
+  },
+  {
+   "op": "switch",
+   "at": [
+    20,
+    4
+   ],
+   "id": "b"
+  },
+  {
+   "op": "barrier",
+   "cells": [
+    [
+     2,
+     6
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     4,
+     6
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     6,
+     6
+    ],
+    [
+     7,
+     6
+    ]
+   ],
+   "id": "b"
+  },
+  {
+   "op": "gate",
+   "cells": [
+    [
+     24,
+     17
+    ]
+   ],
+   "bit": 0,
+   "open": false
+  },
+  {
+   "op": "lamp",
+   "at": [
+    10,
+    10
+   ],
+   "r": 3
+  },
+  {
+   "op": "lamp",
+   "at": [
+    35,
+    20
+   ],
+   "r": 2
+  },
+  {
+   "op": "ladder",
+   "at": [
+    44,
+    26
+   ],
+   "dir": "up",
+   "to": "mechtest-1f",
+   "id": 1
+  }
+ ],
+ "events": {
+  "items": [
+   {
+    "at": [
+     3,
+     3
+    ],
+    "name": "great-ball"
+   },
+   {
+    "at": [
+     24,
+     14
+    ],
+    "name": "revive"
+   }
+  ],
+  "npcs": [],
+  "trainers": []
+ }
+}

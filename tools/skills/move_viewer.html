@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mons Move Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one column for the phone: pick the two Pokémon, pick a move, watch it, then the drawings and both views. */
+:root {
+  --bg: #eef2ea; --panel: #ffffff; --ink: #1d2b33; --muted: #5d6c70; --line: #cfd8cf;
+  --frame: #2c4a5e; --accent: #d9693a; --check: #e4e9e2; --sel: #e7efe0; --code: #6b4fb8;
+  --display: "Pixelify Sans", "Courier New", monospace; --body: "Be Vietnam Pro", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --bg: #141b20; --panel: #1c262d; --ink: #e6ece6; --muted: #9aa8ab; --line: #2f3d45;
+  --frame: #7fb2cf; --accent: #ef8a5c; --check: #26323a; --sel: #23313a; --code: #b49cf0; color-scheme: dark } }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); }
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 22px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); }
+header { display: grid; gap: 4px; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--display); font-size: clamp(30px, 8vw, 46px); line-height: 1.05; margin: 0; }
+h2 { font-family: var(--display); font-size: 21px; margin: 0; }
+section { display: grid; gap: 12px; }
+.pick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 420px) { .pick { grid-template-columns: 1fr; } }
+label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+select { font: 16px var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 9px 10px; min-height: 42px; width: 100%; }
+.tabs, .ctrl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tabs button, .ctrl button { font: 600 14px var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 12px; cursor: pointer; min-height: 42px; }
+.tabs button[aria-pressed="true"], .ctrl button[aria-pressed="true"] { background: var(--frame); color: var(--bg); border-color: var(--frame); }
+button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stage { position: relative; border: 4px solid var(--frame); border-radius: 6px; background: #000; overflow: hidden; }
+.stage canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; aspect-ratio: 3 / 2; }
+.busy { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; background: rgba(0,0,0,.55);
+  font: 600 15px var(--body); }
+.count { font: 14px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; margin-left: auto; }
+.err { color: var(--accent); font-size: 14px; }
+.views { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.view { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: grid; gap: 8px; }
+.view h3 { margin: 0; font-size: 15px; }
+.view .two { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.view figure { margin: 0; display: grid; gap: 2px; justify-items: center; }
+.view figure div { width: 100%; aspect-ratio: 1; display: grid; place-items: end center; border-radius: 6px;
+  background: repeating-conic-gradient(var(--check) 0 25%, var(--panel) 0 50%) 0 0 / 14px 14px; }
+.view img { max-width: 100%; max-height: 100%; image-rendering: pixelated; }
+.view figcaption { font-size: 12px; color: var(--muted); }
+@media (max-width: 420px) { .views { grid-template-columns: 1fr; } }
+.strip { display: grid; gap: 6px; }
+.strip .lbl { font-size: 14px; }
+.strip .img { border: 1px solid var(--line); border-radius: 6px; overflow-x: auto;
+  background: repeating-conic-gradient(var(--check) 0 25%, var(--panel) 0 50%) 0 0 / 16px 16px; }
+.strip img { display: block; width: 100%; min-width: 560px; image-rendering: pixelated; }
+.note { font-size: 13px; color: var(--muted); }
+.snd { font-size: 11px; font-weight: 600; color: var(--frame); margin-left: 6px; }
+#sound { white-space: nowrap; }
+#snd-note { font-size: 13px; color: var(--muted); }
+[hidden] { display: none !important; }
+.srclbl { font-size: 14px; color: var(--muted); }
+/* searchable picker (moves, Pokémon): a current-choice row, a search box and a list that filters as you type */
+.pk { display: grid; gap: 4px; align-content: start; }
+h2 label { font: inherit; color: inherit; display: inline; }
+.cbx { position: relative; display: grid; gap: 6px; }
+.cbx-cur { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 8px 12px; text-align: left; width: 100%;
+  font: 600 15px var(--body); color: var(--ink); background: var(--sel); border: 1px solid var(--frame); border-radius: 10px; cursor: pointer; }
+.cbx-cur > span:first-child { flex: 1; min-width: 0; }
+.cbx-cur .chev { margin-left: auto; color: var(--muted); font-size: 13px; white-space: nowrap; flex: none; }
+.cbx-row { display: flex; gap: 6px; }
+.mvnav { display: flex; align-items: center; gap: 8px; }
+.mvnav button { flex: 1; font: 600 15px var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px 12px; min-height: 44px; cursor: pointer; }
+.mvnav .count { margin: 0; min-width: 72px; text-align: center; }
+.cbx input { flex: 1; min-width: 0; font: 16px var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 9px 12px; min-height: 44px; -webkit-appearance: none; appearance: none; }
+.cbx input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cbx-all { font: 600 14px var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  min-width: 48px; min-height: 44px; cursor: pointer; }
+.cbx-list { position: relative; list-style: none; margin: 0; padding: 4px; max-height: min(55vh, 420px); overflow-y: auto; -webkit-overflow-scrolling: touch;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.cbx-list li { display: grid; gap: 2px; min-height: 44px; padding: 8px 10px; border-radius: 8px; cursor: pointer; align-content: center; }
+.cbx-list li + li { border-top: 1px solid var(--line); }
+.cbx-list li[aria-selected="true"] { background: var(--sel); box-shadow: inset 0 0 0 1px var(--frame); }
+.cbx-list li.on { font-weight: 600; }
+.cbx-list .empty { color: var(--muted); cursor: default; }
+.cbx-list small, .cbx-cur small { font-weight: 400; color: var(--muted); font-size: 12px; }
+.cbx .t { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; flex: none; }
+.bdg { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 5px; padding: 0 5px; margin-left: 5px; border: 1px solid var(--line);
+  color: var(--muted); vertical-align: 1px; }
+.bdg.agy { color: var(--frame); border-color: var(--frame); }
+.bdg.fallback { color: var(--accent); border-color: var(--accent); }
+.org { display: inline-block; font-size: 12px; font-weight: 600; border-radius: 6px; padding: 1px 7px; margin-left: 6px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--muted); }
+.org.agy { color: var(--frame); border-color: var(--frame); }
+.org.fallback { color: var(--accent); border-color: var(--accent); }
+.bdg.code, .org.code { color: var(--code); border-color: var(--code); }
+.bdg.off { color: var(--bg); background: var(--frame); border-color: var(--frame); }
+.official { display: grid; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.official .radios { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.official .radios label small { color: var(--muted); font-size: 12px; }
+.official label { display: inline-flex; flex-direction: row; align-items: center; gap: 6px; font-size: 15px; color: var(--ink); min-height: 36px; cursor: pointer; }
+.official label.off { color: var(--muted); cursor: not-allowed; }
+.official input { width: 20px; height: 20px; accent-color: var(--frame); margin: 0; }
+.official .ttl { font-weight: 600; font-size: 14px; }
+.export { display: grid; gap: 8px; }
+.export .ctrl a { font: 600 14px var(--body); color: var(--frame); }
+#exp-out { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Mons · hiệu ứng chiêu trên sân đấu Gen 3 · <a href="/evolution" style="color: var(--frame); font-weight: 600; text-transform: none; letter-spacing: 0">Tiến hoá →</a> · <a href="/catch" style="color: var(--frame); font-weight: 600; text-transform: none; letter-spacing: 0">Bắt Pokémon →</a></div>
+    <h1>Xem chiêu</h1>
+    <div class="note" id="summary">Đang tải…</div>
+  </header>
+
+  <section aria-label="Chọn Pokémon">
+    <div class="pick">
+      <div class="pk"><label for="player-q">Pokémon của bạn (dưới trái, nhìn từ sau)</label><div class="cbx" id="player-pick"></div></div>
+      <div class="pk"><label for="foe-q">Đối thủ (trên phải, nhìn từ trước)</label><div class="cbx" id="foe-pick"></div></div>
+    </div>
+    <label for="scene">Sân đấu<select id="scene"></select></label>
+  </section>
+
+  <section aria-label="Chọn chiêu">
+    <h2><label for="move-q">Chiêu</label></h2>
+    <div class="note">🔊 = chiêu có âm thanh riêng; không có thì chiêu gây sát thương phát tiếng va chạm theo hệ lúc trúng đòn (hệ thường dùng tiếng hệ giác đấu). Mỗi chiêu chỉ có <b>1 bản chính thức</b>, nằm trong <code>assets/skills/&lt;thế hệ&gt;/&lt;chiêu&gt;/</code>. Nhãn cho biết ảnh chính thức lấy từ đâu: <b>Fallback</b>, <b>agy</b> (bản vẽ cũ), <b>tạm</b> = hiệu ứng do code sinh, <b>Code</b> = tia vẽ bằng code. Chiêu chưa chọn dùng mặc định: tia Code → bản Fallback → bản agy cũ → code sinh; ảnh nào trống thì lấy ảnh đó từ nguồn kế tiếp.</div>
+    <div class="cbx" id="move-pick"></div>
+    <div class="mvnav">
+      <button type="button" id="mv-prev" aria-label="Chiêu trước">◀ Chiêu trước</button>
+      <span id="mv-pos" class="count"></span>
+      <button type="button" id="mv-next" aria-label="Chiêu tiếp theo">Chiêu tiếp ▶</button>
+    </div>
+  </section>
+
+  <section aria-label="Xem trên sân đấu">
+    <div class="tabs" role="group" aria-label="Ai ra chiêu">
+      <button id="side-player" aria-pressed="true">Pokémon của bạn ra chiêu</button>
+      <button id="side-foe" aria-pressed="false">Đối thủ ra chiêu</button>
+    </div>
+    <div class="tabs" role="group" aria-label="Nguồn hiệu ứng" id="srcbox" hidden>
+      <span class="srclbl">Nguồn hiệu ứng:</span>
+      <button id="src-default" aria-pressed="true">Chính thức</button>
+      <button id="src-fallback" aria-pressed="false">Fallback</button>
+      <button id="src-code" aria-pressed="false">Code (thiết kế mới)</button>
+    </div>
+    <div class="note" id="src-note" hidden>Chính thức = ảnh đang nằm trong Skills (bản game dùng). Fallback = xem mọi ảnh Fallback để so sánh, kể cả ảnh trống hoặc bị loại. Code (thiết kế mới) = tia vẽ bằng code: quả cầu tụ năng lượng ở miệng → một tia liền mạch tới đối thủ → nổ tung khi trúng.</div>
+    <div class="official" id="official" hidden>
+      <div class="ttl" id="off-ttl">Bản chính thức cho game (chọn là áp dụng ngay vào Skills):</div>
+      <div class="radios" role="radiogroup" aria-labelledby="off-ttl">
+        <label id="off-l-default"><input type="radio" name="off" value="default" id="off-default"><span id="off-t-default">Mặc định</span></label>
+        <label id="off-l-fallback"><input type="radio" name="off" value="fallback" id="off-fallback"><span id="off-t-fallback">Fallback</span></label>
+        <label id="off-l-agy"><input type="radio" name="off" value="agy" id="off-agy"><span id="off-t-agy">agy (bản vẽ cũ)</span></label>
+        <label id="off-l-code"><input type="radio" name="off" value="code" id="off-code"><span id="off-t-code">Code</span></label>
+      </div>
+      <div class="note" id="off-note"></div>
+    </div>
+    <div class="note" id="now-src"></div>
+    <div class="stage"><canvas id="cv" width="480" height="320" aria-label="Hoạt ảnh chiêu"></canvas><div class="busy" id="busy" hidden>Đang dựng hoạt ảnh…</div></div>
+    <div class="ctrl">
+      <button id="play" aria-pressed="true">⏸ Dừng</button>
+      <button id="prev" aria-label="Khung trước">◀</button>
+      <button id="next" aria-label="Khung sau">▶</button>
+      <span role="group" aria-label="Tốc độ" style="display:flex;gap:4px">
+        <button data-s="0.25" aria-pressed="false">0.25×</button>
+        <button data-s="0.5" aria-pressed="false">0.5×</button>
+        <button data-s="1" aria-pressed="true">1×</button>
+      </span>
+      <button id="sound" aria-pressed="false">🔊 Bật tiếng</button>
+      <span class="count" id="count">–</span>
+    </div>
+    <div id="snd-note" hidden></div>
+    <div class="err" id="err" hidden></div>
+  </section>
+
+  <section aria-label="Áp dụng bản chính thức" class="export">
+    <h2>Áp dụng vào Skills</h2>
+    <div class="note">Ghi ảnh chính thức của mọi chiêu game dùng và mọi chiêu đã chọn vào <code>assets/skills/&lt;thế hệ&gt;/&lt;chiêu&gt;/</code> (lựa chọn của bạn, chiêu chưa chọn theo mặc định). Bản vẽ agy cũ bị thay được sao lưu vào <code>tmp/history/</code>; nguồn từng ảnh ghi trong <code>data/battle/move-vfx-sources.json</code>.</div>
+    <div class="ctrl"><button id="export">Áp dụng vào Skills</button></div>
+    <div id="exp-out" aria-live="polite"></div>
+  </section>
+
+  <section aria-label="Hai góc nhìn">
+    <h2>2 góc nhìn trên sân</h2>
+    <div class="views">
+      <div class="view"><h3 id="pname">Pokémon của bạn</h3><div class="two">
+        <figure><div><img id="p-back" alt=""></div><figcaption>back (phía bạn)</figcaption></figure>
+        <figure><div><img id="p-front" alt=""></div><figcaption>front (khi làm đối thủ)</figcaption></figure></div></div>
+      <div class="view"><h3 id="fname">Đối thủ</h3><div class="two">
+        <figure><div><img id="f-front" alt=""></div><figcaption>front (phía đối thủ)</figcaption></figure>
+        <figure><div><img id="f-back" alt=""></div><figcaption>back (khi là của bạn)</figcaption></figure></div></div>
+    </div>
+  </section>
+
+  <section aria-label="Hai ảnh của chiêu">
+    <h2 id="strips-h">2 ảnh của chiêu</h2>
+    <div class="strip"><div class="lbl">Ảnh 1 · CAST, trên Pokémon ra chiêu<span class="org" id="org-cast"></span></div><div class="img"><img id="cast" alt="CAST"></div></div>
+    <div class="strip"><div class="lbl">Ảnh 2 · EFFECT, chính chiêu (1-4 bay tới, 5-8 va chạm)<span class="org" id="org-effect"></span></div><div class="img"><img id="effect" alt="EFFECT"></div></div>
+  </section>
+</div>
+
+<script>
+const TYPE_COLOR = { normal: "#a8a77a", fire: "#ee8130", water: "#6390f0", electric: "#f7d02c", grass: "#7ac74c", ice: "#96d9d6",
+  fighting: "#c22e28", poison: "#a33ea1", ground: "#e2bf65", flying: "#a98ff3", psychic: "#f95587", bug: "#a6b91a", rock: "#b6a136",
+  ghost: "#735797", dragon: "#6f35fc", dark: "#705746", steel: "#b7b7ce", fairy: "#d685ad" };
+const CLS = { physical: "vật lý", special: "đặc biệt", status: "trạng thái" };
+const $ = (id) => document.getElementById(id);
+const cv = $("cv"), ctx = cv.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+let L = null, move = null, side = "player", src = "default", anim = null, frame = 0, speed = 1, playing = true, acc = 0, last = 0, req = 0;
+const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+// the view: "default" = the official images in assets/skills/<Gen>/ (what the game uses; user 2026-11-19: one main source);
+// "fallback" = every image of the Fallback library (comparison), only for moves that have one; "code" = the beams drawn
+// by code, only for beam moves beams.py draws. A toggle the viewer picks is remembered under "src3".
+src = ["default", "fallback", "code"].includes(store.get("src3")) ? store.get("src3") : "default";
+const srcOf = (m) => (m && m.fallback && src === "fallback") ? "fallback" : (m && m.code && src === "code") ? "code" : "default";
+const orgOf = (m) => ({ fallback: m.origin_fb, code: m.origin_code }[srcOf(m)] || m.origin) || { cast: "procedural", effect: "procedural" };
+let OFFICIAL = {};
+const OFF_NAME = { default: "Mặc định", agy: "agy", fallback: "Fallback", code: "Code", procedural: "tạm do code sinh" };
+const FROM = { fallback: "Fallback", agy: "agy", procedural: "code sinh", code: "Code" };    // where an official image came from
+const WHY = { missing: "không có", blank: "trống", denied: "bị loại" };
+// "(Fallback trống)": why an image was taken from the next source
+const fillTxt = (base, why) => why ? ` (${FROM[base] || base} ${WHY[why] || why})` : "";
+// one plan (vfx.official_plan): "Fallback · cast: agy (Fallback trống)"
+function planTxt(p) {
+  if (!p) return "";
+  if (p.source === "code") return "Code";
+  let t = OFF_NAME[p.source] || p.source;
+  for (const k of ["cast", "effect"]) if (p.why && p.why[k]) t += ` · ${k}: ${FROM[p[k]]}${fillTxt(p.source, p.why[k])}`;
+  return t;
+}
+// label of one played image: where it is played from (vfx.strip_origin) and, for the official image, where it came from
+function orgTxt(m, k, o) {
+  if (o === "fallback") return "Fallback (so sánh)";
+  if (o === "procedural") return srcOf(m) === "fallback" ? "tạm do code sinh" : "tạm do code sinh (Skills chưa có ảnh)";
+  if (o === "code") return srcOf(m) === "code" && !(m.rec && m.rec.source === "code") ? "Code (thiết kế mới, so sánh)" : "Chính thức · Code (tia vẽ bằng code)";
+  const r = m.rec;
+  if (!r) return "Chính thức · bản agy cũ (chưa áp dụng)";
+  return `Chính thức · ${FROM[r[k]] || r[k]}${fillTxt(r.source, r.filled && r.filled[k])}`;
+}
+const curChoice = (m) => m.choice || "default";
+// the move's folder holds what the current choice / default rule asks for
+const applied = (m) => { const p = m.plans[curChoice(m)], r = m.rec;
+  return !!(p && r && r.source === p.source && r.cast === p.cast && r.effect === p.effect); };
+
+// ---------------------------------------------------------------- searchable picker
+// Plain JS combobox: the current choice (tap = open the whole list), a search box (filters as you type, accents and
+// case ignored) and a list with 44 px rows. Arrow keys / Enter / Escape on a keyboard; tap on a phone.
+const fold = (t) => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").toLowerCase();
+function picker(root, { id, items, key, label, hay, placeholder, onPick }) {
+  const cur = document.createElement("button"); cur.type = "button"; cur.className = "cbx-cur"; cur.setAttribute("aria-haspopup", "listbox");
+  const row = document.createElement("div"); row.className = "cbx-row";
+  const inp = document.createElement("input"); inp.type = "search"; inp.id = id + "-q"; inp.placeholder = placeholder;
+  inp.autocomplete = "off"; inp.autocapitalize = "off"; inp.spellcheck = false; inp.setAttribute("autocorrect", "off");
+  inp.setAttribute("role", "combobox"); inp.setAttribute("aria-autocomplete", "list"); inp.setAttribute("aria-expanded", "false");
+  const all = document.createElement("button"); all.type = "button"; all.className = "cbx-all"; all.textContent = "▾"; all.setAttribute("aria-label", "Mở toàn bộ danh sách");
+  const list = document.createElement("ul"); list.className = "cbx-list"; list.id = id + "-list"; list.setAttribute("role", "listbox"); list.hidden = true;
+  inp.setAttribute("aria-controls", list.id);
+  row.append(inp, all); root.append(cur, row, list);
+  let index = items.map((it) => fold(hay(it)));
+  let shown = [], active = -1, value = null;
+  function render(q) {
+    const toks = fold(q).split(/\s+/).filter(Boolean);
+    shown = items.filter((it, i) => toks.every((t) => index[i].includes(t)));
+    list.textContent = "";
+    if (!shown.length) { const li = document.createElement("li"); li.className = "empty"; li.textContent = "Không tìm thấy"; list.append(li); }
+    shown.forEach((it, i) => {
+      const li = document.createElement("li"); li.id = `${id}-o${i}`; li.setAttribute("role", "option");
+      li.setAttribute("aria-selected", "false"); if (key(it) === value) li.classList.add("on");
+      li.append(...label(it));
+      li.addEventListener("pointerdown", (e) => e.preventDefault());       // keep the input from blurring before the tap lands
+      li.addEventListener("click", () => choose(it));
+      list.append(li);
+    });
+    const at = shown.findIndex((it) => key(it) === value);
+    mark(toks.length ? 0 : at);
+  }
+  function mark(i) {
+    active = i;
+    list.querySelectorAll("[role=option]").forEach((li, j) => li.setAttribute("aria-selected", j === i));
+    const li = list.querySelector(`#${id}-o${i}`);
+    if (li) {                                   // keep the active row visible inside the list (not the page)
+      inp.setAttribute("aria-activedescendant", li.id);
+      if (li.offsetTop < list.scrollTop) list.scrollTop = li.offsetTop - 4;
+      else if (li.offsetTop + li.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = li.offsetTop + li.offsetHeight - list.clientHeight + 4;
+    } else inp.removeAttribute("aria-activedescendant");
+  }
+  function open(q = inp.value) { list.hidden = false; list.scrollTop = 0; render(q); inp.setAttribute("aria-expanded", "true"); cur.setAttribute("aria-expanded", "true"); }
+  function close() { list.hidden = true; inp.setAttribute("aria-expanded", "false"); cur.setAttribute("aria-expanded", "false"); }
+  function show(it) { cur.textContent = ""; cur.append(...label(it)); const c = document.createElement("span"); c.className = "chev"; c.textContent = "▾ đổi"; cur.append(c); }
+  function set(k) { const it = items.find((x) => key(x) === k) || items[0]; if (!it) return null; value = key(it); show(it); return it; }
+  function choose(it) { set(key(it)); inp.value = ""; close(); inp.blur(); onPick(it); }
+  inp.addEventListener("input", () => open());
+  inp.addEventListener("focus", () => open());
+  inp.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault(); if (list.hidden) open();
+      const n = shown.length; if (n) mark(((active < 0 ? (e.key === "ArrowDown" ? -1 : 0) : active) + (e.key === "ArrowDown" ? 1 : -1) + n) % n);
+    } else if (e.key === "Enter") { e.preventDefault(); if (shown[active]) choose(shown[active]); }
+    else if (e.key === "Escape") { close(); }
+  });
+  const toggle = () => { if (list.hidden) { inp.value = ""; open(""); } else close(); };
+  cur.addEventListener("click", toggle); all.addEventListener("click", toggle);
+  document.addEventListener("pointerdown", (e) => { if (!root.contains(e.target)) close(); });
+  // new items (the list re-read from the server): same picker, same choice when it is still there
+  function reset(next) { items = next; index = items.map((it) => fold(hay(it))); if (!list.hidden) render(inp.value); }
+  return { set, reset, get value() { return value; } };
+}
+const TYPE_VI = { normal: "thường", fire: "lửa", water: "nước", electric: "điện", grass: "cỏ", ice: "băng", fighting: "giác đấu",
+  poison: "độc", ground: "đất", flying: "bay", psychic: "siêu linh", bug: "bọ", rock: "đá", ghost: "ma", dragon: "rồng",
+  dark: "bóng tối", steel: "thép", fairy: "tiên" };
+const BADGE = { agy: "agy", fallback: "Fallback", procedural: "tạm", code: "Code" };
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+// the badges show what the official folder holds (or, before applying, what the rule would put there)
+const badgeSrc = (m) => m.rec ? [m.rec.cast, m.rec.effect] : m.plans[curChoice(m)] ? [m.plans[curChoice(m)].cast, m.plans[curChoice(m)].effect] : ["procedural"];
+function moveLabel(m) {
+  const dot = el("span", "t"); dot.style.background = TYPE_COLOR[m.type] || "#999";
+  const top = el("span"); top.append(dot, m.name + (m.vi ? " · " + m.vi : ""));
+  const bs = badgeSrc(m);
+  for (const o of new Set(bs)) {
+    const b = el("span", "bdg " + o, BADGE[o] || o); b.title = m.rec ? "Chính thức: " + planTxt({ ...m.rec, why: m.rec.filled }) : "chưa áp dụng; sẽ là: " + planTxt(m.plans[curChoice(m)]);
+    top.append(b);
+  }
+  if (m.choice) { const b = el("span", "bdg off", "★ " + OFF_NAME[m.choice]); b.title = "đã chọn: " + OFF_NAME[m.choice]; top.append(b); }
+  if (m.sound && (m.sound.actor || m.sound.target)) {
+    const k = el("span", "snd", "🔊"); k.title = "âm thanh riêng: " + [m.sound.actor && "lúc ra chiêu", m.sound.target && "lúc trúng"].filter(Boolean).join(", ");
+    top.append(k);
+  }
+  const p = m.rec ? { ...m.rec, why: m.rec.filled } : m.plans[curChoice(m)];
+  let t = `${m.type} · ${CLS[m.cls] || m.cls}`;
+  if (p && p.source !== "code" && (p.cast !== p.effect || (p.why && Object.keys(p.why).length)))
+    t += ` · cast: ${FROM[p.cast]}${fillTxt(p.source, p.why && p.why.cast)} · effect: ${FROM[p.effect]}${fillTxt(p.source, p.why && p.why.effect)}`;
+  if (!m.rec) t += m.game || m.choice ? " · chưa áp dụng" : "";
+  const sub = el("small", "", t);
+  const box = el("span"); box.style.display = "grid"; box.append(top, sub); return [box];
+}
+const pokeLabel = (p) => [el("span", "", `#${String(p.dex).padStart(3, "0")} ${p.name}${p.battle ? " ★" : ""}`)];
+let PICK = {};
+
+function draw() {
+  if (!anim || !anim.img) return;
+  const x = (frame % anim.cols) * anim.w, y = Math.floor(frame / anim.cols) * anim.h;
+  cv.width = anim.w; cv.height = anim.h; ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(anim.img, x, y, anim.w, anim.h, 0, 0, anim.w, anim.h);
+  $("count").textContent = (frame + 1) + " / " + anim.n;
+}
+function tick(t) {
+  const dt = last ? t - last : 0; last = t;
+  if (playing && anim && anim.img) {
+    acc += dt * speed;
+    const hold = frame === anim.n - 1 ? 700 : 1000 / anim.fps;
+    if (acc >= hold) { acc = 0; frame = (frame + 1) % anim.n; draw(); cue(frame); }
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+async function load() {
+  if (!move) return;
+  const id = ++req;
+  const q = new URLSearchParams({ move: move.id, player: PICK.player.value, foe: PICK.foe.value, side, scene: $("scene").value, src: srcOf(move) });
+  $("busy").hidden = false; $("err").hidden = true;
+  try {
+    const r = await fetch("/api/render?" + q);
+    const m = await r.json();
+    if (!r.ok) throw new Error(m.error || r.status);
+    const img = new Image();
+    img.onload = () => { if (id !== req) return; anim = { ...m, img }; frame = 0; acc = 0; $("busy").hidden = true; draw(); stopAll(); cue(0);
+      if (m.origin) showOrigin(m.origin); };
+    img.onerror = () => { $("busy").hidden = true; showErr("Không tải được khung hình."); };
+    img.src = m.src;
+  } catch (e) { if (id === req) { $("busy").hidden = true; showErr("Lỗi dựng hoạt ảnh: " + e.message); } }
+}
+function showErr(t) { $("err").textContent = t; $("err").hidden = false; }
+
+function sprites() {
+  const p = PICK.player.value, f = PICK.foe.value;
+  const name = (s) => (L.pokemon.find((x) => x.slug === s) || {}).name || s;
+  $("pname").textContent = name(p); $("fname").textContent = name(f);
+  $("p-back").src = `/api/sprite?slug=${encodeURIComponent(p)}&view=back`;
+  $("p-front").src = `/api/sprite?slug=${encodeURIComponent(p)}&view=front`;
+  $("f-front").src = `/api/sprite?slug=${encodeURIComponent(f)}&view=front`;
+  $("f-back").src = `/api/sprite?slug=${encodeURIComponent(f)}&view=back`;
+}
+function showOrigin(o) {
+  const m = move; if (!m) return;
+  const cls = (k) => o[k] === "official" && m.rec ? m.rec[k] : o[k];
+  for (const k of ["cast", "effect"]) {
+    const e = $("org-" + k); e.textContent = "nguồn: " + orgTxt(m, k, o[k]); e.className = "org " + cls(k);
+  }
+  $("now-src").textContent = `Đang phát: cast: ${orgTxt(m, "cast", o.cast)} · effect: ${orgTxt(m, "effect", o.effect)}`;
+}
+function strips() {
+  const m = move, s = srcOf(m), o = orgOf(m);
+  $("strips-h").textContent = `2 ảnh của chiêu · ${m.name}`;
+  for (const k of ["cast", "effect"]) {
+    $(k).src = `/api/strip/${m.id}/${k}?src=${s}`;     // the image that view plays (procedural ones are rendered too)
+    $(k).alt = k.toUpperCase() + " · " + orgTxt(m, k, o[k]);
+  }
+  showOrigin(o);
+}
+function showSrc() {
+  $("srcbox").hidden = $("src-note").hidden = !(move && (move.fallback || move.code));
+  $("src-fallback").hidden = !(move && move.fallback);
+  $("src-code").hidden = !(move && move.code);
+  for (const k of ["default", "fallback", "code"]) $("src-" + k).setAttribute("aria-pressed", srcOf(move) === k);
+  showOfficial();
+}
+// ---------------------------------------------------------------- official choice for the game
+// radios: Mặc định (no choice: the default rule) / Fallback / agy / Code; a source with no usable image of the move is
+// disabled; a choice is stored and applied to assets/skills/<Gen>/ at once by the server
+function showOfficial() {
+  const m = move; if (!m) return;
+  $("official").hidden = false;
+  const cur = curChoice(m);
+  for (const k of ["default", "fallback", "agy", "code"]) {
+    const inp = $("off-" + k), lab = $("off-l-" + k), ok = k === "default" || !!(m.can && m.can[k]);
+    inp.disabled = !ok; lab.classList.toggle("off", !ok); lab.hidden = k === "code" && !m.code;
+    inp.checked = cur === k;
+    const t = $("off-t-" + k), p = m.plans[k];
+    t.textContent = k === "default" ? "Mặc định" : OFF_NAME[k] + (k === "agy" ? " (bản vẽ cũ)" : "");
+    const extra = k === "default" ? planTxt(p) : p && p.source !== "code" && Object.keys(p.why || {}).length ? planTxt(p).split(" · ").slice(1).join(" · ") : "";
+    if (extra) t.append(" ", el("small", "", (k === "default" ? "→ " : "· ") + extra));
+    lab.title = ok ? "" : `chiêu này không có ảnh ${OFF_NAME[k]} dùng được (thiếu, trống hoặc bị loại)`;
+  }
+  const p = m.plans[cur];
+  let note = m.choice ? `Đã chọn: ${OFF_NAME[m.choice]}` : `Chưa chọn; mặc định: ${planTxt(p)}`;
+  if (m.choice && !(m.can && m.can[m.choice]) && p) note += ` (${OFF_NAME[m.choice]} không có ảnh dùng được: ${planTxt(p).split(" · ").slice(1).join(" · ")})`;
+  note += applied(m) ? ". Đã áp dụng vào Skills." : (m.game || m.choice) ? ". Chưa áp dụng: bấm “Áp dụng vào Skills”." : ". Game chưa dùng chiêu này; chọn một nguồn để áp dụng.";
+  $("off-note").textContent = note;
+}
+async function refresh() {          // re-read the list (choices, applied records, badges) and keep the current move
+  const r = await fetch("/api/list"); const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status);
+  L.moves = j.moves; OFFICIAL = j.official || {}; showApplied(j.applied, false); summary();
+  const m = L.moves.find((x) => x.id === (move && move.id));
+  PICK.move.reset(L.moves);
+  if (m) { move = m; PICK.move.set(m.id); showPos(); showSrc(); strips(); load(); }
+}
+for (const k of ["default", "fallback", "agy", "code"]) $("off-" + k).onchange = async () => {
+  if (!move || !$("off-" + k).checked) return;
+  $("off-note").textContent = "Đang áp dụng…";
+  try {
+    const r = await fetch("/api/official", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ move: move.id, source: k }) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || r.status);
+    await refresh();
+  } catch (e) { showErr("Không lưu được lựa chọn: " + e.message); showOfficial(); }
+};
+function showApplied(x, fresh) {
+  if (!x || !x.moves) { $("exp-out").textContent = "Chưa áp dụng lần nào."; return; }
+  const bm = x.by_move || {}, bi = x.by_image || {};
+  const nm = (k) => k.startsWith("default→") ? "mặc định→" + (FROM[k.slice(8)] || k.slice(8)) : "đã chọn " + (FROM[k] || k);
+  const mv = Object.entries(bm).map(([k, v]) => `${nm(k)} ${v}`).join(" · ");
+  const im = Object.entries(bi).map(([k, v]) => `${FROM[k] || k} ${v}`).join(" · ");
+  $("exp-out").textContent = `${fresh ? "Đã áp dụng" : "Lần áp dụng gần nhất"}: ${x.moves} chiêu (${mv}); ảnh: ${im}; ${x.filled_images || 0} ảnh lấy từ nguồn kế tiếp vì nguồn chọn bị trống`
+    + (x.updated ? ` · lúc ${new Date(x.updated).toLocaleString("vi-VN")}` : "") + (fresh && x.backups ? ` · sao lưu ${x.backups} tệp agy vào ${x.backup_dir}/` : "") + ".";
+}
+$("export").onclick = async () => {
+  $("export").disabled = true; $("exp-out").textContent = "Đang áp dụng…";
+  try {
+    const r = await fetch("/api/apply", { method: "POST" });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || r.status);
+    await refresh(); showApplied(j, true);
+  } catch (e) { $("exp-out").textContent = "Không áp dụng được: " + e.message; }
+  $("export").disabled = false;
+};
+// previous / next move in the list order (wraps around)
+function stepMove(d) {
+  if (!L || !L.moves.length) return;
+  const i = move ? L.moves.findIndex((x) => x.id === move.id) : -1;
+  selectMove(L.moves[(i + d + L.moves.length) % L.moves.length]);
+}
+function showPos() {
+  const i = move && L ? L.moves.findIndex((x) => x.id === move.id) : -1;
+  $("mv-pos").textContent = i >= 0 ? `${i + 1} / ${L.moves.length}` : "";
+}
+$("mv-prev").onclick = () => stepMove(-1);
+$("mv-next").onclick = () => stepMove(1);
+function selectMove(m) {
+  move = m; store.set("mv", m.id); stopAll(); warm(); PICK.move.set(m.id); showPos();
+  showSrc(); strips();
+  load();
+}
+for (const k of ["default", "fallback", "code"]) $("src-" + k).onclick = () => {
+  src = k; store.set("src3", k); showSrc(); if (move) { stopAll(); strips(); load(); }
+};
+
+async function init() {
+  const r = await fetch("/api/list"); L = await r.json();
+  OFFICIAL = L.official || {}; showApplied(L.applied, false); summary();
+  for (const [who, def, sk] of [["player", "charmander", "pl"], ["foe", "bulbasaur", "fo"]]) {
+    PICK[who] = picker($(who + "-pick"), { id: who, items: L.pokemon, key: (p) => p.slug, label: pokeLabel,
+      hay: (p) => `${p.name} ${p.slug} ${p.dex} #${String(p.dex).padStart(3, "0")}`, placeholder: "Tìm Pokémon: tên hoặc số…",
+      onPick: (p) => { store.set(sk, p.slug); sprites(); load(); } });
+    const saved = store.get(sk);
+    PICK[who].set(L.pokemon.some((p) => p.slug === saved) ? saved : L.pokemon.some((p) => p.slug === def) ? def : L.pokemon[0].slug);
+  }
+  const defScene = store.get("sc") || "garden-tall-grass-trainer";
+  for (const s of L.scenes) { const o = document.createElement("option"); o.value = s; o.textContent = s; $("scene").appendChild(o); }
+  $("scene").value = L.scenes.includes(defScene) ? defScene : L.scenes[0];
+  PICK.move = picker($("move-pick"), { id: "move", items: L.moves, key: (m) => m.id, label: moveLabel,
+    hay: (m) => [m.name, m.vi, m.id, m.type, TYPE_VI[m.type], m.cls, CLS[m.cls],
+                 ...new Set(badgeSrc(m).map((o) => BADGE[o])), m.code ? "code" : "", m.game ? "game" : "",
+                 m.choice ? "da chon " + OFF_NAME[m.choice] : "", m.rec ? "chinh thuc" : "chua ap dung"].join(" "),
+    placeholder: "Tìm chiêu: tên, tên Việt, hệ…", onPick: (m) => selectMove(m) });
+  sprites();
+  const saved = L.moves.find((m) => m.id === store.get("mv"));
+  if (L.moves.length) selectMove(saved || L.moves[0]);
+}
+function summary() {
+  const n = (f) => L.moves.filter(f).length;
+  $("summary").textContent = `${n((m) => m.rec)} chiêu đã có bản chính thức trong Skills (${n((m) => m.game)} chiêu game dùng, ${n((m) => m.choice)} chiêu đã chọn) · ${n((m) => m.fallback)} chiêu có bản Fallback · ${n((m) => m.code)} chiêu tia có bản Code · ${L.pokemon.length} Pokémon.`;
+}
+$("scene").onchange = () => { store.set("sc", $("scene").value); load(); };
+for (const k of ["player", "foe"]) $("side-" + k).onclick = () => {
+  side = k; for (const j of ["player", "foe"]) $("side-" + j).setAttribute("aria-pressed", j === k); load();
+};
+const playBtn = $("play");
+function setPlay(p) { playing = p; playBtn.setAttribute("aria-pressed", p); playBtn.textContent = p ? "⏸ Dừng" : "▶ Phát"; }
+playBtn.onclick = () => setPlay(!playing);
+$("prev").onclick = () => { if (!anim) return; setPlay(false); frame = (frame - 1 + anim.n) % anim.n; draw(); };
+$("next").onclick = () => { if (!anim) return; setPlay(false); frame = (frame + 1) % anim.n; draw(); };
+document.querySelectorAll("[data-s]").forEach((b) => b.onclick = () => {
+  speed = +b.dataset.s; document.querySelectorAll("[data-s]").forEach((x) => x.setAttribute("aria-pressed", x === b));
+});
+// ---------------------------------------------------------------- sound (decisions.md §16)
+// Actor sound on frame 0, target sound (or a type impact sound for damaging moves with no own sound) on the hit frame
+// (cast + travel). Sounds follow the frames, so at 0.25x / 0.5x they fire at the right moment at normal pitch.
+// Web Audio needs a tap on iOS: the context is created and resumed inside the button's click handler.
+let actx = null, gain = null, soundOn = false, live = [];
+const buffers = new Map();     // url -> Promise<AudioBuffer|null>
+function sndNote(t) { $("snd-note").textContent = t; $("snd-note").hidden = !t; }
+function buffer(url) {
+  if (!buffers.has(url)) buffers.set(url, fetch(url).then((r) => r.ok ? r.arrayBuffer() : null).then((ab) => !ab ? null :
+    new Promise((ok, bad) => actx.decodeAudioData(ab, ok, bad))).catch(() => {
+      sndNote("Trình duyệt không giải mã được âm thanh Ogg Vorbis (iPhone cần iOS 18.4 trở lên).");
+      return null;
+    }));
+  return buffers.get(url);
+}
+function parts() {
+  if (!move || !move.sound) return { start: null, hit: null };
+  const s = move.sound, u = (p, n) => `/api/sound?move=${encodeURIComponent(move.id)}&part=${p}&i=${n}`;
+  const own = s.actor || s.target;
+  return { start: s.actor ? u("actor", 0) : null,
+           hit: s.target ? u("target", 0) : (!own && s.impact && move.cls !== "status") ? u("impact", Math.floor(Math.random() * s.impact)) : null };
+}
+function warm() { if (!soundOn || !move || !move.sound) return; const s = move.sound;
+  if (s.actor) buffer(parts().start); if (s.target) buffer(parts().hit);
+  if (!s.actor && !s.target && move.cls !== "status") for (let i = 0; i < s.impact; i++) buffer(`/api/sound?move=${encodeURIComponent(move.id)}&part=impact&i=${i}`); }
+async function play(url) {
+  if (!url || !soundOn) return;
+  const id = req, b = await buffer(url);
+  if (!b || !soundOn || id !== req) return;
+  const src = actx.createBufferSource(); src.buffer = b; src.connect(gain); src.start();
+  live.push(src); src.onended = () => { live = live.filter((x) => x !== src); };
+}
+function stopAll() { for (const s of live) { try { s.stop(); } catch {} } live = []; }
+function cue(f) {
+  if (!soundOn || !anim || !anim.phases || !playing) return;
+  const ph = anim.phases, hitAt = ph.cast + ph.travel, p = parts();
+  if (f === 0) play(p.start);
+  // self moves (buff / heal / field) have no hit: only their own target sound, no impact
+  if (f === Math.min(hitAt, anim.n - 1) && (ph.hit > 0 || (move.sound && move.sound.target))) play(p.hit);
+}
+$("sound").onclick = () => {
+  if (!actx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { sndNote("Trình duyệt này không có Web Audio."); return; }
+    actx = new AC(); gain = actx.createGain(); gain.gain.value = 0.8; gain.connect(actx.destination);
+    // iOS: play through the ring / silent switch, since the user asked for sound with this button
+    try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
+  }
+  soundOn = !soundOn;
+  if (soundOn) {
+    actx.resume();
+    const s = actx.createBufferSource(); s.buffer = actx.createBuffer(1, 1, 22050); s.connect(actx.destination); s.start();  // unlock
+    const probe = document.createElement("audio").canPlayType('audio/ogg; codecs="vorbis"');
+    sndNote(probe ? "" : "Trình duyệt báo không hỗ trợ Ogg Vorbis; nếu không nghe thấy gì, cần iOS 18.4 trở lên.");
+    warm(); frame = 0; acc = 0; draw(); cue(0);
+  } else stopAll();
+  $("sound").setAttribute("aria-pressed", soundOn); $("sound").textContent = soundOn ? "🔇 Tắt tiếng" : "🔊 Bật tiếng";
+};
+init().catch((e) => { $("summary").textContent = "Không tải được danh sách: " + e.message; });
+</script>
+</body>
+</html>

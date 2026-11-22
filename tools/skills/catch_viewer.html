@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mons Bắt Pokémon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* One column for the phone: pick a ball and a wild Pokémon, watch the Gen 3 capture sequence (rendered by the
+   server, 30 fps, drawn frame by frame in a canvas so it plays on iPhone Safari too), hear it. */
+:root {
+  --bg: #eef2ea; --panel: #ffffff; --ink: #1d2b33; --muted: #5d6c70; --line: #cfd8cf;
+  --frame: #2c4a5e; --accent: #d9693a;
+  --display: "Pixelify Sans", "Courier New", monospace; --body: "Be Vietnam Pro", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --bg: #141b20; --panel: #1c262d; --ink: #e6ece6; --muted: #9aa8ab; --line: #2f3d45;
+  --frame: #7fb2cf; --accent: #ef8a5c; color-scheme: dark } }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); }
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 20px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); }
+header { display: grid; gap: 4px; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.eyebrow a { color: var(--frame); font-weight: 600; text-transform: none; letter-spacing: 0; }
+h1 { font-family: var(--display); font-size: clamp(30px, 8vw, 46px); line-height: 1.05; margin: 0; }
+section { display: grid; gap: 12px; }
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+select { font: 16px var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 9px 10px; min-height: 44px; width: 100%; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.row button { font: 600 14px var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 14px; cursor: pointer; min-height: 44px; }
+.row button[aria-pressed="true"] { background: var(--frame); color: var(--bg); border-color: var(--frame); }
+button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stage { position: relative; border: 4px solid var(--frame); border-radius: 6px; background: #000; overflow: hidden; }
+.stage canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; aspect-ratio: 3 / 2; }
+.busy { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; background: rgba(0,0,0,.6); font: 600 15px var(--body); }
+.count { font: 14px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; margin-left: auto; }
+.note { font-size: 13px; color: var(--muted); }
+.err { color: var(--accent); font-size: 14px; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Mons · bắt Pokémon trên sân đấu Gen 3 · <a href="/">← Xem chiêu</a> · <a href="/evolution">Tiến hoá</a></div>
+    <h1>Bắt Pokémon</h1>
+    <div class="note">Trình tự Gen 3: ném bóng theo vòng cung (bóng xoay), bóng mở và chớp sáng, Pokémon nhuốm màu bóng rồi thu nhỏ vào trong, bóng đóng lại, rơi xuống nảy 3 lần, lắc 0–3 lần (nghỉ giữa mỗi lần), rồi “tách” + sao (bắt được) hoặc bóng bung ra và Pokémon hiện lại (thoát). Mọi hình bóng lấy từ tấm sprite của bóng đó.</div>
+  </header>
+
+  <section aria-label="Chọn">
+    <div class="grid">
+      <label for="ball">Bóng<select id="ball"></select></label>
+      <label for="target">Pokémon hoang dã<select id="target"></select></label>
+      <label for="player">Pokémon của bạn<select id="player"></select></label>
+      <label for="scene">Sân đấu<select id="scene"></select></label>
+    </div>
+    <div class="row" role="group" aria-label="Kết quả">
+      <button type="button" id="r-success" aria-pressed="true">Bắt được</button>
+      <button type="button" id="r-fail" aria-pressed="false">Thoát ra</button>
+    </div>
+    <div class="row" role="group" aria-label="Số lần lắc" id="shakes"></div>
+  </section>
+
+  <section aria-label="Xem">
+    <div class="stage">
+      <canvas id="cv" width="480" height="320" aria-label="Cảnh bắt Pokémon"></canvas>
+      <div class="busy" id="busy" hidden>Đang dựng…</div>
+    </div>
+    <div class="row">
+      <button type="button" id="play">▶ Phát lại</button>
+      <button type="button" id="sound" aria-pressed="true">🔊 Âm thanh</button>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="note" id="notes"></div>
+    <div class="note">Âm thanh bật sau lần chạm đầu tiên (iPhone cần iOS 18.4+ để phát .ogg).</div>
+  </section>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const cv = $("cv"), g = cv.getContext("2d");
+g.imageSmoothingEnabled = false;
+let meta = null, sheets = [], raf = 0, t0 = 0, last = -1, soundOn = true, success = true, shakes = 3;
+const PHASE_VI = { intro: "lời dẫn", throw: "ném bóng", open: "bóng mở", absorb: "thu Pokémon vào", close: "đóng bóng",
+  fall: "rơi xuống", bounce: "nảy", rest: "chờ", wobble: "lắc", click: "tách!", stars: "sao bay", caught: "bắt được",
+  break: "bóng bung", emerge: "Pokémon thoát ra", free: "thoát" };
+
+// ---- sound (Web Audio, unlocked by the first tap)
+let actx = null;
+const bufs = new Map();
+function unlock() {
+  if (!actx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) actx = new AC(); }
+  if (actx && actx.state !== "running") actx.resume();
+}
+for (const e of ["pointerdown", "touchend", "keydown"]) window.addEventListener(e, unlock, { capture: true, passive: true });
+function load(url) {
+  if (!bufs.has(url)) bufs.set(url, fetch(url).then((r) => (r.ok ? r.arrayBuffer() : null))
+    .then((ab) => ab && actx ? new Promise((ok, bad) => actx.decodeAudioData(ab, ok, bad)) : null).catch(() => null));
+  return bufs.get(url);
+}
+async function play(url) {
+  if (!soundOn || !actx || actx.state !== "running") return;
+  const b = await load(url);
+  if (!b) return;
+  const s = actx.createBufferSource(); s.buffer = b; s.connect(actx.destination); s.start();
+}
+function soundUrl(v) {
+  const m = /^shake(\d)$/.exec(v);
+  return m ? `/api/catch/sound?name=shake&i=${m[1]}` : `/api/catch/sound?name=${encodeURIComponent(v)}`;
+}
+
+// ---- playback
+function draw(i) {
+  const per = meta.chunk, sh = sheets[Math.floor(i / per)], j = i % per;
+  if (!sh) return;
+  g.drawImage(sh, (j % meta.cols) * meta.w, Math.floor(j / meta.cols) * meta.h, meta.w, meta.h, 0, 0, meta.w, meta.h);
+}
+function fire(from, to) {
+  for (const [f, kind, v] of meta.events) if (f > from && f <= to && kind === "sound") play(soundUrl(v));
+}
+function phaseAt(i) { let p = ""; for (const [f, name] of meta.phases) if (f <= i) p = name; return p; }
+function loop(now) {
+  const i = Math.min(meta.n - 1, Math.floor(((now - t0) * meta.fps) / 1000));
+  if (i !== last) {
+    fire(last, i); draw(i); last = i;
+    const p = phaseAt(i);
+    $("count").textContent = `${(i / meta.fps).toFixed(1)} s · ${PHASE_VI[p] || p}`;
+  }
+  if (i < meta.n - 1) raf = requestAnimationFrame(loop);
+}
+function start() {
+  cancelAnimationFrame(raf); last = -1;
+  t0 = performance.now(); raf = requestAnimationFrame(loop);
+}
+let seq = 0;
+async function render() {
+  const ball = $("ball").value, target = $("target").value;
+  if (!ball || !target) return;
+  const my = ++seq;
+  $("busy").hidden = false; $("err").textContent = "";
+  cancelAnimationFrame(raf);
+  const qs = new URLSearchParams({ ball, target, player: $("player").value, scene: $("scene").value,
+    shakes: String(shakes), result: success ? "success" : "fail" });
+  try {
+    const r = await fetch(`/api/catch/render?${qs}`);
+    const m = await r.json();
+    if (m.error) throw new Error(m.error);
+    const ims = await Promise.all(m.sheets.map((u) => new Promise((ok, bad) => { const im = new Image(); im.onload = () => ok(im); im.onerror = bad; im.src = u; })));
+    if (my !== seq) return;
+    sheets = ims; meta = m; cv.width = m.w; cv.height = m.h; g.imageSmoothingEnabled = false;
+    if (actx) for (const [, kind, v] of m.events) if (kind === "sound") load(soundUrl(v));
+    $("notes").textContent = m.notes && m.notes.length ? "Ghi chú tấm bóng: " + m.notes.join("; ") : "";
+    $("busy").hidden = true;
+    start();
+  } catch (e) { if (my === seq) { $("busy").hidden = true; $("err").textContent = "Lỗi: " + e.message; } }
+}
+function setResult(ok) {
+  success = ok;
+  $("r-success").setAttribute("aria-pressed", ok); $("r-fail").setAttribute("aria-pressed", !ok);
+  if (ok) setShakes(3); else if (shakes === 3) setShakes(2); else render();
+}
+function setShakes(n) {
+  shakes = n;
+  for (const b of $("shakes").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.n === String(n));
+  render();
+}
+for (let n = 0; n <= 3; n++) {
+  const b = document.createElement("button");
+  b.type = "button"; b.dataset.n = n; b.textContent = `Lắc ${n}`; b.setAttribute("aria-pressed", n === 3);
+  b.onclick = () => setShakes(n);
+  $("shakes").appendChild(b);
+}
+$("r-success").onclick = () => setResult(true);
+$("r-fail").onclick = () => setResult(false);
+$("play").onclick = () => { unlock(); if (meta) start(); };
+$("sound").onclick = () => { soundOn = !soundOn; $("sound").setAttribute("aria-pressed", soundOn); $("sound").textContent = soundOn ? "🔊 Âm thanh" : "🔇 Tắt tiếng"; };
+for (const id of ["ball", "target", "player", "scene"]) $(id).onchange = render;
+
+function fill(sel, items, want) {
+  for (const [v, t] of items) { const o = document.createElement("option"); o.value = v; o.textContent = t; sel.appendChild(o); }
+  if ([...sel.options].some((o) => o.value === want)) sel.value = want;
+}
+fetch("/api/catch/list").then((r) => r.json()).then((d) => {
+  const q = new URLSearchParams(location.search);
+  fill($("ball"), d.balls.map((b) => [b.id, b.name]), q.get("ball") || "poke");
+  const mons = [...d.pokemon].sort((a, b) => (b.battle - a.battle) || (a.dex - b.dex));
+  const label = (p) => `#${String(p.dex).padStart(3, "0")} ${p.name}${p.battle ? " ★" : ""}`;
+  fill($("target"), mons.map((p) => [p.slug, label(p)]), q.get("target") || "bulbasaur");
+  fill($("player"), [["none", "(không có)"]].concat(mons.map((p) => [p.slug, label(p)])), q.get("player") || "charmander");
+  fill($("scene"), d.scenes.map((s) => [s, s]), q.get("scene") || d.scene);
+  render();
+}).catch((e) => { $("err").textContent = "Lỗi: " + e.message; });
+</script>
+</body>
+</html>

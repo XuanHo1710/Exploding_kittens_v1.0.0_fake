@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mons Tiến Hoá</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* One column for the phone: pick the pair, watch the Gen 3 evolution scene (rendered by the server, 30 fps), hear it. */
+:root {
+  --bg: #eef2ea; --panel: #ffffff; --ink: #1d2b33; --muted: #5d6c70; --line: #cfd8cf;
+  --frame: #2c4a5e; --accent: #d9693a; --box: #fff7e8; --boxline: #3898a0;
+  --display: "Pixelify Sans", "Courier New", monospace; --body: "Be Vietnam Pro", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --bg: #141b20; --panel: #1c262d; --ink: #e6ece6; --muted: #9aa8ab; --line: #2f3d45;
+  --frame: #7fb2cf; --accent: #ef8a5c; color-scheme: dark } }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); }
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 20px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); }
+header { display: grid; gap: 4px; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.eyebrow a { color: var(--frame); font-weight: 600; text-transform: none; letter-spacing: 0; }
+h1 { font-family: var(--display); font-size: clamp(30px, 8vw, 46px); line-height: 1.05; margin: 0; }
+section { display: grid; gap: 12px; }
+label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+select { font: 16px var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 9px 10px; min-height: 44px; width: 100%; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.row button { font: 600 14px var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 14px; cursor: pointer; min-height: 44px; }
+.row button[aria-pressed="true"] { background: var(--frame); color: var(--bg); border-color: var(--frame); }
+.chk { display: inline-flex; flex-direction: row; align-items: center; gap: 8px; font-size: 15px; color: var(--ink); min-height: 44px; cursor: pointer; }
+.chk input { width: 20px; height: 20px; accent-color: var(--frame); margin: 0; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stage { position: relative; border: 4px solid var(--frame); border-radius: 6px; background: #000; overflow: hidden; }
+.stage canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; aspect-ratio: 16 / 9; }
+.box { position: absolute; left: 1.5%; right: 1.5%; bottom: 2.5%; min-height: 22%; background: var(--box); color: #1d2b33;
+  border: 3px solid var(--boxline); border-radius: 8px; padding: 2.2% 3%; font: 600 clamp(12px, 3.4vw, 20px)/1.35 var(--body); }
+.box:empty { display: none; }
+.busy { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; background: rgba(0,0,0,.6); font: 600 15px var(--body); }
+.count { font: 14px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; margin-left: auto; }
+.note { font-size: 13px; color: var(--muted); }
+.err { color: var(--accent); font-size: 14px; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Mons · hiệu ứng tiến hoá Gen 3 · <a href="/">← Xem chiêu</a></div>
+    <h1>Tiến hoá</h1>
+    <div class="note">Trình tự Gen 3 y như trong game (cùng logic từng khung 60 fps): Pokémon hoá trắng, nền xanh sáng, lấp lánh xoáy lên rồi rơi xuống, hai bóng trắng cũ / mới lớn nhỏ luân phiên ngày càng nhanh (nhấn B lúc này để huỷ), lấp lánh thu vào, chớp trắng, Pokémon mới hiện màu, tiếng kêu, "Chúc mừng!". Các hạt sáng thêm vào là bản 2D của hạt tiến hoá từ mô hình 3D tham chiếu.</div>
+  </header>
+
+  <section aria-label="Chọn cặp tiến hoá">
+    <label for="pair">Cặp tiến hoá<select id="pair"></select></label>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="cancel"> Nhấn B để huỷ (giữa lúc đổi hình)</label>
+    </div>
+  </section>
+
+  <section aria-label="Xem">
+    <div class="stage">
+      <canvas id="cv" width="320" height="180" aria-label="Cảnh tiến hoá"></canvas>
+      <div class="box" id="box" aria-live="polite"></div>
+      <div class="busy" id="busy" hidden>Đang dựng…</div>
+    </div>
+    <div class="row">
+      <button type="button" id="play">▶ Phát lại</button>
+      <button type="button" id="sound" aria-pressed="true">🔊 Âm thanh</button>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="note" id="snd-note">Âm thanh bật sau lần chạm đầu tiên (iPhone cần iOS 18.4+ để phát .ogg).</div>
+  </section>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const cv = $("cv"), g = cv.getContext("2d");
+g.imageSmoothingEnabled = false;
+let meta = null, sheets = [], raf = 0, t0 = 0, last = -1, soundOn = true;
+const PHASE_VI = { fade_in: "mở màn", intro_msg: "lời dẫn", intro_cry: "tiếng kêu", intro_sound: "nhạc mở", bg_fade: "nền tối dần",
+  spiral: "lấp lánh xoáy lên", arc: "lấp lánh rơi", cycle: "đổi hình (B huỷ)", circle: "lấp lánh thu vào", spray: "chớp trắng",
+  restore: "nền sáng lại", evo_cry: "tiếng kêu mới", congrats: "chúc mừng", cancel: "huỷ", cancel_cry: "tiếng kêu", cancel_msg: "dừng tiến hoá" };
+
+// ---- sound (Web Audio, unlocked by the first tap)
+let actx = null, full = null;
+const bufs = new Map();
+function unlock() {
+  if (!actx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) actx = new AC(); }
+  if (actx && actx.state !== "running") actx.resume();
+}
+for (const e of ["pointerdown", "touchend", "keydown"]) window.addEventListener(e, unlock, { capture: true, passive: true });
+function load(url) {
+  if (!bufs.has(url)) bufs.set(url, fetch(url).then((r) => (r.ok ? r.arrayBuffer() : null))
+    .then((ab) => ab && actx ? new Promise((ok, bad) => actx.decodeAudioData(ab, ok, bad)) : null).catch(() => null));
+  return bufs.get(url);
+}
+async function play(url) {
+  if (!soundOn || !actx || actx.state !== "running") return null;
+  const b = await load(url);
+  if (!b) return null;
+  const s = actx.createBufferSource(); s.buffer = b; s.connect(actx.destination); s.start();
+  return s;
+}
+function soundUrl(v) {
+  if (v.startsWith("cry:")) return `/api/evo/sound?name=cry&slug=${encodeURIComponent(meta[v.slice(4)])}`;
+  return `/api/evo/sound?name=${encodeURIComponent(v)}`;
+}
+function stopAll() { try { full && full.stop(); } catch (e) {} full = null; }
+
+// ---- playback
+function draw(i) {
+  const per = meta.chunk, sh = sheets[Math.floor(i / per)], j = i % per;
+  if (!sh) return;
+  g.drawImage(sh, (j % meta.cols) * meta.w, Math.floor(j / meta.cols) * meta.h, meta.w, meta.h, 0, 0, meta.w, meta.h);
+}
+function fire(from, to) {
+  for (const [f, kind, v] of meta.events) {
+    if (f <= from || f > to) continue;
+    if (kind === "text") $("box").textContent = v;
+    else if (kind === "stop") stopAll();
+    else if (kind === "sound") play(soundUrl(v)).then((s) => { if (v === "evo-full") full = s; });
+  }
+}
+function phaseAt(i) { let p = ""; for (const [f, name] of meta.phases) if (f <= i) p = name; return p; }
+function loop(now) {
+  const i = Math.min(meta.n - 1, Math.floor(((now - t0) * meta.fps) / 1000));
+  if (i !== last) {
+    fire(last, i); draw(i); last = i;
+    const p = phaseAt(i);
+    $("count").textContent = `${(i / meta.fps).toFixed(1)} s · ${PHASE_VI[p] || p}`;
+  }
+  if (i < meta.n - 1) raf = requestAnimationFrame(loop);
+}
+function start() {
+  cancelAnimationFrame(raf); stopAll();
+  $("box").textContent = ""; last = -1;
+  if (meta.events.length && meta.events[0][0] === 0) fire(-1, 0);
+  t0 = performance.now(); raf = requestAnimationFrame(loop);
+}
+async function render() {
+  const [pre, post] = $("pair").value.split(">");
+  if (!pre) return;
+  $("busy").hidden = false; $("err").textContent = "";
+  cancelAnimationFrame(raf); stopAll();
+  try {
+    const r = await fetch(`/api/evo/render?pre=${encodeURIComponent(pre)}&post=${encodeURIComponent(post)}&cancel=${$("cancel").checked ? 1 : 0}`);
+    const m = await r.json();
+    if (m.error) throw new Error(m.error);
+    sheets = await Promise.all(m.sheets.map((u) => new Promise((ok, bad) => { const im = new Image(); im.onload = () => ok(im); im.onerror = bad; im.src = u; })));
+    meta = m; cv.width = m.w; cv.height = m.h; g.imageSmoothingEnabled = false;
+    for (const [, kind, v] of m.events) if (kind === "sound" && actx) load(soundUrl(v));
+    $("busy").hidden = true;
+    start();
+  } catch (e) { $("busy").hidden = true; $("err").textContent = "Lỗi: " + e.message; }
+}
+
+$("play").onclick = () => { unlock(); if (meta) start(); };
+$("sound").onclick = () => { soundOn = !soundOn; $("sound").setAttribute("aria-pressed", soundOn); $("sound").textContent = soundOn ? "🔊 Âm thanh" : "🔇 Tắt tiếng"; if (!soundOn) stopAll(); };
+$("pair").onchange = render;
+$("cancel").onchange = render;
+fetch("/api/evo/list").then((r) => r.json()).then((d) => {
+  const sel = $("pair");
+  for (const p of d.pairs) {
+    const o = document.createElement("option");
+    o.value = `${p.pre}>${p.post}`;
+    o.textContent = `${p.pre_name} → ${p.post_name} (Lv ${p.level})`;
+    sel.appendChild(o);
+  }
+  const want = new URLSearchParams(location.search).get("pair");
+  sel.value = want && [...sel.options].some((o) => o.value === want) ? want : (([...sel.options].find((o) => o.value === "charmander>charmeleon")) || sel.options[0] || {}).value;
+  render();
+}).catch((e) => { $("err").textContent = "Lỗi: " + e.message; });
+</script>
+</body>
+</html>

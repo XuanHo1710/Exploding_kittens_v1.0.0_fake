@@ -1,0 +1,112 @@
+{
+  "mapId": "06-nocturne-veil",
+  "theme": "night",
+  "width": 52,
+  "height": 25,
+  "spawn": {
+    "x": 4,
+    "y": 12
+  },
+  "backPortal": {
+    "x": 2,
+    "y": 12,
+    "toMapId": "05-cinder-caldera"
+  },
+  "bossAltar": {
+    "x": 46,
+    "y": 12,
+    "bossId": "nocturne_weaver"
+  },
+  "exitPortal": {
+    "x": 49,
+    "y": 12,
+    "toMapId": "07-aurora-zenith",
+    "requiresBossId": "nocturne_weaver"
+  },
+  "restAnchors": [
+    {
+      "anchorId": "night_anchor_1",
+      "x": 8,
+      "y": 12
+    },
+    {
+      "anchorId": "night_anchor_2",
+      "x": 34,
+      "y": 18
+    }
+  ],
+  "chests": [
+    {
+      "chestId": "night_chest_1",
+      "x": 15,
+      "y": 18
+    },
+    {
+      "chestId": "night_chest_2",
+      "x": 27,
+      "y": 6
+    }
+  ],
+  "gks": [
+    {
+      "gkId": "06-nocturne-veil_gk_1",
+      "x": 18,
+      "y": 12,
+      "aggroRadius": 3,
+      "gateBarrierTiles": [
+        [
+          19,
+          11
+        ],
+        [
+          19,
+          12
+        ],
+        [
+          19,
+          13
+        ]
+      ]
+    },
+    {
+      "gkId": "06-nocturne-veil_gk_2",
+      "x": 30,
+      "y": 12,
+      "aggroRadius": 3,
+      "gateBarrierTiles": [
+        [
+          31,
+          11
+        ],
+        [
+          31,
+          12
+        ],
+        [
+          31,
+          13
+        ]
+      ]
+    },
+    {
+      "gkId": "06-nocturne-veil_gk_3",
+      "x": 40,
+      "y": 12,
+      "aggroRadius": 3,
+      "gateBarrierTiles": [
+        [
+          41,
+          11
+        ],
+        [
+          41,
+          12
+        ],
+        [
+          41,
+          13
+        ]
+      ]
+    }
+  ]
+}

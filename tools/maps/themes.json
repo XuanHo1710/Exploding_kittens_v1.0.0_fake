@@ -1,0 +1,4460 @@
+{
+ "_note": "Theme -> role -> candidate slugs, best first. The first candidate that exists is used; candidates that do not exist yet are reported by `mapgen.py inventory` as pieces to create. Specs refer to roles as \"@role\". Gym themes are LIGHT: the frame, lawn, lanes, grass, ledges and water stay the shared meadow set (Gen 3: one primary tileset), and the theme shows only as accents (t-roles) around the gym. Gym themes keep the frame meadow (tree-wall): theme trees (ttree / twall) and theme grass (tgrass) are used on purpose near the gym or on the theme's own routes (docs/explanation/research/world-art-review.md W1-1, W1-11). 2026-11-18: districts now carry their own ground too (user: not always green): <type>-lawn, -path, -ledge, -tree-wall, -tall-grass, -tree are soft hue shifts of the shared pieces (biome.py GROUND / RAMPS).",
+ "_roles": {
+  "ground": "fill terrain under everything (kind fill)",
+  "wall": "map frame and tree lines (tree-wall, *-border)",
+  "border": "2x2 block repeated outside the map edge (Tiled map property)",
+  "path": "main lane on routes and in villages",
+  "floor": "paving for the gym forecourt and its lane (theme) or town plazas (base)",
+  "grass": "encounter terrain (TALL_GRASS)",
+  "water": "pond / river / sea (Surf)",
+  "shore": "sea edge",
+  "sand": "beach floor",
+  "cliff": "raised plateau",
+  "hedge": "low garden wall",
+  "ledge": "one-way hop south; ledge-east / ledge-west are fixed slugs",
+  "feature": "the theme's own blob terrain, used in 1-3 small spots (lava, bog, quicksand ...)",
+  "deco": "small scatter props",
+  "landmark": "big props that anchor a screen",
+  "tree": "standalone tree prop",
+  "lamp": "street light",
+  "sign": "sign board",
+  "item": "item ball",
+  "hm": "HM obstacles that gate a side branch",
+  "fence": "4-way connector fence",
+  "center": "Pokemon Center structure",
+  "mart": "Poke Mart structure",
+  "house": "residential structures",
+  "gym": "the town's gym structure",
+  "special": "landmark buildings",
+  "accent": "theme fill worn into the lawn around the gym (op patch)",
+  "tdeco": "theme scatter props, kept near the gym and one or two other spots",
+  "tlandmark": "theme big props: one per screen at most",
+  "tlamp": "theme light for the gym forecourt",
+  "tgrass": "optional theme encounter grass for one small patch",
+  "tledge": "optional theme ledge",
+  "plaza": "town square paving",
+  "mountain": "rock massif, blocking, full-cell south face",
+  "bridge": "plank bridge over water (bridge / bridge-v)",
+  "stairs": "stone steps up a face",
+  "berry": "berry tree (dead-end reward)",
+  "twall": "theme tree wall: use on purpose for the theme's own routes, not town frames",
+  "ttree": "theme standalone tree, near the gym quarter only",
+  "face": "cave: two-row rock face under every south wall edge",
+  "crack": "cave: cracked floor (fall through)",
+  "vary": "cave: walkable floor patch",
+  "ladderup": "cave: ladder up (trigger)",
+  "ladderdown": "cave: ladder down (trigger)",
+  "hole": "cave: one-way hole (trigger)",
+  "exit": "cave: daylight at the mouth (trigger to the route)",
+  "cprops": "cave: blocking props along the walls (cave_decorate)",
+  "cdeco": "cave: walkable decals (cave_decorate)",
+  "entrance": "cave: the mouth seen from the route (op cave_entrance)"
+ },
+ "meadow": {
+  "brief": "Littleroot / Pallet: soft lawn, 2x2 tree walls, dirt lanes, small ponds, flowers.",
+  "ground": [
+   "grass"
+  ],
+  "wall": [
+   "tree-wall"
+  ],
+  "border": [
+   "tree-wall"
+  ],
+  "path": [
+   "dirt-path"
+  ],
+  "floor": [
+   "paved-path"
+  ],
+  "grass": [
+   "tall-grass"
+  ],
+  "water": [
+   "water"
+  ],
+  "shore": [
+   "shore"
+  ],
+  "sand": [
+   "sand"
+  ],
+  "cliff": [
+   "cliff"
+  ],
+  "hedge": [
+   "hedge"
+  ],
+  "ledge": [
+   "ledge"
+  ],
+  "feature": [
+   "water"
+  ],
+  "deco": [
+   "flowers",
+   "bush",
+   "rock"
+  ],
+  "landmark": [
+   "rock-big",
+   "tree"
+  ],
+  "tree": [
+   "tree"
+  ],
+  "lamp": [
+   "street-lamp"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "hm": [
+   "cut-tree",
+   "smash-rock"
+  ],
+  "fence": [
+   "fence"
+  ],
+  "center": [
+   "pokemon-center"
+  ],
+  "mart": [
+   "poke-mart"
+  ],
+  "house": [
+   "player-house",
+   "house-red",
+   "house-blue",
+   "house-green",
+   "house-orange"
+  ],
+  "gym": [],
+  "special": [
+   "professor-lab",
+   "day-care",
+   "trainer-school"
+  ],
+  "plaza": [
+   "paved-path"
+  ],
+  "mountain": [
+   "mountain"
+  ],
+  "bridge": [
+   "bridge"
+  ],
+  "stairs": [
+   "stairs"
+  ],
+  "berry": [
+   "berry-tree"
+  ],
+  "bench": [
+   "bench"
+  ],
+  "planter": [
+   "planter"
+  ],
+  "nature": {
+   "vary": [
+    [
+     "lush-grass",
+     0.22,
+     8,
+     0
+    ],
+    [
+     "clover",
+     0.08,
+     6,
+     0
+    ],
+    [
+     "worn-earth",
+     0.06,
+     5,
+     1
+    ]
+   ],
+   "pond": {
+    "bank": 0.35
+   },
+   "route": [
+    "pond",
+    "plateau"
+   ],
+   "stream": false
+  }
+ },
+ "coast": {
+  "brief": "Route 103 / Slateport edge: lawn giving way to beach and sea, dirt lanes, rocks.",
+  "ground": [
+   "grass"
+  ],
+  "wall": [
+   "tree-wall"
+  ],
+  "border": [
+   "tree-wall"
+  ],
+  "path": [
+   "sand",
+   "dirt-path"
+  ],
+  "floor": [
+   "paved-path"
+  ],
+  "grass": [
+   "tall-grass"
+  ],
+  "water": [
+   "shore"
+  ],
+  "shore": [
+   "shore"
+  ],
+  "sand": [
+   "sand"
+  ],
+  "cliff": [
+   "cliff"
+  ],
+  "hedge": [
+   "hedge"
+  ],
+  "ledge": [
+   "ledge"
+  ],
+  "feature": [
+   "sand"
+  ],
+  "deco": [
+   "rock",
+   "bush",
+   "flowers",
+   "water-shell-lamp"
+  ],
+  "landmark": [
+   "rock-big",
+   "palm-tree"
+  ],
+  "tree": [
+   "palm-tree",
+   "tree"
+  ],
+  "lamp": [
+   "street-lamp"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "hm": [
+   "smash-rock",
+   "cut-tree"
+  ],
+  "fence": [
+   "fence"
+  ],
+  "center": [
+   "pokemon-center"
+  ],
+  "mart": [
+   "poke-mart"
+  ],
+  "house": [
+   "house-blue",
+   "house-orange"
+  ],
+  "gym": [],
+  "special": [
+   "harbor",
+   "lighthouse"
+  ],
+  "plaza": [
+   "paved-path"
+  ],
+  "mountain": [
+   "mountain"
+  ],
+  "bridge": [
+   "bridge"
+  ],
+  "stairs": [
+   "stairs"
+  ],
+  "berry": [
+   "berry-tree"
+  ],
+  "bench": [
+   "bench"
+  ],
+  "planter": [
+   "planter"
+  ],
+  "nature": {
+   "vary": [
+    [
+     "lush-grass",
+     0.14,
+     8,
+     0
+    ],
+    [
+     "dune-grass",
+     0.12,
+     7,
+     0
+    ],
+    [
+     "shingle",
+     0.05,
+     5,
+     1
+    ]
+   ],
+   "swap": {
+    "mushrooms": "shells",
+    "log": "driftwood",
+    "flowers-blue": "flowers-thrift"
+   },
+   "flowers": [
+    "flowers-thrift",
+    "flowers-yellow",
+    "flowers-white"
+   ],
+   "trees": [
+    [
+     "tree",
+     3
+    ],
+    [
+     "palm-tree",
+     3
+    ],
+    [
+     "pine-tree",
+     2
+    ],
+    [
+     "tree-small",
+     1
+    ]
+   ],
+   "floor": [
+    [
+     "beach-grass",
+     4
+    ],
+    [
+     "tuft",
+     3
+    ],
+    [
+     "fern",
+     2
+    ],
+    [
+     "shells",
+     1
+    ]
+   ],
+   "more": {
+    "meadow": [
+     [
+      [
+       "shells",
+       1,
+       2
+      ],
+      [
+       "beach-grass",
+       1,
+       2
+      ],
+      [
+       "tuft",
+       0,
+       1
+      ]
+     ],
+     [
+      [
+       "driftwood",
+       1,
+       1
+      ],
+      [
+       "shells",
+       1,
+       2
+      ],
+      [
+       "beach-grass",
+       0,
+       1
+      ]
+     ],
+     [
+      [
+       "tide-pool",
+       1,
+       1
+      ],
+      [
+       "shells",
+       1,
+       1
+      ],
+      [
+       "water-starfish",
+       0,
+       1
+      ]
+     ]
+    ],
+    "water": [
+     [
+      [
+       "beach-grass",
+       1,
+       2
+      ],
+      [
+       "shells",
+       1,
+       1
+      ],
+      [
+       "reeds",
+       0,
+       1
+      ]
+     ]
+    ],
+    "grove": [
+     [
+      [
+       "palm-tree",
+       1,
+       1
+      ],
+      [
+       "beach-grass",
+       1,
+       2
+      ],
+      [
+       "shells",
+       0,
+       1
+      ]
+     ]
+    ]
+   },
+   "pond": {
+    "bank": 0.5,
+    "t": "water"
+   },
+   "route": [
+    "tidepool",
+    "pond",
+    "plateau"
+   ],
+   "stream": false
+  }
+ },
+ "woods": {
+  "brief": "Petalburg Woods edge: dense forest, narrow winding lanes, big grass patches, few buildings.",
+  "ground": [
+   "grass"
+  ],
+  "wall": [
+   "tree-wall"
+  ],
+  "border": [
+   "tree-wall"
+  ],
+  "path": [
+   "dirt-path"
+  ],
+  "floor": [
+   "dirt-path"
+  ],
+  "grass": [
+   "tall-grass"
+  ],
+  "water": [
+   "water"
+  ],
+  "shore": [
+   "shore"
+  ],
+  "sand": [
+   "sand"
+  ],
+  "cliff": [
+   "cliff"
+  ],
+  "hedge": [
+   "hedge"
+  ],
+  "ledge": [
+   "ledge"
+  ],
+  "feature": [
+   "forest"
+  ],
+  "deco": [
+   "bush",
+   "flowers",
+   "rock",
+   "mushroom-cluster"
+  ],
+  "landmark": [
+   "tree",
+   "rock-big"
+  ],
+  "tree": [
+   "tree"
+  ],
+  "lamp": [
+   "street-lamp"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "hm": [
+   "cut-tree"
+  ],
+  "fence": [
+   "fence"
+  ],
+  "center": [
+   "pokemon-center"
+  ],
+  "mart": [
+   "poke-mart"
+  ],
+  "house": [
+   "house-green"
+  ],
+  "gym": [],
+  "special": [],
+  "plaza": [
+   "paved-path"
+  ],
+  "mountain": [
+   "mountain"
+  ],
+  "bridge": [
+   "bridge"
+  ],
+  "stairs": [
+   "stairs"
+  ],
+  "berry": [
+   "berry-tree"
+  ],
+  "bench": [
+   "bench"
+  ],
+  "planter": [
+   "planter"
+  ],
+  "nature": {
+   "vary": [
+    [
+     "lush-grass",
+     0.16,
+     8,
+     0
+    ],
+    [
+     "leaf-litter",
+     0.12,
+     7,
+     0
+    ],
+    [
+     "moss",
+     0.08,
+     6,
+     0
+    ],
+    [
+     "worn-earth",
+     0.04,
+     5,
+     1
+    ]
+   ],
+   "flowers": [
+    "flowers-white",
+    "flowers-blue",
+    "flowers-yellow"
+   ],
+   "mix": 0.45,
+   "trees": [
+    [
+     "tree",
+     4
+    ],
+    [
+     "pine-tree",
+     4
+    ],
+    [
+     "tree-small",
+     2
+    ]
+   ],
+   "floor": [
+    [
+     "fern",
+     5
+    ],
+    [
+     "mushrooms",
+     2
+    ],
+    [
+     "leaf-pile",
+     2
+    ],
+    [
+     "fallen-branch",
+     1
+    ],
+    [
+     "toadstool-ring",
+     1
+    ],
+    [
+     "stump",
+     0.6
+    ],
+    [
+     "mossy-rock",
+     0.5
+    ]
+   ],
+   "more": {
+    "woods": [
+     [
+      [
+       "log",
+       1,
+       1
+      ],
+      [
+       "fern",
+       1,
+       2
+      ],
+      [
+       "leaf-pile",
+       1,
+       1
+      ]
+     ],
+     [
+      [
+       "mossy-rock",
+       1,
+       1
+      ],
+      [
+       "fern",
+       1,
+       1
+      ],
+      [
+       "mushrooms",
+       0,
+       1
+      ]
+     ],
+     [
+      [
+       "stump",
+       1,
+       1
+      ],
+      [
+       "toadstool-ring",
+       1,
+       1
+      ],
+      [
+       "leaf-pile",
+       0,
+       1
+      ]
+     ]
+    ],
+    "meadow": [
+     [
+      [
+       "leaf-pile",
+       1,
+       2
+      ],
+      [
+       "fallen-branch",
+       0,
+       1
+      ],
+      [
+       "fern",
+       1,
+       1
+      ]
+     ],
+     [
+      [
+       "mossy-rock",
+       1,
+       1
+      ],
+      [
+       "fern",
+       1,
+       2
+      ],
+      [
+       "*flowers",
+       0,
+       1
+      ]
+     ]
+    ]
+   },
+   "pond": {
+    "bank": 0.25
+   },
+   "route": [
+    "pond",
+    "plateau"
+   ],
+   "stream": true
+  }
+ },
+ "volcano": {
+  "brief": "Hot-spring town by a volcano: lawn and forest, the gym quarter on scorched basalt with braziers and a small lava vent.",
+  "ground": [
+   "fire-lawn",
+   "grass"
+  ],
+  "wall": [
+   "fire-tree-wall",
+   "tree-wall"
+  ],
+  "border": [
+   "fire-tree-wall",
+   "tree-wall"
+  ],
+  "path": [
+   "fire-path",
+   "dirt-path"
+  ],
+  "floor": [
+   "fire-basalt-path"
+  ],
+  "grass": [
+   "fire-tall-grass",
+   "tall-grass"
+  ],
+  "water": [
+   "water"
+  ],
+  "shore": [
+   "shore"
+  ],
+  "sand": [
+   "sand"
+  ],
+  "cliff": [
+   "fire-cliff",
+   "cliff"
+  ],
+  "hedge": [
+   "hedge"
+  ],
+  "ledge": [
+   "fire-ledge",
+   "ledge"
+  ],
+  "feature": [
+   "fire-scorched",
+   "fire-lava-pool"
+  ],
+  "deco": [
+   "flowers",
+   "bush",
+   "rock"
+  ],
+  "landmark": [
+   "rock-big",
+   "tree"
+  ],
+  "tree": [
+   "fire-tree",
+   "tree"
+  ],
+  "lamp": [
+   "street-lamp"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "hm": [
+   "cut-tree",
+   "smash-rock"
+  ],
+  "fence": [
+   "fence"
+  ],
+  "center": [
+   "pokemon-center-fire",
+   "pokemon-center"
+  ],
+  "mart": [
+   "poke-mart-fire",
+   "poke-mart"
+  ],
+  "house": [
+   "house-fire"
+  ],
+  "gym": [
+   "gym-fire"
+  ],
+  "special": [
+   "professor-lab-fire",
+   "day-care-fire",
+   "trainer-school-fire",
+   "flower-shop-fire",
+   "bike-shop-fire",
+   "museum-fire",
+   "contest-hall-fire",
+   "game-corner-fire",
+   "name-rater-fire",
+   "fan-club-fire"
+  ],
+  "accent": [
+   "fire-ground"
+  ],
+  "plaza": [
+   "paved-path"
+  ],
+  "tdeco": [
+   "fire-lava-rock",
+   "fire-ember-vent",
+   "fire-magma-crack"
+  ],
+  "tlandmark": [
+   "fire-obsidian-spire",
+   "fire-ash-boulders",
+   "fire-charred-tree"
+  ],
+  "tlamp": [
+   "fire-brazier"
+  ],
+  "tgrass": [
+   "fire-tall-grass"
+  ],
+  "tledge": [
+   "fire-ledge"
+  ],
+  "mountain": [
+   "mountain"
+  ],
+  "bridge": [
+   "bridge"
+  ],
+  "stairs": [
+   "fire-stairs",
+   "stairs"
+  ],
+  "berry": [
+   "berry-tree"
+  ],
+  "twall": [
+   "fire-tree-wall"
+  ],
+  "ttree": [
+   "fire-tree"
+  ],
+  "bench": [
+   "bench"
+  ],
+  "planter": [
+   "planter"
+  ],
+  "nature": {
+   "trees": [
+    [
+     "fire-tree",
+     3
+    ],
+    [
+     "fire-pine",
+     3
+    ],
+    [
+     "fire-tree-small",
+     2
+    ],
+    [
+     "fire-charred-tree",
+     1
+    ]
+   ],
+   "alt": "fire-pine-wall",
+   "canopy": [
+    "fire-tree",
+    "fire-pine"
+   ],
+   "vary": [
+    [
+     "fire-singed",
+     0.16,
+     8,
+     0
+    ],
+    [
+     "fire-ash",
+     0.1,
+     7,
+     0
+    ],
+    [
+     "fire-cinder",
+     0.07,
+     5,
+     1
+    ]
+   ],
+   "swap": {
+    "tuft": "fire-tuft",
+    "pebbles": "fire-cinders",
+    "rock": "fire-lava-rock",
+    "rocks-small": "fire-rocks",
+    "bush": "fire-bush",
+    "bush-wide": "fire-bush-wide",
+    "bush-flower": "fire-bush",
+    "fern": "fire-fern",
+    "stump": "fire-charred-stump",
+    "tree": "fire-tree",
+    "pine-tree": "fire-pine",
+    "tree-small": "fire-tree-small",
+    "log": "fire-charred-log",
+    "mushrooms": "fire-obsidian",
+    "flowers-white": "fire-ember-lily",
+    "flowers-blue": "fire-fireweed",
+    "flowers": "fire-fireweed",
+    "flowers-yellow": "fire-ember-lily",
+    "reeds": "fire-bank-reeds",
+    "lily-pad": "fire-lily-pad"
+   },
+   "flowers": [
+    "fire-fireweed",
+    "fire-ember-lily"
+   ],
+   "floor": [
+    [
+     "fire-tuft",
+     4
+    ],
+    [
+     "fire-fern",
+     2
+    ],
+    [
+     "fire-obsidian",
+     1.5
+    ],
+    [
+     "fire-cinders",
+     1.5
+    ],
+    [
+     "fire-charred-stump",
+     0.5
+    ]
+   ],
+   "more": {
+    "meadow": [
+     [
+      [
+       "fire-steam-vent",
+       1,
+       1
+      ],
+      [
+       "fire-cinders",
+       1,
+       2
+      ],
+      [
+       "fire-tuft",
+       1,
+       1
+      ]
+     ],
+     [
+      [
+       "fire-lava-rock",
+       1,
+       1
+      ],
+      [
+       "fire-obsidian",
+       1,
+       1
+      ],
+      [
+       "fire-tuft",
+       1,
+       2
+      ]
+     ],
+     [
+      [
+       "fire-magma-crack",
+       1,
+       1
+      ],
+      [
+       "fire-cinders",
+       1,
+       1
+      ],
+      [
+       "*flowers",
+       0,
+       1
+      ]
+     ],
+     [
+      [
+       "fire-ash-boulders",
+       1,
+       1
+      ],
+      [
+       "fire-tuft",
+       1,
+       2
+      ]
+     ]
+    ],
+    "grove": [
+     [
+      [
+       "fire-charred-tree",
+       1,
+       1
+      ],
+      [
+       "fire-tuft",
+       1,
+       2
+      ],
+      [
+       "fire-obsidian",
+       0,
+       1
+      ]
+     ]
+    ],
+    "woods": [
+     [
+      [
+       "fire-charred-log",
+       1,
+       1
+      ],
+      [
+       "fire-tuft",
+       1,
+       2
+      ]
+     ],
+     [
+      [
+       "fire-steam-vent",
+       1,
+       1
+      ],
+      [
+       "fire-fern",
+       1,
+       1
+      ]
+     ]
+    ]
+   },
+   "pond": {
+    "bank": 0.15
+   },
+   "route": [
+    "plateau",
+    "pond",
+    "plateau"
+   ],
+   "stream": false,
+   "kits": {
+    "water": [
+     [
+      [
+       "fire-bank-reeds",
+       1,
+       2
+      ],
+      [
+       "fire-tuft",
+       1,
+       2
+      ],
+      [
+       "fire-cinders",
+       0,
+       1
+      ]
+     ],
+     [
+      [
+       "fire-bank-reeds",
+       2,
+       3
+      ],
+      [
+       "fire-obsidian",
+       0,
+       1
+      ]
+     ]
+    ]
+   }
+  }
+ },
+ "garden": {
+  "brief": "Flower town: lawn, hedged gardens, the gym quarter on garden ground with flagstones, beds and a lily pond.",
+  "ground": [
+   "grass-lawn",
+   "grass"
+  ],
+  "wall": [
+   "grass-tree-wall",
+   "tree-wall"
+  ],
+  "border": [
+   "grass-tree-wall",
+   "tree-wall"
+  ],
+  "path": [
+   "grass-path",
+   "dirt-path"
+  ],
+  "floor": [
+   "grass-flagstone"
+  ],
+  "grass": [
+   "grass-tall-grass",
+   "tall-grass"
+  ],
+  "water": [
+   "water"
+  ],
+  "shore": [
+   "shore"
+  ],
+  "sand": [
+   "sand"
+  ],
+  "cliff": [
+   "cliff"
+  ],
+  "hedge": [
+   "hedge"
+  ],
+  "ledge": [
+   "grass-ledge",
+   "ledge"
+  ],
+  "feature": [
+   "grass-flowerbed",
+   "grass-lily-pond"
+  ],
+  "deco": [
+   "flowers",
+   "bush",
+   "rock"
+  ],
+  "landmark": [
+   "rock-big",
+   "tree"
+  ],
+  "tree": [
+   "grass-tree",
+   "tree"
+  ],
+  "lamp": [
+   "street-lamp"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "hm": [
+   "cut-tree",
+   "smash-rock"
+  ],
+  "fence": [
+   "fence"
+  ],
+  "center": [
+   "pokemon-center-grass",
+   "pokemon-center"
+  ],
+  "mart": [
+   "poke-mart-grass",
+   "poke-mart"
+  ],
+  "house": [
+   "house-grass"
+  ],
+  "gym": [
+   "gym-grass"
+  ],
+  "special": [
+   "professor-lab-grass",
+   "day-care-grass",
+   "trainer-school-grass",
+   "flower-shop-grass",
+   "bike-shop-grass",
+   "museum-grass",
+   "contest-hall-grass",
+   "game-corner-grass",
+   "name-rater-grass",
+   "fan-club-grass"
+  ],
+  "accent": [
+   "grass-ground"
+  ],
+  "plaza": [
+   "paved-path"
+  ],
+  "tdeco": [
+   "grass-fern-urn",
+   "grass-sunflowers",
+   "grass-topiary"
+  ],
+  "tlandmark": [
+   "grass-rose-arch",
+   "grass-beehive",
+   "grass-bench",
+   "grass-wheelbarrow"
+  ],
+  "tlamp": [
+   "grass-bud-lantern"
+  ],
+  "tgrass": [
+   "grass-tall-grass"
+  ],
+  "tledge": [],
+  "mountain": [
+   "mountain"
+  ],
+  "bridge": [
+   "bridge"
+  ],
+  "stairs": [
+   "stairs"
+  ],
+  "berry": [
+   "berry-tree"
+  ],
+  "twall": [
+   "grass-tree-wall"
+  ],
+  "ttree": [
+   "grass-tree"
+  ],
+  "bench": [
+   "bench"
+  ],
+  "planter": [
+   "planter"
+  ],
+  "nature": {
+   "trees": [
+    [
+     "grass-tree",
+     4
+    ],
+    [
+     "grass-pine",
+     2
+    ],
+    [
+     "grass-tree-small",
+     3
+    ]
+   ],
+   "alt": "grass-pine-wall",
+   "canopy": [
+    "grass-tree",
+    "grass-pine"
+   ],
+   "vary": [
+    [
+     "lush-grass",
+     0.16,
+     8,
+     0
+    ],
+    [
+     "grass-flower-meadow",
+     0.12,
+     7,
+     0
+    ],
+    [
+     "grass-mulch",
+     0.05,
+     5,
+     1
+    ]
+   ],
+   "swap": {
+    "tree": "grass-tree",
+    "pine-tree": "grass-pine",
+    "tree-small": "grass-tree-small",
+    "fern": "grass-fern"
+   },
+   "flowers": [
+    "flowers",
+    "flowers-yellow",
+    "flowers-white",
+    "flowers-blue",
+    "grass-pinks",
+    "grass-cornflowers"
+   ],
+   "floor": [
+    [
+     "grass-fern",
+     3
+    ],
+    [
+     "tuft",
+     3
+    ],
+    [
+     "flowers-white",
+     1
+    ],
+    [
+     "mushrooms",
+     1
+    ]
+   ],
+   "more": {
+    "meadow": [
+     [
+      [
+       "grass-tulips",
+       1,
+       2
+      ],
+      [
+       "*flowers",
+       1,
+       2
+      ]
+     ],
+     [
+      [
+       "grass-watering-can",
+       1,
+       1
+      ],
+      [
+       "*flowers",
+       1,
+       2
+      ],
+      [
+       "tuft",
+       0,
+       1
+      ]
+     ],
+     [
+      [
+       "grass-sunflowers",
+       1,
+       1
+      ],
+      [
+       "grass-pinks",
+       1,
+       1
+      ],
+      [
+       "tuft",
+       1,
+       1
+      ]
+     ],
+     [
+      [
+       "grass-fern-urn",
+       1,
+       1
+      ],
+      [
+       "*flowers",
+       1,
+       2
+      ]
+     ]
+    ],
+    "town": [
+     [
+      [
+       "flower-bed",
+       1,
+       1
+      ],
+      [
+       "grass-tulips",
+       1,
+       1
+      ]
+     ],
+     [
+      [
+       "grass-wheelbarrow",
+       1,
+       1
+      ],
+      [
+       "grass-seed-sacks",
+       0,
+       1
+      ]
+     ]
+    ]
+   },
+   "pond": {
+    "bank": 0.25
+   },
+   "route": [
+    "pond",
+    "plateau"
+   ],
+   "stream": true
+  }
+ },
+ "canyon": {
+  "brief": "Badlands edge town: lawn giving way to dry earth around the gym, flagstones, hoodoos, a quicksand pit.",
+  "ground": [
+   "ground-lawn",
+   "grass"
+  ],
+  "wall": [
+   "ground-tree-wall",
+   "tree-wall"
+  ],
+  "border": [
+   "ground-tree-wall",
+   "tree-wall"
+  ],
+  "path": [
+   "ground-path",
+   "dirt-path"
+  ],
+  "floor": [
+   "ground-flagstone"
+  ],
+  "grass": [
+   "ground-tall-grass",
+   "tall-grass"
+  ],
+  "water": [
+   "water"
+  ],
+  "shore": [
+   "shore"
+  ],
+  "sand": [
+   "sand"
+  ],
+  "cliff": [
+   "ground-cliff",
+   "cliff"
+  ],
+  "hedge": [
+   "hedge"
+  ],
+  "ledge": [
+   "ground-ledge",
+   "ledge"
+  ],
+  "feature": [
+   "ground-dry-earth",
+   "ground-quicksand"
+  ],
+  "deco": [
+   "flowers",
+   "bush",
+   "rock"
+  ],
+  "landmark": [
+   "rock-big",
+   "tree"
+  ],
+  "tree": [
+   "ground-tree",
+   "tree"
+  ],
+  "lamp": [
+   "street-lamp"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "hm": [
+   "cut-tree",
+   "smash-rock"
+  ],
+  "fence": [
+   "fence"
+  ],
+  "center": [
+   "pokemon-center-ground",
+   "pokemon-center"
+  ],
+  "mart": [
+   "poke-mart-ground",
+   "poke-mart"
+  ],
+  "house": [
+   "house-ground"
+  ],
+  "gym": [
+   "gym-ground"
+  ],
+  "special": [
+   "professor-lab-ground",
+   "day-care-ground",
+   "trainer-school-ground",
+   "flower-shop-ground",
+   "bike-shop-ground",
+   "museum-ground",
+   "contest-hall-ground",
+   "game-corner-ground",
+   "name-rater-ground",
+   "fan-club-ground"
+  ],
+  "accent": [
+   "ground-ground"
+  ],
+  "plaza": [
+   "paved-path"
+  ],
+  "tdeco": [
+   "ground-tumbleweed",
+   "ground-clay-pots",
+   "ground-fossil"
+  ],
+  "tlandmark": [
+   "ground-hoodoo",
+   "ground-saguaro",
+   "ground-boulder",
+   "ground-water-trough"
+  ],
+  "tlamp": [
+   "ground-totem"
+  ],
+  "tgrass": [
+   "ground-tall-grass"
+  ],
+  "tledge": [],
+  "mountain": [
+   "mountain"
+  ],
+  "bridge": [
+   "bridge"
+  ],
+  "stairs": [
+   "ground-stairs",
+   "stairs"
+  ],
+  "berry": [
+   "berry-tree"
+  ],
+  "twall": [
+   "ground-tree-wall"
+  ],
+  "ttree": [
+   "ground-tree"
+  ],
+  "bench": [
+   "bench"
+  ],
+  "planter": [
+   "planter"
+  ],
+  "nature": {
+   "trees": [
+    [
+     "ground-tree",
+     2
+    ],
+    [
+     "ground-pine",
+     3
+    ],
+    [
+     "ground-tree-small",
+     1
+    ],
+    [
+     "ground-saguaro",
+     3
+    ]
+   ],
+   "alt": "ground-pine-wall",
+   "canopy": [
+    "ground-tree",
+    "ground-pine"
+   ],
+   "vary": [
+    [
+     "ground-scrub",
+     0.16,
+     8,
+     0
+    ],
+    [
+     "ground-red-sand",
+     0.1,
+     7,
+     0
+    ],
+    [
+     "ground-cracked",
+     0.09,
+     5,
+     1
+    ]
+   ],
+   "swap": {
+    "tuft": "ground-tuft",
+    "pebbles": "ground-pebbles",
+    "rock": "ground-cracked-boulder",
+    "rocks-small": "ground-rocks",
+    "bush": "ground-bush",
+    "bush-wide": "ground-bush-wide",
+    "bush-flower": "ground-bush",
+    "fern": "ground-fern",
+    "stump": "ground-stump",
+    "tree": "ground-tree",
+    "pine-tree": "ground-pine",
+    "tree-small": "ground-tree-small",
+    "mushrooms": "ground-bones",
+    "flowers-white": "ground-desert-bloom",
+    "flowers-blue": "ground-marigold",
+    "flowers": "ground-desert-bloom",
+    "flowers-yellow": "ground-marigold",
+    "log": "ground-log",
+    "reeds": "ground-bank-reeds",
+    "lily-pad": "ground-lily-pad"
+   },
+   "flowers": [
+    "ground-marigold",
+    "ground-desert-bloom"
+   ],
+   "floor": [
+    [
+     "ground-tuft",
+     4
+    ],
+    [
+     "ground-pebbles",
+     2
+    ],
+    [
+     "ground-bones",
+     0.6
+    ],
+    [
+     "ground-fern",
+     1.5
+    ],
+    [
+     "ground-cactus",
+     0.8
+    ]
+   ],
+   "more": {
+    "meadow": [
+     [
+      [
+       "ground-cactus",
+       1,
+       1
+      ],
+      [
+       "ground-pebbles",
+       1,
+       1
+      ],
+      [
+       "ground-tuft",
+       1,
+       2
+      ]
+     ],
+     [
+      [
+       "ground-tumbleweed",
+       1,
+       1
+      ],
+      [
+       "ground-tuft",
+       1,
+       2
+      ],
+      [
+       "ground-bones",
+       0,
+       1
+      ]
+     ],
+     [
+      [
+       "ground-cracked-boulder",
+       1,
+       1
+      ],
+      [
+       "ground-pebbles",
+       1,
+       2
+      ],
+      [
+       "*flowers",
+       0,
+       1
+      ]
+     ],
+     [
+      [
+       "ground-fossil",
+       1,
+       1
+      ],
+      [
+       "ground-tuft",
+       1,
+       1
+      ]
+     ]
+    ],
+    "grove": [
+     [
+      [
+       "ground-saguaro",
+       1,
+       1
+      ],
+      [
+       "ground-cactus",
+       0,
+       1
+      ],
+      [
+       "ground-tuft",
+       1,
+       2
+      ]
+     ],
+     [
+      [
+       "ground-hoodoo",
+       1,
+       1
+      ],
+      [
+       "ground-pebbles",
+       1,
+       1
+      ]
+     ]
+    ]
+   },
+   "pond": {
+    "bank": 0.4
+   },
+   "route": [
+    "plateau",
+    "plateau",
+    "pond"
+   ],
+   "stream": false
+  }
+ },
+ "marsh": {
+  "brief": "Fen town: lawn and ponds, the gym quarter on murky ground with a boardwalk, bog and a toxic pool.",
+  "ground": [
+   "poison-lawn",
+   "grass"
+  ],
+  "wall": [
+   "poison-tree-wall",
+   "tree-wall"
+  ],
+  "border": [
+   "poison-tree-wall",
+   "tree-wall"
+  ],
+  "path": [
+   "poison-path",
+   "dirt-path"
+  ],
+  "floor": [
+   "poison-boardwalk"
+  ],
+  "grass": [
+   "poison-tall-grass",
+   "tall-grass"
+  ],
+  "water": [
+   "water"
+  ],
+  "shore": [
+   "shore"
+  ],
+  "sand": [
+   "sand"
+  ],
+  "cliff": [
+   "poison-cliff",
+   "cliff"
+  ],
+  "hedge": [
+   "hedge"
+  ],
+  "ledge": [
+   "poison-ledge",
+   "ledge"
+  ],
+  "feature": [
+   "poison-bog",
+   "poison-toxic-pool"
+  ],
+  "deco": [
+   "flowers",
+   "bush",
+   "rock"
+  ],
+  "landmark": [
+   "rock-big",
+   "tree"
+  ],
+  "tree": [
+   "poison-tree",
+   "tree"
+  ],
+  "lamp": [
+   "street-lamp"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "hm": [
+   "cut-tree",
+   "smash-rock"
+  ],
+  "fence": [
+   "fence"
+  ],
+  "center": [
+   "pokemon-center-poison",
+   "pokemon-center"
+  ],
+  "mart": [
+   "poke-mart-poison",
+   "poke-mart"
+  ],
+  "house": [
+   "house-poison"
+  ],
+  "gym": [
+   "gym-poison"
+  ],
+  "special": [
+   "professor-lab-poison",
+   "day-care-poison",
+   "trainer-school-poison",
+   "flower-shop-poison",
+   "bike-shop-poison",
+   "museum-poison",
+   "contest-hall-poison",
+   "game-corner-poison",
+   "name-rater-poison",
+   "fan-club-poison"
+  ],
+  "accent": [
+   "poison-ground"
+  ],
+  "plaza": [
+   "paved-path"
+  ],
+  "tdeco": [
+   "poison-toadstools",
+   "poison-cattails",
+   "poison-bramble"
+  ],
+  "tlandmark": [
+   "poison-dead-tree",
+   "poison-cauldron",
+   "poison-slime-barrel"
+  ],
+  "tlamp": [
+   "poison-mushroom-lamp"
+  ],
+  "tgrass": [
+   "poison-tall-grass"
+  ],
+  "tledge": [],
+  "mountain": [
+   "mountain"
+  ],
+  "bridge": [
+   "bridge"
+  ],
+  "stairs": [
+   "poison-stairs",
+   "stairs"
+  ],
+  "berry": [
+   "berry-tree"
+  ],
+  "twall": [
+   "poison-tree-wall"
+  ],
+  "ttree": [
+   "poison-tree"
+  ],
+  "bench": [
+   "bench"
+  ],
+  "planter": [
+   "planter"
+  ],
+  "nature": {
+   "trees": [
+    [
+     "poison-tree",
+     3
+    ],
+    [
+     "poison-pine",
+     3
+    ],
+    [
+     "poison-tree-small",
+     2
+    ],
+    [
+     "poison-dead-tree",
+     1
+    ]
+   ],
+   "alt": "poison-pine-wall",
+   "canopy": [
+    "poison-tree",
+    "poison-pine"
+   ],
+   "vary": [
+    [
+     "poison-moss",
+     0.16,
+     8,
+     0
+    ],
+    [
+     "poison-sedge",
+     0.1,
+     7,
+     0
+    ],
+    [
+     "poison-mud",
+     0.08,
+     5,
+     1
+    ]
+   ],
+   "swap": {
+    "tuft": "poison-tuft",
+    "pebbles": "poison-pebbles",
+    "rock": "poison-rocks",
+    "rocks-small": "poison-rocks",
+    "bush": "poison-bush",
+    "bush-wide": "poison-bush-wide",
+    "bush-flower": "poison-bramble",
+    "fern": "poison-fern",
+    "stump": "poison-stump",
+    "tree": "poison-tree",
+    "pine-tree": "poison-pine",
+    "tree-small": "poison-tree-small",
+    "log": "poison-rotten-log",
+    "mushrooms": "poison-toadstools",
+    "reeds": "poison-cattails",
+    "flowers-white": "poison-marsh-marigold",
+    "flowers-blue": "poison-loosestrife",
+    "flowers": "poison-loosestrife",
+    "flowers-yellow": "poison-marsh-marigold"
+   },
+   "flowers": [
+    "poison-loosestrife",
+    "poison-marsh-marigold"
+   ],
+   "floor": [
+    [
+     "poison-fern",
+     4
+    ],
+    [
+     "poison-tuft",
+     3
+    ],
+    [
+     "poison-toadstools",
+     1.5
+    ],
+    [
+     "poison-puddle",
+     1
+    ],
+    [
+     "poison-stump",
+     0.5
+    ]
+   ],
+   "more": {
+    "meadow": [
+     [
+      [
+       "poison-puddle",
+       1,
+       1
+      ],
+      [
+       "poison-tuft",
+       1,
+       2
+      ],
+      [
+       "*flowers",
+       0,
+       1
+      ]
+     ],
+     [
+      [
+       "poison-toadstools",
+       1,
+       2
+      ],
+      [
+       "poison-tuft",
+       1,
+       1
+      ]
+     ],
+     [
+      [
+       "poison-bramble",
+       1,
+       1
+      ],
+      [
+       "poison-puddle",
+       0,
+       1
+      ],
+      [
+       "poison-tuft",
+       1,
+       1
+      ]
+     ]
+    ],
+    "woods": [
+     [
+      [
+       "poison-rotten-log",
+       1,
+       1
+      ],
+      [
+       "poison-toadstools",
+       1,
+       1
+      ],
+      [
+       "poison-fern",
+       0,
+       1
+      ]
+     ]
+    ],
+    "grove": [
+     [
+      [
+       "poison-dead-tree",
+       1,
+       1
+      ],
+      [
+       "poison-puddle",
+       1,
+       1
+      ],
+      [
+       "poison-tuft",
+       1,
+       1
+      ]
+     ]
+    ],
+    "water": [
+     [
+      [
+       "poison-cattails",
+       2,
+       3
+      ],
+      [
+       "lily-pad",
+       1,
+       2
+      ]
+     ]
+    ]
+   },
+   "pond": {
+    "bank": 0.0
+   },
+   "route": [
+    "pond",
+    "pond",
+    "plateau"
+   ],
+   "stream": true
+  }
+ },
+ "mystic": {
+  "brief": "Observatory town: lawn and a quiet square, the gym quarter on pale ground with a star mosaic, moon garden and obelisks.",
+  "ground": [
+   "psychic-lawn",
+   "grass"
+  ],
+  "wall": [
+   "psychic-tree-wall",
+   "tree-wall"
+  ],
+  "border": [
+   "psychic-tree-wall",
+   "tree-wall"
+  ],
+  "path": [
+   "psychic-path",
+   "dirt-path"
+  ],
+  "floor": [
+   "psychic-marble-plaza",
+   "psychic-star-mosaic"
+  ],
+  "grass": [
+   "psychic-tall-grass",
+   "tall-grass"
+  ],
+  "water": [
+   "water"
+  ],
+  "shore": [
+   "shore"
+  ],
+  "sand": [
+   "sand"
+  ],
+  "cliff": [
+   "psychic-cliff",
+   "cliff"
+  ],
+  "hedge": [
+   "hedge"
+  ],
+  "ledge": [
+   "psychic-ledge",
+   "ledge"
+  ],
+  "feature": [
+   "psychic-moon-garden"
+  ],
+  "deco": [
+   "flowers",
+   "bush",
+   "rock"
+  ],
+  "landmark": [
+   "rock-big",
+   "tree"
+  ],
+  "tree": [
+   "psychic-tree",
+   "tree"
+  ],
+  "lamp": [
+   "street-lamp"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "hm": [
+   "cut-tree",
+   "smash-rock"
+  ],
+  "fence": [
+   "fence"
+  ],
+  "center": [
+   "pokemon-center-psychic",
+   "pokemon-center"
+  ],
+  "mart": [
+   "poke-mart-psychic",
+   "poke-mart"
+  ],
+  "house": [
+   "house-psychic"
+  ],
+  "gym": [
+   "gym-psychic"
+  ],
+  "special": [
+   "professor-lab-psychic",
+   "day-care-psychic",
+   "trainer-school-psychic",
+   "flower-shop-psychic",
+   "bike-shop-psychic",
+   "museum-psychic",
+   "contest-hall-psychic",
+   "game-corner-psychic",
+   "name-rater-psychic",
+   "fan-club-psychic"
+  ],
+  "accent": [
+   "psychic-ground"
+  ],
+  "plaza": [
+   "paved-path"
+  ],
+  "tdeco": [
+   "psychic-crystal"
+  ],
+  "tlandmark": [
+   "psychic-obelisk",
+   "psychic-standing-stone",
+   "psychic-telescope",
+   "psychic-orb-pedestal"
+  ],
+  "tlamp": [
+   "psychic-star-lamp"
+  ],
+  "tgrass": [
+   "psychic-tall-grass"
+  ],
+  "tledge": [],
+  "mountain": [
+   "mountain"
+  ],
+  "bridge": [
+   "bridge"
+  ],
+  "stairs": [
+   "psychic-stairs",
+   "stairs"
+  ],
+  "berry": [
+   "berry-tree"
+  ],
+  "twall": [
+   "psychic-tree-wall"
+  ],
+  "ttree": [
+   "psychic-tree"
+  ],
+  "bench": [
+   "bench"
+  ],
+  "planter": [
+   "planter"
+  ],
+  "nature": {
+   "trees": [
+    [
+     "psychic-tree",
+     3
+    ],
+    [
+     "psychic-pine",
+     3
+    ],
+    [
+     "psychic-tree-small",
+     2
+    ]
+   ],
+   "alt": "psychic-pine-wall",
+   "canopy": [
+    "psychic-tree",
+    "psychic-pine"
+   ],
+   "vary": [
+    [
+     "psychic-moss",
+     0.15,
+     8,
+     0
+    ],
+    [
+     "psychic-clover",
+     0.1,
+     6,
+     0
+    ],
+    [
+     "psychic-stardust",
+     0.06,
+     5,
+     1
+    ]
+   ],
+   "swap": {
+    "tuft": "psychic-tuft",
+    "pebbles": "psychic-pebbles",
+    "rock": "psychic-rocks",
+    "rocks-small": "psychic-rocks",
+    "bush": "psychic-bush",
+    "bush-wide": "psychic-bush-wide",
+    "bush-flower": "psychic-bush",
+    "fern": "psychic-fern",
+    "tree": "psychic-tree",
+    "pine-tree": "psychic-pine",
+    "tree-small": "psychic-tree-small",
+    "mushrooms": "psychic-glowshroom",
+    "flowers-white": "psychic-moonflower",
+    "flowers-blue": "psychic-lilac",
+    "flowers": "psychic-lilac",
+    "reeds": "psychic-bank-reeds",
+    "lily-pad": "psychic-lily-pad"
+   },
+   "flowers": [
+    "psychic-lilac",
+    "psychic-moonflower",
+    "flowers-white"
+   ],
+   "floor": [
+    [
+     "psychic-fern",
+     4
+    ],
+    [
+     "psychic-tuft",
+     3
+    ],
+    [
+     "psychic-glowshroom",
+     2
+    ],
+    [
+     "psychic-crystal-shards",
+     1
+    ]
+   ],
+   "more": {
+    "meadow": [
+     [
+      [
+       "psychic-crystal-shards",
+       1,
+       1
+      ],
+      [
+       "psychic-pebbles",
+       1,
+       1
+      ],
+      [
+       "*flowers",
+       1,
+       2
+      ]
+     ],
+     [
+      [
+       "psychic-glowshroom",
+       1,
+       2
+      ],
+      [
+       "psychic-tuft",
+       1,
+       1
+      ]
+     ],
+     [
+      [
+       "psychic-crystal",
+       1,
+       1
+      ],
+      [
+       "psychic-crystal-shards",
+       0,
+       1
+      ],
+      [
+       "psychic-tuft",
+       1,
+       1
+      ]
+     ]
+    ],
+    "grove": [
+     [
+      [
+       "psychic-standing-stone",
+       1,
+       1
+      ],
+      [
+       "*flowers",
+       1,
+       2
+      ],
+      [
+       "psychic-tuft",
+       1,
+       1
+      ]
+     ]
+    ]
+   },
+   "pond": {
+    "bank": 0.2
+   },
+   "route": [
+    "pond",
+    "plateau"
+   ],
+   "stream": true
+  }
+ },
+ "quarry": {
+  "brief": "Mining town: lawn, cliffs and scree, the gym quarter on stony ground with a slate yard, menhirs and minecarts.",
+  "ground": [
+   "rock-lawn",
+   "grass"
+  ],
+  "wall": [
+   "rock-tree-wall",
+   "tree-wall"
+  ],
+  "border": [
+   "rock-tree-wall",
+   "tree-wall"
+  ],
+  "path": [
+   "rock-path",
+   "dirt-path"
+  ],
+  "floor": [
+   "rock-slate-plaza",
+   "rock-cobble-road"
+  ],
+  "grass": [
+   "rock-tall-grass",
+   "tall-grass"
+  ],
+  "water": [
+   "water"
+  ],
+  "shore": [
+   "shore"
+  ],
+  "sand": [
+   "sand"
+  ],
+  "cliff": [
+   "rock-cliff",
+   "cliff"
+  ],
+  "hedge": [
+   "hedge"
+  ],
+  "ledge": [
+   "rock-ledge",
+   "ledge"
+  ],
+  "feature": [
+   "rock-scree"
+  ],
+  "deco": [
+   "flowers",
+   "bush",
+   "rock"
+  ],
+  "landmark": [
+   "rock-big",
+   "tree"
+  ],
+  "tree": [
+   "rock-tree",
+   "tree"
+  ],
+  "lamp": [
+   "street-lamp"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "hm": [
+   "cut-tree",
+   "smash-rock"
+  ],
+  "fence": [
+   "fence"
+  ],
+  "center": [
+   "pokemon-center-rock",
+   "pokemon-center"
+  ],
+  "mart": [
+   "poke-mart-rock",
+   "poke-mart"
+  ],
+  "house": [
+   "house-rock"
+  ],
+  "gym": [
+   "gym-rock"
+  ],
+  "special": [
+   "professor-lab-rock",
+   "day-care-rock",
+   "trainer-school-rock",
+   "flower-shop-rock",
+   "bike-shop-rock",
+   "museum-rock",
+   "contest-hall-rock",
+   "game-corner-rock",
+   "name-rater-rock",
+   "fan-club-rock"
+  ],
+  "accent": [
+   "rock-ground"
+  ],
+  "plaza": [
+   "paved-path"
+  ],
+  "tdeco": [
+   "rock-rubble",
+   "rock-crystal-cluster",
+   "rock-minecart"
+  ],
+  "tlandmark": [
+   "rock-menhir",
+   "rock-geode",
+   "rock-ore-crate"
+  ],
+  "tlamp": [
+   "rock-cairn-lantern"
+  ],
+  "tgrass": [
+   "rock-tall-grass"
+  ],
+  "tledge": [],
+  "mountain": [
+   "mountain"
+  ],
+  "bridge": [
+   "bridge"
+  ],
+  "stairs": [
+   "rock-stairs",
+   "stairs"
+  ],
+  "berry": [
+   "berry-tree"
+  ],
+  "twall": [
+   "rock-tree-wall"
+  ],
+  "ttree": [
+   "rock-tree"
+  ],
+  "bench": [
+   "bench"
+  ],
+  "planter": [
+   "planter"
+  ],
+  "nature": {
+   "trees": [
+    [
+     "rock-pine",
+     4
+    ],
+    [
+     "rock-tree",
+     3
+    ],
+    [
+     "rock-tree-small",
+     2
+    ]
+   ],
+   "alt": "rock-pine-wall",
+   "canopy": [
+    "rock-tree",
+    "rock-pine"
+   ],
+   "vary": [
+    [
+     "rock-lichen",
+     0.14,
+     8,
+     0
+    ],
+    [
+     "rock-talus",
+     0.1,
+     6,
+     0
+    ],
+    [
+     "rock-gravel",
+     0.08,
+     5,
+     1
+    ]
+   ],
+   "swap": {
+    "tuft": "rock-tuft",
+    "pebbles": "rock-pebbles",
+    "rock": "rock-ore-rock",
+    "rocks-small": "rock-rocks",
+    "bush": "rock-bush",
+    "bush-wide": "rock-bush-wide",
+    "bush-flower": "rock-bush",
+    "fern": "rock-fern",
+    "tree": "rock-tree",
+    "pine-tree": "rock-pine",
+    "tree-small": "rock-tree-small",
+    "flowers-white": "rock-edelweiss",
+    "flowers-blue": "rock-saxifrage",
+    "flowers": "rock-saxifrage",
+    "reeds": "rock-bank-reeds",
+    "lily-pad": "rock-lily-pad"
+   },
+   "flowers": [
+    "rock-edelweiss",
+    "rock-saxifrage",
+    "flowers-yellow"
+   ],
+   "floor": [
+    [
+     "rock-fern",
+     3
+    ],
+    [
+     "rock-tuft",
+     3
+    ],
+    [
+     "rock-pebbles",
+     2
+    ],
+    [
+     "rock-rubble",
+     0.6
+    ]
+   ],
+   "more": {
+    "meadow": [
+     [
+      [
+       "rock-ore-rock",
+       1,
+       1
+      ],
+      [
+       "rock-pebbles",
+       1,
+       2
+      ],
+      [
+       "rock-tuft",
+       1,
+       1
+      ]
+     ],
+     [
+      [
+       "rock-pick-crate",
+       1,
+       1
+      ],
+      [
+       "rock-rubble",
+       0,
+       1
+      ],
+      [
+       "rock-pebbles",
+       1,
+       1
+      ]
+     ],
+     [
+      [
+       "rock-crystal-cluster",
+       1,
+       1
+      ],
+      [
+       "rock-pebbles",
+       1,
+       1
+      ],
+      [
+       "*flowers",
+       0,
+       1
+      ]
+     ]
+    ],
+    "grove": [
+     [
+      [
+       "rock-menhir",
+       1,
+       1
+      ],
+      [
+       "rock-tuft",
+       1,
+       2
+      ]
+     ],
+     [
+      [
+       "rock-minecart",
+       1,
+       1
+      ],
+      [
+       "rock-ore-crate",
+       0,
+       1
+      ],
+      [
+       "rock-pebbles",
+       1,
+       1
+      ]
+     ]
+    ]
+   },
+   "pond": {
+    "bank": 0.15
+   },
+   "route": [
+    "plateau",
+    "plateau",
+    "pond"
+   ],
+   "stream": false
+  }
+ },
+ "lagoon": {
+  "brief": "Seaside town: lawn, beach and sea, the gym quarter on pale sand with a marble quay, a reflecting pool and a fountain.",
+  "ground": [
+   "water-lawn",
+   "grass"
+  ],
+  "wall": [
+   "water-tree-wall",
+   "tree-wall"
+  ],
+  "border": [
+   "water-tree-wall",
+   "tree-wall"
+  ],
+  "path": [
+   "water-path",
+   "dirt-path"
+  ],
+  "floor": [
+   "water-marble-plaza"
+  ],
+  "grass": [
+   "water-tall-grass",
+   "tall-grass"
+  ],
+  "water": [
+   "water"
+  ],
+  "shore": [
+   "shore"
+  ],
+  "sand": [
+   "sand"
+  ],
+  "cliff": [
+   "water-cliff",
+   "cliff"
+  ],
+  "hedge": [
+   "hedge"
+  ],
+  "ledge": [
+   "water-ledge",
+   "ledge"
+  ],
+  "feature": [
+   "water-reflecting-pool",
+   "water-pebble-pond"
+  ],
+  "deco": [
+   "flowers",
+   "bush",
+   "rock"
+  ],
+  "landmark": [
+   "rock-big",
+   "tree"
+  ],
+  "tree": [
+   "water-tree",
+   "tree"
+  ],
+  "lamp": [
+   "street-lamp"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "hm": [
+   "cut-tree",
+   "smash-rock"
+  ],
+  "fence": [
+   "fence"
+  ],
+  "center": [
+   "pokemon-center-water",
+   "pokemon-center"
+  ],
+  "mart": [
+   "poke-mart-water",
+   "poke-mart"
+  ],
+  "house": [
+   "house-water"
+  ],
+  "gym": [
+   "gym-water"
+  ],
+  "special": [
+   "professor-lab-water",
+   "day-care-water",
+   "trainer-school-water",
+   "flower-shop-water",
+   "bike-shop-water",
+   "museum-water",
+   "contest-hall-water",
+   "game-corner-water",
+   "name-rater-water",
+   "fan-club-water"
+  ],
+  "accent": [
+   "water-ground"
+  ],
+  "plaza": [
+   "paved-path"
+  ],
+  "tdeco": [
+   "water-starfish",
+   "water-coral",
+   "water-reeds",
+   "water-lily-pads"
+  ],
+  "tlandmark": [
+   "water-fountain",
+   "water-anchor",
+   "water-tide-rock"
+  ],
+  "tlamp": [
+   "water-shell-lamp"
+  ],
+  "tgrass": [
+   "water-tall-grass"
+  ],
+  "tledge": [],
+  "mountain": [
+   "mountain"
+  ],
+  "bridge": [
+   "bridge"
+  ],
+  "stairs": [
+   "water-stairs",
+   "stairs"
+  ],
+  "berry": [
+   "berry-tree"
+  ],
+  "twall": [
+   "water-tree-wall"
+  ],
+  "ttree": [
+   "water-tree"
+  ],
+  "bench": [
+   "bench"
+  ],
+  "planter": [
+   "planter"
+  ],
+  "nature": {
+   "trees": [
+    [
+     "water-tree",
+     3
+    ],
+    [
+     "palm-tree",
+     3
+    ],
+    [
+     "water-pine",
+     2
+    ],
+    [
+     "water-tree-small",
+     1
+    ]
+   ],
+   "alt": "water-pine-wall",
+   "canopy": [
+    "water-tree",
+    "water-pine"
+   ],
+   "vary": [
+    [
+     "water-thrift",
+     0.12,
+     8,
+     0
+    ],
+    [
+     "water-dune-grass",
+     0.12,
+     7,
+     0
+    ],
+    [
+     "water-wet-sand",
+     0.07,
+     5,
+     1
+    ]
+   ],
+   "swap": {
+    "tuft": "water-tuft",
+    "pebbles": "water-pebbles",
+    "rock": "water-tide-rock",
+    "rocks-small": "water-rocks",
+    "bush": "water-bush",
+    "bush-wide": "water-bush-wide",
+    "bush-flower": "water-bush",
+    "fern": "water-fern",
+    "stump": "water-stump",
+    "tree": "water-tree",
+    "pine-tree": "water-pine",
+    "tree-small": "water-tree-small",
+    "mushrooms": "shells",
+    "log": "driftwood",
+    "reeds": "water-reeds",
+    "lily-pad": "water-lily-pads",
+    "flowers-blue": "flowers-thrift",
+    "flowers": "flowers-thrift"
+   },
+   "flowers": [
+    "flowers-thrift",
+    "flowers-white",
+    "flowers-yellow"
+   ],
+   "floor": [
+    [
+     "water-fern",
+     3
+    ],
+    [
+     "water-tuft",
+     3
+    ],
+    [
+     "shells",
+     1.5
+    ],
+    [
+     "water-starfish",
+     0.5
+    ]
+   ],
+   "more": {
+    "meadow": [
+     [
+      [
+       "shells",
+       1,
+       2
+      ],
+      [
+       "water-tuft",
+       1,
+       2
+      ]
+     ],
+     [
+      [
+       "driftwood",
+       1,
+       1
+      ],
+      [
+       "shells",
+       1,
+       1
+      ],
+      [
+       "water-tuft",
+       0,
+       1
+      ]
+     ],
+     [
+      [
+       "tide-pool",
+       1,
+       1
+      ],
+      [
+       "water-starfish",
+       0,
+       1
+      ],
+      [
+       "shells",
+       1,
+       1
+      ]
+     ],
+     [
+      [
+       "water-coral",
+       1,
+       1
+      ],
+      [
+       "shells",
+       1,
+       1
+      ]
+     ]
+    ],
+    "grove": [
+     [
+      [
+       "palm-tree",
+       1,
+       1
+      ],
+      [
+       "water-tuft",
+       1,
+       2
+      ],
+      [
+       "shells",
+       0,
+       1
+      ]
+     ]
+    ]
+   },
+   "pond": {
+    "bank": 0.5
+   },
+   "route": [
+    "tidepool",
+    "pond",
+    "plateau"
+   ],
+   "stream": false
+  }
+ },
+ "powerplant": {
+  "brief": "Power-plant town: tidy lawn and lanes, the gym quarter on steel ground with an apron, conduits and transformers.",
+  "ground": [
+   "electric-lawn",
+   "grass"
+  ],
+  "wall": [
+   "electric-tree-wall",
+   "tree-wall"
+  ],
+  "border": [
+   "electric-tree-wall",
+   "tree-wall"
+  ],
+  "path": [
+   "electric-path",
+   "dirt-path"
+  ],
+  "floor": [
+   "electric-steel-plate",
+   "electric-apron"
+  ],
+  "grass": [
+   "electric-tall-grass",
+   "tall-grass"
+  ],
+  "water": [
+   "water"
+  ],
+  "shore": [
+   "shore"
+  ],
+  "sand": [
+   "sand"
+  ],
+  "cliff": [
+   "electric-cliff",
+   "cliff"
+  ],
+  "hedge": [
+   "hedge"
+  ],
+  "ledge": [
+   "electric-ledge",
+   "ledge"
+  ],
+  "feature": [
+   "electric-conduit"
+  ],
+  "deco": [
+   "flowers",
+   "bush",
+   "rock"
+  ],
+  "landmark": [
+   "rock-big",
+   "tree"
+  ],
+  "tree": [
+   "electric-tree",
+   "tree"
+  ],
+  "lamp": [
+   "street-lamp"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "hm": [
+   "cut-tree",
+   "smash-rock"
+  ],
+  "fence": [
+   "fence"
+  ],
+  "center": [
+   "pokemon-center-electric",
+   "pokemon-center"
+  ],
+  "mart": [
+   "poke-mart-electric",
+   "poke-mart"
+  ],
+  "house": [
+   "house-electric"
+  ],
+  "gym": [
+   "gym-electric"
+  ],
+  "special": [
+   "professor-lab-electric",
+   "day-care-electric",
+   "trainer-school-electric",
+   "flower-shop-electric",
+   "bike-shop-electric",
+   "museum-electric",
+   "contest-hall-electric",
+   "game-corner-electric",
+   "name-rater-electric",
+   "fan-club-electric"
+  ],
+  "accent": [
+   "electric-ground"
+  ],
+  "plaza": [
+   "paved-path"
+  ],
+  "tdeco": [
+   "electric-hazard-cone",
+   "electric-drain",
+   "electric-cable-spool"
+  ],
+  "tlandmark": [
+   "electric-transformer",
+   "electric-capacitor-bank",
+   "electric-tesla-post",
+   "electric-power-pole"
+  ],
+  "tlamp": [
+   "electric-beacon"
+  ],
+  "tgrass": [
+   "electric-tall-grass"
+  ],
+  "tledge": [],
+  "mountain": [
+   "mountain"
+  ],
+  "bridge": [
+   "bridge"
+  ],
+  "stairs": [
+   "electric-stairs",
+   "stairs"
+  ],
+  "berry": [
+   "berry-tree"
+  ],
+  "twall": [
+   "electric-tree-wall"
+  ],
+  "ttree": [
+   "electric-tree"
+  ],
+  "bench": [
+   "bench"
+  ],
+  "planter": [
+   "planter"
+  ],
+  "nature": {
+   "trees": [
+    [
+     "electric-tree",
+     3
+    ],
+    [
+     "electric-pine",
+     2
+    ],
+    [
+     "electric-tree-small",
+     3
+    ]
+   ],
+   "alt": "electric-pine-wall",
+   "canopy": [
+    "electric-tree",
+    "electric-pine"
+   ],
+   "vary": [
+    [
+     "electric-mown",
+     0.18,
+     9,
+     0
+    ],
+    [
+     "electric-dust",
+     0.07,
+     6,
+     0
+    ],
+    [
+     "electric-gravel",
+     0.07,
+     5,
+     1
+    ]
+   ],
+   "swap": {
+    "tuft": "electric-tuft",
+    "pebbles": "electric-pebbles",
+    "rock": "electric-rocks",
+    "rocks-small": "electric-rocks",
+    "bush": "electric-bush",
+    "bush-wide": "electric-bush-wide",
+    "bush-flower": "electric-bush",
+    "fern": "electric-fern",
+    "stump": "electric-stump",
+    "tree": "electric-tree",
+    "pine-tree": "electric-pine",
+    "tree-small": "electric-tree-small",
+    "flowers-white": "electric-clover-flowers",
+    "flowers-yellow": "electric-dandelions",
+    "flowers": "electric-dandelions",
+    "mushrooms": "electric-clover-flowers",
+    "reeds": "electric-bank-reeds",
+    "lily-pad": "electric-lily-pad"
+   },
+   "flowers": [
+    "electric-dandelions",
+    "electric-clover-flowers",
+    "flowers-blue"
+   ],
+   "floor": [
+    [
+     "electric-tuft",
+     4
+    ],
+    [
+     "electric-fern",
+     2
+    ],
+    [
+     "electric-pebbles",
+     1
+    ]
+   ],
+   "more": {
+    "meadow": [
+     [
+      [
+       "electric-utility-box",
+       1,
+       1
+      ],
+      [
+       "electric-cable-coil",
+       0,
+       1
+      ],
+      [
+       "electric-tuft",
+       1,
+       1
+      ]
+     ],
+     [
+      [
+       "electric-barrels",
+       1,
+       1
+      ],
+      [
+       "electric-pebbles",
+       1,
+       1
+      ]
+     ],
+     [
+      [
+       "electric-hazard-cone",
+       1,
+       2
+      ],
+      [
+       "electric-cable-coil",
+       1,
+       1
+      ]
+     ],
+     [
+      [
+       "electric-cable-spool",
+       1,
+       1
+      ],
+      [
+       "electric-tuft",
+       1,
+       2
+      ]
+     ]
+    ],
+    "grove": [
+     [
+      [
+       "electric-power-pole",
+       1,
+       1
+      ],
+      [
+       "electric-tuft",
+       1,
+       2
+      ]
+     ]
+    ]
+   },
+   "pond": {
+    "bank": 0.1
+   },
+   "route": [
+    "pond",
+    "plateau"
+   ],
+   "stream": false
+  }
+ },
+ "moon-cave": {
+  "brief": "Hang Nguyệt Thạch (Mt. Moon pattern): cool grey-blue limestone, moonstone and crystal glints.",
+  "ground": [
+   "moon-cave-floor"
+  ],
+  "wall": [
+   "moon-cave-wall"
+  ],
+  "border": [
+   "moon-cave-wall"
+  ],
+  "face": [
+   "moon-cave-wall-face"
+  ],
+  "ledge": [
+   "moon-cave-ledge"
+  ],
+  "stairs": [
+   "moon-cave-stairs"
+  ],
+  "water": [
+   "moon-cave-water"
+  ],
+  "crack": [],
+  "vary": [
+   "moon-cave-gravel"
+  ],
+  "ladderup": [
+   "moon-cave-ladder-up"
+  ],
+  "ladderdown": [
+   "moon-cave-ladder-down"
+  ],
+  "hole": [
+   "moon-cave-hole"
+  ],
+  "exit": [
+   "moon-cave-exit"
+  ],
+  "cprops": [
+   "moon-cave-stalagmite",
+   "moon-cave-rock",
+   "moon-cave-crystal",
+   "moon-cave-rubble",
+   "moon-cave-crystal-small",
+   "moon-cave-rock",
+   "moon-cave-moonstone"
+  ],
+  "cdeco": [
+   "moon-cave-pebbles",
+   "moon-cave-pebbles",
+   "moon-cave-pebbles",
+   "moon-cave-puddle"
+  ],
+  "landmark": [
+   "moon-cave-rock-big",
+   "moon-cave-crystal"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "hm": [
+   "smash-rock"
+  ],
+  "entrance": [
+   "cave-mouth-moon"
+  ]
+ },
+ "granite-cave": {
+  "brief": "Động Đá Hoa (Granite Cave pattern): warm pink-brown granite, ancient carvings and braziers.",
+  "ground": [
+   "granite-cave-floor"
+  ],
+  "wall": [
+   "granite-cave-wall"
+  ],
+  "border": [
+   "granite-cave-wall"
+  ],
+  "face": [
+   "granite-cave-wall-face"
+  ],
+  "ledge": [
+   "granite-cave-ledge"
+  ],
+  "stairs": [
+   "granite-cave-stairs"
+  ],
+  "water": [
+   "granite-cave-water"
+  ],
+  "crack": [
+   "granite-cave-cracked"
+  ],
+  "vary": [
+   "granite-cave-gravel"
+  ],
+  "ladderup": [
+   "granite-cave-ladder-up"
+  ],
+  "ladderdown": [
+   "granite-cave-ladder-down"
+  ],
+  "hole": [
+   "granite-cave-hole"
+  ],
+  "exit": [
+   "granite-cave-exit"
+  ],
+  "cprops": [
+   "granite-cave-stalagmite",
+   "granite-cave-rock",
+   "granite-cave-rubble",
+   "granite-cave-rock",
+   "granite-cave-stalagmite"
+  ],
+  "cdeco": [
+   "granite-cave-pebbles",
+   "granite-cave-pebbles",
+   "granite-cave-pebbles",
+   "granite-cave-puddle"
+  ],
+  "landmark": [
+   "granite-cave-rock-big",
+   "granite-cave-pillar",
+   "granite-cave-statue"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "hm": [
+   "smash-rock"
+  ],
+  "entrance": [
+   "cave-mouth-granite"
+  ]
+ },
+ "volcano-cave": {
+  "brief": "Hầm Dung Nham (cave D, Victory Road boulder pattern): hexagonal basalt, ropy cooled lava floor, lava rivers filled with Strength boulders.",
+  "ground": [
+   "volcano-cave-floor"
+  ],
+  "wall": [
+   "volcano-cave-wall"
+  ],
+  "border": [
+   "volcano-cave-wall"
+  ],
+  "face": [
+   "volcano-cave-wall-face"
+  ],
+  "ledge": [
+   "volcano-cave-ledge"
+  ],
+  "stairs": [
+   "volcano-cave-stairs"
+  ],
+  "water": [
+   "volcano-cave-water"
+  ],
+  "crack": [],
+  "vary": [
+   "volcano-cave-gravel"
+  ],
+  "ladderup": [
+   "volcano-cave-ladder-up"
+  ],
+  "ladderdown": [
+   "volcano-cave-ladder-down"
+  ],
+  "hole": [
+   "volcano-cave-hole"
+  ],
+  "exit": [
+   "volcano-cave-exit"
+  ],
+  "cprops": [
+   "volcano-cave-stalagmite",
+   "volcano-cave-rock",
+   "volcano-cave-ember-rock",
+   "volcano-cave-rubble",
+   "volcano-cave-basalt-columns",
+   "volcano-cave-sulfur",
+   "volcano-cave-obsidian",
+   "volcano-cave-rock"
+  ],
+  "cdeco": [
+   "volcano-cave-pebbles",
+   "volcano-cave-pebbles",
+   "volcano-cave-ash-pile",
+   "volcano-cave-magma-crack"
+  ],
+  "landmark": [
+   "volcano-cave-rock-big",
+   "volcano-cave-vent",
+   "volcano-cave-basalt-columns"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "hm": [
+   "smash-rock"
+  ],
+  "entrance": [
+   "cave-mouth-volcano"
+  ],
+  "boulder": [
+   "volcano-cave-boulder"
+  ],
+  "smash": [
+   "volcano-cave-smash-rock"
+  ],
+  "cut": [
+   "cut-tree"
+  ],
+  "gate": [
+   "powerplant-cave-gate-0-closed"
+  ],
+  "gateopen": [
+   "powerplant-cave-gate-0-open"
+  ],
+  "barrier": [
+   "volcano-cave-rock"
+  ],
+  "lever": [
+   "powerplant-cave-lever-0-off"
+  ],
+  "leveron": [
+   "powerplant-cave-lever-0-on"
+  ],
+  "lamp": [
+   "volcano-cave-vent",
+   "quarry-cave-lantern"
+  ],
+  "crystal": [
+   "mystic-cave-stopper"
+  ],
+  "cart": [
+   "quarry-cave-cart"
+  ],
+  "lavafill": [
+   "volcano-cave-lava-fill"
+  ],
+  "lava": [
+   "volcano-cave-lava"
+  ],
+  "ice": [
+   "mystic-cave-ice"
+  ],
+  "rail": [
+   "quarry-cave-rail"
+  ],
+  "ledgen": [
+   "volcano-cave-ledge-north"
+  ],
+  "ledgee": [
+   "volcano-cave-ledge-east"
+  ],
+  "ledgew": [
+   "volcano-cave-ledge-west"
+  ]
+ },
+ "quarry-cave": {
+  "brief": "Mỏ Đá Bỏ Hoang (cave E): chiselled rock behind timber shoring, dusty floor, one-way minecarts, ore veins.",
+  "ground": [
+   "quarry-cave-floor"
+  ],
+  "wall": [
+   "quarry-cave-wall"
+  ],
+  "border": [
+   "quarry-cave-wall"
+  ],
+  "face": [
+   "quarry-cave-wall-face"
+  ],
+  "ledge": [
+   "quarry-cave-ledge"
+  ],
+  "stairs": [
+   "quarry-cave-stairs"
+  ],
+  "water": [
+   "quarry-cave-water"
+  ],
+  "crack": [],
+  "vary": [
+   "quarry-cave-gravel"
+  ],
+  "ladderup": [
+   "quarry-cave-ladder-up"
+  ],
+  "ladderdown": [
+   "quarry-cave-ladder-down"
+  ],
+  "hole": [
+   "quarry-cave-hole"
+  ],
+  "exit": [
+   "quarry-cave-exit"
+  ],
+  "cprops": [
+   "quarry-cave-stalagmite",
+   "quarry-cave-rock",
+   "quarry-cave-rubble",
+   "quarry-cave-shoring",
+   "quarry-cave-crate",
+   "quarry-cave-tools",
+   "quarry-cave-ore",
+   "quarry-cave-ore-crystal",
+   "quarry-cave-rock"
+  ],
+  "cdeco": [
+   "quarry-cave-pebbles",
+   "quarry-cave-pebbles",
+   "quarry-cave-pebbles",
+   "quarry-cave-puddle",
+   "quarry-cave-light"
+  ],
+  "landmark": [
+   "quarry-cave-rock-big",
+   "quarry-cave-planks",
+   "quarry-cave-lantern"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "hm": [
+   "smash-rock"
+  ],
+  "entrance": [
+   "cave-mouth-quarry"
+  ],
+  "boulder": [
+   "quarry-cave-boulder"
+  ],
+  "smash": [
+   "quarry-cave-smash-rock"
+  ],
+  "cut": [
+   "cut-tree"
+  ],
+  "gate": [
+   "powerplant-cave-gate-0-closed"
+  ],
+  "gateopen": [
+   "powerplant-cave-gate-0-open"
+  ],
+  "barrier": [
+   "quarry-cave-rock"
+  ],
+  "lever": [
+   "powerplant-cave-lever-0-off"
+  ],
+  "leveron": [
+   "powerplant-cave-lever-0-on"
+  ],
+  "lamp": [
+   "quarry-cave-lantern"
+  ],
+  "crystal": [
+   "mystic-cave-stopper"
+  ],
+  "cart": [
+   "quarry-cave-cart",
+   "quarry-cave-cart-v"
+  ],
+  "lavafill": [
+   "volcano-cave-lava-fill"
+  ],
+  "lava": [
+   "volcano-cave-lava"
+  ],
+  "ice": [
+   "mystic-cave-ice"
+  ],
+  "rail": [
+   "quarry-cave-rail"
+  ],
+  "ledgen": [
+   "quarry-cave-ledge-north"
+  ],
+  "ledgee": [
+   "quarry-cave-ledge-east"
+  ],
+  "ledgew": [
+   "quarry-cave-ledge-west"
+  ],
+  "boardwalk": [
+   "quarry-cave-boardwalk"
+  ]
+ },
+ "mystic-cave": {
+  "brief": "Động Băng Tinh Tú (cave F, Ice Path pattern): glossy ice walls, wind-packed snow, slide floors stopped by crystals.",
+  "ground": [
+   "mystic-cave-floor"
+  ],
+  "wall": [
+   "mystic-cave-wall"
+  ],
+  "border": [
+   "mystic-cave-wall"
+  ],
+  "face": [
+   "mystic-cave-wall-face"
+  ],
+  "ledge": [
+   "mystic-cave-ledge"
+  ],
+  "stairs": [
+   "mystic-cave-stairs"
+  ],
+  "water": [
+   "mystic-cave-water"
+  ],
+  "crack": [],
+  "vary": [
+   "mystic-cave-snow",
+   "mystic-cave-gravel"
+  ],
+  "ladderup": [
+   "mystic-cave-ladder-up"
+  ],
+  "ladderdown": [
+   "mystic-cave-ladder-down"
+  ],
+  "hole": [
+   "mystic-cave-hole"
+  ],
+  "exit": [
+   "mystic-cave-exit"
+  ],
+  "cprops": [
+   "mystic-cave-stalagmite",
+   "mystic-cave-ice-rock",
+   "mystic-cave-crystal-small",
+   "mystic-cave-rock",
+   "mystic-cave-icicle",
+   "mystic-cave-crystal",
+   "mystic-cave-rubble"
+  ],
+  "cdeco": [
+   "mystic-cave-pebbles",
+   "mystic-cave-frost",
+   "mystic-cave-frost",
+   "mystic-cave-puddle"
+  ],
+  "landmark": [
+   "mystic-cave-rock-big",
+   "mystic-cave-mirror",
+   "mystic-cave-orb",
+   "mystic-cave-star-stone"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "hm": [
+   "smash-rock"
+  ],
+  "entrance": [
+   "cave-mouth-mystic"
+  ],
+  "boulder": [
+   "mystic-cave-boulder"
+  ],
+  "smash": [
+   "mystic-cave-smash-rock"
+  ],
+  "cut": [
+   "cut-tree"
+  ],
+  "gate": [
+   "powerplant-cave-gate-0-closed"
+  ],
+  "gateopen": [
+   "powerplant-cave-gate-0-open"
+  ],
+  "barrier": [
+   "mystic-cave-rock"
+  ],
+  "lever": [
+   "powerplant-cave-lever-0-off"
+  ],
+  "leveron": [
+   "powerplant-cave-lever-0-on"
+  ],
+  "lamp": [
+   "mystic-cave-star-stone",
+   "quarry-cave-lantern"
+  ],
+  "crystal": [
+   "mystic-cave-stopper"
+  ],
+  "cart": [
+   "quarry-cave-cart"
+  ],
+  "lavafill": [
+   "volcano-cave-lava-fill"
+  ],
+  "lava": [
+   "volcano-cave-lava"
+  ],
+  "ice": [
+   "mystic-cave-ice"
+  ],
+  "rail": [
+   "quarry-cave-rail"
+  ],
+  "ledgen": [
+   "mystic-cave-ledge-north"
+  ],
+  "ledgee": [
+   "mystic-cave-ledge-east"
+  ],
+  "ledgew": [
+   "mystic-cave-ledge-west"
+  ]
+ },
+ "lagoon-cave": {
+  "brief": "Hang Triều Lam (cave G, Shoal Cave pattern): wet sea-worn boulders, grey sand, low / high tide (use `tide` with t: \"@tidewater\"; paint the low-tide beds with @tidesand).",
+  "ground": [
+   "lagoon-cave-floor"
+  ],
+  "wall": [
+   "lagoon-cave-wall"
+  ],
+  "border": [
+   "lagoon-cave-wall"
+  ],
+  "face": [
+   "lagoon-cave-wall-face"
+  ],
+  "ledge": [
+   "lagoon-cave-ledge"
+  ],
+  "stairs": [
+   "lagoon-cave-stairs"
+  ],
+  "water": [
+   "lagoon-cave-water"
+  ],
+  "crack": [],
+  "vary": [
+   "lagoon-cave-gravel"
+  ],
+  "ladderup": [
+   "lagoon-cave-ladder-up"
+  ],
+  "ladderdown": [
+   "lagoon-cave-ladder-down"
+  ],
+  "hole": [
+   "lagoon-cave-hole"
+  ],
+  "exit": [
+   "lagoon-cave-exit"
+  ],
+  "cprops": [
+   "lagoon-cave-stalagmite",
+   "lagoon-cave-barnacle-rock",
+   "lagoon-cave-rock",
+   "lagoon-cave-coral",
+   "lagoon-cave-rubble",
+   "lagoon-cave-clam",
+   "lagoon-cave-coral-fan"
+  ],
+  "cdeco": [
+   "lagoon-cave-pebbles",
+   "lagoon-cave-shells",
+   "lagoon-cave-starfish",
+   "lagoon-cave-drip",
+   "lagoon-cave-seaweed",
+   "lagoon-cave-puddle"
+  ],
+  "landmark": [
+   "lagoon-cave-rock-big",
+   "lagoon-cave-tide-pool",
+   "lagoon-cave-coral-fan"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "hm": [
+   "smash-rock"
+  ],
+  "entrance": [
+   "cave-mouth-lagoon"
+  ],
+  "boulder": [
+   "lagoon-cave-boulder"
+  ],
+  "smash": [
+   "lagoon-cave-smash-rock"
+  ],
+  "cut": [
+   "cut-tree"
+  ],
+  "gate": [
+   "powerplant-cave-gate-0-closed"
+  ],
+  "gateopen": [
+   "powerplant-cave-gate-0-open"
+  ],
+  "barrier": [
+   "lagoon-cave-rock"
+  ],
+  "lever": [
+   "powerplant-cave-lever-0-off"
+  ],
+  "leveron": [
+   "powerplant-cave-lever-0-on"
+  ],
+  "lamp": [
+   "quarry-cave-lantern"
+  ],
+  "crystal": [
+   "mystic-cave-stopper"
+  ],
+  "cart": [
+   "quarry-cave-cart"
+  ],
+  "lavafill": [
+   "volcano-cave-lava-fill"
+  ],
+  "lava": [
+   "volcano-cave-lava"
+  ],
+  "ice": [
+   "mystic-cave-ice"
+  ],
+  "rail": [
+   "quarry-cave-rail"
+  ],
+  "ledgen": [
+   "lagoon-cave-ledge-north"
+  ],
+  "ledgee": [
+   "lagoon-cave-ledge-east"
+  ],
+  "ledgew": [
+   "lagoon-cave-ledge-west"
+  ],
+  "tidewater": [
+   "lagoon-cave-tide-water"
+  ],
+  "tidesand": [
+   "lagoon-cave-tide-sand"
+  ],
+  "shelf": [
+   "lagoon-cave-shelf"
+  ]
+ },
+ "powerplant-cave": {
+  "brief": "Đường Hầm Điện Ngầm (cave H): concrete-lined tunnels with pipes and cable trays, steel tread floor, lever-toggled electric gates, dark B1F lit by generator lamps.",
+  "ground": [
+   "powerplant-cave-floor"
+  ],
+  "wall": [
+   "powerplant-cave-wall"
+  ],
+  "border": [
+   "powerplant-cave-wall"
+  ],
+  "face": [
+   "powerplant-cave-wall-face"
+  ],
+  "ledge": [
+   "powerplant-cave-ledge"
+  ],
+  "stairs": [
+   "powerplant-cave-stairs"
+  ],
+  "water": [
+   "powerplant-cave-water"
+  ],
+  "crack": [],
+  "vary": [
+   "powerplant-cave-gravel"
+  ],
+  "ladderup": [
+   "powerplant-cave-ladder-up"
+  ],
+  "ladderdown": [
+   "powerplant-cave-ladder-down"
+  ],
+  "hole": [
+   "powerplant-cave-hole"
+  ],
+  "exit": [
+   "powerplant-cave-exit"
+  ],
+  "cprops": [
+   "powerplant-cave-stalagmite",
+   "powerplant-cave-rock",
+   "powerplant-cave-rubble",
+   "powerplant-cave-panel",
+   "powerplant-cave-transformer",
+   "powerplant-cave-pipes",
+   "powerplant-cave-rock"
+  ],
+  "cdeco": [
+   "powerplant-cave-pebbles",
+   "powerplant-cave-cable",
+   "powerplant-cave-drain",
+   "powerplant-cave-puddle"
+  ],
+  "landmark": [
+   "powerplant-cave-generator",
+   "powerplant-cave-rock-big",
+   "powerplant-cave-transformer"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "hm": [
+   "smash-rock"
+  ],
+  "entrance": [
+   "cave-mouth-powerplant"
+  ],
+  "boulder": [
+   "powerplant-cave-boulder"
+  ],
+  "smash": [
+   "powerplant-cave-smash-rock"
+  ],
+  "cut": [
+   "cut-tree"
+  ],
+  "gate": [
+   "powerplant-cave-gate-0-closed"
+  ],
+  "gateopen": [
+   "powerplant-cave-gate-0-open"
+  ],
+  "barrier": [
+   "powerplant-cave-rock"
+  ],
+  "lever": [
+   "powerplant-cave-lever-0-off"
+  ],
+  "leveron": [
+   "powerplant-cave-lever-0-on"
+  ],
+  "lamp": [
+   "powerplant-cave-generator-lamp"
+  ],
+  "crystal": [
+   "mystic-cave-stopper"
+  ],
+  "cart": [
+   "quarry-cave-cart"
+  ],
+  "lavafill": [
+   "volcano-cave-lava-fill"
+  ],
+  "lava": [
+   "volcano-cave-lava"
+  ],
+  "ice": [
+   "mystic-cave-ice"
+  ],
+  "rail": [
+   "quarry-cave-rail"
+  ],
+  "ledgen": [
+   "powerplant-cave-ledge-north"
+  ],
+  "ledgee": [
+   "powerplant-cave-ledge-east"
+  ],
+  "ledgew": [
+   "powerplant-cave-ledge-west"
+  ]
+ },
+ "garden-cave": {
+  "brief": "Hang Rễ Cổ Thụ (cave I, Mt. Moon / Meteor Falls ledges): root-woven earth, moss mats, glowing flowers, four-way root ledges, Cut vines.",
+  "ground": [
+   "garden-cave-floor"
+  ],
+  "wall": [
+   "garden-cave-wall"
+  ],
+  "border": [
+   "garden-cave-wall"
+  ],
+  "face": [
+   "garden-cave-wall-face"
+  ],
+  "ledge": [
+   "garden-cave-ledge"
+  ],
+  "stairs": [
+   "garden-cave-stairs"
+  ],
+  "water": [
+   "garden-cave-water"
+  ],
+  "crack": [],
+  "vary": [
+   "garden-cave-moss",
+   "garden-cave-gravel"
+  ],
+  "ladderup": [
+   "garden-cave-ladder-up"
+  ],
+  "ladderdown": [
+   "garden-cave-ladder-down"
+  ],
+  "hole": [
+   "garden-cave-hole"
+  ],
+  "exit": [
+   "garden-cave-exit"
+  ],
+  "cprops": [
+   "garden-cave-stalagmite",
+   "garden-cave-rock",
+   "garden-cave-glowshroom",
+   "garden-cave-fern",
+   "garden-cave-rubble",
+   "garden-cave-root",
+   "garden-cave-rock"
+  ],
+  "cdeco": [
+   "garden-cave-pebbles",
+   "garden-cave-flowers",
+   "garden-cave-flowers-blue",
+   "garden-cave-puddle",
+   "garden-cave-pebbles"
+  ],
+  "landmark": [
+   "garden-cave-mother-root",
+   "garden-cave-rock-big",
+   "garden-cave-root"
+  ],
+  "item": [
+   "item-ball"
+  ],
+  "sign": [
+   "sign"
+  ],
+  "hm": [
+   "smash-rock"
+  ],
+  "entrance": [
+   "cave-mouth-garden"
+  ],
+  "boulder": [
+   "garden-cave-boulder"
+  ],
+  "smash": [
+   "garden-cave-smash-rock"
+  ],
+  "cut": [
+   "garden-cave-vine",
+   "cut-tree"
+  ],
+  "gate": [
+   "powerplant-cave-gate-0-closed"
+  ],
+  "gateopen": [
+   "powerplant-cave-gate-0-open"
+  ],
+  "barrier": [
+   "garden-cave-rock"
+  ],
+  "lever": [
+   "powerplant-cave-lever-0-off"
+  ],
+  "leveron": [
+   "powerplant-cave-lever-0-on"
+  ],
+  "lamp": [
+   "garden-cave-glowshroom",
+   "quarry-cave-lantern"
+  ],
+  "crystal": [
+   "mystic-cave-stopper"
+  ],
+  "cart": [
+   "quarry-cave-cart"
+  ],
+  "lavafill": [
+   "volcano-cave-lava-fill"
+  ],
+  "lava": [
+   "volcano-cave-lava"
+  ],
+  "ice": [
+   "mystic-cave-ice"
+  ],
+  "rail": [
+   "quarry-cave-rail"
+  ],
+  "ledgen": [
+   "garden-cave-ledge-north"
+  ],
+  "ledgee": [
+   "garden-cave-ledge-east"
+  ],
+  "ledgew": [
+   "garden-cave-ledge-west"
+  ]
+ },
+ "_nature": "Per-theme kit for the organic passes (mapgen nature.py) and scaffold.py: `vary` = ground patches [slug, share of free lawn, noise scale, leans toward lanes 0/1]; `swap` = meadow prop -> theme stand-in (tuft, pebbles, rock, bush, stump, log, mushrooms, fern, reeds, lily-pad, tree, pine-tree, tree-small, flower colours); `flowers` = flower colours for vignettes; `trees` [slug, weight] stepping out of walls, `alt` = second wall species (2x2 block), `canopy` = [round crown, pine] props over the wall, `mix` = share of alt groves, `floor` = forest-floor decals; `more` = extra vignettes per context (meadow, grove, woods, water, town; items [slug or pool, min, max]), `kits` replaces a context; `pond` = default bank / bank_sand / t (the pond's water piece, e.g. `water` on coast where @water is the sea); `route` = features scaffold.py lays along a route (plateau, pond, tidepool), `stream` = a creek into the first pond. The plateau rock is the theme's @cliff role (its -face, -2, -face-2 pieces by name).",
+ "_mechanics": {
+  "_doc": "Mechanic art roles (tools/maps/cavekit.py MECH_ART + terrains), the fallback for every theme: a theme lists its own candidates under the same role to re-skin them. An empty list or a missing piece is a placeholder: the map works, the preview and the game draw a flat colour. Map step: put the real slugs here or in the cave theme.",
+  "boulder": [
+   "strength-boulder"
+  ],
+  "smash": [
+   "smash-rock"
+  ],
+  "cut": [
+   "cut-tree"
+  ],
+  "gate": [
+   "electric-gate"
+  ],
+  "gateopen": [
+   "electric-gate-open"
+  ],
+  "barrier": [
+   "rock-barrier"
+  ],
+  "lever": [
+   "lever"
+  ],
+  "leveron": [
+   "lever-on"
+  ],
+  "switch": [
+   "strength-switch"
+  ],
+  "lamp": [
+   "generator-lamp"
+  ],
+  "crystal": [
+   "ice-crystal"
+  ],
+  "cart": [
+   "minecart"
+  ],
+  "lavafill": [
+   "lava-filled"
+  ],
+  "lava": [
+   "lava"
+  ],
+  "ice": [
+   "ice-floor"
+  ],
+  "rail": [
+   "rail"
+  ],
+  "ledgen": [
+   "ledge-north"
+  ],
+  "ledgee": [
+   "ledge-east"
+  ],
+  "ledgew": [
+   "ledge-west"
+  ]
+ }
+}
