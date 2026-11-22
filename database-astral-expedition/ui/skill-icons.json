@@ -1,0 +1,391 @@
+{
+ "cell": 64,
+ "columns": 10,
+ "rows": 10,
+ "positions": {
+  "gus_basic": [
+   0,
+   0
+  ],
+  "gus_gale_lunge": [
+   1,
+   0
+  ],
+  "gus_overcharge": [
+   2,
+   0
+  ],
+  "gus_ult_tempest": [
+   3,
+   0
+  ],
+  "gus_passive": [
+   4,
+   0
+  ],
+  "gustave_blade_focus": [
+   5,
+   0
+  ],
+  "gustave_blade_ward": [
+   6,
+   0
+  ],
+  "gustave_blade_surge": [
+   7,
+   0
+  ],
+  "cel_basic": [
+   8,
+   0
+  ],
+  "cel_radiant_mend": [
+   9,
+   0
+  ],
+  "cel_sun_brand": [
+   0,
+   1
+  ],
+  "cel_ult_aurora_canvas": [
+   1,
+   1
+  ],
+  "cel_passive": [
+   2,
+   1
+  ],
+  "celine_prism_focus": [
+   3,
+   1
+  ],
+  "celine_prism_ward": [
+   4,
+   1
+  ],
+  "celine_prism_surge": [
+   5,
+   1
+  ],
+  "bas_basic": [
+   6,
+   1
+  ],
+  "bas_bulwark": [
+   7,
+   1
+  ],
+  "bas_anvil_crush": [
+   8,
+   1
+  ],
+  "bas_ult_bastion": [
+   9,
+   1
+  ],
+  "bas_passive": [
+   0,
+   2
+  ],
+  "bastian_aegis_focus": [
+   1,
+   2
+  ],
+  "bastian_aegis_ward": [
+   2,
+   2
+  ],
+  "bastian_aegis_surge": [
+   3,
+   2
+  ],
+  "lyr_basic": [
+   4,
+   2
+  ],
+  "lyr_triple_icicle": [
+   5,
+   2
+  ],
+  "lyr_hail_volley": [
+   6,
+   2
+  ],
+  "lyr_ult_zero_arrow": [
+   7,
+   2
+  ],
+  "lyr_passive": [
+   8,
+   2
+  ],
+  "lyra_frostbow_focus": [
+   9,
+   2
+  ],
+  "lyra_frostbow_ward": [
+   0,
+   3
+  ],
+  "lyra_frostbow_surge": [
+   1,
+   3
+  ],
+  "kes_basic": [
+   2,
+   3
+  ],
+  "kes_mirage_step": [
+   3,
+   3
+  ],
+  "kes_sand_flurry": [
+   4,
+   3
+  ],
+  "kes_ult_golden_fang": [
+   5,
+   3
+  ],
+  "kes_passive": [
+   6,
+   3
+  ],
+  "kestrel_dune_focus": [
+   7,
+   3
+  ],
+  "kestrel_dune_ward": [
+   8,
+   3
+  ],
+  "kestrel_dune_surge": [
+   9,
+   3
+  ],
+  "ner_basic": [
+   0,
+   4
+  ],
+  "ner_coral_grace": [
+   1,
+   4
+  ],
+  "ner_riptide_chord": [
+   2,
+   4
+  ],
+  "ner_ult_leviathan_hymn": [
+   3,
+   4
+  ],
+  "ner_passive": [
+   4,
+   4
+  ],
+  "nereus_tide_focus": [
+   5,
+   4
+  ],
+  "nereus_tide_ward": [
+   6,
+   4
+  ],
+  "nereus_tide_surge": [
+   7,
+   4
+  ],
+  "cor_basic": [
+   8,
+   4
+  ],
+  "cor_umbra_mark": [
+   9,
+   4
+  ],
+  "cor_reaper_arc": [
+   0,
+   5
+  ],
+  "cor_ult_abyss_Bell": [
+   1,
+   5
+  ],
+  "cor_passive": [
+   2,
+   5
+  ],
+  "corvus_night_focus": [
+   3,
+   5
+  ],
+  "corvus_night_ward": [
+   4,
+   5
+  ],
+  "corvus_night_surge": [
+   5,
+   5
+  ],
+  "ign_basic": [
+   6,
+   5
+  ],
+  "ign_magma_dive": [
+   7,
+   5
+  ],
+  "ign_cinder_sweep": [
+   8,
+   5
+  ],
+  "ign_ult_valkyrie_star": [
+   9,
+   5
+  ],
+  "ign_passive": [
+   0,
+   6
+  ],
+  "ignis_valkyrie_focus": [
+   1,
+   6
+  ],
+  "ignis_valkyrie_ward": [
+   2,
+   6
+  ],
+  "ignis_valkyrie_surge": [
+   3,
+   6
+  ],
+  "mar_basic": [
+   4,
+   6
+  ],
+  "mar_vortex_bind": [
+   5,
+   6
+  ],
+  "mar_abyss_geyser": [
+   6,
+   6
+  ],
+  "mar_ult_maelstrom": [
+   7,
+   6
+  ],
+  "mar_passive": [
+   8,
+   6
+  ],
+  "marina_abyss_focus": [
+   9,
+   6
+  ],
+  "marina_abyss_ward": [
+   0,
+   7
+  ],
+  "marina_abyss_surge": [
+   1,
+   7
+  ],
+  "aur_basic": [
+   2,
+   7
+  ],
+  "aur_solar_cleave": [
+   3,
+   7
+  ],
+  "aur_eclipse_nova": [
+   4,
+   7
+  ],
+  "aur_ult_judgement": [
+   5,
+   7
+  ],
+  "aur_passive": [
+   6,
+   7
+  ],
+  "aurelia_eclipse_focus": [
+   7,
+   7
+  ],
+  "aurelia_eclipse_ward": [
+   8,
+   7
+  ],
+  "aurelia_eclipse_surge": [
+   9,
+   7
+  ],
+  "ser_basic": [
+   0,
+   8
+  ],
+  "ser_glacier_crown": [
+   1,
+   8
+  ],
+  "ser_shatter_lance": [
+   2,
+   8
+  ],
+  "ser_ult_eternal_winter": [
+   3,
+   8
+  ],
+  "ser_passive": [
+   4,
+   8
+  ],
+  "seraph_glacier_focus": [
+   5,
+   8
+  ],
+  "seraph_glacier_ward": [
+   6,
+   8
+  ],
+  "seraph_glacier_surge": [
+   7,
+   8
+  ],
+  "lum_basic": [
+   8,
+   8
+  ],
+  "lum_astral_surge": [
+   9,
+   8
+  ],
+  "lum_starfall_prism": [
+   0,
+   9
+  ],
+  "lum_ult_symphony": [
+   1,
+   9
+  ],
+  "lum_passive": [
+   2,
+   9
+  ],
+  "lumina_chrono_focus": [
+   3,
+   9
+  ],
+  "lumina_chrono_ward": [
+   4,
+   9
+  ],
+  "lumina_chrono_surge": [
+   5,
+   9
+  ]
+ }
+}

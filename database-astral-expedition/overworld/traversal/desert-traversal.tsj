@@ -1,0 +1,369 @@
+{
+  "type": "tileset",
+  "version": "1.10",
+  "tiledversion": "1.10.2",
+  "name": "desert-traversal",
+  "image": "desert-traversal.png",
+  "tilewidth": 32,
+  "tileheight": 32,
+  "imagewidth": 256,
+  "imageheight": 128,
+  "tilecount": 32,
+  "columns": 8,
+  "margin": 0,
+  "spacing": 0,
+  "tiles": [
+    {
+      "id": 0,
+      "type": "ramp-up",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "north"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "type": "ramp-down",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "north"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stairs",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "north"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "takeoff",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "north"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "grip",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "north"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "landing",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "north"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "dash-start",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "north"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "dash-target",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "north"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "ramp-up",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "east"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "ramp-down",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "east"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "stairs",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "east"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "takeoff",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "east"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "grip",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "east"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "landing",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "east"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "dash-start",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "east"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "type": "dash-target",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "east"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "type": "ramp-up",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "south"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "type": "ramp-down",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "south"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "type": "stairs",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "south"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "type": "takeoff",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "south"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "type": "grip",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "south"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "type": "landing",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "south"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "type": "dash-start",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "south"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "type": "dash-target",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "south"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "type": "ramp-up",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "west"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "type": "ramp-down",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "west"
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "type": "stairs",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "west"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "type": "takeoff",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "west"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "type": "grip",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "west"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "type": "landing",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "west"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "type": "dash-start",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "west"
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "type": "dash-target",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "west"
+        }
+      ]
+    }
+  ]
+}

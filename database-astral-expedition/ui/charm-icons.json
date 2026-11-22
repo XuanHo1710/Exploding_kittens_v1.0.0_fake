@@ -1,0 +1,259 @@
+{
+  "columns": 8,
+  "rows": 8,
+  "cell": 64,
+  "positions": {
+    "ch_iron_edge": [
+      0,
+      0
+    ],
+    "ch_guard_plate": [
+      1,
+      0
+    ],
+    "ch_sharp_glass": [
+      2,
+      0
+    ],
+    "ch_echo_turn": [
+      3,
+      0
+    ],
+    "ch_soft_parry": [
+      4,
+      0
+    ],
+    "ch_last_light": [
+      5,
+      0
+    ],
+    "ch_fall_ward": [
+      6,
+      0
+    ],
+    "ch_low_ward": [
+      7,
+      0
+    ],
+    "ch_rally_ap": [
+      0,
+      1
+    ],
+    "ch_courage": [
+      1,
+      1
+    ],
+    "ch_critical_edge": [
+      2,
+      1
+    ],
+    "ch_opening_ward": [
+      3,
+      1
+    ],
+    "ch_vigor": [
+      4,
+      1
+    ],
+    "ch_edge": [
+      5,
+      1
+    ],
+    "ch_bark": [
+      6,
+      1
+    ],
+    "ch_feather": [
+      7,
+      1
+    ],
+    "ch_hawk": [
+      0,
+      2
+    ],
+    "ch_titan": [
+      1,
+      2
+    ],
+    "ch_dawn_ap": [
+      2,
+      2
+    ],
+    "ch_first_strike": [
+      3,
+      2
+    ],
+    "ch_ward": [
+      4,
+      2
+    ],
+    "ch_sprout": [
+      5,
+      2
+    ],
+    "ch_resonance": [
+      6,
+      2
+    ],
+    "ch_parry_ap": [
+      7,
+      2
+    ],
+    "ch_riposte": [
+      0,
+      3
+    ],
+    "ch_dodge_heal": [
+      1,
+      3
+    ],
+    "ch_evade_ap": [
+      2,
+      3
+    ],
+    "ch_thorns": [
+      3,
+      3
+    ],
+    "ch_last_stand": [
+      4,
+      3
+    ],
+    "ch_perfect_crit": [
+      5,
+      3
+    ],
+    "ch_lifesteal": [
+      6,
+      3
+    ],
+    "ch_low_hp": [
+      7,
+      3
+    ],
+    "ch_breaker": [
+      0,
+      4
+    ],
+    "ch_weak_power": [
+      1,
+      4
+    ],
+    "ch_stagger": [
+      2,
+      4
+    ],
+    "ch_kill_ap": [
+      3,
+      4
+    ],
+    "ch_debuff_power": [
+      4,
+      4
+    ],
+    "ch_ult_power": [
+      5,
+      4
+    ],
+    "ch_heal_power": [
+      6,
+      4
+    ],
+    "ch_status_turns": [
+      7,
+      4
+    ],
+    "ch_dot_power": [
+      0,
+      5
+    ],
+    "ch_ember_touch": [
+      1,
+      5
+    ],
+    "ch_thorn_touch": [
+      2,
+      5
+    ],
+    "ch_frost_touch": [
+      3,
+      5
+    ],
+    "ch_hunter_touch": [
+      4,
+      5
+    ],
+    "ch_imbue_pyre": [
+      5,
+      5
+    ],
+    "ch_imbue_frost": [
+      6,
+      5
+    ],
+    "ch_imbue_tide": [
+      7,
+      5
+    ],
+    "ch_imbue_verdant": [
+      0,
+      6
+    ],
+    "ch_imbue_solar": [
+      1,
+      6
+    ],
+    "ch_imbue_astral": [
+      2,
+      6
+    ],
+    "tonic": [
+      3,
+      6
+    ],
+    "spark": [
+      4,
+      6
+    ],
+    "revive": [
+      5,
+      6
+    ],
+    "ch_guard_mend": [
+      6,
+      6
+    ],
+    "ch_quiet_guard": [
+      7,
+      6
+    ],
+    "ch_rupture_charge": [
+      0,
+      7
+    ],
+    "ch_chainbreak": [
+      1,
+      7
+    ],
+    "ch_windstep": [
+      2,
+      7
+    ],
+    "ch_crimson_mortar": [
+      3,
+      7
+    ],
+    "ch_quartz_fuse": [
+      4,
+      7
+    ],
+    "ch_ember_petals": [
+      5,
+      7
+    ],
+    "ch_heart_knot": [
+      6,
+      7
+    ]
+  }
+}
