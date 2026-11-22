@@ -1,0 +1,289 @@
+[
+  {
+    "name": "01",
+    "icons": [
+      {
+        "id": "ch_iron_edge",
+        "motif": "a single chipped iron sword blade on a diagonal, brown leather hilt and pale steel"
+      },
+      {
+        "id": "ch_guard_plate",
+        "motif": "a broad upright rectangular steel breastplate with brass rivets, slate-blue steel"
+      },
+      {
+        "id": "ch_sharp_glass",
+        "motif": "a long jagged lilac glass splinter with three facets"
+      },
+      {
+        "id": "ch_echo_turn",
+        "motif": "a pair of offset copper clock dials joined by a curved lilac echo arc"
+      },
+      {
+        "id": "ch_soft_parry",
+        "motif": "two pale parrying blades meeting above a small rose healing heart"
+      },
+      {
+        "id": "ch_last_light",
+        "motif": "a golden phoenix rising vertically from red embers, wings lifted"
+      },
+      {
+        "id": "ch_fall_ward",
+        "motif": "a bent bronze gauntlet holding an upright blue shield over a broken silver helm"
+      },
+      {
+        "id": "ch_low_ward",
+        "motif": "a red cracked cliff slab with a small bright steel shield on its lip"
+      },
+      {
+        "id": "ch_rally_ap",
+        "motif": "two zigzag amber lightning bolts with cobalt blue spark"
+      }
+    ]
+  },
+  {
+    "name": "02",
+    "icons": [
+      {
+        "id": "ch_courage",
+        "motif": "a bold red lion head with golden mane, front view heraldic courage charm"
+      },
+      {
+        "id": "ch_critical_edge",
+        "motif": "a cracked dark red sword with a jagged hot orange break at its middle"
+      },
+      {
+        "id": "ch_opening_ward",
+        "motif": "an open stone gate arch with an aquamarine shield floating in its opening"
+      },
+      {
+        "id": "ch_vigor",
+        "motif": "a ruby heart with a thin brass frame and a tiny red pulse"
+      },
+      {
+        "id": "ch_edge",
+        "motif": "one pair of sharply curved silver crescent blades angled as scissors"
+      },
+      {
+        "id": "ch_bark",
+        "motif": "a tall curved flake of brown oak bark, oval growth rings and moss green flecks"
+      },
+      {
+        "id": "ch_feather",
+        "motif": "a long slender white feather leaning diagonally with blue shaft"
+      },
+      {
+        "id": "ch_hawk",
+        "motif": "a wide yellow hawk eye, dark slanted pupil and ochre feather corners"
+      },
+      {
+        "id": "ch_titan",
+        "motif": "a giant grey stone fist with squared knuckles holding a bronze chain"
+      }
+    ]
+  },
+  {
+    "name": "03",
+    "icons": [
+      {
+        "id": "ch_dawn_ap",
+        "motif": "an orange semicircular sunrise above a dark blue horizontal mountain ridge"
+      },
+      {
+        "id": "ch_first_strike",
+        "motif": "a slim bronze arrow piercing forwards through three purple speed streaks"
+      },
+      {
+        "id": "ch_ward",
+        "motif": "a round cyan glass dome covering a small dark hexagonal tower"
+      },
+      {
+        "id": "ch_sprout",
+        "motif": "two fresh green leaves emerging above a small round soil clump"
+      },
+      {
+        "id": "ch_resonance",
+        "motif": "a pink tuning fork vibrating with gold sound marks"
+      },
+      {
+        "id": "ch_parry_ap",
+        "motif": "a polished blue anvil struck by a compact gold thunder spark"
+      },
+      {
+        "id": "ch_riposte",
+        "motif": "a silver rapier pointing right with a broken crimson crescent curling behind it"
+      },
+      {
+        "id": "ch_dodge_heal",
+        "motif": "a flowing turquoise S-shaped wind gust carrying a single separate green leaf, airy silhouette and several wispy speed lines"
+      },
+      {
+        "id": "ch_evade_ap",
+        "motif": "the curved silhouette of a violet fox tail sliding across a tiny electric blue spark"
+      }
+    ]
+  },
+  {
+    "name": "04",
+    "icons": [
+      {
+        "id": "ch_thorns",
+        "motif": "a full crimson rose with dark hooked thorns and one green leaf"
+      },
+      {
+        "id": "ch_last_stand",
+        "motif": "a battered old gold helmet upright over broken red chains"
+      },
+      {
+        "id": "ch_perfect_crit",
+        "motif": "a sharp hot-pink and gold diamond hitting a tiny clock tick mark bullseye"
+      },
+      {
+        "id": "ch_lifesteal",
+        "motif": "a red crescent moon hanging over a single falling maroon blood drop"
+      },
+      {
+        "id": "ch_low_hp",
+        "motif": "a jagged dark red broken heart with a blazing yellow lightning slash"
+      },
+      {
+        "id": "ch_breaker",
+        "motif": "a broad chunky bronze hammer striking a grey rock into three chunks"
+      },
+      {
+        "id": "ch_weak_power",
+        "motif": "one electric blue spearhead piercing a glowing orange segmented shell"
+      },
+      {
+        "id": "ch_stagger",
+        "motif": "three diagonal pale gold claw trails striking a dark blue falling star"
+      },
+      {
+        "id": "ch_kill_ap",
+        "motif": "one dark brown antlered skull with a small sharp amber spark above it"
+      }
+    ]
+  },
+  {
+    "name": "05",
+    "icons": [
+      {
+        "id": "ch_debuff_power",
+        "motif": "a small violet poison vial with a brass cork and two green droplets"
+      },
+      {
+        "id": "ch_ult_power",
+        "motif": "a six-pointed orange-gold blast star with long red rays and black-purple inner core"
+      },
+      {
+        "id": "ch_heal_power",
+        "motif": "a tall blue silver chalice with clean turquoise water shining above its rim"
+      },
+      {
+        "id": "ch_status_turns",
+        "motif": "an hourglass with gold sand in violet hourglass-frame"
+      },
+      {
+        "id": "ch_dot_power",
+        "motif": "a black smouldering coal with a red crack and a curling dark-orange smoke trail"
+      },
+      {
+        "id": "ch_ember_touch",
+        "motif": "one small warm orange coal chip with three sparks flying upwards"
+      },
+      {
+        "id": "ch_thorn_touch",
+        "motif": "a single ivory hooked thorn with a hanging dark crimson blood drop"
+      },
+      {
+        "id": "ch_frost_touch",
+        "motif": "a long white and pale cyan fern frost dendrite on a bent frozen twig"
+      },
+      {
+        "id": "ch_hunter_touch",
+        "motif": "an orange target mark made of four arrowhead corners pointed into a black-gray center"
+      }
+    ]
+  },
+  {
+    "name": "06",
+    "icons": [
+      {
+        "id": "ch_imbue_pyre",
+        "motif": "an angular red-orange flame wrapping around a basalt shard"
+      },
+      {
+        "id": "ch_imbue_frost",
+        "motif": "a thick pale blue three-pronged ice cluster with a squared navy base"
+      },
+      {
+        "id": "ch_imbue_tide",
+        "motif": "a deep blue curling wave crest with white cyan foam"
+      },
+      {
+        "id": "ch_imbue_verdant",
+        "motif": "an asymmetric emerald broad oak leaf crossed with two curling green wind lines"
+      },
+      {
+        "id": "ch_imbue_solar",
+        "motif": "a seven-pointed bright gold sun disk with a tiny orange center and straight rays"
+      },
+      {
+        "id": "ch_imbue_astral",
+        "motif": "a purple black night disk with orbital violet stars and one long pale central star"
+      },
+      {
+        "id": "tonic",
+        "motif": "a squat round ruby healing bottle with a broad cork stopper and white cross"
+      },
+      {
+        "id": "spark",
+        "motif": "a large isolated elongated brilliant blue faceted diamond with one pale gold energy streak"
+      },
+      {
+        "id": "revive",
+        "motif": "a round ivory pearl with two upward white wings and a thin gold halo"
+      }
+    ]
+  },
+  {
+    "name": "07",
+    "icons": [
+      {
+        "id": "ch_guard_mend",
+        "motif": "bent brown arrowhead with pale blue sparks"
+      },
+      {
+        "id": "ch_quiet_guard",
+        "motif": "cyan wind ribbon wrapping a buckler"
+      },
+      {
+        "id": "ch_rupture_charge",
+        "motif": "an orange pulse in a cracked magenta gem"
+      },
+      {
+        "id": "ch_chainbreak",
+        "motif": "brass shackle broken by white lightning"
+      },
+      {
+        "id": "ch_windstep",
+        "motif": "a blue feather over a golden spark"
+      },
+      {
+        "id": "ch_crimson_mortar",
+        "motif": "red ripple droplet falling into a bronze mortar"
+      },
+      {
+        "id": "ch_quartz_fuse",
+        "motif": "ochre green quartz point with copper sparks"
+      },
+      {
+        "id": "ch_ember_petals",
+        "motif": "three warm petals around a small flame"
+      },
+      {
+        "id": "ch_heart_knot",
+        "motif": "polished green heart tied with copper thread"
+      }
+    ]
+  }
+]
