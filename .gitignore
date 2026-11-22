@@ -11,3 +11,7 @@ uploads/
 data/
 __pycache__/
 *.pyc
+.venv/
+tmp/
+server/data/expedition/
+.pydeps/

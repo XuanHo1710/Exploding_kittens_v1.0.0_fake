@@ -1,0 +1,12 @@
+node_modules/
+dist/
+client/dist/
+server/dist/
+.git/
+*.log*
+.env*
+coverage/
+tmp/
+__pycache__/
+*.pyc
+server/data/
