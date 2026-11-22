@@ -324,12 +324,10 @@ export class Game {
     rules?: unknown,
     gameMode: GameMode = 'exploding_kittens',
   ) {
-    this.roomRules = this.parseRules(rules);
     const resolvedMode = normalizeDirectGameMode(gameMode as string);
-    if (resolvedMode) {
-      this.gameMode = resolvedMode;
-      this.roomRules.maxPlayers = Math.min(this.roomRules.maxPlayers, GAME_MODES[resolvedMode].maxPlayers);
-    }
+    if (resolvedMode) this.gameMode = resolvedMode;
+    this.roomRules = this.parseRules(rules);
+    if (resolvedMode) this.roomRules.maxPlayers = Math.min(this.roomRules.maxPlayers, GAME_MODES[resolvedMode].maxPlayers);
   }
 
   /**
@@ -366,6 +364,8 @@ export class Game {
               ? GAME_MODES.bansung.maxPlayers
             : resolved === 'mighty_knight'
               ? GAME_MODES.mighty_knight.maxPlayers
+            : resolved === 'astral_expedition'
+              ? GAME_MODES.astral_expedition.maxPlayers
             : resolved === 'total_war'
               ? TW_MAX_PLAYERS
               : resolved === 'thap_hung'
@@ -725,6 +725,11 @@ export class Game {
       }
       if (this.gameMode === 'mighty_knight') {
         this.startMk();
+        return;
+      }
+      if (this.gameMode === 'astral_expedition') {
+        this.phase = 'playing';
+        this.addLog('✨ Khởi hành chiến dịch Astral Expedition Pixel!');
         return;
       }
       if (this.gameMode === 'total_war') {
@@ -1571,7 +1576,7 @@ export class Game {
       })),
       spectators: this.spectators.map((x) => ({ id: x.id, name: x.name, avatar: x.avatar, connected: x.connected })),
       hand: this.player(id)?.hand ?? [],
-      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' && this.gameMode !== 'link_duel' && this.gameMode !== 'loto' && this.gameMode !== 'thap_hung' && this.gameMode !== 'total_war' && this.gameMode !== 'bansung' && this.gameMode !== 'mighty_knight' ? this.current()?.id : undefined,
+      currentPlayerId: this.phase === 'playing' && this.gameMode !== 'ant_empire' && this.gameMode !== 'link_duel' && this.gameMode !== 'loto' && this.gameMode !== 'thap_hung' && this.gameMode !== 'total_war' && this.gameMode !== 'bansung' && this.gameMode !== 'mighty_knight' && this.gameMode !== 'astral_expedition' ? this.current()?.id : undefined,
       turnsRemaining: this.turnsRemaining,
       direction: this.direction,
       turnDeadline: this.phase === 'playing' ? this.turnDeadline : undefined,
@@ -3585,7 +3590,7 @@ export class Game {
   }
 
   private parseRules(raw: unknown): RoomRules {
-    try { return normalizeRoomRules(raw); }
+    try { return normalizeRoomRules(raw, this.gameMode === 'astral_expedition'); }
     catch (error) { throw new GameError(error instanceof Error ? error.message : 'Luật phòng không hợp lệ.'); }
   }
 

@@ -4,6 +4,12 @@ const {
   DEFAULT_ROOM_RULES, RULE_PRESETS, normalizeRoomRules, roomDeckSummary, detectPlayKind, describeCard,
 } = require('../dist/shared/src/index.js');
 
+test('only the solo room mode permits a one-player cap', () => {
+  assert.equal(normalizeRoomRules({ maxPlayers: 1 }, true).maxPlayers, 1);
+  assert.equal(normalizeRoomRules(undefined, true).maxPlayers, 1);
+  assert.throws(() => normalizeRoomRules({ maxPlayers: 1 }), /2 đến 10/);
+});
+
 test('all presets deal a valid game at every advertised player count', () => {
   for (const preset of RULE_PRESETS) {
     const rules = normalizeRoomRules(preset.rules);

@@ -535,7 +535,7 @@ export class RoomsService {
   create(playerId: string, name: string, avatar?: string, rules?: unknown, gameMode?: string) {
     const mode: GameMode = normalizeGameMode(gameMode) ?? 'exploding_kittens';
     let normalized: RoomRules;
-    try { normalized = normalizeRoomRules(rules); }
+    try { normalized = normalizeRoomRules(rules, mode === 'astral_expedition'); }
     catch (error) { throw new GameError(error instanceof Error ? error.message : 'Luật phòng không hợp lệ.'); }
     if (mode === 'exploding_kittens') {
       const summary = roomDeckSummary(normalized, 2);
@@ -551,6 +551,8 @@ export class RoomsService {
     this.playerRoom.set(playerId, code);
     room.addPlayer(playerId, name, avatar);
     this.sendChatHistory(playerId);
+    // Astral Expedition là game một người: tạo phòng là vào thẳng màn chơi, không qua sảnh chờ.
+    if (mode === 'astral_expedition') return this.startGame(playerId);
   }
 
   join(rawCode: string, playerId: string, name: string, avatar?: string) {

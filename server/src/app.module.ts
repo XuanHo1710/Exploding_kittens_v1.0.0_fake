@@ -9,6 +9,8 @@ import { DB_FILE, DbService } from './store/db.service';
 import { ACCOUNT_STORE, createAccountStore } from './store/json.store';
 import { AccountsService } from './store/accounts.service';
 import { AccountController } from './store/account.controller';
+import { ExpeditionRedisService } from './game/expedition/expedition-redis.service';
+import { ExpeditionService } from './game/expedition/expedition.service';
 
 const REPO_UP_CANDIDATES: readonly string[][] = [
   ['..', '..', '..', '..'],
@@ -41,8 +43,13 @@ export const MIGHTY_KNIGHT_STATIC_PREFIX = '/database-mighty-knight-pixel';
 export const MIGHTY_KNIGHT_ROOT = resolveRepoPath('database-mighty-knight-pixel');
 export const ALLOWED_MK_STATIC_EXT = new Set(['.png', '.webp', '.jpg', '.jpeg', '.ogg', '.mp3', '.wav', '.json']);
 
+export const ASTRAL_EXPEDITION_STATIC_PREFIX = '/database-astral-expedition';
+export const ASTRAL_EXPEDITION_ROOT = resolveRepoPath('database-astral-expedition');
+export const ALLOWED_EXPEDITION_STATIC_EXT = new Set(['.png', '.webp', '.jpg', '.jpeg', '.ogg', '.mp3', '.wav', '.json', '.tmj', '.tsj']);
+
 let cachedBanSungRealRoot: string | undefined;
 let cachedMightyKnightRealRoot: string | undefined;
+let cachedAstralExpeditionRealRoot: string | undefined;
 
 function resolveRealRoot(rootDir: string): string {
   if (rootDir === BAN_SUNG_ROOT) {
@@ -56,6 +63,12 @@ function resolveRealRoot(rootDir: string): string {
       cachedMightyKnightRealRoot = realpathSync(MIGHTY_KNIGHT_ROOT);
     }
     return cachedMightyKnightRealRoot;
+  }
+  if (rootDir === ASTRAL_EXPEDITION_ROOT) {
+    if (!cachedAstralExpeditionRealRoot) {
+      cachedAstralExpeditionRealRoot = realpathSync(ASTRAL_EXPEDITION_ROOT);
+    }
+    return cachedAstralExpeditionRealRoot;
   }
   return realpathSync(rootDir);
 }
@@ -229,6 +242,27 @@ export async function guardMightyKnightStaticRequest(
   );
 }
 
+const ALLOWED_EXPEDITION_DATA_PREFIXES = ['maps/', 'units/', 'vfx/', 'ui/', 'battle-scenes/', 'overworld/', 'structures/'];
+
+export async function guardAstralExpeditionStaticRequest(
+  req: StaticGuardRequest,
+  res: StaticGuardResponse,
+  next: (err?: unknown) => void,
+  rootDir = ASTRAL_EXPEDITION_ROOT,
+): Promise<void> {
+  await guardSafeStaticRequest(
+    ASTRAL_EXPEDITION_STATIC_PREFIX,
+    ALLOWED_EXPEDITION_STATIC_EXT,
+    (relPath) =>
+      relPath === 'manifest.json' ||
+      ALLOWED_EXPEDITION_DATA_PREFIXES.some((pfx) => relPath.startsWith(pfx)),
+    req,
+    res,
+    next,
+    rootDir,
+  );
+}
+
 @Injectable()
 export class BanSungStaticGuard implements NestMiddleware {
   async use(req: StaticGuardRequest, res: StaticGuardResponse, next: (err?: unknown) => void): Promise<void> {
@@ -240,6 +274,13 @@ export class BanSungStaticGuard implements NestMiddleware {
 export class MightyKnightStaticGuard implements NestMiddleware {
   async use(req: StaticGuardRequest, res: StaticGuardResponse, next: (err?: unknown) => void): Promise<void> {
     await guardMightyKnightStaticRequest(req, res, next);
+  }
+}
+
+@Injectable()
+export class AstralExpeditionStaticGuard implements NestMiddleware {
+  async use(req: StaticGuardRequest, res: StaticGuardResponse, next: (err?: unknown) => void): Promise<void> {
+    await guardAstralExpeditionStaticRequest(req, res, next);
   }
 }
 
@@ -268,6 +309,12 @@ const miragineDir = resolveRepoPath('database-miraginewar');
         serveRoot: MIGHTY_KNIGHT_STATIC_PREFIX,
         serveStaticOptions: { maxAge: 0, fallthrough: false, dotfiles: 'deny', index: false, redirect: false },
       },
+      // Tài nguyên 2D Pixel Đa Frame Astral Expedition 33 từ database-astral-expedition/
+      {
+        rootPath: ASTRAL_EXPEDITION_ROOT,
+        serveRoot: ASTRAL_EXPEDITION_STATIC_PREFIX,
+        serveStaticOptions: { maxAge: 0, fallthrough: false, dotfiles: 'deny', index: false, redirect: false },
+      },
       // Bản build của client (client/dist) được server phục vụ luôn, chỉ cần chạy 1 tiến trình
       {
         rootPath: resolveRepoPath('client', 'dist'),
@@ -279,6 +326,7 @@ const miragineDir = resolveRepoPath('database-miraginewar');
           '/database-total-war/{*path}',
           '/database-ban-sung/{*path}',
           '/database-mighty-knight-pixel/{*path}',
+          '/database-astral-expedition/{*path}',
           '/uploads/{*path}',
         ],
       },
@@ -287,7 +335,15 @@ const miragineDir = resolveRepoPath('database-miraginewar');
   controllers: [AvatarController, AccountController],
   providers: [
     { provide: ACCOUNT_STORE, useFactory: () => createAccountStore(DB_FILE) },
-    DbService, AccountsService, RoomsService, GameGateway, BanSungStaticGuard, MightyKnightStaticGuard,
+    DbService,
+    AccountsService,
+    RoomsService,
+    GameGateway,
+    BanSungStaticGuard,
+    MightyKnightStaticGuard,
+    AstralExpeditionStaticGuard,
+    ExpeditionRedisService,
+    ExpeditionService,
   ],
 })
 export class AppModule implements NestModule, OnModuleInit {
@@ -296,6 +352,7 @@ export class AppModule implements NestModule, OnModuleInit {
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(BanSungStaticGuard).forRoutes(BAN_SUNG_STATIC_PREFIX, `${BAN_SUNG_STATIC_PREFIX}/{*path}`);
     consumer.apply(MightyKnightStaticGuard).forRoutes(MIGHTY_KNIGHT_STATIC_PREFIX, `${MIGHTY_KNIGHT_STATIC_PREFIX}/{*path}`);
+    consumer.apply(AstralExpeditionStaticGuard).forRoutes(ASTRAL_EXPEDITION_STATIC_PREFIX, `${ASTRAL_EXPEDITION_STATIC_PREFIX}/{*path}`);
   }
 
   /** Warn visibly at startup if Miragine War runtime assets are missing. */

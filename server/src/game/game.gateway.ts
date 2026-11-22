@@ -17,6 +17,29 @@ import {
   MK_EVT_CMD,
   MK_EVT_CONFIG,
   MK_EVT_HERO,
+  EXP_EVT_LOAD_PROFILE,
+  EXP_EVT_REACH_ANCHOR,
+  EXP_EVT_OPEN_CHEST,
+  EXP_EVT_WARP_REALM,
+  EXP_EVT_BATTLE_START,
+  EXP_EVT_BATTLE_RETREAT,
+  EXP_EVT_BATTLE_COMMIT,
+  EXP_EVT_SUMMON,
+  EXP_EVT_UPDATE_PARTY,
+  EXP_EVT_UPGRADE_HERO,
+  EXP_EVT_ALLOCATE_STATS,
+  EXP_EVT_EQUIP_ITEM,
+  EXP_EVT_USE_ELIXIR,
+  EXP_EVT_ITEM_SUMMON,
+  EXP_EVT_WEAPON_SUMMON,
+  EXP_EVT_REFINE_WEAPON,
+  EXP_EVT_ENHANCE_ITEM,
+  EXP_EVT_SALVAGE_ITEMS,
+  EXP_EVT_FEED_EXP,
+  EXP_EVT_EQUIP_CHARM,
+  EXP_EVT_TREE_UNLOCK,
+  EXP_EVT_TREE_RESET,
+  EXP_EVT_STORY_SEEN,
   isValidAvatar,
   type AntsCommand,
   type BansungCommand,
@@ -40,6 +63,7 @@ import {
 } from './mk/security';
 import { RoomsService } from './rooms.service';
 import { AccountsService } from '../store/accounts.service';
+import { ExpeditionService } from './expedition/expedition.service';
 
 class SilentRejectError extends Error {}
 
@@ -84,6 +108,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   constructor(
     private readonly rooms: RoomsService,
     private readonly accounts: AccountsService,
+    private readonly expedition: ExpeditionService,
   ) {}
 
   private disconnectClient(client: Socket | undefined) {
@@ -602,6 +627,188 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('loto:pick')
   lotoPick(@ConnectedSocket() c: Socket, @MessageBody() body: { sheets?: unknown; colors?: unknown }) {
     return this.handle(c, (me) => this.rooms.setLotoPick(me.playerId, body?.sheets, body?.colors));
+  }
+
+  // --- Astral Expedition 33 Pixel ---
+  @SubscribeMessage(EXP_EVT_LOAD_PROFILE)
+  expLoadProfile(@ConnectedSocket() c: Socket) {
+    return this.handle(c, (me) => this.expedition.getProfile(me.playerId));
+  }
+
+  @SubscribeMessage(EXP_EVT_REACH_ANCHOR)
+  expReachAnchor(@ConnectedSocket() c: Socket, @MessageBody() body: { mapId?: unknown; anchorId?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Dữ liệu trạm nghỉ không hợp lệ.');
+      return this.expedition.reachAnchor(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_OPEN_CHEST)
+  expOpenChest(@ConnectedSocket() c: Socket, @MessageBody() body: { mapId?: unknown; chestId?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Dữ liệu rương không hợp lệ.');
+      return this.expedition.openChest(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_WARP_REALM)
+  expWarpRealm(@ConnectedSocket() c: Socket, @MessageBody() body: { fromMapId?: unknown; toMapId?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Dữ liệu chuyển vùng không hợp lệ.');
+      return this.expedition.warpRealm(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_BATTLE_START)
+  expBattleStart(@ConnectedSocket() c: Socket, @MessageBody() body: { encounterKind?: unknown; targetId?: unknown; mapId?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 4096)) throw new GameError('Dữ liệu bắt đầu trận đấu không hợp lệ.');
+      return this.expedition.startBattle(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_BATTLE_COMMIT)
+  expBattleCommit(@ConnectedSocket() c: Socket, @MessageBody() body: { battleId?: unknown; reqId?: unknown; actionLog?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 128_000)) throw new GameError('Nhật ký trận đấu vượt quá giới hạn.');
+      return this.expedition.commitBattle(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_BATTLE_RETREAT)
+  expBattleRetreat(@ConnectedSocket() c: Socket, @MessageBody() body: { battleId?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 1024)) throw new GameError('Yêu cầu rút lui không hợp lệ.');
+      return this.expedition.retreatBattle(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_SUMMON)
+  expSummon(@ConnectedSocket() c: Socket, @MessageBody() body: { count?: unknown; reqId?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Yêu cầu triệu hồi không hợp lệ.');
+      return this.expedition.summon(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_UPDATE_PARTY)
+  expUpdateParty(@ConnectedSocket() c: Socket, @MessageBody() body: { activeHeroIds?: unknown; reserveHeroIds?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Đội hình không hợp lệ.');
+      return this.expedition.updateParty(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_UPGRADE_HERO)
+  expUpgradeHero(@ConnectedSocket() c: Socket, @MessageBody() body: { heroId?: unknown; kind?: unknown; skillId?: unknown; skillIds?: unknown; difficulty?: unknown; expectedRank?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Yêu cầu nâng cấp không hợp lệ.');
+      return this.expedition.upgradeHero(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_ALLOCATE_STATS)
+  expAllocateStats(@ConnectedSocket() c: Socket, @MessageBody() body: { heroId?: unknown; alloc?: unknown; reset?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Dữ liệu cộng điểm không hợp lệ.');
+      return this.expedition.allocateStats(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_EQUIP_ITEM)
+  expEquipItem(@ConnectedSocket() c: Socket, @MessageBody() body: { heroId?: unknown; slot?: unknown; itemUid?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Dữ liệu trang bị không hợp lệ.');
+      return this.expedition.equipItem(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_USE_ELIXIR)
+  expUseElixir(@ConnectedSocket() c: Socket, @MessageBody() body: { heroId?: unknown; itemUid?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Dữ liệu thuốc không hợp lệ.');
+      return this.expedition.useElixir(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_ITEM_SUMMON)
+  expItemSummon(@ConnectedSocket() c: Socket, @MessageBody() body: { count?: unknown; reqId?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Yêu cầu mở rương không hợp lệ.');
+      return this.expedition.itemSummon(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_WEAPON_SUMMON)
+  expWeaponSummon(@ConnectedSocket() c: Socket, @MessageBody() body: { count?: unknown; reqId?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 1024)) throw new GameError('Yêu cầu triệu hồi vũ khí không hợp lệ.');
+      return this.expedition.weaponSummon(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_ENHANCE_ITEM)
+  expEnhanceItem(@ConnectedSocket() c: Socket, @MessageBody() body: { itemUid?: unknown; expectedLevel?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 1024)) throw new GameError('Yêu cầu cường hoá không hợp lệ.');
+      return this.expedition.enhanceItem(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_REFINE_WEAPON)
+  expRefineWeapon(@ConnectedSocket() c: Socket, @MessageBody() body: { itemUid?: unknown; expectedRank?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 1024)) throw new GameError('Yêu cầu tinh luyện không hợp lệ.');
+      return this.expedition.refineWeapon(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_SALVAGE_ITEMS)
+  expSalvageItems(@ConnectedSocket() c: Socket, @MessageBody() body: { itemUids?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 32_000)) throw new GameError('Danh sách phân rã không hợp lệ.');
+      return this.expedition.salvageItems(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_FEED_EXP)
+  expFeedExp(@ConnectedSocket() c: Socket, @MessageBody() body: { heroId?: unknown; crystals?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Dữ liệu bón EXP không hợp lệ.');
+      return this.expedition.feedExp(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_EQUIP_CHARM)
+  expEquipCharm(@ConnectedSocket() c: Socket, @MessageBody() body: { heroId?: unknown; slotIndex?: unknown; charmId?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Dữ liệu bùa không hợp lệ.');
+      return this.expedition.equipCharm(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_TREE_UNLOCK)
+  expTreeUnlock(@ConnectedSocket() c: Socket, @MessageBody() body: { heroId?: unknown; nodeId?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Dữ liệu cây kỹ năng không hợp lệ.');
+      return this.expedition.unlockTreeNode(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_TREE_RESET)
+  expTreeReset(@ConnectedSocket() c: Socket, @MessageBody() body: { heroId?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 2048)) throw new GameError('Dữ liệu cây kỹ năng không hợp lệ.');
+      return this.expedition.resetTree(me.playerId, body ?? {});
+    });
+  }
+
+  @SubscribeMessage(EXP_EVT_STORY_SEEN)
+  expStorySeen(@ConnectedSocket() c: Socket, @MessageBody() body: { sceneId?: unknown }) {
+    return this.handle(c, (me) => {
+      if (!isWithinJsonByteBudget(body, 1024)) throw new GameError('Dữ liệu cốt truyện không hợp lệ.');
+      return this.expedition.markStorySeen(me.playerId, body ?? {});
+    });
   }
 
   private rejectInvalidBansungPayload(
