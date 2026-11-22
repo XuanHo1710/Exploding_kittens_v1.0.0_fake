@@ -8,6 +8,7 @@ Game Mèo Nổ chơi qua trình duyệt cho 2–10 người. Mỗi phòng có th
 - `database/`: ảnh lá bài. Map tên file ↔ loại lá trong `client/src/cardImages.ts`
 - `database-total-war/`: kho dữ liệu lịch sử & RTS mã nguồn mở (`0ADMods/han_china`, `IMRZ/twtk-interactive-map`, `Mugen87/yuka` kèm `SOURCES.md`), chân dung danh tướng, thẻ bài Thủy Mặc, sprite sheet 6 trạng thái, địa hình và âm thanh của Tam Quốc Toàn Chiến
 - `database-mighty-knight-pixel/`: kho tài nguyên **2.5D Pixel Art** (chuẩn cứng **10–15 ảnh/nhân vật**, 18 Master Strip PNG, 18 Pixel VFX, 4 Quần xã × 5 lớp parallax, 4 BGM + 42 SFX 16-bit Chiptune/FM) của **Mighty Knight 2.5D Pixel**
+- `database-astral-expedition/`: tài nguyên **Astral Expedition** (7 bản đồ, arena 3D, nhân vật, quái, công trình, atlas UI)
 - `design/`: trang mẫu thiết kế lá bài
 
 Người chơi đăng ký/đăng nhập bằng tên và PIN. Trình duyệt lưu ID cùng token đăng nhập trong localStorage.
@@ -62,6 +63,19 @@ Copy `client/.env.example` thành `client/.env` (hoặc đặt biến môi trư�
 | Thời gian Nope / lượt / chọn bài | **Luật & bộ bài → Thời gian mỗi hành động** |
 | Tranh vector lá bài, avatar mèo | `client/src/art/` |
 | Màu nền sáng / tối | đầu file `client/src/styles.css` |
+
+## 🌌 Astral Expedition (RPG pixel theo lượt, trận đấu 3D)
+
+Khám phá 7 vùng, đánh quái theo lượt với Đỡ / Né đúng nhịp, gacha anh hùng và vũ khí.
+
+- Code: `client/src/components/ExpeditionBoard.tsx`, `client/src/expedition/`, `server/src/game/expedition/`, `shared/src/expedition/`
+- Phím: `WASD` di chuyển · `E` tương tác / nghỉ lửa trại · trong trận `E` Đỡ, `Space` Né, `W` counter Tuyệt Kỹ (từ vùng III)
+- Luật chính: mỗi quái 3 đòn xoay vòng · quái bị hạ biến mất tới khi nghỉ lửa trại (trừ Trùm) · thắng trận nhận 1 bùa · vũ khí / giáp cường hoá tới +10
+- Vẽ lại tài nguyên (Python + Pillow, chạy từ thư mục gốc):
+  - `.venv/Scripts/python.exe tools/expedition/redraw_realm_maps.py` — 7 bản đồ
+  - `.venv/Scripts/python.exe tools/expedition/export_monuments.py` — công trình
+  - `.venv/Scripts/python.exe tools/expedition/export_skill_icons.py` — icon kỹ năng
+- Test: `npm test --prefix server` (các file `server/test/expedition-*.test.cjs`)
 
 ## 🐜 Đế Chế Kiến (chiến thuật 2D thời gian thực)
 
