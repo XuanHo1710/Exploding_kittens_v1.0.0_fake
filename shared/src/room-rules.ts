@@ -82,8 +82,8 @@ export const RULE_LIMITS = {
 } as const;
 
 /** Không ép kiểu string/boolean; socket lạ không được bỏ qua lỗi cấu hình. */
-export function normalizeRoomRules(raw?: unknown): RoomRules {
-  if (raw === undefined) return structuredClone(DEFAULT_ROOM_RULES);
+export function normalizeRoomRules(raw?: unknown, allowSolo = false): RoomRules {
+  if (raw === undefined) return { ...structuredClone(DEFAULT_ROOM_RULES), maxPlayers: allowSolo ? 1 : DEFAULT_ROOM_RULES.maxPlayers };
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Luật phòng phải là một đối tượng hợp lệ.');
   const input = raw as Record<string, unknown>;
   for (const key of Object.keys(input)) {
@@ -97,7 +97,8 @@ export function normalizeRoomRules(raw?: unknown): RoomRules {
   };
   for (const key of ['maxPlayers', 'handSize', 'defusesPerPlayer', 'extraDefuses', 'fixedBombs', 'futureCount', 'turnSeconds', 'nopeSeconds', 'promptSeconds'] as const) {
     const value = input[key] === undefined ? rules[key] : input[key];
-    const [min, max] = RULE_LIMITS[key];
+    const [defaultMin, max] = RULE_LIMITS[key];
+    const min = allowSolo && key === 'maxPlayers' ? 1 : defaultMin;
     if (typeof value !== 'number' || !Number.isInteger(value) || value < min || value > max) {
       throw new Error(`${labels[key]} phải là số nguyên từ ${min} đến ${max}.`);
     }

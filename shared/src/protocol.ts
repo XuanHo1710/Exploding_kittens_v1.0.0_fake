@@ -11,7 +11,7 @@ import type { MkRoomView } from './mightyknight';
 
 export type Phase = 'lobby' | 'playing' | 'ended';
 
-export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire' | 'link_duel' | 'loto' | 'thap_hung' | 'total_war' | 'bansung' | 'mighty_knight';
+export type GameMode = 'exploding_kittens' | 'blackjack_21' | 'tien_len' | 'ant_empire' | 'link_duel' | 'loto' | 'thap_hung' | 'total_war' | 'bansung' | 'mighty_knight' | 'astral_expedition';
 
 export const GAME_MODES: Record<
   GameMode,
@@ -96,6 +96,14 @@ export const GAME_MODES: Record<
     minPlayers: 1,
     maxPlayers: 6,
     desc: 'Hành động nhập vai 2.5D Pixel Art (10–15 ảnh/nhân vật): 6 anh hùng × 30 kỹ năng & Ultimate, Combo 3 nhịp, Perfect Parry, 4 Quần xã, 4 Đại Boss 3 pha, Boss Rush & 12 Thánh Vật Roguelite!',
+  },
+  astral_expedition: {
+    name: 'Astral Expedition Pixel',
+    shortName: 'Astral Expedition',
+    emoji: '✨🗡️',
+    minPlayers: 1,
+    maxPlayers: 1,
+    desc: 'Nhập vai theo lượt 2D Pixel: Menu kỹ năng dọc, bấm nhịp Timed Hit & Đỡ Phản Đòn, Gacha 12 Anh Hùng (Pity 80), 7 Bản đồ động, 20 Quái Gác Cổng & Trùm Cuối Đêm Quang Phổ!',
   },
 };
 
