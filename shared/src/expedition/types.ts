@@ -41,7 +41,7 @@ export type ElementType = (typeof EXPEDITION_ELEMENTS)[number];
 export const EXPEDITION_ROLES = ['Vanguard', 'Striker', 'Breaker', 'Luminary'] as const;
 export type HeroRole = (typeof EXPEDITION_ROLES)[number];
 
-export const EXPEDITION_RARITIES = ['R', 'SR', 'SSR'] as const;
+export const EXPEDITION_RARITIES = ['R', 'SR', 'SSR', 'SSS'] as const;
 export type HeroRarity = (typeof EXPEDITION_RARITIES)[number];
 
 export const EXPEDITION_REALM_IDS = [
@@ -366,9 +366,20 @@ export interface PityLedger {
   totalPulls: number;
   ssrPityCount: number; // [0..80], guaranteed SSR at 80
   srPityCount: number;  // [0..10], guaranteed SR+ at 10
+  /** Bảo hiểm SSS (Jung): số lượt từ mốc trước [0..100) */
+  sssPityCount?: number;
+  /** Nấc bảo hiểm SSS: 0 → tỉ lệ 1/3, 1 → 1/2, 2 → chắc chắn */
+  sssStage?: number;
 }
 
 export interface SummonHistoryEntry {
+  /** nhánh triệu hồi (mặc định 'hero' cho bản ghi cũ) */
+  banner?: 'hero' | 'weapon' | 'item';
+  /** tên + độ hiếm món đồ (nhánh vũ khí / rương) */
+  itemName?: string;
+  itemRarity?: string;
+  /** EXP anh hùng nhận từ mảnh dư */
+  expConverted?: number;
   pullIndex: number;
   heroId: string;
   rarity: HeroRarity;
@@ -431,6 +442,8 @@ export interface ExpeditionProfile {
    * Bị hạ thì biến mất khỏi bản đồ; nghỉ tại Trạm (phím E) sẽ xoá danh sách → quái hồi sinh. Đại Trùm không nằm ở đây.
    */
   defeatedSinceRest?: string[];
+  /** nguyên liệu cường hoá: materialId -> số lượng */
+  materials?: Record<string, number>;
   /** lần nghỉ gần nhất (để màn hình nghỉ ngơi hiển thị) */
   lastRest?: { at: number; anchorId: string; respawned: number };
   /** cảnh cốt truyện đã xem */
@@ -458,6 +471,8 @@ export interface BattleReceipt {
   drops: ItemInstance[];
   charms: CharmGain[];
   levelUps: LevelUpReport[];
+  /** nguyên liệu cường hoá nhận được */
+  materials?: Record<string, number>;
 }
 
 export type TimedHitGrade = 'perfect' | 'good' | 'miss';
@@ -578,6 +593,8 @@ export interface SummonResultItem {
   awakeningAfter: number;
   shardGained: number;
   starlightGained: number;
+  /** mảnh dư → EXP anh hùng */
+  expGained?: number;
 }
 
 export function computeHeroStats(def: HeroDefinition, inst: HeroInstance): StatBlock {

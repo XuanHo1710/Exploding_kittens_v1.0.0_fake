@@ -11,18 +11,18 @@ import { weaponArtUrl } from './weapon-art';
 import { playExpeditionSfx } from './sound';
 import './reward-fx.css';
 
-type Tier = 'blue' | 'purple' | 'gold' | 'red';
-const TIER_COLOR: Record<Tier, string> = { blue: '#6fb6ff', purple: '#c07cff', gold: '#ffcf5a', red: '#ff3b3b' };
+type Tier = 'blue' | 'purple' | 'gold' | 'red' | 'sss';
+const TIER_COLOR: Record<Tier, string> = { blue: '#6fb6ff', purple: '#c07cff', gold: '#ffcf5a', red: '#ff3b3b', sss: '#ff9a2e' };
 const ITEM_TIER: Record<ItemInstance['rarity'], Tier> = { common: 'blue', rare: 'blue', epic: 'purple', legendary: 'gold', mythic: 'red' };
-const HERO_TIER: Record<SummonResultItem['rarity'], Tier> = { R: 'blue', SR: 'purple', SSR: 'gold' };
-const TIER_RANK: Record<Tier, number> = { blue: 0, purple: 1, gold: 2, red: 3 };
+const HERO_TIER: Record<SummonResultItem['rarity'], Tier> = { R: 'blue', SR: 'purple', SSR: 'gold', SSS: 'sss' };
+const TIER_RANK: Record<Tier, number> = { blue: 0, purple: 1, gold: 2, red: 3, sss: 4 };
 
 interface Card { key: string; tier: Tier; color: string; title: string; sub: string; badge?: string; img?: string }
 
 function cardsOf(res: { heroes?: SummonResultItem[]; items?: ItemInstance[] }): Card[] {
   const heroes = (res.heroes ?? []).map((h, i): Card => ({
     key: `h${i}`, tier: HERO_TIER[h.rarity], color: TIER_COLOR[HERO_TIER[h.rarity]], title: h.nameVi,
-    sub: h.rarity, badge: h.isNew ? 'MỚI!' : `+${h.shardGained} mảnh · +${h.starlightGained}✦`, img: portraitUrl(h.heroId),
+    sub: h.rarity, badge: h.isNew ? 'MỚI!' : h.expGained ? `Mảnh dư → +${h.expGained} EXP` : `+${h.shardGained} mảnh · +${h.starlightGained}✦`, img: portraitUrl(h.heroId),
   }));
   const items = (res.items ?? []).map((it, i): Card => ({
     key: `i${i}`, tier: ITEM_TIER[it.rarity], color: ITEM_RARITY_COLORS[it.rarity], title: it.nameVi,
@@ -53,7 +53,7 @@ export function SummonCinematic({ res, onDone, onClose }: {
   /** Bỏ qua: lật cả loạt thẻ cùng lúc kèm hiệu ứng (thay vì mở từng thẻ). */
   const showAll = useCallback(() => {
     setStage('all');
-    playExpeditionSfx(cards.some((c) => c.tier === 'gold') ? 'ssr_fanfare' : 'confirm');
+    playExpeditionSfx(cards.some((c) => TIER_RANK[c.tier] >= 2) ? 'ssr_fanfare' : 'confirm');
   }, [cards]);
 
   // sao chổi bay ~1,7 s → loé sáng 0,45 s → lật thẻ

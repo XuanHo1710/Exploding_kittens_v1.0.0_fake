@@ -447,7 +447,8 @@ export function expectedCharmsPerBattle(encounterKind: EncounterKind, firstClear
 
 /** Nghỉ tại Trạm (lửa trại): hồi sinh mọi quái đã hạ (trừ Đại Trùm) và nạp vật phẩm trận lên mức tối thiểu. */
 export function applyBonfireRest(profile: ExpeditionProfile, anchorId: string, now = Date.now()): { respawned: number } {
-  const respawned = (profile.defeatedSinceRest ?? []).length;
+  // chỉ đàn quái nhỏ hồi sinh; Gác Cổng và Đại Trùm đã hạ thì hạ vĩnh viễn
+  const respawned = (profile.defeatedSinceRest ?? []).filter((id) => !id.includes('_gk_')).length;
   profile.defeatedSinceRest = [];
   profile.supplies ??= {};
   for (const [k, min] of Object.entries(EXP_BALANCE.rest.supplyBaseline) as [keyof typeof EXP_BALANCE.rest.supplyBaseline, number][]) {

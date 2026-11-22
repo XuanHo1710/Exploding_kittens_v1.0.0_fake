@@ -269,7 +269,7 @@ def main() -> int:
         tmj = build_and_verify_tmj(realm, realm["gks"])
         out_map_dir = os.path.join(out_root, "maps", map_id)
         os.makedirs(out_map_dir, exist_ok=True)
-        with open(os.path.join(out_map_dir, f"{map_id}.tmj"), "w", encoding="utf-8") as f:
+        with open(os.path.join(out_map_dir, f"{map_id}.tmj"), "w", encoding="utf-8", newline="\n") as f:
             json.dump(tmj, f, ensure_ascii=False, indent=2)
 
     # 6. Signature Silhouette Structures & Gacha Summon Orb & UI Kit

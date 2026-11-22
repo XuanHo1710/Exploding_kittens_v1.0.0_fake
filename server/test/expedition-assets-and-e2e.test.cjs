@@ -65,7 +65,7 @@ test('AstralExpeditionStaticGuard blocks traversal/dotfiles/methods and serves m
   assert.equal(okMap.passed, true);
 
   const manifest = JSON.parse(fs.readFileSync(path.join(ASTRAL_EXPEDITION_ROOT, 'manifest.json'), 'utf8'));
-  assert.equal(manifest.heroCount, 12);
+  assert.equal(manifest.heroCount, 13);
   assert.equal(manifest.bossCount, 7);
   assert.equal(manifest.realmCount, 7);
   assert.equal(manifest.files['units/heroes/gustave_blade-battle.png'].width, 1152);

@@ -95,6 +95,11 @@ HEROES = [
     hero("lumina_chrono", "Luma", "Astral", "caster", build="female", hair="long", skirt="robe", weapon="astro_staff", offhand="astrolabe", bust=True, halo=True,
          mats=M("Astral", skin=SKIN_PALE, hair=(246, 190, 240), top=(136, 76, 210), skirt=(110, 60, 180), legs=(80, 50, 140), boots=(70, 44, 120),
                 gloves=(240, 220, 250), belt=(250, 210, 120), metal=(240, 226, 250), accent=(250, 214, 120), grip=(90, 60, 130))),
+    # SSS · Jung: tóc đen sóng chạm vai, sơ mi trắng trơn, áo khoác và bốt đen.
+    hero("jung_afterglow", "Jung", "Solar", "blade", H=176, build="female", hair="shag", weapon="katana", weapon_scale=0.85, battle_fill=0.85, bust=True, cape_len=0.27,
+         mats=M("Solar", skin=SKIN_FAIR, hair=(28, 26, 34), top=(236, 234, 228), legs=(42, 42, 52), boots=(38, 35, 43), gloves=(36, 34, 42),
+                belt=(54, 48, 48), metal=(228, 234, 242), accent=(255, 154, 46), grip=(34, 28, 34), cape=(14, 14, 20), trim=(46, 43, 50),
+                fx=(255, 160, 60), fx_core=(255, 240, 200), glow=(255, 140, 40))),
 ]
 HEROES[0]["art"] = {"battle": "gustave-battle.png", "movement": "gustave-movement.png"}
 

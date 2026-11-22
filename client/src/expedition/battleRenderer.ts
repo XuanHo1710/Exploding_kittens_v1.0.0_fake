@@ -512,7 +512,8 @@ function heroPose(session: BattleSessionState, vis: BattleVisualState, hero: Com
     row = 5;
     frame = 0;
   }
-  const drawW = partySize > 3 ? 138 : 150;
+  const baseWidth = partySize > 3 ? 138 : 150;
+  const drawW = hero.templateId === 'jung_afterglow' ? Math.round(baseWidth * 1.12) : baseWidth;
   return {
     unit: hero, sheetPath: hero.spriteRef ?? `units/heroes/${hero.templateId}-battle.png`, cell: 192, rows: 6, row, frame, drawW, footFrac: 28 / drawW,
     home: anchor, lunge: { x: lungeX, y: lungeY }, lift, alpha: 1, moving: Boolean(lungeX || lungeY),

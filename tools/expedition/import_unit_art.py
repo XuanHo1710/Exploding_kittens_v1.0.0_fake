@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image
 
 from agy_units import layout, normalize_raw
-from art_source import normalize, update_manifest
+from art_source import normalize, normalize_jung_portrait, update_manifest
 from build_units import ART, _publish, edge_hits, write_catalog, write_readme, write_review_page
 from roster import UNITS_BY_ID
 
@@ -58,7 +58,11 @@ def main():
     if args.cast_source and (unit["category"] != "heroes" or args.sheet != "battle"):
         parser.error("--cast-source applies only to hero battle sheets")
     cell, cols, rows = (128, 1, 1) if args.sheet == "portrait" else layout(unit, args.sheet)
-    image = prepare_sheet(args.source, cell, cols, rows, args.unit)
+    if args.unit == "jung_afterglow" and args.sheet == "portrait" and not args.variant:
+        with Image.open(args.source) as portrait:
+            image = normalize_jung_portrait(portrait)
+    else:
+        image = prepare_sheet(args.source, cell, cols, rows, args.unit)
     if args.cast_source:
         cast = prepare_sheet(args.cast_source, cell, 3, 2, f"{args.unit} cast")
         for index in range(6):

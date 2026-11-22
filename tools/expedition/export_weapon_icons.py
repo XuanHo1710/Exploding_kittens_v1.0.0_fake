@@ -20,7 +20,8 @@ def publish():
     catalog = (REPO / "shared/src/expedition/weapons.ts").read_text(encoding="utf-8")
     ids = re.findall(r"^\s*\{ heroId: '([^']+)'", catalog, re.MULTILINE)
     panels = {
-        "guards": ids[:6], "legends": ids[6:], "field": [f"field-{n}" for n in range(1, 7)],
+        # 12 vũ khí trấn đầu nằm trên 2 tấm tranh; vũ khí thêm sau (Jung) vẽ riêng bằng export_jung_portrait.py
+        "guards": ids[:6], "legends": ids[6:12], "field": [f"field-{n}" for n in range(1, 7)],
         "families": ["field-bow", "field-staff", "field-daggers", "field-axe", "field-scythe", "field-spear"],
     }
     path = BUNDLE / "manifest.json"

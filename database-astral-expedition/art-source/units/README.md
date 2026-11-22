@@ -43,6 +43,9 @@ Thay một unit bằng bản vẽ tay: vẽ theo `prompts/battle/README.md` ho�
 | `units/heroes/lumina_chrono-battle-source.png` | `units/heroes/lumina_chrono-battle.png` | 1152×1152 | Luma · heroes · battle 6×6 @192 · view BACK |
 | `units/heroes/lumina_chrono-movement-source.png` | `units/heroes/lumina_chrono-movement.png` | 384×512 | Luma · heroes · movement 6×8 @64 · DOWN/LEFT/RIGHT/UP |
 | `units/heroes/lumina_chrono-portrait-source.png` | `units/heroes/lumina_chrono-portrait.png` | 128×128 | Luma · chân dung 128×128 |
+| `units/heroes/jung_afterglow-battle-source.png` | `units/heroes/jung_afterglow-battle.png` | 1152×1152 | Jung · heroes · battle 6×6 @192 · view BACK |
+| `units/heroes/jung_afterglow-movement-source.png` | `units/heroes/jung_afterglow-movement.png` | 384×512 | Jung · heroes · movement 6×8 @64 · DOWN/LEFT/RIGHT/UP |
+| `units/heroes/jung_afterglow-portrait-source.png` | `units/heroes/jung_afterglow-portrait.png` | 128×128 | Jung · chân dung 128×128 |
 | `units/gatekeepers/meadow_stag-battle-source.png` | `units/gatekeepers/meadow_stag-battle.png` | 1152×768 | Lộc Giác Cổ Thụ · gatekeepers · battle 6×4 @192 · view FRONT |
 | `units/gatekeepers/meadow_stag-movement-source.png` | `units/gatekeepers/meadow_stag-movement.png` | 384×256 | Lộc Giác Cổ Thụ · gatekeepers · movement 6×4 @64 · DOWN/LEFT/RIGHT/UP |
 | `units/gatekeepers/moss_sentinel-battle-source.png` | `units/gatekeepers/moss_sentinel-battle.png` | 1152×768 | Hộ Binh Rêu Đá · gatekeepers · battle 6×4 @192 · view FRONT |

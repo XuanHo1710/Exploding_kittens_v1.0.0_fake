@@ -47,7 +47,7 @@ def main():
     add_meadow_landscape(tiled)
 
     atlas = export_atlas()
-    map_path.write_text(json.dumps(tiled, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    map_path.write_text(json.dumps(tiled, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     manifest_path = BUNDLE / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     for output in (OUTPUT, map_path):

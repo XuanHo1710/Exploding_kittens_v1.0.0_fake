@@ -33,6 +33,10 @@ import {
   resolveWeaponSummon,
   weaponRefineCost,
   enhanceCost,
+  ENHANCE_MAX,
+  MATERIALS,
+  rollMaterialDrops,
+  type MaterialId,
   rollBattleDrops,
   skillLevelCap,
   skillUnlockLevel,
@@ -206,7 +210,7 @@ export class ExpeditionService {
       if (encounterKind === 'gatekeeper') {
         const gk = EXPEDITION_GATEKEEPERS_BY_ID[targetId];
         if (!gk || gk.mapId !== mapId) throw new GameError('Quái Gác Cổng không tồn tại ở vùng này.');
-        if (isEncounterDefeated(profile, targetId)) throw new GameError(`${gk.nameVi} đã bị hạ. Hãy nghỉ ở Trạm lửa trại để nó hồi sinh.`);
+        if (profile.clearedGatekeepers.includes(targetId)) throw new GameError(`${gk.nameVi} đã bị hạ vĩnh viễn.`);
       }
       if (encounterKind === 'boss') {
         for (const gkId of realm.gatekeeperIds) {
@@ -271,6 +275,7 @@ export class ExpeditionService {
       let drops: ItemInstance[] = [];
       let levelUps: LevelUpReport[] = [];
       let charms: CharmGain[] = [];
+      let materials: Record<string, number> = {};
       const realmOrder = EXPEDITION_REALMS_BY_ID[active.mapId]?.order ?? 1;
       const rand = () => randomInt(0, 1_000_000) / 1_000_000;
       profile.supplies = { ...verified.finalSession.supplies };
@@ -336,6 +341,9 @@ export class ExpeditionService {
         profile.astralSeal += sealReward;
         profile.expCrystal += Math.round(expReward * 0.5);
         levelUps = distributeBattleExp(profile, expReward);
+        materials = rollMaterialDrops({ encounterKind: active.encounterKind, realmOrder, rand }) as Record<string, number>;
+        profile.materials ??= {};
+        for (const [id, n] of Object.entries(materials)) profile.materials[id] = (profile.materials[id] ?? 0) + n;
       } else {
         // Safe respawn at last RestAnchor (>= 6 tiles away from all Gatekeepers)
         const realm = EXPEDITION_REALMS_BY_ID[profile.currentMapId] ?? EXPEDITION_REALMS_BY_ID['01-dawn-meadow'];
@@ -355,6 +363,7 @@ export class ExpeditionService {
         drops,
         charms,
         levelUps,
+        materials,
       };
       profile.lastBattleReceipt = receipt;
       await this.persistProfile(profile);
@@ -498,9 +507,20 @@ export class ExpeditionService {
         throw new GameError((err as Error).message);
       }
       profile.inventory = [...(profile.inventory ?? []), ...items];
+      this.pushItemHistory(profile, 'item', items);
       await this.persistProfile(profile);
       return { items, profile };
     });
+  }
+
+  /** Ghi lịch sử triệu hồi cho nhánh vũ khí / rương trang bị (mới nhất lên đầu, giữ 100 dòng). */
+  private pushItemHistory(profile: ExpeditionProfile, banner: 'weapon' | 'item', items: readonly ItemInstance[]): void {
+    const now = Date.now();
+    const rows = items.map((it, i) => ({
+      banner, pullIndex: i + 1, heroId: it.signatureId ?? '', rarity: 'R' as const, itemName: it.nameVi, itemRarity: it.rarity,
+      isNew: !it.duplicateYield, shardConverted: it.duplicateYield?.shards ?? 0, starlightConverted: it.duplicateYield?.starlight ?? 0, at: now,
+    }));
+    profile.summonHistory = [...rows.reverse(), ...profile.summonHistory].slice(0, 100);
   }
 
   /** Bón Tinh Thể EXP cho anh hùng. body: { heroId, crystals } */
@@ -523,6 +543,7 @@ export class ExpeditionService {
         throw new GameError((error as Error).message);
       }
       profile.completedSummons = [receipt, ...(profile.completedSummons ?? [])].slice(0, 256);
+      this.pushItemHistory(profile, 'weapon', items);
       await this.persistProfile(profile);
       return { items, profile };
     });
@@ -537,10 +558,16 @@ export class ExpeditionService {
       if (!item || item.kind !== 'equipment') throw new GameError('Không tìm thấy trang bị.');
       if ((item.enhance ?? 0) !== Number(raw?.expectedLevel ?? 0)) throw new GameError('Cấp cường hoá đã thay đổi.');
       const cost = enhanceCost(item);
-      if (!cost) throw new GameError('Đã cường hoá tối đa +10.');
+      if (!cost) throw new GameError(`Đã cường hoá tối đa +${ENHANCE_MAX}.`);
       if (profile.astralSeal < cost.seal || profile.expCrystal < cost.crystal) {
         throw new GameError(`Cần ${cost.seal} Ấn Tinh Tú và ${cost.crystal} Tinh Thể EXP.`);
       }
+      const mats = profile.materials ?? {};
+      for (const [id, n] of Object.entries(cost.mats)) {
+        if ((mats[id] ?? 0) < (n ?? 0)) throw new GameError(`Thiếu nguyên liệu: cần ${n} ${MATERIALS[id as MaterialId].nameVi} (có ${mats[id] ?? 0}).`);
+      }
+      for (const [id, n] of Object.entries(cost.mats)) mats[id] = (mats[id] ?? 0) - (n ?? 0);
+      profile.materials = mats;
       profile.astralSeal -= cost.seal;
       profile.expCrystal -= cost.crystal;
       item.enhance = (item.enhance ?? 0) + 1;
@@ -651,6 +678,8 @@ export class ExpeditionService {
         if (hero.shards < 1) throw new GameError('Cần một mảnh của chính Anh Hùng này.');
         hero.shards -= 1;
         hero.awakeningRank += 1;
+        // thức tỉnh cũng đẩy cấp: tặng EXP đủ 1 cấp
+        grantHeroExp(hero, expToNextLevel(hero.level));
       } else if (kind === 'level') {
         // Cân bằng: chỉ lên cấp bằng EXP chiến đấu, không mua cấp bằng Tinh Thể.
         throw new GameError('Anh Hùng chỉ lên cấp bằng cách chiến đấu.');

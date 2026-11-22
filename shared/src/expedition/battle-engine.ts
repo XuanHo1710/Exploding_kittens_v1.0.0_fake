@@ -28,6 +28,7 @@ import {
 } from './combat-rules';
 import { planEnemyIntent, resolveAppliedStatus } from './enemy-ai';
 import { computeHeroFinalStats, normalizeProfile, unlockedSkillIds } from './progression';
+import { equipmentLimitFx } from './weapons';
 import { Mulberry32 } from './rng';
 import { collectTreeBonuses } from './skill-tree';
 import {
@@ -229,6 +230,11 @@ export function createBattleSession(params: {
     const finalSpd = st.spd + spdBonus;
     const tree = collectTreeBonuses(inst);
     const charms = buildCharmLoadout(inst.charmIds ?? [], profile.charms);
+    // buff phá giới hạn của vũ khí / giáp (+7 / +10 / +15) cộng chung vào hiệu ứng trận
+    for (const [k, v] of Object.entries(equipmentLimitFx(heroId, profile.inventory))) {
+      const fxMap = charms.fx as Record<string, number>;
+      fxMap[k] = (fxMap[k] ?? 0) + v;
+    }
     const mech = heroMechanicOf(heroId);
     const chargeMax = mech.max + tree.chargeMax;
     const u: CombatantRuntime = {
@@ -412,6 +418,16 @@ function applyDamageToUnit(target: CombatantRuntime, rawDmg: number, events?: Tu
     target.hp = 1;
     events?.push({ kind: 'last_stand', actorUid: target.unitUid, targetUid: target.unitUid });
     return dealt;
+  }
+  // khoá giai đoạn Trùm: một lượt đánh không thể vượt qua mốc máu của giai đoạn kế (Trùm phải đổi giai đoạn trước)
+  if (target.isBoss && target.side === 'enemy') {
+    const next = EXPEDITION_BOSSES_BY_ID[target.templateId]?.phases
+      .filter((p) => p.phaseIndex > target.phaseIndex)
+      .sort((a, b) => b.hpThresholdRatio - a.hpThresholdRatio)[0];
+    if (next) {
+      const floor = Math.floor(target.maxHp * next.hpThresholdRatio);
+      dmg = Math.min(dmg, Math.max(0, target.hp - floor));
+    }
   }
   target.hp = Math.max(0, target.hp - dmg);
   if (target.hp === 0 && target.alive && fx(target, 'revive_once') && !target.reviveCharmUsed) {
@@ -856,7 +872,11 @@ function executeHeroSkill(
         const critRoll = rng.next() < Math.min(1.0, actor.critRate + critBonus);
         const isCrit =
           critRoll || (g === 'perfect' && fx(actor, 'perfect_crit') > 0) || (full && mech.fullBonus === 'crit' && burstStacks > 0);
-        if (isCrit) anyCrit = true;
+        if (isCrit) {
+          // Jung · Unzipped: chí mạng đầu tiên của mỗi đòn hồi +1 AP
+          if (!anyCrit && actor.templateId === 'jung_afterglow' && actor.side === 'party') actor.ap = clampAp(actor.ap + 1);
+          anyCrit = true;
+        }
         const staggerMult =
           tgt.staggerTurns > 0 ? (actor.templateId === 'corvus_night' ? 1.85 : 1.5) + fx(actor, 'stagger_power') : 1.0;
         const vulnMult = 1 + S.vuln * stacksOf(tgt, 'vuln') + (tgt.vulnDebuffTurns > 0 ? 0.25 : 0);
@@ -866,7 +886,7 @@ function executeHeroSkill(
         const elemMult = affinityDamageMult(aff) + (weak ? fx(actor, 'weak_power') : 0);
         const pierce = full && mech.fullBonus === 'pierce' ? 0.5 : 1;
         const defMitigation = 100 / (100 + effDef(tgt) * pierce);
-        const lowHp = actor.hp / actor.maxHp < 0.5 ? fx(actor, 'low_hp_power') : 0;
+        const lowHp = actor.hp / actor.maxHp < 0.5 ? fx(actor, 'low_hp_power') + (actor.templateId === 'jung_afterglow' ? 0.3 : 0) : 0;
         const situational =
           1 + lowHp + fx(actor, 'debuff_power') * Math.min(4, debuffCount(tgt)) + (skill.slotKind === 'ultimate' ? fx(actor, 'ult_power') : 0);
         const critMult = isCrit ? actor.critDmg + (actor.templateId === 'aurelia_eclipse' ? 0.25 : 0)
@@ -1097,7 +1117,9 @@ function executeEnemyTurn(
         const aff = affinityOf(hero.element, actor);
         const defMitC = 100 / (100 + effDef(actor));
         const incoming = effAtk(actor) * (move.powerMult / Math.max(1, move.hitBeatsMs.length)) * (move.specialPower ?? 1.6);
-        const dmg = applyDamageToUnit(actor, (incoming * 1.25 + effAtk(hero) * 0.6 * affinityDamageMult(aff)) * defMitC, events);
+        // giới hạn mỗi lần phản: tối đa 8% máu Trùm / 25% máu quái thường (tránh Trùm cuối tự hạ mình bằng chính đòn của nó)
+        const reflectCap = actor.maxHp * (actor.isBoss ? 0.08 : 0.25);
+        const dmg = applyDamageToUnit(actor, Math.min(reflectCap, (incoming * 1.25 + effAtk(hero) * 0.6 * affinityDamageMult(aff)) * defMitC), events);
         events.push({ kind: 'parry_counter', actorUid: hero.unitUid, targetUid: actor.unitUid, amount: dmg, affinity: aff });
         return;
       }

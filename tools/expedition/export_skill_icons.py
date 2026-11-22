@@ -28,6 +28,7 @@ ELEM = {
     "Frost": [(36, 92, 164), (108, 186, 240), (222, 246, 255), (140, 220, 255)],
     "Tide": [(18, 64, 136), (48, 136, 216), (164, 222, 255), (80, 180, 255)],
     "Astral": [(64, 36, 124), (146, 98, 228), (226, 202, 255), (190, 140, 255)],
+    "Dawn": [(120, 40, 12), (255, 138, 38), (255, 222, 150), (255, 170, 70)],  # SSS Jung: cam rạng đông
 }
 METAL = [(84, 90, 106), (168, 176, 190), (238, 242, 250)]
 GOLD = [(140, 92, 26), (226, 176, 58), (255, 236, 150)]
@@ -37,6 +38,7 @@ HERO_ELEM = {
     "lyr": "Frost", "lyra_frostbow": "Frost", "kes": "Solar", "kestrel_dune": "Solar", "ner": "Tide", "nereus_tide": "Tide",
     "cor": "Astral", "corvus_night": "Astral", "ign": "Pyre", "ignis_valkyrie": "Pyre", "mar": "Tide", "marina_abyss": "Tide",
     "aur": "Solar", "aurelia_eclipse": "Solar", "ser": "Frost", "seraph_glacier": "Frost", "lum": "Astral", "lumina_chrono": "Astral",
+    "jung": "Dawn", "jung_afterglow": "Dawn",
 }
 
 
@@ -328,6 +330,15 @@ def recipe(skill_id: str, ic: Icon):
         "mar_passive": lambda: (ic.ring(32, 14, 6, 4, METAL[1]), ic.line([(32, 20), (32, 54)], METAL[1], 5), ic.line([(20, 28), (44, 28)], METAL[1], 4),
                                 ic.arc(32, 36, 20, 20, 160, 6, METAL[1] + (255,))),
         # Aurelia — đại kiếm khải huyền
+        # Jung (SSS) — katana iai + cước Taekwondo, cam rạng đông
+        "jung_basic": lambda: (ic.arc(32, 34, 25, 200, 340, 8, P[1], P[2]), ic.blade(12, 54, 54, 12, 5), ic.star(50, 16, 6, 2, 4, P[2])),
+        "jung_afterimage": lambda: ([ic.blade(8 + i * 9, 56, 42 + i * 9, 16, 5, guard=False) for i in range(2)],
+                                    [ic.line([(4, 30 + i * 8), (22 - i * 4, 30 + i * 8)], P[1], 2) for i in range(3)], ic.blade(26, 56, 60, 16, 6)),
+        "jung_neon_cyclone": lambda: (ic.tornado(32, 34), ic.arc(32, 32, 27, 0, 300, 5, P[1], P[2]), ic.circle(50, 12, 5, P[2])),
+        "jung_ult_daybreak": lambda: (ic.rays(32, 46, 14, 30, 11, P[1], 3, 180), ic.circle(32, 46, 13, P[1]), ic.circle(32, 46, 8, P[2]),
+                                      ic.d.rectangle([2, 46, 62, 62], fill=(20, 16, 26, 255)), ic.blade(32, 4, 32, 54, 6)),
+        "jung_passive": lambda: (ic.line([(32, 6), (32, 58)], METAL[0], 6), [ic.line([(26, 10 + i * 8), (38, 10 + i * 8)], METAL[2], 2) for i in range(6)],
+                                 ic.poly([(26, 40), (38, 40), (32, 54)], P[1]), ic.star(32, 30, 11, 4, 4, P[2])),
         "aur_basic": lambda: ic.blade(14, 52, 52, 10, 12),
         "aur_solar_cleave": lambda: (ic.rays(44, 20, 10, 18, 8, P[1], 3), ic.blade(10, 56, 44, 20, 10), ic.arc(30, 34, 26, 160, 280, 8, P[2])),
         "aur_eclipse_nova": lambda: (ic.rays(32, 32, 20, 31, 16, P[1], 3), ic.circle(32, 32, 18, P[1]), ic.circle(32, 32, 14, (30, 20, 30))),
@@ -367,7 +378,8 @@ def main() -> None:
               ("marina_abyss", "mar", ["basic", "vortex_bind", "abyss_geyser", "ult_maelstrom", "passive"]),
               ("aurelia_eclipse", "aur", ["basic", "solar_cleave", "eclipse_nova", "ult_judgement", "passive"]),
               ("seraph_glacier", "ser", ["basic", "glacier_crown", "shatter_lance", "ult_eternal_winter", "passive"]),
-              ("lumina_chrono", "lum", ["basic", "astral_surge", "starfall_prism", "ult_symphony", "passive"])]
+              ("lumina_chrono", "lum", ["basic", "astral_surge", "starfall_prism", "ult_symphony", "passive"]),
+              ("jung_afterglow", "jung", ["basic", "afterimage", "neon_cyclone", "ult_daybreak", "passive"])]
     ids = [x for hero, pre, own in heroes for x in [f"{pre}_{k}" for k in own] + [f"{hero}_{k}" for k in ("focus", "ward", "surge")]]
     rows = math.ceil(len(ids) / COLS)
     atlas = Image.new("RGBA", (COLS * CELL, rows * CELL))

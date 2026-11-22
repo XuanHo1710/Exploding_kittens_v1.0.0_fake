@@ -202,6 +202,10 @@ def fit(unit, frames, cell, want_scale, base, pitch, idle_safe=0.82):
         k_idle = min(1.0, idle_safe * cell / max(1, idle[3] - idle[1]), idle_safe * cell / max(1, idle[2] - idle[0]))
     k_union = min((cell - 4) / max(1, union[2] - union[0]), (cell - 4) / max(1, union[3] - union[1]))
     k = min(k_idle, k_union) * 0.97
+    fill = unit["spec"].get("battle_fill") if cell >= 192 else None
+    if fill and idle:
+        # nhân vật cần to bằng tranh vẽ tay: ưu tiên dáng đứng chiếm `fill` ô, cho phép mũi vũ khí sát mép
+        k = min(fill * cell / max(1, idle[3] - idle[1]), k_union * 1.22)
     cx = cell / 2 - ((union[0] + union[2]) / 2 - bx) * k
     top, bot = (union[1] - by) * k, (union[3] - by) * k
     # feet stay on the cell floor first; only then lower the baseline to make room overhead

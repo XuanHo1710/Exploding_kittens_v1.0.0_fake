@@ -283,7 +283,7 @@ function GameCard3D({
           >
             {active ? (
               <>
-                {info.maxPlayers === 1 ? 'Vào chơi' : 'Tạo phòng'} <ArrowRight size={14} />
+                {info.maxPlayers === 1 ? 'Vào chơi ngay' : 'Tạo phòng'} <ArrowRight size={14} />
               </>
             ) : (
               <>
@@ -297,14 +297,19 @@ function GameCard3D({
   );
 }
 
+/** Chế độ chơi đơn trên server chung (không tạo phòng). Sau này co-op online sẽ dùng lại luồng phòng. */
+const SOLO_MODES: readonly GameMode[] = ['astral_expedition'];
+
 export default function Home({
   onCreate,
   onJoin,
   onWatch,
+  onSolo,
 }: {
   onCreate: (rules: RoomRules, gameMode: GameMode) => void | Promise<void>;
   onJoin: (code: string) => void;
   onWatch: (code: string) => void;
+  onSolo?: (gameMode: GameMode) => void;
 }) {
   const [code, setCode] = useState(readRoomParam);
   const [gameMode, setGameMode] = useState<GameMode>('bansung');
@@ -315,6 +320,10 @@ export default function Home({
 
   const handleQuickCreate = async (mode: GameMode, openRulesModal = false) => {
     setGameMode(mode);
+    if (onSolo && SOLO_MODES.includes(mode)) {
+      onSolo(mode);
+      return;
+    }
     if (mode === 'exploding_kittens' && openRulesModal) {
       setSettingsOpen(true);
       return;
@@ -413,7 +422,7 @@ export default function Home({
               </button>
             )}
             <button type="button" className="primary big" onClick={() => void handleQuickCreate(gameMode)}>
-              <Plus size={18} /> Tạo phòng {activeMeta.title}
+              <Plus size={18} /> {SOLO_MODES.includes(gameMode) ? 'Vào chơi ngay' : 'Tạo phòng'} {activeMeta.title}
             </button>
           </div>
         </footer>

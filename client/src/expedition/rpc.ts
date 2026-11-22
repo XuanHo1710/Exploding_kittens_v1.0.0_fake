@@ -99,6 +99,7 @@ export const expeditionApi = {
       unlockedMapId?: RealmMapId;
       drops: ItemInstance[];
       charms?: CharmGain[];
+      materials?: Record<string, number>;
       levelUps: LevelUpReport[];
       profile: ExpeditionProfile;
     }>(socket, EXP_EVT_BATTLE_COMMIT, {

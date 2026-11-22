@@ -20,6 +20,7 @@ for p in (PYDEPS, GEN3_DIR, HERE):
 
 from PIL import Image  # noqa: E402
 import gen3  # noqa: E402
+from roster import HEROES  # noqa: E402
 
 
 def main() -> int:
@@ -36,8 +37,8 @@ def main() -> int:
         manifest = json.load(f)
 
     errs = []
-    if manifest.get("heroCount") != 12:
-        errs.append(f"Expected 12 heroes, got {manifest.get('heroCount')}")
+    if manifest.get("heroCount") != len(HEROES):
+        errs.append(f"Expected {len(HEROES)} heroes, got {manifest.get('heroCount')}")
     if manifest.get("bossCount") != 7:
         errs.append(f"Expected 7 bosses, got {manifest.get('bossCount')}")
     if manifest.get("realmCount") != 7:
@@ -106,7 +107,7 @@ def main() -> int:
         return 1
 
     print(
-        f"OK: Bundle verified ({manifest['totalFiles']} files, 12 Heroes x 36f/48f, "
+        f"OK: Bundle verified ({manifest['totalFiles']} files, {len(HEROES)} Heroes x 36f/48f, "
         f"7 Bosses x 36f 256x256, {manifest.get('gatekeeperArchetypes', 0)} Gatekeepers, "
         f"{manifest.get('monsterCount', 0)} Monsters, {manifest.get('animalCount', 0)} Animals, "
         f"7 Animated Realms & Scenes, 100% BGR555 & binary alpha)."

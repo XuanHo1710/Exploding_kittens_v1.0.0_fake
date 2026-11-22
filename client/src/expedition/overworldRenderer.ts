@@ -58,6 +58,8 @@ export interface OverworldRuntimeState {
    * `startMs = Infinity` = còn ẩn (màn nghỉ ngơi đang hiện). Quái có trên bản đồ hay không do `profile.defeatedSinceRest` quyết định.
    */
   respawnFx?: { startMs: number; ids: readonly string[] };
+  /** Hiệu ứng mở rương: nắp bật, cột sáng vàng, xu văng, chữ phần thưởng bay lên. */
+  chestFx?: { chestId: string; startMs: number; seal: number; crystal: number };
   travel?: { from: Point; to: Point; kind: CrossingKind; startedAt: number };
   lift?: number;
   promptHint: {
@@ -299,6 +301,8 @@ export function respawnProgress(rt: OverworldRuntimeState, id: string, nowMs: nu
 
 /** Quái còn trên bản đồ = chưa bị hạ kể từ lần nghỉ gần nhất (Gác Cổng đã mở cổng vẫn đứng gác lại sau khi nghỉ). */
 export function isEncounterPresent(profile: ExpeditionProfile, id: string): boolean {
+  // Gác Cổng = boss mini: hạ rồi là hạ VĨNH VIỄN (nghỉ lửa trại không hồi sinh)
+  if (id.includes('_gk_')) return !profile.clearedGatekeepers.includes(id);
   return !isEncounterDefeated(profile, id);
 }
 
@@ -460,7 +464,7 @@ export function stepOverworldPhysics(params: {
     if (!profile.openedChests.includes(ch.chestId) && Math.hypot(rt.px - ch.x, rt.py - ch.y) <= 1.75) {
       rt.promptHint = {
         kind: 'chest',
-        labelVi: `Mở Rương (+${ch.astralSealReward} Ấn Tinh Tú)`,
+        labelVi: `Mở Rương · +${ch.astralSealReward} Ấn · +${ch.expCrystalReward} Tinh Thể`,
         targetId: ch.chestId,
       };
       return;
@@ -548,6 +552,156 @@ function drawCrossing(ctx: CanvasRenderingContext2D, link: Crossing, camX: numbe
     ctx.fillStyle = color; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center';
     ctx.fillText(icon,p.x,p.y+13);
   }
+}
+
+const CHEST_FX_MS = 2200;
+
+function px(ctx: CanvasRenderingContext2D, color: string, x: number, y: number, w: number, h: number) {
+  ctx.fillStyle = color;
+  ctx.fillRect(Math.round(x), Math.round(y), w, h);
+}
+
+/** Rương pixel 32×32. `fxT` = ms từ lúc mở (Infinity nếu không có hiệu ứng). */
+function drawChest(ctx: CanvasRenderingContext2D, cx: number, cy: number, opened: boolean, fxT: number, nowMs: number) {
+  // rung nhẹ trước khi bật nắp
+  const shake = fxT < 260 ? Math.sin(fxT / 18) * 1.5 : 0;
+  const x = cx + shake;
+  px(ctx, '#0d0a12aa', cx + 3, cy + 25, 27, 4); // bóng
+  if (!opened) {
+    // hào quang mời gọi dưới chân rương
+    const pulse = .55 + .45 * Math.sin(nowMs / 380);
+    const glow = ctx.createRadialGradient(cx + 16, cy + 20, 2, cx + 16, cy + 20, 26);
+    glow.addColorStop(0, `rgba(255, 214, 110, ${.42 * pulse})`);
+    glow.addColorStop(1, 'rgba(255, 214, 110, 0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(cx - 12, cy - 8, 56, 56);
+  }
+  const wood = opened ? '#4b3f3a' : '#7a4a26';
+  const woodHi = opened ? '#5d514b' : '#a0652f';
+  const trim = opened ? '#7d7469' : '#e8b84a';
+  const trimHi = opened ? '#958c80' : '#fff0a8';
+  // thân rương
+  px(ctx, '#1c1210', x + 4, cy + 13, 24, 13);
+  px(ctx, wood, x + 5, cy + 14, 22, 11);
+  px(ctx, woodHi, x + 5, cy + 14, 22, 2);
+  px(ctx, trim, x + 5, cy + 18, 22, 2);
+  px(ctx, trim, x + 8, cy + 14, 2, 11);
+  px(ctx, trim, x + 22, cy + 14, 2, 11);
+  if (opened) {
+    // nắp lật ra sau + lòng rương trống
+    const pop = fxT < CHEST_FX_MS ? Math.max(0, Math.sin(Math.min(1, (fxT - 200) / 260) * Math.PI)) * 6 : 0;
+    px(ctx, '#1c1210', x + 4, cy + 3 - pop, 24, 8);
+    px(ctx, wood, x + 5, cy + 4 - pop, 22, 6);
+    px(ctx, trim, x + 5, cy + 8 - pop, 22, 2);
+    px(ctx, '#0b0709', x + 6, cy + 11, 20, 4); // lòng tối
+    if (fxT < CHEST_FX_MS && fxT > 200) {
+      const k = 1 - (fxT - 200) / (CHEST_FX_MS - 200);
+      px(ctx, `rgba(255, 226, 130, ${k})`, x + 6, cy + 11, 20, 4); // ánh vàng còn trong lòng rương
+    } else {
+      px(ctx, '#2a2024', x + 9, cy + 13, 3, 1); // bụi trống
+    }
+  } else {
+    // nắp đóng + khoá vàng lấp lánh
+    px(ctx, '#1c1210', x + 4, cy + 7, 24, 7);
+    px(ctx, wood, x + 5, cy + 8, 22, 5);
+    px(ctx, woodHi, x + 6, cy + 8, 20, 1);
+    px(ctx, trim, x + 8, cy + 8, 2, 6);
+    px(ctx, trim, x + 22, cy + 8, 2, 6);
+    px(ctx, trim, x + 14, cy + 11, 4, 5);
+    px(ctx, trimHi, x + 15, cy + 12, 2, 1);
+    const tw = Math.floor(nowMs / 140) % 14;
+    if (tw < 3) px(ctx, '#fffbe0', x + 9 + tw * 6, cy + 8 + (tw % 2) * 7, 1, 1);
+    // dấu ✦ vàng nhấp nhô báo "còn vật phẩm"
+    const bob = Math.round(Math.sin(nowMs / 260) * 2);
+    const my = cy - 9 + bob;
+    px(ctx, '#3b2508', x + 13, my - 1, 6, 8);
+    px(ctx, '#ffd257', x + 15, my - 2, 2, 10);
+    px(ctx, '#ffd257', x + 12, my + 2, 8, 2);
+    px(ctx, '#fff6c8', x + 15, my + 2, 2, 2);
+  }
+}
+
+/** Màn bùng nổ khi mở rương: cột sáng, tia quay, vòng sóng, xu văng, chữ phần thưởng. */
+function drawChestBurst(ctx: CanvasRenderingContext2D, ox: number, oy: number, t: number,
+  fx: { seal: number; crystal: number }) {
+  if (t < 200) return;
+  const u = (t - 200) / (CHEST_FX_MS - 200); // 0 → 1
+  const fade = u < .75 ? 1 : 1 - (u - .75) / .25;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  // chớp trắng lúc nắp bật
+  if (u < .08) {
+    ctx.fillStyle = `rgba(255, 246, 210, ${.5 * (1 - u / .08)})`;
+    ctx.fillRect(ox - 120, oy - 140, 240, 220);
+  }
+  // cột sáng vàng phụt lên
+  const beamH = 150 * Math.min(1, u * 5);
+  const beamW = 18 * (1 - u * .6);
+  const beam = ctx.createLinearGradient(0, oy - beamH, 0, oy);
+  beam.addColorStop(0, 'rgba(255, 220, 120, 0)');
+  beam.addColorStop(.6, `rgba(255, 214, 100, ${.55 * fade})`);
+  beam.addColorStop(1, `rgba(255, 250, 220, ${.9 * fade})`);
+  ctx.fillStyle = beam;
+  ctx.fillRect(ox - beamW / 2, oy - beamH, beamW, beamH);
+  // tia sáng quay
+  ctx.save();
+  ctx.translate(ox, oy - 6);
+  ctx.rotate(u * 1.6);
+  for (let i = 0; i < 10; i++) {
+    ctx.rotate(Math.PI / 5);
+    const len = (46 + (i % 3) * 14) * Math.min(1, u * 4);
+    ctx.fillStyle = `rgba(255, 205, 90, ${.32 * fade})`;
+    ctx.beginPath();
+    ctx.moveTo(0, -2);
+    ctx.lineTo(len, -5);
+    ctx.lineTo(len, 5);
+    ctx.lineTo(0, 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  // vòng sóng
+  const ring = 8 + u * 70;
+  ctx.strokeStyle = `rgba(255, 230, 150, ${.6 * (1 - u)})`;
+  ctx.lineWidth = 3 * (1 - u) + 1;
+  ctx.beginPath();
+  ctx.ellipse(ox, oy + 6, ring, ring * .45, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.globalCompositeOperation = 'source-over';
+  // xu vàng + tinh thể văng theo đường parabol
+  const tt = (t - 200) / 1000;
+  for (let i = 0; i < 16; i++) {
+    const a = -Math.PI / 2 + (i - 7.5) * .16 + Math.sin(i * 12.9) * .08;
+    const sp = 95 + (i * 37) % 60;
+    const x = ox + Math.cos(a) * sp * tt * 1.3;
+    const y = oy - 8 + Math.sin(a) * sp * tt * 1.6 + 260 * tt * tt;
+    if (y > oy + 14) continue; // rơi xuống đất thì biến mất
+    const crystal = i % 4 === 0;
+    const spin = Math.floor(t / 70 + i) % 4;
+    const w = crystal ? 3 : spin === 1 || spin === 3 ? 2 : 4;
+    px(ctx, crystal ? '#7fe3ff' : '#c7861c', x - w / 2, y - 2, w, 4);
+    px(ctx, crystal ? '#e6fbff' : '#ffe27a', x - w / 2, y - 2, Math.max(1, w - 1), 2);
+  }
+  // lấp lánh
+  for (let i = 0; i < 12; i++) {
+    const k = ((t / 600) + i * .083) % 1;
+    const x = ox + Math.sin(i * 7.3) * (10 + i * 3);
+    const y = oy - 10 - k * 90;
+    if (Math.floor(t / 90 + i) % 3) px(ctx, `rgba(255, 252, 220, ${(1 - k) * fade})`, x, y, 2, 2);
+  }
+  // chữ phần thưởng bay lên
+  const rise = Math.min(1, u * 2.2);
+  const ty = oy - 58 - rise * 30;
+  ctx.globalAlpha = fade * Math.min(1, u * 6);
+  ctx.font = '700 15px ui-monospace, Consolas, monospace';
+  ctx.textAlign = 'center';
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#1b1006';
+  for (const [line, color, dy] of [[`+${fx.seal} Ấn Tinh Tú`, '#ffd66b', 0], [`+${fx.crystal} Tinh Thể EXP`, '#8fe8ff', 18]] as const) {
+    ctx.strokeText(line, ox, ty + dy);
+    ctx.fillStyle = color;
+    ctx.fillText(line, ox, ty + dy);
+  }
+  ctx.restore();
 }
 
 export function renderOverworldFrame(params: {
@@ -649,23 +803,16 @@ export function renderOverworldFrame(params: {
   }
   for (const link of mapCrossings(tmj)) drawCrossing(ctx, link, camX, camY);
 
-  // 2. Treasure Chests
+  // 2. Treasure Chests — còn đồ: rương vàng phát sáng + dấu ✦ nhấp nhô; đã mở: nắp lật, lòng rương tối, xám đi.
   for (const ch of realm.chests) {
-    const opened = profile.openedChests.includes(ch.chestId);
     const cx = ch.x * TILE - camX;
     const cy = ch.y * TILE - camY;
-    ctx.fillStyle = '#151019c9';
-    ctx.fillRect(cx + 4, cy + 23, 25, 5);
-    ctx.fillStyle = '#2d2020';
-    ctx.fillRect(cx + 5, cy + 12, 22, 13);
-    ctx.fillStyle = opened ? '#4a4545' : '#725742';
-    ctx.fillRect(cx + 7, cy + (opened ? 7 : 10), 18, 5);
-    ctx.fillStyle = '#50382a';
-    ctx.fillRect(cx + 8, cy + 17, 16, 6);
-    ctx.fillStyle = '#ae9163';
-    ctx.fillRect(cx + 9, cy + 12, 2, 12);
-    ctx.fillRect(cx + 21, cy + 12, 2, 12);
-    ctx.fillRect(cx + 14, cy + 16, 4, 3);
+    if (cx < -96 || cy < -128 || cx > OVERWORLD_VIEW_W + 64 || cy > OVERWORLD_VIEW_H + 64) continue;
+    const fx = rt.chestFx?.chestId === ch.chestId ? rt.chestFx : undefined;
+    const fxT = fx ? nowMs - fx.startMs : Infinity;
+    const opened = profile.openedChests.includes(ch.chestId) || fxT < CHEST_FX_MS;
+    drawables.push({ sortY: ch.y + .05, draw: () => drawChest(ctx, cx, cy, opened, fxT, nowMs) });
+    if (fx && fxT < CHEST_FX_MS) drawables.push({ sortY: ch.y + 50, draw: () => drawChestBurst(ctx, cx + 16, cy + 18, fxT, fx) });
   }
 
   // 3. Rest shrines share the depth order of the party and tall scenery.
@@ -784,7 +931,10 @@ export function renderOverworldFrame(params: {
         const row = (rt.moving ? 4 : 0) + rt.dir;
         const blinkSkip = nowMs < rt.immunityUntilMs && Math.floor(nowMs / 90) % 2 === 0;
         if (!blinkSkip) {
-          ctx.drawImage(leaderSheet, animFrame6 * 64, row * 64, 64, 64, px, py - (rt.lift ?? 0), 64, 64);
+          const size = leaderHeroId === 'jung_afterglow' ? 72 : 64;
+          const left = px + (64 - size) / 2;
+          const top = py + 58 - Math.round(58 * size / 64) - (rt.lift ?? 0);
+          ctx.drawImage(leaderSheet, animFrame6 * 64, row * 64, 64, 64, left, top, size, size);
           if (meadow && terrain && (rt.lift ?? 0) < 5) drawMeadowGrassCover(ctx, terrain, tmj, rt.px, rt.py, camX, camY);
         }
         if (!rt.lift && !meadow) drawGrassCover(ctx, tmj, rt.px, rt.py, px + 32, py + 58, nowMs);

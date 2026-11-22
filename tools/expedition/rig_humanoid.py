@@ -97,9 +97,9 @@ def weapon(m: Model, kind: str, hand, d, H, mats, grp=G_WPN, scale=1.0):
     acc = mats.get("accent", metal)
     glow = mats.get("glow", acc)
     perp = _perp(d)
-    if kind in ("sword", "rapier", "greatsword", "dagger", "khopesh", "cutlass", "icesword"):
-        L = {"sword": 0.40, "rapier": 0.44, "greatsword": 0.60, "dagger": 0.20, "khopesh": 0.34, "cutlass": 0.34, "icesword": 0.52}[kind] * S
-        W = {"sword": 0.020, "rapier": 0.007, "greatsword": 0.040, "dagger": 0.014, "khopesh": 0.022, "cutlass": 0.022, "icesword": 0.034}[kind] * S
+    if kind in ("sword", "rapier", "greatsword", "dagger", "khopesh", "cutlass", "icesword", "katana"):
+        L = {"sword": 0.40, "rapier": 0.44, "greatsword": 0.60, "dagger": 0.20, "khopesh": 0.34, "cutlass": 0.34, "icesword": 0.52, "katana": 0.50}[kind] * S
+        W = {"sword": 0.020, "rapier": 0.007, "greatsword": 0.040, "dagger": 0.014, "khopesh": 0.022, "cutlass": 0.022, "icesword": 0.034, "katana": 0.011}[kind] * S
         m.cap(v_sub(hand, v_mul(d, 0.05 * S)), v_add(hand, v_mul(d, 0.03 * S)), 0.012 * S, 0.012 * S, grip, grp)
         base = v_add(hand, v_mul(d, 0.035 * S))
         m.cap(v_add(base, v_mul(perp, 0.045 * S)), v_sub(base, v_mul(perp, 0.045 * S)), 0.011 * S, 0.011 * S, acc, grp)
@@ -549,6 +549,11 @@ def build_humanoid(spec: dict, pose: dict) -> Model:
                 m.ball(Hd(side * 0.68, 0.10, -0.02), hr * 0.46, hair_m, G_HAIR)
                 if style in ("long", "mane", "ponytail"):
                     m.chain([Hd(side * 0.78, 0.25, 0.30), Hd(side * 0.86, -0.55, 0.32), Hd(side * 0.80, -1.25, 0.10)], hr * 0.30, hr * 0.16, hair_m, G_HAIR)
+        if style == "shag":  # tóc xù ngang vai, tỉa so le (wolf cut)
+            for side in (-1, 1):
+                m.chain([Hd(side * 0.74, 0.3, 0.25), Hd(side * 0.92, -0.45, 0.22), Hd(side * 1.02, -1.05, 0.05)], hr * 0.36, hr * 0.14, hair_m, G_HAIR)
+            _hair_locks(m, Hd, hr, hair_m, wind * 0.6, ph, length=1.75, n=12, thick=1.35)
+            _hair_locks(m, Hd, hr, hair_m, wind * 0.4, ph + 1.3, length=1.15, n=9, thick=1.0, crown_only=True)
         if style in ("long", "mane", "wild"):
             _hair_locks(m, Hd, hr, hair_m, wind, ph, length=(3.8 if style == "long" else 3.0), n=11 if style != "long" else 9,
                         thick=1.25 if style != "long" else 1.0)
@@ -682,7 +687,10 @@ def build_humanoid(spec: dict, pose: dict) -> Model:
     if cape_m is not None:
         cl = spec.get("cape_len", 0.66) * max(0.25, math.cos(math.radians(min(89.0, abs(g("fall", 0.0))))))
         cols, rows = 4, 3
-        top_pts = [T(-shW * 0.85 + 2 * shW * 0.85 * i / cols, 0.80 * H, -0.06 * H * tk) for i in range(cols + 1)]
+        # cape_drop > 0: áo khoác trễ khỏi vai (mắc ở khuỷu tay) → mép trên thấp và rộng hơn vai
+        drop = spec.get("cape_drop", 0.0)
+        cw = 0.85 + drop * 1.6
+        top_pts = [T(-shW * cw + 2 * shW * cw * i / cols, (0.80 - drop) * H, -0.06 * H * tk) for i in range(cols + 1)]
         grid = []
         for rr in range(rows + 1):
             t = rr / rows

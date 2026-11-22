@@ -5,7 +5,7 @@
  * ghi nhật ký từng lượt; khi kết thúc gửi nhật ký lên server để server phát lại và xác thực kết quả.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Socket } from 'socket.io-client';
 import {
   EQUIP_SLOTS,
@@ -28,6 +28,8 @@ import {
   itemStatValue,
   weaponRefineCost,
   enhanceCost,
+  MATERIALS,
+  type MaterialId,
   Mulberry32,
   ROLE_LABELS_VI,
   STAT_KEYS,
@@ -50,6 +52,7 @@ import {
   storySceneFor,
   statPointsUnspent,
   unlockedSkillIds,
+  SSS_PITY,
   type BattleSessionState,
   type BattleSupply,
   type CombatSkillDefinition,
@@ -94,11 +97,12 @@ import { BattleResultScreen, type HeroGain } from '../expedition/result-ui';
 import { CampScreen, HeroScreen, Keys, PageShell, portraitUrl, type MenuRoute, type PageId } from '../expedition/menu-ui';
 import { JournalView, SceneTransition, StoryPlayer } from '../expedition/story-ui';
 import { playExpeditionSfx, setExpeditionBgm, setExpeditionMuted, stopExpeditionBgm } from '../expedition/sound';
-import { expeditionAssetUrl, getCachedImage, loadHeroWardrobe, preloadBattleAssets, preloadOverworldAssets, type HeroOutfit, type TiledTmjMap } from '../expedition/store';
+import { expeditionAssetUrl, getCachedImage, loadHeroWardrobe, setOutfitPortraits, preloadBattleAssets, preloadOverworldAssets, type HeroOutfit, type TiledTmjMap } from '../expedition/store';
 import { RestScreen, type RestInfo } from '../expedition/rest-screen';
 import { SummonCinematic } from '../expedition/summon-cinematic';
 import { ChapterTipModal } from '../expedition/chapter-tips';
 import { OwnerTag } from '../expedition/owner-tag';
+import { MaterialChip } from '../expedition/enhance-panel';
 import { signatureArtUrl, WeaponIcon } from '../expedition/weapon-art';
 import { HERO_CHOREO } from '../expedition/hero-choreo';
 import '../expedition/expedition.css';
@@ -123,7 +127,6 @@ function backRoute(route: MenuRoute | null): MenuRoute | null {
 interface Props {
   socket: Socket | null;
   onLeave: () => void;
-  dock?: ReactNode;
 }
 
 interface BattleRun {
@@ -150,6 +153,7 @@ interface BattleResult {
   charms: CharmGain[];
   levelUps: LevelUpReport[];
   gains: HeroGain[];
+  materials?: Record<string, number>;
 }
 
 /** Cửa sổ Đỡ (hẹp, thưởng lớn) / Né (rộng, an toàn) quanh mỗi nhịp đánh, tính bằng ms. */
@@ -187,8 +191,15 @@ export default function ExpeditionBoard({ socket, onLeave }: Props) {
   }, []);
   const [selectedHeroId, setSelectedHeroId] = useState<string>('');
   const [wardrobe, setWardrobe] = useState<HeroOutfit[]>([]);
-  const [selectedOutfits, setSelectedOutfits] = useState<Record<string, string>>({});
+  // trang phục đã chọn nhớ theo trình duyệt
+  const [selectedOutfits, setSelectedOutfits] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem('astral-expedition.outfits') ?? '{}') as Record<string, string>; } catch { return {}; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('astral-expedition.outfits', JSON.stringify(selectedOutfits)); } catch { /* không lưu được */ }
+  }, [selectedOutfits]);
   const selectedLooks = wardrobe.filter((entry) => selectedOutfits[entry.heroId] === entry.variantId);
+  setOutfitPortraits(selectedLooks); // chân dung đổi theo trang phục ở mọi màn hình
   const looksRef = useRef<HeroOutfit[]>([]);
   looksRef.current = selectedLooks;
   const [story, setStory] = useState<{ scene: StoryScene; after?: () => void } | null>(null);
@@ -279,6 +290,7 @@ export default function ExpeditionBoard({ socket, onLeave }: Props) {
         drops: r.drops ?? [],
         charms: r.charms ?? [],
         levelUps: r.levelUps ?? [],
+        materials: r.materials ?? {},
       });
     } catch (e) {
       setCommitError((e as Error).message);
@@ -716,10 +728,17 @@ export default function ExpeditionBoard({ socket, onLeave }: Props) {
         });
       });
     } else if (h.kind === 'chest') {
-      void run(() => expeditionApi.openChest(socket, realm.mapId, h.targetId), (np) => {
+      const chest = realm.chests.find((c) => c.chestId === h.targetId);
+      // bật hiệu ứng ngay khi bấm (cảm giác nhanh); server từ chối thì huỷ hiệu ứng
+      owRef.current.chestFx = { chestId: h.targetId, startMs: performance.now(), seal: chest?.astralSealReward ?? 0, crystal: chest?.expCrystalReward ?? 0 };
+      playExpeditionSfx('chest_open');
+      void run(() => expeditionApi.openChest(socket, realm.mapId, h.targetId).catch((e) => {
+        owRef.current.chestFx = undefined;
+        throw e;
+      }), (np) => {
         setProfile(np);
-        playExpeditionSfx('chest_open');
-        flash('Mở rương thành công!');
+        const opened = np.openedChests.filter((id) => realm.chests.some((c) => c.chestId === id)).length;
+        flash(`Đã mở rương (${opened}/${realm.chests.length} rương vùng này)`);
       });
     } else if (h.kind === 'boss') {
       if (realm.gatekeeperIds.some((id) => !p.clearedGatekeepers.includes(id))) {
@@ -1164,8 +1183,9 @@ function BagView(props: {
                 const ec = enhanceCost(it);
                 if (!ec) return null;
                 return (
-                  <button className="exp-enhance" disabled={busy || profile.astralSeal < ec.seal || profile.expCrystal < ec.crystal}
-                    title={`${ec.seal} Ấn Tinh Tú · ${ec.crystal} Tinh Thể EXP`}
+                  <button className="exp-enhance" disabled={busy || profile.astralSeal < ec.seal || profile.expCrystal < ec.crystal
+                    || Object.entries(ec.mats).some(([id, n]) => (profile.materials?.[id] ?? 0) < (n ?? 0))}
+                    title={`${ec.seal} Ấn Tinh Tú · ${ec.crystal} Tinh Thể EXP · ${Object.entries(ec.mats).map(([id, n]) => `${n} ${MATERIALS[id as MaterialId].nameVi}`).join(' · ')}`}
                     onClick={() => void run(() => expeditionApi.enhanceItem(socket, it.uid, it.enhance ?? 0), setProfile)}>
                     Cường hoá +{(it.enhance ?? 0) + 1}
                   </button>
@@ -1213,10 +1233,10 @@ function SummonView(props: {
       {banner === 'hero' && <section className="exp-card banner b-hero">
         <div className="exp-banner-intro">
           <h2>Khế Ước Quang Phổ Tinh Hà</h2>
-          <div className="exp-banner-pity"><span title="Bảo hiểm SSR">SSR <b>{profile.pity.ssrPityCount}/{hg.hardPitySsr}</b></span><span title="Bảo hiểm SR trở lên">SR+ <b>{profile.pity.srPityCount}/{hg.guaranteedSrEvery}</b></span></div>
+          <div className="exp-banner-pity"><span className="pity-sss" title={`Bảo hiểm Jung (SSS): mỗi ${SSS_PITY.every} lượt chạm mốc. Nấc 1: 1/3 · nấc 2: 1/2 · nấc 3: chắc chắn. Tỉ lệ gốc mỗi lượt ${pct(SSS_PITY.baseRate)}.`}>SSS <b>{profile.pity.sssPityCount ?? 0}/{SSS_PITY.every}</b> <small>mốc {['1/3', '1/2', '100%'][Math.min(2, profile.pity.sssStage ?? 0)]}</small></span><span title="Bảo hiểm SSR">SSR <b>{profile.pity.ssrPityCount}/{hg.hardPitySsr}</b></span><span title="Bảo hiểm SR trở lên">SR+ <b>{profile.pity.srPityCount}/{hg.guaranteedSrEvery}</b></span></div>
         </div>
         <div className="exp-banner-portraits">
-          {EXPEDITION_HEROES.filter((hero) => hero.rarity === 'SSR').map((hero) => <figure key={hero.heroId}>
+          {EXPEDITION_HEROES.filter((hero) => hero.rarity === 'SSS' || hero.rarity === 'SSR').map((hero) => <figure key={hero.heroId} className={`r-${hero.rarity}`}>
             <img src={portraitUrl(hero.heroId)} alt="" />
             <figcaption>{hero.nameVi}</figcaption>
           </figure>)}
@@ -1282,16 +1302,7 @@ function SummonView(props: {
           </button>
         </div>
       </section>}
-      {profile.summonHistory.length > 0 && <details className="exp-summon-history">
-        <summary>Lịch sử Anh Hùng</summary>
-        <ul className="exp-history">
-          {profile.summonHistory.slice(0, 20).map((h, i) => (
-            <li key={i} className={`r-${h.rarity}`}>
-              #{h.pullIndex} [{h.rarity}] {EXPEDITION_HEROES_BY_ID[h.heroId]?.nameVi} {h.isNew ? '· MỚI' : `· +${h.shardConverted} mảnh · +${h.starlightConverted}✦`}
-            </li>
-          ))}
-        </ul>
-      </details>}
+      {profile.summonHistory.length > 0 && <SummonHistory history={profile.summonHistory} />}
     </div>
   );
 }
@@ -1308,7 +1319,7 @@ function RatesView() {
         <h3>Gacha anh hùng</h3>
         <p>
           SSR {pct(B.heroGacha.rates.SSR)} · SR {pct(B.heroGacha.rates.SR)} · R {pct(B.heroGacha.rates.R)}. Từ lượt {B.heroGacha.softPityStart} mỗi lượt +{pct(B.heroGacha.softPityStepBonus)} SSR,
-          lượt {B.heroGacha.hardPitySsr} chắc chắn SSR. Bản trùng thành 1 mảnh của nhân vật đó. Dùng trong hồ sơ để thức tỉnh tối đa A6. Mỗi bậc tăng {pct(B.awakeningPerRank)} HP/ATK/DEF. Mảnh dư đổi Tinh Huy.
+          lượt {B.heroGacha.hardPitySsr} chắc chắn SSR. SSS (Jung): tỉ lệ gốc {pct(SSS_PITY.baseRate)} mỗi lượt; mỗi {SSS_PITY.every} lượt chạm mốc bảo hiểm riêng: lần 1 tỉ lệ 1/3, trượt thì 100 lượt sau 1/2, trượt nữa thì 100 lượt sau chắc chắn ra Jung. Bản trùng thành 1 mảnh của nhân vật đó. Dùng trong hồ sơ để thức tỉnh tối đa A6. Mỗi bậc tăng {pct(B.awakeningPerRank)} HP/ATK/DEF. Mảnh dư đổi Tinh Huy.
         </p>
       </section>
       <section className="exp-card">
@@ -1440,7 +1451,7 @@ function SummonResultModal({ res, onClose }: { res: { heroes?: SummonResultItem[
                 <img src={portraitUrl(h.heroId)} alt="" />
                 <b>{h.nameVi}</b>
                 <small>
-                  {h.rarity} · {h.isNew ? 'MỚI!' : `+${h.shardGained} mảnh · +${h.starlightGained}✦`}
+                  {h.rarity} · {h.isNew ? 'MỚI!' : h.expGained ? `Mảnh dư → +${h.expGained} EXP` : `+${h.shardGained} mảnh · +${h.starlightGained}✦`}
                 </small>
               </div>
             ))}
@@ -1456,5 +1467,41 @@ function SummonResultModal({ res, onClose }: { res: { heroes?: SummonResultItem[
         <button onClick={onClose}>Đóng</button>
       </div>
     </div>
+  );
+}
+
+
+/** Lịch sử triệu hồi chia theo nhánh: Anh hùng · Vũ khí trấn · Rương Thiên Văn. */
+function SummonHistory({ history }: { history: ExpeditionProfile['summonHistory'] }) {
+  const [tab, setTab] = useState<'hero' | 'weapon' | 'item'>('hero');
+  const rows = history.filter((h) => (h.banner ?? 'hero') === tab).slice(0, 30);
+  const counts = { hero: 0, weapon: 0, item: 0 };
+  for (const h of history) counts[h.banner ?? 'hero'] += 1;
+  return (
+    <details className="exp-summon-history" open>
+      <summary>Lịch sử triệu hồi</summary>
+      <div className="ui-summon-tabs" role="tablist">
+        {([['hero', 'Anh hùng'], ['weapon', 'Vũ khí trấn'], ['item', 'Rương Thiên Văn']] as const).map(([id, label]) => (
+          <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'on' : ''} onClick={() => setTab(id)}>
+            {label} <small>({counts[id]})</small>
+          </button>
+        ))}
+      </div>
+      {rows.length === 0 ? <p className="exp-dim">Chưa có lượt nào ở nhánh này.</p> : (
+        <ul className="exp-history">
+          {rows.map((h, i) => tab === 'hero' ? (
+            <li key={i} className={`r-${h.rarity}`}>
+              #{h.pullIndex} [{h.rarity}] {EXPEDITION_HEROES_BY_ID[h.heroId]?.nameVi}{' '}
+              {h.isNew ? '· MỚI' : h.expConverted ? `· mảnh dư → +${h.expConverted} EXP` : `· +${h.shardConverted} mảnh · +${h.starlightConverted}✦`}
+            </li>
+          ) : (
+            <li key={i} style={{ color: ITEM_RARITY_COLORS[h.itemRarity as keyof typeof ITEM_RARITY_COLORS] }}>
+              [{ITEM_RARITY_LABELS_VI[h.itemRarity as keyof typeof ITEM_RARITY_LABELS_VI] ?? h.itemRarity}] {h.itemName}
+              {h.heroId ? ` · ${EXPEDITION_HEROES_BY_ID[h.heroId]?.nameVi ?? ''}` : ''}{h.shardConverted ? ` · trùng +${h.shardConverted} mảnh` : ''}
+            </li>
+          ))}
+        </ul>
+      )}
+    </details>
   );
 }

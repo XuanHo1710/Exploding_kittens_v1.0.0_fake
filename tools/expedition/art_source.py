@@ -93,6 +93,13 @@ def normalize(src: Image.Image, size, limit=15) -> Image.Image:
     return limit_palette(keyed, limit)
 
 
+def normalize_jung_portrait(src: Image.Image) -> Image.Image:
+    size = (128, 128)
+    sized = src.convert("RGBA").resize(size, Image.Resampling.LANCZOS)
+    # Keep distinct hair, coat and face ramps on the portrait while enforcing the tile palette limit.
+    return gen3.to_gen3(normalize(sized, size, limit=48), max_palettes=13)
+
+
 def mapping(domain: str):
     """[(target_rel, (w, h), note)] for one domain."""
     out = []
@@ -155,7 +162,7 @@ def export(rels_sizes, manifest=True):
             continue
         with Image.open(src) as im:
             # UI atlases mix every element colour: Gen 3 allows several 15-colour palettes there
-            out = normalize(im, size, limit=48 if rel.startswith("ui/") else 15)
+            out = normalize_jung_portrait(im) if rel == "units/heroes/jung_afterglow-portrait.png" else normalize(im, size, limit=48 if rel.startswith("ui/") else 15)
         os.makedirs(os.path.dirname(target_path(rel)), exist_ok=True)
         out.save(target_path(rel))
         done.append(rel)

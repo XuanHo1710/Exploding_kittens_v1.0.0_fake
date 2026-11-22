@@ -243,12 +243,7 @@ export function CharmsView({ profile }: { profile: ExpeditionProfile }) {
         <small>{CHARM_RARITY_LABELS_VI[selected.rarity]} · {rank ? `R${rank}` : 'Chưa sở hữu'}</small>
         <p>{selected.descVi}</p>
         {(rank !== undefined && (rank > 1 || selected.stats)) && <em>{charmSummary(selected, rank)}</em>}
-        {wearer ? <small>Đang đeo · {EXPEDITION_HEROES_BY_ID[wearer]?.nameVi}</small> : <small>Rơi từ vùng {selected.tier}</small>}
-        <details><summary>Tỷ lệ rơi</summary>
-          <p>Thắng trận nhận {C.guaranteedPerBattle} bùa. Trùng bùa nâng bậc tới R{C.maxRank}.</p>
-          <p>{Object.entries(C.rarityWeights).map(([rarity, weight]) => `${CHARM_RARITY_LABELS_VI[rarity as keyof typeof CHARM_RARITY_LABELS_VI]} ${Math.round(weight * 100)}%`).join(' · ')}</p>
-          <p>Hên: {Math.round(C.bonusChain[0] * 100)}% được thêm bùa thứ 2 (Gác Cổng {Math.round((C.bonusChain[0] + C.encounterBonus.gatekeeper) * 100)}%, Trùm {Math.round((C.bonusChain[0] + C.encounterBonus.boss) * 100)}%).</p>
-        </details>
+        {wearer ? <OwnerTag heroId={wearer} /> : rank ? null : <small className="exp-charm-mystery">Ẩn đâu đó trên hành trình… hãy tiếp tục chiến đấu để tìm ra.</small>}
       </aside>}
     </div>
   );

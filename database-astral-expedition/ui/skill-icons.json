@@ -1,7 +1,7 @@
 {
  "cell": 64,
  "columns": 10,
- "rows": 10,
+ "rows": 11,
  "positions": {
   "gus_basic": [
    0,
@@ -386,6 +386,38 @@
   "lumina_chrono_surge": [
    5,
    9
+  ],
+  "jung_basic": [
+   6,
+   9
+  ],
+  "jung_afterimage": [
+   7,
+   9
+  ],
+  "jung_neon_cyclone": [
+   8,
+   9
+  ],
+  "jung_ult_daybreak": [
+   9,
+   9
+  ],
+  "jung_passive": [
+   0,
+   10
+  ],
+  "jung_afterglow_focus": [
+   1,
+   10
+  ],
+  "jung_afterglow_ward": [
+   2,
+   10
+  ],
+  "jung_afterglow_surge": [
+   3,
+   10
   ]
  }
 }

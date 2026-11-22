@@ -232,6 +232,8 @@ export default function App() {
   // Chỉ vào được khi đã có tài khoản PIN (người chơi cũ được giữ id + tên, chỉ cần đặt PIN)
   const loggedIn = !!identity?.token;
   const inGame = loggedIn && !!view && view.phase !== 'lobby';
+  const [solo, setSolo] = useState<'astral_expedition' | null>(null);
+  const expeditionOpen = loggedIn && (view ? view.gameMode === 'astral_expedition' : solo === 'astral_expedition');
   const dock = (
     <Dock
       settings={settings}
@@ -249,7 +251,7 @@ export default function App() {
       <RoomRulesContext.Provider value={view?.rules ?? DEFAULT_ROOM_RULES}>
       <RoomPlayerCountContext.Provider value={view?.players.length}>
       <div className="app">
-        {!inGame && (
+        {!inGame && !expeditionOpen && (
           <div className="floating-top">
             <Brand code={view?.code} />
             {dock}
@@ -257,12 +259,17 @@ export default function App() {
         )}
 
         {!loggedIn && <Login identity={identity} onAuth={setIdentity} />}
-        {loggedIn && !view && (
+        {loggedIn && !view && !solo && (
           <Home
             onCreate={(rules, gameMode) => emitConfirmed('room:create', { rules, gameMode })}
             onJoin={(code) => emit('room:join', { code })}
             onWatch={(code) => emit('room:watch', { code })}
+            onSolo={(gameMode) => { if (gameMode === 'astral_expedition') setSolo('astral_expedition'); }}
           />
+        )}
+        {/* Astral Expedition: chơi đơn trên server chung, không tạo phòng / không có ?roomid. (Co-op online sẽ đi qua phòng sau.) */}
+        {loggedIn && !view && solo === 'astral_expedition' && (
+          <ExpeditionBoard socket={socket} onLeave={() => setSolo(null)} />
         )}
         {loggedIn && view?.phase === 'lobby' && view.gameMode === 'astral_expedition' && (
           // Game một người: server tự bắt đầu ngay khi tạo phòng, màn này chỉ hiện trong tích tắc (hoặc khi bắt đầu lỗi).
@@ -290,7 +297,7 @@ export default function App() {
           ) : view.gameMode === 'bansung' ? (
             <BansungBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'astral_expedition' ? (
-            <ExpeditionBoard socket={socket} onLeave={() => emit('room:leave')} dock={dock} />
+            <ExpeditionBoard socket={socket} onLeave={() => emit('room:leave')} />
           ) : view.gameMode === 'mighty_knight' ? (
             <MkBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />
           ) : view.gameMode === 'blackjack_21' ? (

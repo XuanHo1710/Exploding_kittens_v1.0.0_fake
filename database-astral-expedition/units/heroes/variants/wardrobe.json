@@ -6,21 +6,24 @@
       "heroId": "gustave_blade",
       "nameVi": "Vệ Binh Than",
       "battle": "units/heroes/variants/gustave_blade-charcoal-watch-battle.png",
-      "movement": "units/heroes/variants/gustave_blade-charcoal-watch-movement.png"
+      "movement": "units/heroes/variants/gustave_blade-charcoal-watch-movement.png",
+      "portrait": "units/heroes/variants/gustave_blade-charcoal-watch-portrait.png"
     },
     {
       "variantId": "ivory-recon",
       "heroId": "lyra_frostbow",
       "nameVi": "Trinh Sát Ngà",
       "battle": "units/heroes/variants/lyra_frostbow-ivory-recon-battle.png",
-      "movement": "units/heroes/variants/lyra_frostbow-ivory-recon-movement.png"
+      "movement": "units/heroes/variants/lyra_frostbow-ivory-recon-movement.png",
+      "portrait": "units/heroes/variants/lyra_frostbow-ivory-recon-portrait.png"
     },
     {
       "variantId": "violet-atelier",
       "heroId": "celine_prism",
       "nameVi": "Họa Sư Mực Tím",
       "battle": "units/heroes/variants/celine_prism-violet-atelier-battle.png",
-      "movement": "units/heroes/variants/celine_prism-violet-atelier-movement.png"
+      "movement": "units/heroes/variants/celine_prism-violet-atelier-movement.png",
+      "portrait": "units/heroes/variants/celine_prism-violet-atelier-portrait.png"
     }
   ]
 }

@@ -716,7 +716,102 @@ const OTHERS: Record<string, SkillChoreo> = {
   ...commonKit('lumina_chrono', 'Astral', false),
 };
 
-export const HERO_CHOREO: Record<string, SkillChoreo> = { ...MIRAN, ...SE_OK, ...OTHERS };
+// =====================================================================================================
+// Jung (jung_afterglow) · SSS · Hanbit Katana + cước Taekwondo · cam rạng đông
+// =====================================================================================================
+const JG = { c: 0xff9a2e, hi: 0xfff0c0, ember: 0xff6a1a, gold: 0xffd76a };
+
+/** Rút kiếm iai (nhịp 1) → xoay gót đá móc (nhịp 2) → bổ gót từ trên xuống (nhịp 3). */
+const jungDrawKick: PoseFn = ({ now, approach, beatT, dir }) => {
+  const p = base();
+  p.lift = Math.sin(approach * Math.PI) * 0.3 * (approach < 1 ? 1 : 0);
+  p.tilt = -dir * 0.22 * Math.sin(approach * Math.PI); // cúi thấp lướt tới, tay đặt chuôi kiếm
+  const [b0, b1, b2] = beatT;
+  const draw = near(now, b0, 110, 30);
+  if (draw) { p.push += 0.75 * draw; p.sx = 1 + 0.34 * draw; p.sy = 1 - 0.14 * draw; p.tilt = dir * 0.2 * draw; }
+  if (b1 !== undefined) {
+    const t = clamp01((now - (b1 - 220)) / 340);
+    if (t > 0 && t < 1) { p.spin = t; p.lift = Math.max(p.lift, 0.55 * Math.sin(t * Math.PI)); p.push += 0.25; }
+  }
+  if (b2 !== undefined) {
+    const rise = clamp01((now - (b2 - 360)) / 240);
+    if (now < b2 && rise > 0) { p.lift = Math.max(p.lift, 1.25 * Math.sin(rise * Math.PI * 0.5)); p.tilt = -dir * 0.3 * rise; p.sy = 1.12; }
+    const slam = near(now, b2, 120, -30);
+    if (slam && now >= b2) { p.lift = 0; p.sy = 1 - 0.24 * slam; p.sx = 1 + 0.3 * slam; p.tilt = dir * 0.4 * slam; }
+  }
+  return p;
+};
+
+/** Tàn ảnh: chớp biến mất / hiện ra zig-zag qua lại mục tiêu, mỗi nhịp một vệt chém. */
+const jungAfterimage: PoseFn = ({ now, approach, beatT, dir }) => {
+  const p = base();
+  p.lift = Math.sin(approach * Math.PI) * 0.2 * (approach < 1 ? 1 : 0);
+  beatT.forEach((bt, i) => {
+    const blink = near(now, bt - 70, 60);
+    if (blink) p.sx = Math.max(0.05, 1 - blink * 0.95); // chớp mất
+    const k = near(now, bt, 100, 10);
+    if (!k) return;
+    const side = i % 2 ? -1 : 1;
+    p.push += (0.55 + 0.25 * side) * k;
+    p.tilt = dir * 0.5 * side * k;
+    p.lift = Math.max(p.lift, (i === beatT.length - 1 ? 0.6 : 0.15) * k);
+    p.sx = Math.max(p.sx, 1 + 0.25 * k); p.sy = Math.min(p.sy, 1 - 0.1 * k);
+  });
+  return p;
+};
+
+/** Seoul Daybreak: vọt lên trời (vừa bay vừa chém 5 nhát) → bổ gót sấm rền xuống ở nhịp cuối. */
+const jungDaybreak: PoseFn = ({ now, rel, beatT, dir }) => {
+  const p = base();
+  const last = beatT[beatT.length - 1];
+  const crouch = clamp01((rel + 760) / 300);
+  const rise = clamp01((rel + 460) / 380);
+  const plunge = clamp01((now - (last - 200)) / 200);
+  if (rel < -460) { p.sx = 1 + 0.16 * crouch; p.sy = 1 - 0.2 * crouch; p.tilt = Math.sin(now / 22) * 0.04 * crouch; return p; }
+  if (now < last) {
+    p.lift = 3.4 * (1 - (1 - rise) ** 3) * (1 - plunge) + Math.sin(now / 140) * 0.08;
+    p.sy = plunge > 0 ? 1.25 : 1.05;
+    p.tilt = plunge > 0 ? dir * 0.6 : 0;
+    beatT.slice(0, -1).forEach((bt, i) => {
+      const k = near(now, bt, 110, 10);
+      if (k) { p.tilt = dir * 0.55 * (i % 2 ? -1 : 1) * k; p.spin = (i % 2 ? -0.12 : 0.12) * k; p.sx = 1 + 0.2 * k; }
+    });
+  }
+  const k = near(now, last, 160, -60);
+  if (now >= last && k) { p.sx = 1 + 0.4 * k; p.sy = 1 - 0.3 * k; }
+  return p;
+};
+
+const JUNG: Record<string, SkillChoreo> = {
+  jung_basic: { close: true, pose: jungDrawKick,
+    emit: ({ approach }) => (approach > 0 && approach < 1 ? [F.motes(1, JG.c, 0.6)] : []),
+    impact: (i) => [
+      [F.slash(0.05, 1.9, JG.hi), F.slash(0.05, 1.5, JG.c), F.sparks(10, JG.hi), F.shake(0.1, 90)],
+      [F.slash(2.6, 1.6, JG.c), F.ring(2.2, JG.c), F.debris('embers', 8)],
+      [F.slash(-Math.PI / 2, 1.8, JG.hi), F.ring(3, JG.gold), F.burst(JG.c), F.debris('glints', 10, 'target', 2.5), F.shake(0.2, 160)],
+    ][i % 3] },
+  jung_afterimage: { close: true, pose: jungAfterimage,
+    emit: () => [F.motes(2, JG.c, 0.4), F.debris('embers', 1, 'self', 0.3, 0.8)],
+    impact: (i, n) => i < n - 1
+      ? [F.slash(i % 2 ? 2.4 : 0.75, 1.6, i % 2 ? JG.c : JG.hi), F.sparks(8, JG.gold), F.debris('embers', 6)]
+      : [F.slash(0.75, 2.3, JG.hi), F.slash(2.4, 2.3, JG.c), F.ring(3.2, JG.c), F.burst(JG.hi), F.sparks(20, JG.gold), F.shake(0.26, 200)] },
+  jung_neon_cyclone: { close: false, pose: P.whirl(3, 1.5),
+    emit: () => [F.ring(2.2, JG.c, 'self', 260), F.debris('embers', 2, 'self', 1.2, 1.4)],
+    impact: (i) => [F.slash(i * 2.1, 2.2, i === 2 ? JG.hi : JG.c, 'targets'), F.ring(7 + i * 2, JG.c, 'self', 420),
+      F.burst(JG.gold, 'targets'), F.debris('embers', 8, 'targets', 2), F.shake(0.12 + i * 0.05, 120)] },
+  jung_ult_daybreak: { close: false, pose: jungDaybreak,
+    emit: ({ rel }) => (rel < -460
+      ? [F.motes(4, JG.gold, 3.6), F.ring(2.4, JG.c, 'self', 300)]
+      : [F.debris('embers', 2, 'center', 0.4, 4), F.motes(2, JG.hi, 2)]),
+    impact: (i, n) => i < n - 1
+      ? [F.slash(i * 1.05 + 0.4, 2.6, i % 2 ? JG.c : JG.hi, 'targets'), F.burst(JG.gold, 'targets'), F.sparks(10, JG.hi, 'targets'), F.shake(0.12, 100)]
+      : [F.pillar(JG.hi, 'center'), F.pillar(JG.c, 'center'), F.ring(5, JG.hi, 'center'), F.ring(13, JG.c, 'center', 900),
+        F.slash(-Math.PI / 2, 3.4, JG.hi, 'targets'), F.sparks(30, JG.gold, 'targets'), F.debris('embers', 34, 'center', 6, 3.2),
+        F.debris('glints', 20, 'center', 5, 3), F.shake(0.5, 420)] },
+  ...commonKit('jung_afterglow', 'Solar', true),
+};
+
+export const HERO_CHOREO: Record<string, SkillChoreo> = { ...MIRAN, ...SE_OK, ...OTHERS, ...JUNG };
 
 /** Hiệu ứng kỹ năng hỗ trợ (không có nhịp đánh): vòng ấn, hạt sáng, cột sáng trên đồng đội. */
 function supportFx(el: Elem, big = false): ChoreoFx[] {
@@ -732,7 +827,7 @@ function supportFx(el: Elem, big = false): ChoreoFx[] {
 const HERO_ELEMENT: Record<string, Elem> = {
   gustave_blade: 'Verdant', celine_prism: 'Solar', bastian_aegis: 'Pyre', lyra_frostbow: 'Frost', kestrel_dune: 'Solar',
   nereus_tide: 'Tide', corvus_night: 'Astral', ignis_valkyrie: 'Pyre', marina_abyss: 'Tide', aurelia_eclipse: 'Solar',
-  seraph_glacier: 'Frost', lumina_chrono: 'Astral',
+  seraph_glacier: 'Frost', lumina_chrono: 'Astral', jung_afterglow: 'Solar',
 };
 const BIG_SUPPORT = new Set(['cel_ult_aurora_canvas', 'ner_ult_leviathan_hymn', 'lum_ult_symphony', 'ser_glacier_crown', 'bas_bulwark']);
 

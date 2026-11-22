@@ -22,6 +22,8 @@ import { STAT_SHORT_VI, portraitUrl } from './menu-ui';
 import { CharmIcon } from './progression-ui';
 import { WeaponIcon } from './weapon-art';
 import './reward-fx.css';
+import { MaterialChip } from './enhance-panel';
+import type { MaterialId } from './shared';
 
 export interface HeroGain {
   heroId: string;
@@ -39,6 +41,7 @@ export interface BattleResultData {
   unlockedMapId?: RealmMapId;
   drops: ItemInstance[];
   charms: CharmGain[];
+  materials?: Record<string, number>;
   levelUps: LevelUpReport[];
   gains: HeroGain[];
 }
@@ -139,6 +142,12 @@ export function BattleResultScreen({ result, onClose }: { result: BattleResultDa
         })}
       </div>
 
+      {win && Object.keys(result.materials ?? {}).length > 0 && (
+        <section className={`ui-result-mats ${t >= 1 ? 'show' : ''}`} aria-label="Nguyên liệu">
+          <h3>Nguyên liệu cường hoá</h3>
+          <div>{(Object.entries(result.materials ?? {}) as [MaterialId, number][]).map(([id, n]) => <MaterialChip key={id} id={id} have={n} />)}</div>
+        </section>
+      )}
       {win && (result.drops.length > 0 || result.charms.length > 0) && (
         <section className={`ui-result-loot ${t >= 1 ? 'show' : ''}`} aria-label="Chiến lợi phẩm">
           <h3>Chiến lợi phẩm</h3>

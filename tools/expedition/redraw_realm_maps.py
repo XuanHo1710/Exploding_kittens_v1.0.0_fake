@@ -477,6 +477,8 @@ def build_layout(map_id, w, h, marks, seed, theme="meadow"):
         if lo < road_y:
             L.road([(trunk, road_y), (trunk, lo)], width=2, amp=2.4 if S["carve"] == "maze" else 1.6)
         for p, kind in items:
+            if kind == "chest":
+                continue  # rương có lối đi riêng kiểu giải đố (xem bên dưới)
             if abs(p[1] - road_y) <= 3:
                 L.road([(p[0], road_y), p], width=2)
             else:
@@ -553,6 +555,51 @@ def build_layout(map_id, w, h, marks, seed, theme="meadow"):
                 L.g[y][x] = TREE
             elif tall(x, y) > S["tall"]:
                 L.g[y][x] = TALL
+    # rương = câu đố nhỏ: vòng cây / đá kín bao quanh, chỉ chừa 1 lối vào ở phía KHUẤT (xa đường chính);
+    # lối mòn cỏ cao ra ngoài rồi vòng qua hông về đường chính → nhìn thấy rương nhưng phải tìm đường vòng mới tới.
+    wall = WATER if S["fill"] == WATER else TREE
+    for (cx, cy) in marks["chest"]:
+        R = 3
+        away = -1 if cy < road_y else 1
+        sides = [1, -1] if (cx * 7 + cy + seed) % 2 else [-1, 1]
+        side = sides[0]
+        for cand in sides:  # chọn bên vòng không đụng vách chắn giữa khu
+            xo = cx + cand * (R + 2)
+            ys = range(min(cy + away * (R + 2), road_y), max(cy + away * (R + 2), road_y) + 1)
+            if L.inb(xo, cy) and not any((xo, yy) in L.prot for yy in ys):
+                side = cand
+                break
+        for y in range(cy - R, cy + R + 1):
+            for x in range(cx - R, cx + R + 1):
+                if not L.inb(x, y) or (x, y) in L.prot or L.g[y][x] in (GATE, PAD, ALTAR, ROAD):
+                    continue
+                d = max(abs(x - cx), abs(y - cy))
+                L.g[y][x] = wall if d == R else GRASS
+                L.reserve(x, y, 0)
+        L.g[cy][cx] = ROAD
+        # lối vào ở cạnh khuất (lệch 1 ô) → ra ngoài 2 ô → ngang qua hông vòng → dọc về đường chính
+        ex, ey = cx + side, cy + away * R
+        path = [(ex, ey), (ex, ey + away), (ex, ey + away * 2)]
+        x, y = ex, ey + away * 2
+        while x != cx + side * (R + 2):
+            x += side
+            path.append((x, y))
+        step = 1 if road_y > y else -1
+        while y != road_y:
+            y += step
+            path.append((x, y))
+            if L.inb(x, y) and L.g[y][x] in (ROAD, PAD, ALTAR) and abs(y - cy) > R + 1:
+                break
+        for (x, y) in path:
+            if not L.inb(x, y) or (x, y) in L.prot or L.g[y][x] in (GATE, PAD, ALTAR):
+                continue
+            if L.g[y][x] == WATER:
+                L.bridges.add((x, y))
+                L.g[y][x] = ROAD
+            elif L.g[y][x] != ROAD:
+                L.g[y][x] = TALL  # lối mòn ẩn trong cỏ cao
+            L.reserve(x, y, 0)
+
     # công trình: tháp rune / cổng vòm / tượng hộ vệ / tháp canh (chân 4×2 ô), cách nhau ≥ 8 ô
     want = min(18, max(5, w * h // 220))
     cells = [(x, y) for y in range(3, h - 3) for x in range(4, w - 3)]
@@ -911,7 +958,7 @@ def run(map_id, out_preview=None):
             layer["objects"] = []
     if map_id == "01-dawn-meadow":
         add_meadow_landscape(tmj)
-    tmj_path.write_text(json.dumps(tmj, ensure_ascii=False, indent=1), encoding="utf8")
+    tmj_path.write_text(json.dumps(tmj, ensure_ascii=False, indent=1), encoding="utf8", newline="\n")
     terrain = paint(L, theme, seed, rivers)
     terrain_path = tmj_path.parent / "terrain.png"
     terrain.save(terrain_path, optimize=True)

@@ -7,7 +7,30 @@
  * - Duplicates bank a hero-specific shard for manual Awakening, then convert overflow to Starlight.
  */
 
-import { EXP_BALANCE } from './balance';
+import { EXP_BALANCE, expToNextLevel } from './balance';
+import { grantHeroExp } from './progression';
+
+/** Mảnh dư (đã A6 hoặc đầy mảnh) đổi thành EXP anh hùng: số cấp tương đương theo độ hiếm. */
+export const DUP_EXP_LEVELS: Record<'SSS' | 'SSR' | 'SR' | 'R', number> = { SSS: 2, SSR: 1.5, SR: 1, R: 0.6 };
+
+/**
+ * Bảo hiểm SSS (Jung) — tách riêng khỏi bảo hiểm SSR:
+ * - Mỗi lượt có tỉ lệ gốc `baseRate` ra Jung.
+ * - Mỗi 100 lượt chạm mốc: nấc 0 → 1/3 ra Jung; trượt thì 100 lượt sau nấc 1 → 1/2; trượt nữa thì 100 lượt sau chắc chắn.
+ * - Ra Jung (bằng tỉ lệ gốc hoặc mốc) thì đếm và nấc về 0. Tối đa 300 lượt chắc chắn có Jung.
+ */
+export const SSS_PITY = {
+  heroId: 'jung_afterglow',
+  every: 100,
+  chances: [1 / 3, 1 / 2, 1] as const,
+  baseRate: 0.003,
+} as const;
+
+/** Tỉ lệ ra Jung ở lượt kế tiếp (để hiển thị). */
+export function nextSssChance(profile: ExpeditionProfile): { count: number; stage: number; milestoneChance: number } {
+  const stage = Math.min(2, profile.pity.sssStage ?? 0);
+  return { count: profile.pity.sssPityCount ?? 0, stage, milestoneChance: SSS_PITY.chances[stage] };
+}
 import { DEFAULT_SUMMON_BANNER, EXPEDITION_HEROES } from './catalog';
 import type {
   ExpeditionProfile,
@@ -18,6 +41,7 @@ import type {
 } from './types';
 
 const HEROES_BY_RARITY: Record<HeroRarity, readonly HeroDefinition[]> = {
+  SSS: EXPEDITION_HEROES.filter((h) => h.rarity === 'SSS'),
   SSR: EXPEDITION_HEROES.filter((h) => h.rarity === 'SSR'),
   SR: EXPEDITION_HEROES.filter((h) => h.rarity === 'SR'),
   R: EXPEDITION_HEROES.filter((h) => h.rarity === 'R'),
@@ -58,10 +82,32 @@ export function resolveSummonBatch(
     const nextSsrPity = profile.pity.ssrPityCount + 1;
     const nextSrPity = profile.pity.srPityCount + 1;
     const ssrRate = computeEffectiveSsrRate(nextSsrPity, banner);
+
     const roll = randomFloat();
+    // --- bảo hiểm SSS: tỉ lệ gốc dùng vùng trên cùng của cùng số roll; chạm mốc 100 lượt mới rút thêm số
+    const sssCount = (profile.pity.sssPityCount ?? 0) + 1;
+    const sssStage = Math.min(2, profile.pity.sssStage ?? 0);
+    let sssHit = roll >= 1 - SSS_PITY.baseRate;
+    if (!sssHit && sssCount >= SSS_PITY.every) {
+      sssHit = randomFloat() < SSS_PITY.chances[sssStage];
+      if (!sssHit) {
+        profile.pity.sssStage = Math.min(2, sssStage + 1);
+        profile.pity.sssPityCount = 0;
+      }
+    } else if (!sssHit) {
+      profile.pity.sssPityCount = sssCount;
+    }
+    if (sssHit) {
+      profile.pity.sssPityCount = 0;
+      profile.pity.sssStage = 0;
+    }
 
     let rarity: HeroRarity;
-    if (roll < ssrRate) {
+    if (sssHit) {
+      rarity = 'SSS';
+      profile.pity.ssrPityCount = nextSsrPity;
+      profile.pity.srPityCount = 0;
+    } else if (roll < ssrRate) {
       rarity = 'SSR';
       profile.pity.ssrPityCount = 0;
       profile.pity.srPityCount = 0;
@@ -76,13 +122,14 @@ export function resolveSummonBatch(
     }
 
     profile.pity.totalPulls += 1;
-    const pool = HEROES_BY_RARITY[rarity];
+    const pool = rarity === 'SSS' ? HEROES_BY_RARITY.SSS.filter((h) => h.heroId === SSS_PITY.heroId) : HEROES_BY_RARITY[rarity];
     const picked = pool[Math.min(pool.length - 1, Math.floor(randomFloat() * pool.length))];
 
     const existing = profile.heroes[picked.heroId];
     let isNew = false;
     let shardGained = 0;
     let starlightGained = 0;
+    let expGained = 0;
 
     if (!existing) {
       isNew = true;
@@ -104,9 +151,9 @@ export function resolveSummonBatch(
       starlightGained = EXP_BALANCE.heroGacha.dupStarlight[rarity][0];
       profile.starlightToken += starlightGained;
     } else {
-      // Max A6 overflow -> full Starlight conversion
-      starlightGained = EXP_BALANCE.heroGacha.dupStarlight[rarity][1];
-      profile.starlightToken += starlightGained;
+      // mảnh dư thừa → EXP để anh hùng LÊN CẤP (không chỉ đổi tiền)
+      expGained = Math.round(expToNextLevel(existing.level) * DUP_EXP_LEVELS[rarity]);
+      grantHeroExp(existing, expGained);
     }
 
     const heroState = profile.heroes[picked.heroId];
@@ -119,6 +166,7 @@ export function resolveSummonBatch(
       awakeningAfter: heroState.awakeningRank,
       shardGained,
       starlightGained,
+      expGained,
     });
 
     profile.summonHistory.unshift({
@@ -126,8 +174,10 @@ export function resolveSummonBatch(
       heroId: picked.heroId,
       rarity,
       isNew,
+      banner: 'hero',
       shardConverted: shardGained,
       starlightConverted: starlightGained,
+      expConverted: expGained,
       at: now,
     });
   }

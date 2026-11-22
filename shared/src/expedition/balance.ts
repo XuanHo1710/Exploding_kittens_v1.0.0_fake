@@ -137,7 +137,7 @@ export const EXP_BALANCE = {
     hardPitySsr: 80,
     guaranteedSrEvery: 10,
     /** Tinh Huy nhận khi trùng: [đã thức tỉnh < 6, đã max A6] */
-    dupStarlight: { SSR: [25, 100], SR: [5, 20], R: [1, 5] } as Record<'SSR' | 'SR' | 'R', [number, number]>,
+    dupStarlight: { SSS: [60, 200], SSR: [25, 100], SR: [5, 20], R: [1, 5] } as Record<'SSS' | 'SSR' | 'SR' | 'R', [number, number]>,
   },
 
   // ------------------------------------------------------------ gacha trang bị (Rương Thiên Văn)

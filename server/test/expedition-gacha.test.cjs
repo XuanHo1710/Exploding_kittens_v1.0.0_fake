@@ -9,9 +9,9 @@ const { createStarterProfile, ExpeditionProfileStore } = require('../dist/server
 const { ExpeditionRedisService } = require('../dist/server/src/game/expedition/expedition-redis.service.js');
 const { ExpeditionService } = require('../dist/server/src/game/expedition/expedition.service.js');
 
-test('Gacha 12 Heroes (R/SR/SSR): 10,000-pull simulation verifies Hard Pity 80, 10-pull SR+, and A6 Starlight overflow', () => {
-  assert.equal(shared.EXPEDITION_HEROES.length, 12);
-  assert.equal(shared.EXPEDITION_SKILLS.length, 60);
+test('Gacha 13 Heroes (R/SR/SSR/SSS): 10,000-pull simulation verifies Hard Pity 80, 10-pull SR+, and A6 Starlight overflow', () => {
+  assert.equal(shared.EXPEDITION_HEROES.length, 13);
+  assert.equal(shared.EXPEDITION_SKILLS.length, 65);
 
   const profile = createStarterProfile('player_gacha_sim');
   profile.astralSeal = 10_000 * 160 + 50_000;
@@ -24,7 +24,7 @@ test('Gacha 12 Heroes (R/SR/SSR): 10,000-pull simulation verifies Hard Pity 80, 
   for (let batch = 0; batch < 1000; batch++) {
     const pulls = shared.resolveSummonBatch(profile, 10, () => rng.next());
     assert.equal(pulls.length, 10);
-    const hasSrOrSsr = pulls.some((p) => p.rarity === 'SR' || p.rarity === 'SSR');
+    const hasSrOrSsr = pulls.some((p) => p.rarity === 'SR' || p.rarity === 'SSR' || p.rarity === 'SSS');
     assert.ok(hasSrOrSsr, `10-pull batch #${batch} must guarantee at least 1 SR+`);
 
     for (const p of pulls) {

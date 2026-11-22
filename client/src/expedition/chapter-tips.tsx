@@ -40,7 +40,7 @@ export const CHAPTER_TIPS: Record<number, ChapterTip> = {
     title: 'Giữ nhịp trong hỗn chiến',
     lines: [
       { icon: '♪', head: 'Đòn nhịp lệch', text: 'Quái vùng sâu trộn nhịp nhanh – khựng – chậm. Nhìn tia lóe trên đầu quái thay vì đếm nhịp.' },
-      { icon: '🔥', head: 'Nghỉ lửa trại', text: 'Nghỉ (E) hồi đủ vật phẩm trận nhưng hồi sinh mọi quái (trừ Trùm) — chọn chỗ nghỉ hợp lý.' },
+      { icon: '🔥', head: 'Nghỉ lửa trại', text: 'Nghỉ (E) hồi đủ vật phẩm trận nhưng hồi sinh quái thường (Gác Cổng và Trùm đã hạ thì hạ vĩnh viễn) — chọn chỗ nghỉ hợp lý.' },
     ],
   },
   6: {

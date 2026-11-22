@@ -124,7 +124,8 @@ test('statuses stack, DoT ticks, frostbite freezes, charge builds then bursts', 
   profile.heroes.ignis_valkyrie = { heroId: 'ignis_valkyrie', level: 10, exp: 0, awakeningRank: 0, shards: 0, skillLevels: {} };
   profile.heroes.lyra_frostbow = { heroId: 'lyra_frostbow', level: 10, exp: 0, awakeningRank: 0, shards: 0, skillLevels: {} };
   profile.activeParty = ['ignis_valkyrie', 'lyra_frostbow', 'celine_prism'];
-  const s = shared.createBattleSession({ battleId: 'b_st', battleSeed: 4242, profile, encounterKind: 'gatekeeper', targetId: '02-everfrost-peaks_gk_3', mapId: '02-everfrost-peaks' });
+  // đối thủ đủ bền để thanh Cộng Hưởng kịp đầy và bùng nổ (đội sát thương mới đánh rất nhanh)
+  const s = shared.createBattleSession({ battleId: 'b_st', battleSeed: 4242, profile, encounterKind: 'boss', targetId: 'boreal_chevalier', mapId: '02-everfrost-peaks' });
   const { events, sim } = autoplay(s, { hitGrade: 'perfect', defGrade: 'parry' });
   assert.equal(sim.state, 'VICTORY');
   assert.ok(events.some((e) => e.kind === 'status_apply' && e.statusId === 'burn'), 'Ignis applies Burn');

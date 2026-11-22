@@ -156,6 +156,7 @@ export const HERO_MECHANICS: Record<string, HeroMechanic> = {
   marina_abyss: M('marina_abyss', 'Áp Lực', { basic: 1, weakHit: 1 }, 'break', 'Phá Thế ×1.5', 'Đòn khắc hệ tích Áp Lực đáy biển; xả ra nghiền nát thế thủ.'),
   aurelia_eclipse: M('aurelia_eclipse', 'Nhật Quang', { basic: 1, perfectBeat: 1, crit: 1 }, 'crit', 'đòn bộc phát chắc chắn Chí Mạng', 'Mỗi nhịp kiếm hoàn hảo tích Nhật Quang cho đòn phán quyết.'),
   seraph_glacier: M('seraph_glacier', 'Băng Tâm', { basic: 1, parry: 1, hurt: 1 }, 'shield', 'giáp ×1.3 và tự Khiêu Khích', 'Đỡ đòn tích Băng Tâm; xả ra dựng thành lũy băng cho cả đội.'),
+  jung_afterglow: M('jung_afterglow', 'Dư Quang', { basic: 1, crit: 1, dodge: 1, perfectBeat: 1 }, 'pierce', 'xuyên 50% giáp', 'Chí mạng, né đòn và nhịp hoàn hảo tích Dư Quang; xả ra thành nhát chém hừng đông xuyên giáp.'),
   lumina_chrono: M('lumina_chrono', 'Tinh Vận', { basic: 1, support: 1, perfectBeat: 1 }, 'ap', 'hoàn lại 2 AP', 'Giai điệu tinh hà tích Tinh Vận, bộc phát giúp cả đội xoay vòng AP.'),
 };
 

@@ -1,11 +1,11 @@
 {
   "bundle": "astral-expedition-pixel",
   "version": "1.0.0",
-  "heroCount": 12,
+  "heroCount": 13,
   "bossCount": 7,
   "realmCount": 7,
   "gatekeeperArchetypes": 20,
-  "totalFiles": 356,
+  "totalFiles": 371,
   "files": {
     "battle-scenes/01-dawn-meadow/ambient-anim.png": {
       "sha256": "83a2a740cec751ff401cf1bba9ca411018e1c1cf3ef0ffdb63d020471cb474f9",
@@ -288,72 +288,72 @@
       "height": 360
     },
     "maps/01-dawn-meadow/01-dawn-meadow.tmj": {
-      "sha256": "8e879934f5250a6dc36a680b1eef2c9e740e1de29656e159b6ca92bb42b1c340",
-      "bytes": 95284
+      "sha256": "80ae6ab711796e83a8a1a65d128f8bd13fe75ed70e3b9fbb05929fab214abc1c",
+      "bytes": 85246
     },
     "maps/01-dawn-meadow/terrain.png": {
-      "sha256": "0d0bbeb129350150debe07d68cd7f9abdc86f7d330719ea0487157f9faa4476f",
-      "bytes": 1112979,
+      "sha256": "846de6c0b4ceab358271f806b69f84d884b4993e12d2d3a7cdb68a3f648073e5",
+      "bytes": 1138515,
       "width": 3840,
       "height": 2432
     },
     "maps/02-everfrost-peaks/02-everfrost-peaks.tmj": {
-      "sha256": "7f91d531dd16495991113b71f357027e8d20419b8861a461dd9a2ef33a6d0e61",
-      "bytes": 34960
+      "sha256": "42fec60f490ec576547b83c6c57d9b05e80b3226da6c7b088a1768fdfdc9c079",
+      "bytes": 30855
     },
     "maps/02-everfrost-peaks/terrain.png": {
-      "sha256": "a851a79db113d8b97ded1ca2141642dd4d9092f0e92042fbd29389c7f788f712",
-      "bytes": 407984,
+      "sha256": "12651db47e1b2e6306cc37d06a64b76e1a5f5dcab2df2b4e8ff7b1a6f245bd88",
+      "bytes": 410795,
       "width": 3200,
       "height": 1152
     },
     "maps/03-sunken-dunes/03-sunken-dunes.tmj": {
-      "sha256": "66389a79f15e78e10f60de75bd36895c80442b6c4955a0e6d89134a8915f4087",
-      "bytes": 35606
+      "sha256": "e385aa1664856611786054221717d0d2f0eaf0505e8884e5fb76771663a9fb5d",
+      "bytes": 31602
     },
     "maps/03-sunken-dunes/terrain.png": {
-      "sha256": "e871b90d2d6d07d4ff316ffdf9fce1717c3cbc8aec2cf73c1b14152d5a297f9b",
-      "bytes": 362965,
+      "sha256": "3e55e3bee8859d2fc925bca3d99d70732bf55ddfbd391536fa9ee9f3c1cd582c",
+      "bytes": 379407,
       "width": 3200,
       "height": 1152
     },
     "maps/04-abyssal-sanctum/04-abyssal-sanctum.tmj": {
-      "sha256": "347d704a44cdaf4581c2fc9e12b358928cd87fd9ecc2590f1bbc63dfcf4ccb9c",
-      "bytes": 33860
+      "sha256": "780055a28fb98fc9388aebb76d0957bd03440eabe09b11be7dcf2bed6e35b1fc",
+      "bytes": 29968
     },
     "maps/04-abyssal-sanctum/terrain.png": {
-      "sha256": "8d33997afbb77394181360a45308e15024a3f715d9ea6467b0860c4c9459ce45",
-      "bytes": 493226,
+      "sha256": "08a96e01ccfabd9c305c69b95c6a837295f1b53523505f8eeda9402e58e92c5a",
+      "bytes": 496955,
       "width": 3200,
       "height": 1152
     },
     "maps/05-cinder-caldera/05-cinder-caldera.tmj": {
-      "sha256": "176e265b1a54355b16e98f5ede6572c379574552c3013d1c1c94a1d49a66f1c3",
-      "bytes": 33225
+      "sha256": "283a2de28085511620e58b89ba87430877c11ebd0ac849ae5b15211c9a892879",
+      "bytes": 29373
     },
     "maps/05-cinder-caldera/terrain.png": {
-      "sha256": "e17d3fddfdec9deda27785e2924e9579acd5e371a12f7280f26dde846d571871",
-      "bytes": 294089,
+      "sha256": "a7c3c8bfceb2344abdeb386741c4620af1259b6ff9033590e64e8fdd16b75c98",
+      "bytes": 300881,
       "width": 3200,
       "height": 1152
     },
     "maps/06-nocturne-veil/06-nocturne-veil.tmj": {
-      "sha256": "02f3df754d17bf8969132c24fb0759df063ca553fdd9633de12e798621e0004c",
-      "bytes": 33357
+      "sha256": "30fbf08e0c22d5eb8b4bb06274e7fa0ea94e690a0160aed0e114f83ad48a0e7c",
+      "bytes": 29496
     },
     "maps/06-nocturne-veil/terrain.png": {
-      "sha256": "3adbce9de99eb678a63a1bdf25821efe8718ff1e8e19365af1a941bfea290b47",
-      "bytes": 326458,
+      "sha256": "95904a29b8ebaf831061faa2f49423ce1cf3c927376a44db2fe96226b2251eaa",
+      "bytes": 333028,
       "width": 3200,
       "height": 1152
     },
     "maps/07-aurora-zenith/07-aurora-zenith.tmj": {
-      "sha256": "564164ce5cf1c10363852baf7aa0b70e2977ab986fe1c614b21c24abf6e5a2af",
-      "bytes": 83818
+      "sha256": "8af8ea998d7b6cc4e12be61f275cf8ab6384d18ba18b175fff84b7040d3eff8d",
+      "bytes": 73812
     },
     "maps/07-aurora-zenith/terrain.png": {
-      "sha256": "2d76e4e49cb26adaf94285110906a1e69c3e7f8313dbfd78e918cdee09278ab4",
-      "bytes": 1368838,
+      "sha256": "08005d50571bdd1ae1d778ec6ec310c78ca898630c0e3262f0f468121a2b4fbc",
+      "bytes": 1390315,
       "width": 4800,
       "height": 2048
     },
@@ -539,6 +539,12 @@
       "width": 512,
       "height": 32
     },
+    "structures/aurora/monuments.png": {
+      "sha256": "1721735be5b816473d2ea0021a1f1ee92dead2afb092e71be5aa2860d5dd0653",
+      "bytes": 10718,
+      "width": 512,
+      "height": 128
+    },
     "structures/aurora/realm-warp-gate.png": {
       "sha256": "d796cab713234cc56cc2a9f0a369361c5bf62e6580c358bc469c6308718ff239",
       "bytes": 6033,
@@ -548,6 +554,12 @@
     "structures/aurora/rest-anchor-flag.png": {
       "sha256": "2619a3ed2dfe02a78d79454e659d49ba1782c24e632e5a06204e344d51aa2ec8",
       "bytes": 5380,
+      "width": 512,
+      "height": 128
+    },
+    "structures/desert/monuments.png": {
+      "sha256": "0c9bb7a7b8e9543a2fe929b6df9bffdb15b628cb9402ef62a84cad5a4d770f8b",
+      "bytes": 9943,
       "width": 512,
       "height": 128
     },
@@ -563,6 +575,12 @@
       "width": 512,
       "height": 128
     },
+    "structures/meadow/monuments.png": {
+      "sha256": "352d7cffd2ab85529e47e5287d81ce628b4ff40983dccc3c5a9cc25f6c55469a",
+      "bytes": 11728,
+      "width": 512,
+      "height": 128
+    },
     "structures/meadow/realm-warp-gate.png": {
       "sha256": "0240da48589528836b537bc4aa3d503a906e8bb5881da6ee8a7d9cd6feae4a1e",
       "bytes": 6752,
@@ -572,6 +590,18 @@
     "structures/meadow/rest-anchor-flag.png": {
       "sha256": "243208073d11ee0e385e6edf08807f9382aba6b5c346c0f1adbc95cab7d3a226",
       "bytes": 5837,
+      "width": 512,
+      "height": 128
+    },
+    "structures/meadow/waterworks.png": {
+      "sha256": "d39dc64d0460c77b6a120e0db268825cea2da00e74ccce4cd47d666faf23eff9",
+      "bytes": 27049,
+      "width": 384,
+      "height": 384
+    },
+    "structures/night/monuments.png": {
+      "sha256": "4cf73e693074dc946e0147750dc73c050e5d7c6a3fbbe751081e6c93833e5943",
+      "bytes": 11757,
       "width": 512,
       "height": 128
     },
@@ -605,6 +635,12 @@
       "width": 1024,
       "height": 128
     },
+    "structures/snow/monuments.png": {
+      "sha256": "fe19ec80ffe5a667fca3f4b965935608d6103850fc59e78477cfa14222a30e3a",
+      "bytes": 10437,
+      "width": 512,
+      "height": 128
+    },
     "structures/snow/realm-warp-gate.png": {
       "sha256": "9269f7f3f1e670f0e880edf1fb3163d627e19d06852f388c8ad51132b20be2ff",
       "bytes": 6401,
@@ -614,6 +650,12 @@
     "structures/snow/rest-anchor-flag.png": {
       "sha256": "6f0e4a8d11bcd68ad7954cf770419cb40d1007d6927d73346830cecc7ea59c4c",
       "bytes": 5750,
+      "width": 512,
+      "height": 128
+    },
+    "structures/underwater/monuments.png": {
+      "sha256": "743976ab83393664ecd326512b73a5730c75243107d0d8c394fbbb53e7bdb11c",
+      "bytes": 11162,
       "width": 512,
       "height": 128
     },
@@ -629,6 +671,12 @@
       "width": 512,
       "height": 128
     },
+    "structures/volcano/monuments.png": {
+      "sha256": "820bdb0e89773c96c3b1908609f807caec0c31cb9ab8fddfb7de4183a906cfcf",
+      "bytes": 10438,
+      "width": 512,
+      "height": 128
+    },
     "structures/volcano/realm-warp-gate.png": {
       "sha256": "86a80b97db3f05b6c6ff2f54f4a6364a349bce5ee39ed0db67f06ae0b8ddcade",
       "bytes": 6408,
@@ -640,6 +688,10 @@
       "bytes": 5458,
       "width": 512,
       "height": 128
+    },
+    "ui/charm-icons.json": {
+      "sha256": "26111d86128727482a9a1e1e04e446c6cb10a666845f9625313a514564271b0c",
+      "bytes": 3219
     },
     "ui/charm-icons.png": {
       "sha256": "f77b916d1a43ebd328d6fb5ebfafb5057aec5835b0bca9bbd90c17cd7971c261",
@@ -664,6 +716,168 @@
       "bytes": 3766,
       "width": 256,
       "height": 64
+    },
+    "ui/skill-icons.png": {
+      "sha256": "694f3d9a8f84e123b632bd5be05965ae42f32f9c7ea17e962e4642833a7436bd",
+      "bytes": 208885,
+      "width": 640,
+      "height": 704
+    },
+    "ui/status-icons.png": {
+      "width": 240,
+      "height": 144,
+      "sha256": "02dcc07f7657090b1a6ab660e235fdd71f1d51c44eb37ed60d67df8ab2e0b524",
+      "bytes": 2869
+    },
+    "ui/weapons/aurelia_eclipse.png": {
+      "sha256": "256e17a2116854505287f8ee8490f6df79ba6abbd660875ceaecbea8adf7e812",
+      "bytes": 2426,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/bastian_aegis.png": {
+      "sha256": "28ec88726ee9548384f6b6af0297ccf472e64024e17e2240cd7f78684bcf8926",
+      "bytes": 1602,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/celine_prism.png": {
+      "sha256": "9e2504812c3b23ff4d6af68211b84ebdb1636c24c87e63dd45f9371d7317e252",
+      "bytes": 1254,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/corvus_night.png": {
+      "sha256": "c4f578debda9e449a22e3b48a642e3f4ed1085400a2404db7b579252e7e001ca",
+      "bytes": 2068,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/field-1.png": {
+      "sha256": "3d95c30f3aa6a9efbdcee1f4ff0963f17088546ef9488beafee865f0d6864613",
+      "bytes": 1989,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/field-2.png": {
+      "sha256": "ebefd3fc6ac6cb03ae912db42eef35d7dc5de957cf21a423dca88eb77a34a287",
+      "bytes": 2255,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/field-3.png": {
+      "sha256": "6c012ca8d9232c5da40ace40ace9c57975cebd5a92bacee2f72341aa4329d335",
+      "bytes": 1776,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/field-4.png": {
+      "sha256": "1660390fff59e64c00718358ce08a57a9326093a735321ab8f25714412c9eee2",
+      "bytes": 1622,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/field-5.png": {
+      "sha256": "49917f95f3b380b7a2df8fbb02243936fcf836c60b904920803dab2dee0f1207",
+      "bytes": 2044,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/field-6.png": {
+      "sha256": "16d202d5f0ee717994a7145287940480b884644f8430a4982f39d6243561a33b",
+      "bytes": 2419,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/field-axe.png": {
+      "sha256": "9d8b821a5be1d31b6fee3c0e506a5cb48f3c3f31c30bfc91d1417dd2f9c80435",
+      "bytes": 2647,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/field-bow.png": {
+      "sha256": "dff0c45b9860132c0d49914c5ed100d4c72afa964453617cc4f684083835d234",
+      "bytes": 1567,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/field-daggers.png": {
+      "sha256": "a8363f57fdc8b9d21fcf1e0f05667cd93151f7fb19a0f3b8561623062c9197c6",
+      "bytes": 2883,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/field-scythe.png": {
+      "sha256": "004b4727475e8c9c7d9a698a4a0562a58202698eba3dec58c42d39dd68e546e7",
+      "bytes": 1801,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/field-spear.png": {
+      "sha256": "6cd116815f3db489448e150f62001505c4a32b975e156edcf6f3c042ab690f0e",
+      "bytes": 1315,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/field-staff.png": {
+      "sha256": "58308941539595b9b21d503e81b948a76ae1ee75aa470aba5d3471cd43933eea",
+      "bytes": 1626,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/gustave_blade.png": {
+      "sha256": "e3ef91575fb37209f0423322b9a709e0856c94de74de76e8c03263bed81d2a37",
+      "bytes": 1362,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/ignis_valkyrie.png": {
+      "sha256": "f7e848c8384099843bad57788d0cb5c6c3c7c0a35d07f8cc5c681500ed5332c2",
+      "bytes": 2017,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/jung_afterglow.png": {
+      "sha256": "6ef046ca35e7f6e8bcb3b160adf71cea97b1041e358db16e97178a753e6b22e2",
+      "bytes": 4055,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/kestrel_dune.png": {
+      "sha256": "ca8c6ecba3ecc994b3873e1019ece9adb7ce04de7fe416b399e19306e501db3e",
+      "bytes": 2942,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/lumina_chrono.png": {
+      "sha256": "c6bcc3135f5ca76949d1255a4af0d9ae1461bdc0840e9546e41669b8e59ea22c",
+      "bytes": 2334,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/lyra_frostbow.png": {
+      "sha256": "66fce1c50621aa5e7578b89f16d84365ba13211a474781e52b277dad0ac862e3",
+      "bytes": 1596,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/marina_abyss.png": {
+      "sha256": "e1fdc9de31460bcafaf9b3baa6a0917a9571b963a0cba5cb1564893418d4d746",
+      "bytes": 2183,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/nereus_tide.png": {
+      "sha256": "734ac5f151325b181a9d748977f746e579576a4afb4fbe09449ff82300fd9344",
+      "bytes": 1781,
+      "width": 128,
+      "height": 128
+    },
+    "ui/weapons/seraph_glacier.png": {
+      "sha256": "d836f7555fa58b29318d35fc8d6e33941829a047e79c609ebefa2ca797762087",
+      "bytes": 1850,
+      "width": 128,
+      "height": 128
     },
     "units/animals/chicken-battle.png": {
       "sha256": "7cebd47d7b985ae36ff5e4b1caa5cd26b1f7daa856f71f8bc7a442c7eb6343c0",
@@ -1211,6 +1425,24 @@
       "width": 128,
       "height": 128
     },
+    "units/heroes/jung_afterglow-battle.png": {
+      "sha256": "a176801ef461c4b58e149d06fa4647947c9b3d33e425a7c6a983355ac4050948",
+      "bytes": 123175,
+      "width": 1152,
+      "height": 1152
+    },
+    "units/heroes/jung_afterglow-movement.png": {
+      "sha256": "1b5a64b4050aa77ee8de680055aa63d0bf0323eedc98b5116d9a59102c34721b",
+      "bytes": 34296,
+      "width": 384,
+      "height": 512
+    },
+    "units/heroes/jung_afterglow-portrait.png": {
+      "sha256": "e80cf3e59b2e98ab6597891e4d2605fcdfd4d7ecb9db6edb2541bec7a165cdcf",
+      "bytes": 8213,
+      "width": 128,
+      "height": 128
+    },
     "units/heroes/kestrel_dune-battle.png": {
       "sha256": "648fc8f565a24ebd2902453fefe3fbfcac15ef92007c9002fb17515115133fcf",
       "bytes": 190734,
@@ -1331,6 +1563,12 @@
       "width": 384,
       "height": 512
     },
+    "units/heroes/variants/celine_prism-violet-atelier-portrait.png": {
+      "sha256": "7d2e556c5d2a3ee3c6296b12c5776498e44290a7ecb80dfc4982bc84e95e7f7e",
+      "bytes": 11452,
+      "width": 128,
+      "height": 128
+    },
     "units/heroes/variants/gustave_blade-charcoal-watch-battle.png": {
       "sha256": "72f2934d0e1a36867594fa0bfff2d38c17f5c5fd6816683195fd35af8be82123",
       "bytes": 163285,
@@ -1342,6 +1580,12 @@
       "bytes": 47743,
       "width": 384,
       "height": 512
+    },
+    "units/heroes/variants/gustave_blade-charcoal-watch-portrait.png": {
+      "sha256": "e77bd449a799bf74f7d1177e61ee918028f84dda6a0a6099379f7509708558ac",
+      "bytes": 13306,
+      "width": 128,
+      "height": 128
     },
     "units/heroes/variants/lyra_frostbow-ivory-recon-battle.png": {
       "sha256": "72bcc943923acbb6dfaa820422bc8abf3c92602ed85e113d28e87b7e827f29e6",
@@ -1355,9 +1599,15 @@
       "width": 384,
       "height": 512
     },
+    "units/heroes/variants/lyra_frostbow-ivory-recon-portrait.png": {
+      "sha256": "4c3e54a5e368916fd54e16cc4439872bec03c89d6d26fcc701c4011750fc61f3",
+      "bytes": 12716,
+      "width": 128,
+      "height": 128
+    },
     "units/heroes/variants/wardrobe.json": {
-      "sha256": "4926498037f2ccfb26dbd773c9ec84bb3f00a79c9a994fa2c4518733819f1810",
-      "bytes": 880
+      "sha256": "a54b01a8df6c01086d9ede01875c753c508eba95d8d42221b3f3254acef206c1",
+      "bytes": 1131
     },
     "units/monsters/briar_goblin-battle.png": {
       "sha256": "2591de34e793f597ed5ba4506c5a2d54164081c8ba854e5ed8e61e46a76fe318",
@@ -1922,217 +2172,9 @@
       "bytes": 4858,
       "width": 768,
       "height": 96
-    },
-    "structures/meadow/waterworks.png": {
-      "sha256": "d39dc64d0460c77b6a120e0db268825cea2da00e74ccce4cd47d666faf23eff9",
-      "bytes": 27049,
-      "width": 384,
-      "height": 384
-    },
-    "ui/charm-icons.json": {
-      "sha256": "26111d86128727482a9a1e1e04e446c6cb10a666845f9625313a514564271b0c",
-      "bytes": 3219
-    },
-    "ui/weapons/gustave_blade.png": {
-      "sha256": "e3ef91575fb37209f0423322b9a709e0856c94de74de76e8c03263bed81d2a37",
-      "bytes": 1362,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/celine_prism.png": {
-      "sha256": "9e2504812c3b23ff4d6af68211b84ebdb1636c24c87e63dd45f9371d7317e252",
-      "bytes": 1254,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/bastian_aegis.png": {
-      "sha256": "28ec88726ee9548384f6b6af0297ccf472e64024e17e2240cd7f78684bcf8926",
-      "bytes": 1602,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/lyra_frostbow.png": {
-      "sha256": "66fce1c50621aa5e7578b89f16d84365ba13211a474781e52b277dad0ac862e3",
-      "bytes": 1596,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/kestrel_dune.png": {
-      "sha256": "ca8c6ecba3ecc994b3873e1019ece9adb7ce04de7fe416b399e19306e501db3e",
-      "bytes": 2942,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/nereus_tide.png": {
-      "sha256": "734ac5f151325b181a9d748977f746e579576a4afb4fbe09449ff82300fd9344",
-      "bytes": 1781,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/corvus_night.png": {
-      "sha256": "c4f578debda9e449a22e3b48a642e3f4ed1085400a2404db7b579252e7e001ca",
-      "bytes": 2068,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/ignis_valkyrie.png": {
-      "sha256": "f7e848c8384099843bad57788d0cb5c6c3c7c0a35d07f8cc5c681500ed5332c2",
-      "bytes": 2017,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/marina_abyss.png": {
-      "sha256": "e1fdc9de31460bcafaf9b3baa6a0917a9571b963a0cba5cb1564893418d4d746",
-      "bytes": 2183,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/aurelia_eclipse.png": {
-      "sha256": "256e17a2116854505287f8ee8490f6df79ba6abbd660875ceaecbea8adf7e812",
-      "bytes": 2426,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/seraph_glacier.png": {
-      "sha256": "d836f7555fa58b29318d35fc8d6e33941829a047e79c609ebefa2ca797762087",
-      "bytes": 1850,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/lumina_chrono.png": {
-      "sha256": "c6bcc3135f5ca76949d1255a4af0d9ae1461bdc0840e9546e41669b8e59ea22c",
-      "bytes": 2334,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/field-1.png": {
-      "sha256": "3d95c30f3aa6a9efbdcee1f4ff0963f17088546ef9488beafee865f0d6864613",
-      "bytes": 1989,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/field-2.png": {
-      "sha256": "ebefd3fc6ac6cb03ae912db42eef35d7dc5de957cf21a423dca88eb77a34a287",
-      "bytes": 2255,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/field-3.png": {
-      "sha256": "6c012ca8d9232c5da40ace40ace9c57975cebd5a92bacee2f72341aa4329d335",
-      "bytes": 1776,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/field-4.png": {
-      "sha256": "1660390fff59e64c00718358ce08a57a9326093a735321ab8f25714412c9eee2",
-      "bytes": 1622,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/field-5.png": {
-      "sha256": "49917f95f3b380b7a2df8fbb02243936fcf836c60b904920803dab2dee0f1207",
-      "bytes": 2044,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/field-6.png": {
-      "sha256": "16d202d5f0ee717994a7145287940480b884644f8430a4982f39d6243561a33b",
-      "bytes": 2419,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/field-bow.png": {
-      "sha256": "dff0c45b9860132c0d49914c5ed100d4c72afa964453617cc4f684083835d234",
-      "bytes": 1567,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/field-staff.png": {
-      "sha256": "58308941539595b9b21d503e81b948a76ae1ee75aa470aba5d3471cd43933eea",
-      "bytes": 1626,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/field-daggers.png": {
-      "sha256": "a8363f57fdc8b9d21fcf1e0f05667cd93151f7fb19a0f3b8561623062c9197c6",
-      "bytes": 2883,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/field-axe.png": {
-      "sha256": "9d8b821a5be1d31b6fee3c0e506a5cb48f3c3f31c30bfc91d1417dd2f9c80435",
-      "bytes": 2647,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/field-scythe.png": {
-      "sha256": "004b4727475e8c9c7d9a698a4a0562a58202698eba3dec58c42d39dd68e546e7",
-      "bytes": 1801,
-      "width": 128,
-      "height": 128
-    },
-    "ui/weapons/field-spear.png": {
-      "sha256": "6cd116815f3db489448e150f62001505c4a32b975e156edcf6f3c042ab690f0e",
-      "bytes": 1315,
-      "width": 128,
-      "height": 128
-    },
-    "ui/status-icons.png": {
-      "width": 240,
-      "height": 144,
-      "sha256": "02dcc07f7657090b1a6ab660e235fdd71f1d51c44eb37ed60d67df8ab2e0b524",
-      "bytes": 2869
-    },
-    "structures/meadow/monuments.png": {
-      "sha256": "352d7cffd2ab85529e47e5287d81ce628b4ff40983dccc3c5a9cc25f6c55469a",
-      "bytes": 11728,
-      "width": 512,
-      "height": 128
-    },
-    "structures/snow/monuments.png": {
-      "sha256": "fe19ec80ffe5a667fca3f4b965935608d6103850fc59e78477cfa14222a30e3a",
-      "bytes": 10437,
-      "width": 512,
-      "height": 128
-    },
-    "structures/desert/monuments.png": {
-      "sha256": "0c9bb7a7b8e9543a2fe929b6df9bffdb15b628cb9402ef62a84cad5a4d770f8b",
-      "bytes": 9943,
-      "width": 512,
-      "height": 128
-    },
-    "structures/underwater/monuments.png": {
-      "sha256": "743976ab83393664ecd326512b73a5730c75243107d0d8c394fbbb53e7bdb11c",
-      "bytes": 11162,
-      "width": 512,
-      "height": 128
-    },
-    "structures/volcano/monuments.png": {
-      "sha256": "820bdb0e89773c96c3b1908609f807caec0c31cb9ab8fddfb7de4183a906cfcf",
-      "bytes": 10438,
-      "width": 512,
-      "height": 128
-    },
-    "structures/night/monuments.png": {
-      "sha256": "4cf73e693074dc946e0147750dc73c050e5d7c6a3fbbe751081e6c93833e5943",
-      "bytes": 11757,
-      "width": 512,
-      "height": 128
-    },
-    "structures/aurora/monuments.png": {
-      "sha256": "1721735be5b816473d2ea0021a1f1ee92dead2afb092e71be5aa2860d5dd0653",
-      "bytes": 10718,
-      "width": 512,
-      "height": 128
-    },
-    "ui/skill-icons.png": {
-      "sha256": "de7734f581b7c43882cecf963136c49f0072ea14726edaeb6181765c4d0d77fe",
-      "bytes": 192146,
-      "width": 640,
-      "height": 640
     }
   },
   "monsterCount": 17,
   "animalCount": 12,
-  "unitCount": 68
+  "unitCount": 69
 }

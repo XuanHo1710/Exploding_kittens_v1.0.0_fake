@@ -37,6 +37,7 @@ import {
   itemStatValue,
   weaponRefineCost,
   enhanceCost,
+  HERO_STYLE_VI,
   ENHANCE_MAX,
   skillLevelCap,
   skillUnlockLevel,
@@ -52,11 +53,12 @@ import {
   type StatKey,
 } from './shared';
 import { expeditionApi } from './rpc';
-import { expeditionAssetUrl, type HeroOutfit } from './store';
+import { expeditionAssetUrl, outfitPortraitOf, type HeroOutfit } from './store';
 import { CharmIcon, charmSummary } from './progression-ui';
 import { SkillTreeGraph } from './skill-tree-ui';
 import { WeaponIcon } from './weapon-art';
 import { OwnerTag } from './owner-tag';
+import { EnhancePanel } from './enhance-panel';
 
 export type HeroSub = 'overview' | 'stats' | 'charms' | 'skills' | 'tree' | 'gear';
 export type PageId = 'bag' | 'summon' | 'journal' | 'charms' | 'settings';
@@ -111,7 +113,7 @@ const SLOT_VI: Record<CombatSkillDefinition['slotKind'], string> = {
 };
 
 export function portraitUrl(heroId: string) {
-  return expeditionAssetUrl(`units/heroes/${heroId}-portrait.png`);
+  return expeditionAssetUrl(outfitPortraitOf(heroId) ?? `units/heroes/${heroId}-portrait.png`);
 }
 
 export function orderedHeroIds(profile: ExpeditionProfile): string[] {
@@ -195,8 +197,8 @@ function StatPanel({ profile, heroId, children }: { profile: ExpeditionProfile; 
   const need = expToNextLevel(inst.level);
   return (
     <section className="ui-statpanel">
-      <h2>{def.nameVi}</h2>
-      <p className="ui-sub">{def.titleVi} · {ELEMENT_LABELS_VI[def.element]} · {ROLE_LABELS_VI[def.role]}</p>
+      <h2>{def.nameVi} <RarityTag r={def.rarity} /></h2>
+      <p className="ui-sub">{def.titleVi} · {ELEMENT_LABELS_VI[def.element]} · {ROLE_LABELS_VI[def.role]}{HERO_STYLE_VI[def.heroId] ? <b className="hero-style"> · {HERO_STYLE_VI[def.heroId]}</b> : null}</p>
       <div className="ui-level">
         <span>Cấp độ<b>{inst.level}</b></span>
         <div>
@@ -227,17 +229,38 @@ function StatPanel({ profile, heroId, children }: { profile: ExpeditionProfile; 
   );
 }
 
+/** Thẻ độ hiếm nhân vật: SSR vàng rực, SR tím, R xanh. */
+export function RarityTag({ r }: { r: string }) {
+  return <span className={`rar-tag r-${r}`} aria-label={`Hạng ${r}`}>{r}</span>;
+}
+
+const SWITCH_WINDOW = 5;
+
+/** Thanh đổi nhân vật: chỉ hiện 5 người; Q / E đi tới nhân vật ngoài khung thì khung trượt 1 ô (vòng tròn). */
 function HeroSwitcher({ profile, heroId, onPick }: { profile: ExpeditionProfile; heroId: string; onPick: (id: string) => void }) {
   const ids = orderedHeroIds(profile);
+  const size = Math.min(SWITCH_WINDOW, ids.length);
+  const [start, setStart] = useState(0);
+  const idx = Math.max(0, ids.indexOf(heroId));
+  // giữ nhân vật đang chọn trong khung; đi quá mép thì trượt đúng 1 ô, vòng từ cuối về đầu và ngược lại
+  const fixedStart = idx < start ? idx : idx > start + size - 1 ? idx - size + 1 : Math.min(start, Math.max(0, ids.length - size));
+  useEffect(() => { if (fixedStart !== start) setStart(fixedStart); }, [fixedStart, start]);
+  const shown = ids.slice(fixedStart, fixedStart + size);
   return (
     <nav className="ui-switch" aria-label="Đổi nhân vật">
       <kbd>Q</kbd>
-      {ids.map((id) => (
-        <button key={id} type="button" className={id === heroId ? 'on' : ''} onClick={() => onPick(id)} title={EXPEDITION_HEROES_BY_ID[id]?.nameVi}>
-          <img src={portraitUrl(id)} alt={EXPEDITION_HEROES_BY_ID[id]?.nameVi} />
-          {profile.activeParty.includes(id) && <i aria-label="Trong đội" />}
-        </button>
-      ))}
+      {fixedStart > 0 && <span className="ui-switch-more" aria-hidden="true">‹{fixedStart}</span>}
+      {shown.map((id) => {
+        const def = EXPEDITION_HEROES_BY_ID[id];
+        return (
+          <button key={id} type="button" className={`ui-switch-hero r-${def?.rarity} ${id === heroId ? 'on' : ''}`} onClick={() => onPick(id)} title={def?.nameVi}>
+            <img src={portraitUrl(id)} alt={def?.nameVi} />
+            {def && <RarityTag r={def.rarity} />}
+            {profile.activeParty.includes(id) && <i aria-label="Trong đội" />}
+          </button>
+        );
+      })}
+      {fixedStart + size < ids.length && <span className="ui-switch-more" aria-hidden="true">{ids.length - fixedStart - size}›</span>}
       <kbd>E</kbd>
     </nav>
   );
@@ -310,8 +333,8 @@ export function CampScreen(props: Shared & {
               className={`ui-camp-hero ${formation && slot === index ? 'pick' : ''}`}
               onClick={() => (formation ? setSlot(index) : onHero(id))}>
               <HeroIdle heroId={id} movement={looks[id]} />
-              <span className="ui-nameplate">
-                <b>{def.nameVi}</b>
+              <span className={`ui-nameplate r-${def.rarity}`}>
+                <b>{def.nameVi} <RarityTag r={def.rarity} /></b>
                 <small>Cấp độ <em>{inst.level}</em></small>
                 <Meter value={1} max={1} kind="hp" />
                 {pts > 0 && <i className="ui-badge" title="Điểm chưa dùng">{pts}</i>}
@@ -331,9 +354,9 @@ export function CampScreen(props: Shared & {
           <h3>Chọn nhân vật cho ô {slot + 1}</h3>
           <div>
             {bench.map((id) => (
-              <button key={id} type="button" disabled={busy} onClick={() => place(id)}>
+              <button key={id} type="button" className={`r-${EXPEDITION_HEROES_BY_ID[id].rarity}`} disabled={busy} onClick={() => place(id)}>
                 <img src={portraitUrl(id)} alt="" />
-                <span>{EXPEDITION_HEROES_BY_ID[id].nameVi}<small>Cấp {profile.heroes[id].level}</small></span>
+                <span>{EXPEDITION_HEROES_BY_ID[id].nameVi} <RarityTag r={EXPEDITION_HEROES_BY_ID[id].rarity} /><small>Cấp {profile.heroes[id].level}</small></span>
               </button>
             ))}
             {!bench.length && <p className="ui-empty">Mọi nhân vật đã ở trong đội. Triệu hồi để có thêm đồng đội.</p>}
@@ -477,14 +500,18 @@ function Overview(props: SubProps) {
               <span>Thức tỉnh A{inst.awakeningRank} · {inst.shards} mảnh</span>
             </button>
             {props.outfits.length > 0 && (
-              <label className="ui-plate ui-outfit">
-                <span>Trang phục</span>
-                <select value={props.selectedOutfit} title={props.outfits.find((outfit) => outfit.variantId === props.selectedOutfit)?.nameVi ?? 'Mặc định'}
-                  onChange={(e) => props.onOutfit(e.target.value)}>
-                  <option value="">Mặc định</option>
-                  {props.outfits.map((o) => <option key={o.variantId} value={o.variantId}>{o.nameVi}</option>)}
-                </select>
-              </label>
+              <div className="ui-outfit-picker" role="radiogroup" aria-label="Trang phục">
+                <span className="ui-outfit-title">Trang phục</span>
+                <div className="ui-outfit-cards">
+                  {[{ variantId: '', nameVi: 'Mặc định', portrait: undefined as string | undefined }, ...props.outfits].map((o) => (
+                    <button key={o.variantId || 'default'} type="button" role="radio" aria-checked={props.selectedOutfit === o.variantId}
+                      className={`ui-outfit-card ${props.selectedOutfit === o.variantId ? 'on' : ''}`} onClick={() => props.onOutfit(o.variantId)}>
+                      <img src={expeditionAssetUrl(o.portrait ?? `units/heroes/${heroId}-portrait.png`)} alt="" />
+                      <b>{o.nameVi}</b>
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </StatPanel>
@@ -831,17 +858,8 @@ function GearSub({ profile, heroId, socket, run, setProfile, busy }: SubProps) {
                 <span>Tinh luyện · {refineCost} mảnh</span>
               </button>
             )}
-            {(() => {
-              const ec = enhanceCost(shown);
-              if (!ec) return shown.kind === 'equipment' ? <small className="enh-max">Đã cường hoá tối đa +{ENHANCE_MAX}</small> : null;
-              const can = profile.astralSeal >= ec.seal && profile.expCrystal >= ec.crystal;
-              return (
-                <button type="button" className="ui-plate small ui-enhance" disabled={busy || !can}
-                  onClick={() => void run(() => expeditionApi.enhanceItem(socket, shown.uid, shown.enhance ?? 0), setProfile)}>
-                  <span>Cường hoá +{(shown.enhance ?? 0) + 1} · {ec.seal} Ấn · {ec.crystal} ⬢</span>
-                </button>
-              );
-            })()}
+            <EnhancePanel item={shown} profile={profile} busy={busy}
+              onEnhance={() => void run(() => expeditionApi.enhanceItem(socket, shown.uid, shown.enhance ?? 0), setProfile)} />
             {shown === equipped && (
               <button type="button" className="ui-plate small dim" disabled={busy}
                 onClick={() => void run(() => expeditionApi.equipItem(socket, heroId, slot, null), setProfile)}><span>Tháo ra</span></button>

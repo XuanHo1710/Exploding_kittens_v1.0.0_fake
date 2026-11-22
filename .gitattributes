@@ -1,0 +1,3 @@
+# These generated files are hashed byte for byte in the Expedition manifest.
+database-astral-expedition/maps/*/*.tmj text eol=lf
+database-astral-expedition/units/heroes/variants/wardrobe.json text eol=lf

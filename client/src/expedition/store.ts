@@ -65,6 +65,18 @@ export interface HeroOutfit {
   nameVi: string;
   battle: string;
   movement: string;
+  /** chân dung vẽ riêng cho trang phục */
+  portrait?: string;
+}
+
+/** Chân dung đang mặc của từng anh hùng (trang phục đã chọn) — portraitUrl đọc từ đây. */
+const outfitPortraits = new Map<string, string>();
+export function setOutfitPortraits(looks: readonly HeroOutfit[]): void {
+  outfitPortraits.clear();
+  for (const o of looks) if (o.portrait) outfitPortraits.set(o.heroId, o.portrait);
+}
+export function outfitPortraitOf(heroId: string): string | undefined {
+  return outfitPortraits.get(heroId);
 }
 
 export async function loadHeroWardrobe(): Promise<HeroOutfit[]> {
@@ -74,7 +86,8 @@ export async function loadHeroWardrobe(): Promise<HeroOutfit[]> {
   return (data.variants ?? []).filter((outfit) => {
     const stem = `units/heroes/variants/${outfit.heroId}-${outfit.variantId}`;
     return /^[a-z0-9_]+$/.test(outfit.heroId) && /^[a-z0-9-]+$/.test(outfit.variantId)
-      && outfit.battle === `${stem}-battle.png` && outfit.movement === `${stem}-movement.png`;
+      && outfit.battle === `${stem}-battle.png` && outfit.movement === `${stem}-movement.png`
+      && (outfit.portrait === undefined || outfit.portrait === `${stem}-portrait.png`);
   });
 }
 

@@ -159,7 +159,7 @@ export function RestScreen({ info, onDone }: { info: RestInfo; onDone: () => voi
           <li style={{ animationDelay: '1250ms' }}>
             <i aria-hidden="true">✦</i>
             {info.respawned > 0 ? `${info.respawned} nhóm quái đã hồi sinh` : 'Chưa có nhóm quái nào cần hồi sinh'}
-            <em>Đại Trùm đã hạ không hồi sinh</em>
+            <em>Gác Cổng và Đại Trùm đã hạ thì không hồi sinh</em>
           </li>
         </ul>
         <p className="rx-rest-skip">Bấm phím bất kỳ để tiếp tục</p>
