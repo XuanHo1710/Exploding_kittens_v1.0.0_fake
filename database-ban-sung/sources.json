@@ -59,8 +59,16 @@
     "alphaCutoff": 128,
     "outlineHex": "#181425",
     "footPadBottom": 2,
-    "safePreScales": [0.5, 1, 2],
-    "tiers": [32, 48, 96],
+    "safePreScales": [
+      0.5,
+      1,
+      2
+    ],
+    "tiers": [
+      32,
+      48,
+      96
+    ],
     "audioSfxRateHz": 44100,
     "audioFallbackWavRateHz": 44100,
     "audioPeakDb": -1.0,
@@ -68,14 +76,70 @@
     "audioBgmRmsDb": -18.0
   },
   "palette48": {
-    "R0_MONO": ["#181425", "#262b44", "#3a4466", "#5a6988", "#8b9bb4", "#e6eef8"],
-    "R1_SAND": ["#733e39", "#9e5b47", "#c9885b", "#e8b878", "#f5d89e", "#fff0c2"],
-    "R2_EARTH": ["#2e1d1b", "#4d312c", "#6e4b3f", "#916b57", "#b39078", "#d6baa2"],
-    "R3_CRIMSON": ["#4c1424", "#8a1c31", "#c72936", "#e43b44", "#ff7a3d", "#fee761"],
-    "R4_GREEN": ["#193c3e", "#265c42", "#3e8948", "#63c74d", "#a7f070", "#e0ff9e"],
-    "R5_ENERGY": ["#143464", "#124e89", "#0095e9", "#2ce8f5", "#9cf9ff", "#ffffff"],
-    "R6_ARCANE": ["#381d4a", "#622c73", "#96419c", "#cf61b8", "#ff9ee2", "#ffdbf5"],
-    "R7_COPPER": ["#45242e", "#783e3b", "#ab5a47", "#d9845c", "#f0ae81", "#ffd8b8"]
+    "R0_MONO": [
+      "#181425",
+      "#262b44",
+      "#3a4466",
+      "#5a6988",
+      "#8b9bb4",
+      "#e6eef8"
+    ],
+    "R1_SAND": [
+      "#733e39",
+      "#9e5b47",
+      "#c9885b",
+      "#e8b878",
+      "#f5d89e",
+      "#fff0c2"
+    ],
+    "R2_EARTH": [
+      "#2e1d1b",
+      "#4d312c",
+      "#6e4b3f",
+      "#916b57",
+      "#b39078",
+      "#d6baa2"
+    ],
+    "R3_CRIMSON": [
+      "#4c1424",
+      "#8a1c31",
+      "#c72936",
+      "#e43b44",
+      "#ff7a3d",
+      "#fee761"
+    ],
+    "R4_GREEN": [
+      "#193c3e",
+      "#265c42",
+      "#3e8948",
+      "#63c74d",
+      "#a7f070",
+      "#e0ff9e"
+    ],
+    "R5_ENERGY": [
+      "#143464",
+      "#124e89",
+      "#0095e9",
+      "#2ce8f5",
+      "#9cf9ff",
+      "#ffffff"
+    ],
+    "R6_ARCANE": [
+      "#381d4a",
+      "#622c73",
+      "#96419c",
+      "#cf61b8",
+      "#ff9ee2",
+      "#ffdbf5"
+    ],
+    "R7_COPPER": [
+      "#45242e",
+      "#783e3b",
+      "#ab5a47",
+      "#d9845c",
+      "#f0ae81",
+      "#ffd8b8"
+    ]
   },
   "spritePacks": [
     {
@@ -86,7 +150,9 @@
       "fetchType": "git-sparse",
       "url": "https://github.com/shorepine/kenney.git",
       "rawBaseUrl": "https://raw.githubusercontent.com/shorepine/kenney/main/2d/Desert%20Shooter%20Pack/",
-      "subpaths": ["2d/Desert Shooter Pack"],
+      "subpaths": [
+        "2d/Desert Shooter Pack"
+      ],
       "nativeCellPx": 16,
       "gridNotes": "16px / 24px: 16 player tiles, 16 enemy tiles, 40 guns (24x24), 234 desert tiles, 198 UI (16x16)",
       "targetCategory": "tiles",
@@ -101,7 +167,9 @@
       "fetchType": "git-sparse",
       "url": "https://github.com/shorepine/kenney.git",
       "rawBaseUrl": "https://raw.githubusercontent.com/shorepine/kenney/main/2d/Topdown%20Shooter/",
-      "subpaths": ["2d/Topdown Shooter"],
+      "subpaths": [
+        "2d/Topdown Shooter"
+      ],
       "nativeCellPx": 48,
       "gridNotes": "~48px / 64px: Hitmen, soldiers, survivors, robots, zombies (stand/hold/gun/machine/reload), 524 tiles",
       "targetCategory": "heroes",
@@ -116,7 +184,11 @@
       "fetchType": "git-sparse",
       "url": "https://github.com/shorepine/kenney.git",
       "rawBaseUrl": "https://raw.githubusercontent.com/shorepine/kenney/main/2d/Tiny%20Dungeon/",
-      "subpaths": ["2d/Tiny Dungeon", "2d/Tiny Battle", "2d/Tiny Town"],
+      "subpaths": [
+        "2d/Tiny Dungeon",
+        "2d/Tiny Battle",
+        "2d/Tiny Town"
+      ],
       "nativeCellPx": 16,
       "gridNotes": "16x16: 462 tiles, crypt walls/floors, knights, mages, skeletons, crates, barrels, chests, coins",
       "targetCategory": "mobs",
@@ -131,7 +203,9 @@
       "fetchType": "git-sparse",
       "url": "https://github.com/shorepine/kenney.git",
       "rawBaseUrl": "https://raw.githubusercontent.com/shorepine/kenney/main/2d/Pixel%20Shmup/",
-      "subpaths": ["2d/Pixel Shmup"],
+      "subpaths": [
+        "2d/Pixel Shmup"
+      ],
       "nativeCellPx": 16,
       "gridNotes": "16px / 32px: 24 drones/gunships (32x32), 120 bullets/lasers/missiles/explosions (16x16)",
       "targetCategory": "projectiles",
@@ -146,7 +220,9 @@
       "fetchType": "git-sparse",
       "url": "https://github.com/shorepine/kenney.git",
       "rawBaseUrl": "https://raw.githubusercontent.com/shorepine/kenney/main/2d/RTS%20Sci-fi/",
-      "subpaths": ["2d/RTS Sci-fi"],
+      "subpaths": [
+        "2d/RTS Sci-fi"
+      ],
       "nativeCellPx": 64,
       "gridNotes": "64px / 128px: Cyber Lab metal floors, tech props, turrets, mech/drone units",
       "targetCategory": "tiles",
@@ -406,7 +482,9 @@
       "license": "CC0-1.0",
       "fetchType": "git-sparse",
       "url": "https://github.com/crawl/tiles.git",
-      "excludePaths": ["TILES_UNDER_UNKNOWN_LICENSE.md"],
+      "excludePaths": [
+        "TILES_UNDER_UNKNOWN_LICENSE.md"
+      ],
       "nativeCellPx": 32,
       "gridNotes": "32x32 monster/eye/beholder/undead/artifact library for elite & boss kitbashing (strictly exclude files in TILES_UNDER_UNKNOWN_LICENSE.md)",
       "targetCategory": "bosses",
@@ -464,6 +542,22 @@
       "targetCategory": "vfx",
       "tier": 2,
       "optional": true
+    },
+    {
+      "id": "generated_night_art",
+      "packName": "Ban Sung Night Zombie Procedural Pixel Art",
+      "author": "Project Pipeline (tools/bansung/night_art/)",
+      "license": "GENERATED-SYNTH",
+      "fetchType": "local-generator",
+      "url": "tools/bansung/night_art/build.py",
+      "subpaths": [
+        "tools/bansung/night_art"
+      ],
+      "nativeCellPx": 48,
+      "gridNotes": "5 heroes x (6 side strips + 8 directional strips 6f) + 29 zombie mobs (walker/runner/brute/bloater/spitter/crawler/crow), binary alpha, 1px #1b1726 outline",
+      "targetCategory": "heroes+enemies",
+      "tier": 1,
+      "optional": false
     }
   ],
   "audioPacks": [
@@ -703,7 +797,7 @@
       "url": "https://raw.githubusercontent.com/sparklinlabs/superpowers-asset-packs/master/top-down-shooter/sounds/shoot-1.wav",
       "dest": "audio/sfx/weapons/sfx_wpn_pistol_arcade.wav",
       "format": "wav",
-      "gain": 0.60,
+      "gain": 0.6,
       "capMs": 350,
       "minGapMs": 60
     },
@@ -739,7 +833,7 @@
       "url": "https://raw.githubusercontent.com/buddingmonkey/FreeFirearmsSFXLibrary/main/Prepared%20SFX/Mossberg/N_26P.wav",
       "dest": "audio/sfx/weapons/sfx_wpn_shotgun.wav",
       "format": "wav",
-      "gain": 0.80,
+      "gain": 0.8,
       "capMs": 650,
       "minGapMs": 90
     },
@@ -751,7 +845,7 @@
       "url": "https://raw.githubusercontent.com/buddingmonkey/FreeFirearmsSFXLibrary/main/Prepared%20SFX/Nova/O_17P.wav",
       "dest": "audio/sfx/weapons/sfx_wpn_shotgun_v2.wav",
       "format": "wav",
-      "gain": 0.80,
+      "gain": 0.8,
       "capMs": 650,
       "minGapMs": 90
     },
@@ -764,7 +858,7 @@
       "archiveEntry": "sounds/shotty.wav",
       "dest": "audio/sfx/weapons/sfx_wpn_shotgun_v3.wav",
       "format": "wav",
-      "gain": 0.80,
+      "gain": 0.8,
       "capMs": 650,
       "minGapMs": 90
     },
@@ -839,7 +933,7 @@
       "url": "https://raw.githubusercontent.com/Boyquotes/kenney-sci-fi-sounds-for-godot/main/addons/kenney%20sci-fi%20sounds/laser_small_000.ogg",
       "dest": "audio/sfx/weapons/sfx_wpn_laser.ogg",
       "format": "ogg",
-      "gain": 0.60,
+      "gain": 0.6,
       "capMs": 350,
       "minGapMs": 65
     },
@@ -851,7 +945,7 @@
       "url": "https://raw.githubusercontent.com/Boyquotes/kenney-sci-fi-sounds-for-godot/main/addons/kenney%20sci-fi%20sounds/laser_small_001.ogg",
       "dest": "audio/sfx/weapons/sfx_wpn_laser_v2.ogg",
       "format": "ogg",
-      "gain": 0.60,
+      "gain": 0.6,
       "capMs": 350,
       "minGapMs": 65
     },
@@ -899,7 +993,7 @@
       "url": "https://raw.githubusercontent.com/sparklinlabs/superpowers-asset-packs/master/space-shooter/sounds/laser.wav",
       "dest": "audio/sfx/weapons/sfx_wpn_laser_arc.wav",
       "format": "wav",
-      "gain": 0.60,
+      "gain": 0.6,
       "capMs": 350,
       "minGapMs": 80
     },
@@ -972,7 +1066,7 @@
       "url": "https://opengameart.org/sites/default/files/clipload1.wav",
       "dest": "audio/sfx/weapons/sfx_wpn_mag_insert.wav",
       "format": "wav",
-      "gain": 0.60,
+      "gain": 0.6,
       "capMs": 400,
       "minGapMs": 80
     },
@@ -985,7 +1079,7 @@
       "fallbackUrl": "https://raw.githubusercontent.com/buddingmonkey/FreeFirearmsSFXLibrary/main/Master%20Tracks/1911/A_19.wav",
       "dest": "audio/sfx/weapons/sfx_wpn_dryfire.wav",
       "format": "wav",
-      "gain": 0.50,
+      "gain": 0.5,
       "capMs": 250,
       "minGapMs": 120
     },
@@ -1057,7 +1151,7 @@
       "url": "https://cdn.freesound.org/previews/620/620929_6493174-hq.mp3",
       "dest": "audio/sfx/weapons/sfx_wpn_casing_shotgun.mp3",
       "format": "mp3",
-      "gain": 0.30,
+      "gain": 0.3,
       "capMs": 450,
       "minGapMs": 110
     },
@@ -1081,7 +1175,7 @@
       "url": "https://raw.githubusercontent.com/lavenderdotpet/CC0-Public-Domain-Sounds/main/MMRetroArcadeSoundsPack1_0_5/Explosions/ogg/Explosion1.ogg",
       "dest": "audio/sfx/fx/expl_grenade_1.ogg",
       "format": "ogg",
-      "gain": 0.90,
+      "gain": 0.9,
       "minGapMs": 90
     },
     {
@@ -1092,7 +1186,7 @@
       "url": "https://raw.githubusercontent.com/lavenderdotpet/CC0-Public-Domain-Sounds/main/MMRetroArcadeSoundsPack1_0_5/Explosions/ogg/Explosion10.ogg",
       "dest": "audio/sfx/fx/expl_grenade_2.ogg",
       "format": "ogg",
-      "gain": 0.90,
+      "gain": 0.9,
       "minGapMs": 90
     },
     {
@@ -1169,7 +1263,7 @@
       "url": "https://raw.githubusercontent.com/lavenderdotpet/CC0-Public-Domain-Sounds/main/25-CC0-bang-sfx/bang_01.ogg",
       "dest": "audio/sfx/fx/stun_bang_1.ogg",
       "format": "ogg",
-      "gain": 0.90,
+      "gain": 0.9,
       "minGapMs": 150
     },
     {
@@ -1180,7 +1274,7 @@
       "url": "https://raw.githubusercontent.com/lavenderdotpet/CC0-Public-Domain-Sounds/main/25-CC0-bang-sfx/bang_02.ogg",
       "dest": "audio/sfx/fx/stun_bang_2.ogg",
       "format": "ogg",
-      "gain": 0.90,
+      "gain": 0.9,
       "minGapMs": 150
     },
     {
@@ -1268,7 +1362,7 @@
       "url": "https://raw.githubusercontent.com/lavenderdotpet/CC0-Public-Domain-Sounds/main/kenney_impactsounds/Audio/impactMetal_heavy_000.ogg",
       "dest": "audio/sfx/fx/hit_armor.ogg",
       "format": "ogg",
-      "gain": 0.60,
+      "gain": 0.6,
       "minGapMs": 45
     },
     {
@@ -1356,7 +1450,7 @@
       "url": "https://opengameart.org/sites/default/files/gorilla_roar.ogg",
       "dest": "audio/sfx/fx/boss_roar_beast.ogg",
       "format": "ogg",
-      "gain": 0.90,
+      "gain": 0.9,
       "minGapMs": 400
     },
     {
@@ -1367,7 +1461,7 @@
       "url": "https://raw.githubusercontent.com/lavenderdotpet/CC0-Public-Domain-Sounds/main/80-CC0-creature-SFX/roar_01.ogg",
       "dest": "audio/sfx/fx/boss_roar_1.ogg",
       "format": "ogg",
-      "gain": 0.90,
+      "gain": 0.9,
       "minGapMs": 400
     },
     {
@@ -1411,7 +1505,7 @@
       "url": "https://raw.githubusercontent.com/lavenderdotpet/CC0-Public-Domain-Sounds/main/Micro%20Pack%20-%20Organic%20Wooshes/Swish%201.wav",
       "dest": "audio/sfx/fx/dash_whoosh.wav",
       "format": "wav",
-      "gain": 0.60,
+      "gain": 0.6,
       "minGapMs": 120
     },
     {
@@ -1433,7 +1527,7 @@
       "url": "https://raw.githubusercontent.com/lavenderdotpet/CC0-Public-Domain-Sounds/main/50-cc0-sci-fi-sfx/teleport_01.ogg",
       "dest": "audio/sfx/fx/dash_blink.ogg",
       "format": "ogg",
-      "gain": 0.60,
+      "gain": 0.6,
       "minGapMs": 120
     },
     {
@@ -1444,7 +1538,7 @@
       "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/click_001.wav",
       "dest": "audio/sfx/fx/ui_click.wav",
       "format": "wav",
-      "gain": 0.50,
+      "gain": 0.5,
       "minGapMs": 40
     },
     {
@@ -1477,7 +1571,7 @@
       "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/back_001.wav",
       "dest": "audio/sfx/fx/ui_back.wav",
       "format": "wav",
-      "gain": 0.50,
+      "gain": 0.5,
       "minGapMs": 40
     },
     {
@@ -1488,7 +1582,7 @@
       "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/select_001.wav",
       "dest": "audio/sfx/fx/ui_select.wav",
       "format": "wav",
-      "gain": 0.50,
+      "gain": 0.5,
       "minGapMs": 40
     },
     {
@@ -1543,7 +1637,7 @@
       "url": "https://raw.githubusercontent.com/Beatscribe/homebrew_vgm/master/SNES/ogg/level_start.ogg",
       "dest": "audio/sfx/fx/stinger_wave.ogg",
       "format": "ogg",
-      "gain": 0.80,
+      "gain": 0.8,
       "minGapMs": 400
     },
     {
@@ -1692,7 +1786,7 @@
       "url": "https://opengameart.org/sites/default/files/Juhani%20Junkala%20%5BChiptune%20Adventures%5D%203.%20Boss%20Fight.ogg",
       "dest": "audio/bgm/bgm_boss_chiptune.ogg",
       "format": "ogg",
-      "gain": 0.40,
+      "gain": 0.4,
       "loop": true
     },
     {
@@ -1704,7 +1798,7 @@
       "url": "https://opengameart.org/sites/default/files/audio_preview/Juhani%20Junkala%20-%20Epic%20Boss%20Battle%20Preview.mp3.ogg",
       "dest": "audio/bgm/bgm_boss_epic.ogg",
       "format": "ogg",
-      "gain": 0.40,
+      "gain": 0.4,
       "loop": true
     },
     {
@@ -1716,7 +1810,7 @@
       "url": "https://opengameart.org/sites/default/files/CleytonRX%20-%20Battle%20RPG%20Theme%20Var_0.ogg",
       "dest": "audio/bgm/bgm_boss_rpg.ogg",
       "format": "ogg",
-      "gain": 0.40,
+      "gain": 0.4,
       "loop": true
     },
     {
@@ -1728,7 +1822,7 @@
       "url": "https://opengameart.org/sites/default/files/Boss.ogg",
       "dest": "audio/bgm/bgm_boss_nes.ogg",
       "format": "ogg",
-      "gain": 0.40,
+      "gain": 0.4,
       "loop": true
     },
     {
@@ -2077,12 +2171,36 @@
       }
     ],
     "audio": [
-      { "id": "sfx_miragine_dead_1", "src": "audio/SD_dead1.mp3", "dest": "sprites/miragine/SD_dead1.mp3" },
-      { "id": "sfx_miragine_dead_2", "src": "audio/SD_dead2.mp3", "dest": "sprites/miragine/SD_dead2.mp3" },
-      { "id": "sfx_miragine_dead_3", "src": "audio/SD_dead3.mp3", "dest": "sprites/miragine/SD_dead3.mp3" },
-      { "id": "sfx_miragine_dead_4", "src": "audio/SD_dead4.mp3", "dest": "sprites/miragine/SD_dead4.mp3" },
-      { "id": "sfx_miragine_dead_5", "src": "audio/SD_dead5.mp3", "dest": "sprites/miragine/SD_dead5.mp3" },
-      { "id": "sfx_miragine_dead_6", "src": "audio/SD_dead6.mp3", "dest": "sprites/miragine/SD_dead6.mp3" }
+      {
+        "id": "sfx_miragine_dead_1",
+        "src": "audio/SD_dead1.mp3",
+        "dest": "sprites/miragine/SD_dead1.mp3"
+      },
+      {
+        "id": "sfx_miragine_dead_2",
+        "src": "audio/SD_dead2.mp3",
+        "dest": "sprites/miragine/SD_dead2.mp3"
+      },
+      {
+        "id": "sfx_miragine_dead_3",
+        "src": "audio/SD_dead3.mp3",
+        "dest": "sprites/miragine/SD_dead3.mp3"
+      },
+      {
+        "id": "sfx_miragine_dead_4",
+        "src": "audio/SD_dead4.mp3",
+        "dest": "sprites/miragine/SD_dead4.mp3"
+      },
+      {
+        "id": "sfx_miragine_dead_5",
+        "src": "audio/SD_dead5.mp3",
+        "dest": "sprites/miragine/SD_dead5.mp3"
+      },
+      {
+        "id": "sfx_miragine_dead_6",
+        "src": "audio/SD_dead6.mp3",
+        "dest": "sprites/miragine/SD_dead6.mp3"
+      }
     ]
   },
   "generatedSynth": {

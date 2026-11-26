@@ -27,6 +27,7 @@ import {
 import {
   BANSUNG_BIOME_PALETTES,
   BANSUNG_HEROES,
+  isBansungNightEnabled,
   BANSUNG_HERO_IDS,
   BANSUNG_HERO_STAT_SCALE,
   BANSUNG_MAP_H,
@@ -108,10 +109,11 @@ const KEYBIND_HELP: ReadonlyArray<readonly [string, string]> = [
   ['Đổi vũ khí (1-5)', '1–5 hoặc Cuộn chuột'],
   ['Chọn thẻ Gacha khi lên cấp', '1 / 2 / 3'],
   ['Kỹ năng nhân vật', 'Q'],
+  ['Skill súng đang cầm', 'Chuột giữa'],
   ['Nạp đạn / Active Reload', 'R (nhấn lại tại vùng vàng)'],
   ['Nhặt vũ khí / Tương tác', 'E'],
   ['Kho Vũ Khí / Cửa Hàng', 'B'],
-  ['Ping chiến thuật', 'G hoặc Chuột giữa'],
+  ['Ping chiến thuật', 'G hoặc Alt + Chuột trái'],
   ['Bản đồ Radar / Toàn cảnh', 'M'],
   ['Bảng điểm / Chat / Telemetry', 'Tab / Enter / F3'],
 ];
@@ -195,6 +197,9 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
   const scoreboardOpenRef = useRef(scoreboardOpen);
   const inputModeRef = useRef(inputMode);
   const reducedMotionRef = useRef(reducedMotion);
+  /** Đêm Zombie: đọc trong vòng RAF, cập nhật theo cấu hình phòng. */
+  const nightModeRef = useRef(isBansungNightEnabled(bsView?.config));
+  nightModeRef.current = isBansungNightEnabled(bsView?.config);
   const telemetryOpenRef = useRef(telemetryOpen);
   const touchUiRef = useRef(touchUi);
   const aliveRef = useRef(isAliveLocal);
@@ -546,6 +551,8 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
         aimWorldY: iv.aimWorldY,
         dark: isBossDark,
         store: bansungStore,
+        night: nightModeRef.current,
+        weather: true,
         nowMs,
         showCrosshair: activeControls && !localDowned && !iv.touchUi && !uiBlockRef.current && !draftOverlayRef.current,
         reducedFlash: reducedMotionRef.current,
@@ -561,6 +568,7 @@ export function BansungBoard({ view, meId, emit, chat, dock, socket }: BansungBo
           `FPS:${m.fps} Delay:${Math.round(m.interpDelayMs)}ms Jitter:${Math.round(m.jitterMs)}ms\n` +
           `Rx:${Math.round(m.rxBps / 1024)}KB/s Tx:${Math.round(m.txBps / 1024)}KB/s Ring:${m.ringCount} Pend:${m.pendingInputs}\n` +
           `Draws:${diag.drawCallsLastFrame} Sort:${diag.sortItemsLastFrame} Chunks:${diag.chunksCached}\n` +
+          `Storm:${diag.stormLevel.toFixed(2)} Rain:${diag.rain.toFixed(2)} Flash:${diag.lightning.toFixed(2)}\n` +
           `Cam:(${Math.round(cam.x)},${Math.round(cam.y)}) z=${cam.zoom.toFixed(2)} ${bansungStore.cam.mode}`;
       }
 

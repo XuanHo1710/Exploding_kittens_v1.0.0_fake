@@ -73,6 +73,13 @@ import {
   type CircleBody,
 } from './spatial';
 import type { DanmakuMotionSpec } from './danmaku';
+import {
+  bulletAngleSpeed,
+  createZombieSkillState,
+  splitDanmakuMotion,
+  stepZombieBossSkills,
+  type ZombieSkillState,
+} from './boss-zombie-skills';
 
 // ============================================================================
 // 1. Constants & Tuning (d37)
@@ -459,6 +466,9 @@ export class SandBeholderBoss {
   private activeTelegraph: SandBeholderTelegraphCircle | null = null;
   private activeBeam: SandBeholderBeamEvent | null = null;
   private slamPhaseSubStep: 'leap1' | 'crouch' | 'leap2' = 'leap1';
+  /** Đêm Zombie v2: skill mới Brood Spiral / Hatch Bolts (xem boss-zombie-skills.ts). */
+  private readonly zombieSkills: ZombieSkillState;
+  private readonly zombieTelegraphs: BansungTelegraph[] = [];
 
   constructor(opts: SandBeholderSpawnOptions = {}) {
     const arenaW = Math.max(200, opts.arenaW ?? BANSUNG_MAP_W);
@@ -484,6 +494,7 @@ export class SandBeholderBoss {
     this.phase1Only = Boolean(opts.phase1Only);
     this.anchorX = sx;
     this.anchorY = sy;
+    this.zombieSkills = createZombieSkillState(opts.difficulty ?? 'normal');
 
     const initialState: BeholderState = opts.initialState ?? 'intro';
     this.pendingIntroSfx = initialState === 'intro';
@@ -663,6 +674,49 @@ export class SandBeholderBoss {
       this.checkEnrageTransition();
     }
 
+    // Đêm Zombie v2: Brood Spiral (xoắn ốc kiểu Chicken Invaders) / Hatch Bolts (sét chẻ nhánh).
+    // Chỉ bắt đầu khi boss đang `move` và sau 20 s giao tranh → không lệch test đếm đạn gốc.
+    this.zombieTelegraphs.length = 0;
+    if (this.state.state !== 'dead') {
+      const zombieActive = stepZombieBossSkills(this.zombieSkills, {
+        bossId: this.numId,
+        kind: 'boss_beholder',
+        x: this.state.x,
+        y: this.state.y,
+        radius: this.radius,
+        phase: this.state.phase,
+        roaming: this.state.state === 'move',
+        players: ctx.targets,
+        emit: (b) => {
+          const { angle, speed } = bulletAngleSpeed(b);
+          out.projectiles.push({
+            ownerId: this.state.id,
+            kind: b.danmakuKind === 'danmaku_lance' ? 'sand_spark' : 'thorn',
+            x: b.x,
+            y: b.y,
+            vx: b.vx,
+            vy: b.vy,
+            angle,
+            speed,
+            radius: b.radius,
+            damage: b.damage,
+            dmgKind: b.dmgKind,
+            ttlTicks: b.ttlTicks,
+            danmaku: splitDanmakuMotion(b),
+          });
+        },
+        fx: ctx.fxOut,
+        telegraphsOut: this.zombieTelegraphs,
+        onSfx: (key) => out.sfx.push(key === 'sfx_wpn_tesla' || key.startsWith('sfx_laser') ? 'boss_beam_charge' : 'boss_volley_fire'),
+      });
+      if (zombieActive) {
+        // Giữ các đòn gốc trong lúc skill mới đang chạy
+        if (this.state.volleyCd < 2) this.state.volleyCd = 2;
+        if (this.state.slamCd < 2) this.state.slamCd = 2;
+        if (this.state.beamCd < 2) this.state.beamCd = 2;
+      }
+    }
+
     // Dispatch current state
     switch (this.state.state) {
       case 'intro':
@@ -798,6 +852,8 @@ export class SandBeholderBoss {
         sourceKind: 'boss_beholder',
       });
     }
+    // Đêm Zombie v2: telegraph của Brood Spiral / Hatch Bolts
+    for (let i = 0; i < this.zombieTelegraphs.length; i++) out.push(this.zombieTelegraphs[i]);
     return out;
   }
 

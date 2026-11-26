@@ -8,6 +8,7 @@ const { NestFactory } = require('@nestjs/core');
 const { io: ioClient } = require('socket.io-client');
 
 const { GameGateway } = require('../dist/server/src/game/game.gateway.js');
+const { ExpeditionService } = require('../dist/server/src/game/expedition/expedition.service.js');
 const { RoomsService } = require('../dist/server/src/game/rooms.service.js');
 const { DbService } = require('../dist/server/src/store/db.service.js');
 const { ACCOUNT_STORE } = require('../dist/server/src/store/json.store.js');
@@ -56,6 +57,7 @@ describe('Mighty Knight 2.5D Pixel — Socket.IO E2E Multiplayer', () => {
       controllers: [AccountController],
       providers: [
         { provide: ACCOUNT_STORE, useValue: store },
+        { provide: ExpeditionService, useValue: {} },
         DbService,
         AccountsService,
         RoomsService,

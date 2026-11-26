@@ -102,6 +102,14 @@ import {
 
 import { bansungMotion } from './motion';
 import { playBansungSfx } from './sound';
+import {
+  PROJECTILE_IMPACT_COLOR,
+  PROJECTILE_IMPACT_COUNT,
+  PROJECTILE_TRACER_OVERRIDES,
+  getWeaponFxProfile,
+  type WeaponFxProfile,
+  type WeaponMuzzleAccent,
+} from './weapon-fx-profiles';
 import type { InterpBullet, SnapBullet, SnapFxEvent } from './store';
 
 // ============================================================================
@@ -512,6 +520,10 @@ export interface MuzzleFlash {
   scale: number;
   weaponTier: BansungWeaponTier;
   seed: number;
+  /** Spec 007 · C: hình phụ theo hồ sơ súng (weapon-fx-profiles.ts). */
+  accent: WeaponMuzzleAccent;
+  tint: string;
+  core: string;
 }
 
 export interface BeamTrail {
@@ -962,7 +974,11 @@ export function resolveTracerStyle(
     base = TRACER_PRESETS.crit_override;
   } else {
     const cfg = getProjectileConfigByKindId(kindId);
-    if (cfg) {
+    // Spec 007 · C: vệt đạn riêng theo loại đạn của từng khẩu (weapon-fx-profiles.ts)
+    const override = cfg ? PROJECTILE_TRACER_OVERRIDES[cfg.kind] : undefined;
+    if (override) {
+      base = override;
+    } else if (cfg) {
       switch (cfg.kind) {
         case 'kinetic_sm':
         case 'twin_smg_bullet':
@@ -1258,6 +1274,136 @@ export function drawBeamTrail(
 /**
  * Draws one additive muzzle flash cone + radial atlas glow stamp.
  */
+/**
+ * Vẽ hình phụ của chớp nòng trong hệ toạ độ đã xoay theo hướng bắn (+x = hướng nòng).
+ * Chỉ dùng fillRect / path đơn giản, không cấp phát.
+ */
+function drawMuzzleAccent(
+  ctx: CanvasRenderingContext2D,
+  flash: Readonly<MuzzleFlash>,
+  fade: number,
+  frameIdx: number,
+): void {
+  const a = flash.accent;
+  if (a === 'none') return;
+  const s = flash.scale;
+  const jitter = ((flash.seed >>> 3) & 7) - 3.5;
+  ctx.fillStyle = flash.tint;
+  switch (a) {
+    case 'cone': {
+      const reach = Math.round((10 + 8 * fade) * s);
+      ctx.globalAlpha = 0.7 * fade;
+      ctx.beginPath();
+      ctx.moveTo(2, -3 * s);
+      ctx.lineTo(reach, -1);
+      ctx.lineTo(reach, 1);
+      ctx.lineTo(2, 3 * s);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case 'long': {
+      const len = Math.round((44 + 30 * fade) * s);
+      ctx.globalAlpha = 0.85 * fade;
+      ctx.fillRect(0, -Math.max(1, Math.round(2 * s * fade)), len, Math.max(2, Math.round(4 * s * fade)));
+      ctx.fillStyle = flash.core;
+      ctx.fillRect(0, -1, Math.round(len * 0.7), 2);
+      // vòng xung kích nhỏ ở đầu nòng
+      ctx.globalAlpha = 0.5 * fade;
+      ctx.fillRect(-1, -Math.round(9 * s), 2, Math.round(18 * s));
+      break;
+    }
+    case 'fan': {
+      const reach = Math.round((22 + 10 * fade) * s);
+      ctx.globalAlpha = 0.55 * fade;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(reach, -reach * 0.55);
+      ctx.lineTo(reach + 4, 0);
+      ctx.lineTo(reach, reach * 0.55);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = flash.core;
+      for (let i = -2; i <= 2; i++) {
+        const py = Math.round(i * reach * 0.2 + jitter * 0.3);
+        ctx.fillRect(Math.round(reach * 0.55), py, 3, 2);
+      }
+      break;
+    }
+    case 'ring': {
+      const r = Math.round((5 + 9 * (1 - fade)) * s);
+      ctx.globalAlpha = 0.8 * fade;
+      ctx.strokeStyle = flash.tint;
+      ctx.lineWidth = Math.max(1, 2 * s * fade);
+      ctx.beginPath();
+      ctx.ellipse(4, 0, r * 0.55, r, 0, 0, TWO_PI);
+      ctx.stroke();
+      ctx.fillStyle = flash.core;
+      ctx.fillRect(2, -1, 4, 2);
+      break;
+    }
+    case 'star': {
+      const span = Math.round((6 + 6 * fade) * s);
+      ctx.globalAlpha = 0.9 * fade;
+      ctx.fillRect(4 - span, -1, span * 2, 2);
+      ctx.fillRect(3, -span, 2, span * 2);
+      ctx.fillStyle = flash.core;
+      ctx.fillRect(2, -2, 4, 4);
+      break;
+    }
+    case 'spray': {
+      ctx.globalAlpha = 0.5 * fade;
+      for (let i = 0; i < 5; i++) {
+        const d = (8 + i * 7) * s;
+        const w = (3 + i * 2) * s;
+        const off = ((flash.seed >>> (i * 3)) & 7) - 3.5;
+        ctx.fillRect(Math.round(d), Math.round(-w * 0.5 + off), Math.round(5 * s), Math.round(w));
+      }
+      break;
+    }
+    case 'arc': {
+      ctx.globalAlpha = 0.95 * fade;
+      ctx.strokeStyle = flash.tint;
+      ctx.lineWidth = Math.max(1, 1.6 * s);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      let seed = flash.seed + frameIdx * 977;
+      for (let i = 1; i <= 5; i++) {
+        seed = lcgNext(seed);
+        const off = ((seed >>> 8) % 13) - 6;
+        ctx.lineTo(Math.round(i * 6 * s), Math.round(off * s * 0.6));
+      }
+      ctx.stroke();
+      ctx.fillStyle = flash.core;
+      ctx.fillRect(-1, -1, 3, 3);
+      break;
+    }
+    case 'backblast': {
+      // Nón lửa phía trước + luồng khí xả ra sau ống phóng
+      ctx.globalAlpha = 0.7 * fade;
+      ctx.beginPath();
+      ctx.moveTo(0, -4 * s);
+      ctx.lineTo(Math.round(16 * s), 0);
+      ctx.lineTo(0, 4 * s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 0.45 * fade;
+      const back = Math.round((28 + 14 * fade) * s);
+      ctx.beginPath();
+      ctx.moveTo(Math.round(-18 * s), -3 * s);
+      ctx.lineTo(Math.round(-18 * s) - back, Math.round(-9 * s));
+      ctx.lineTo(Math.round(-18 * s) - back, Math.round(9 * s));
+      ctx.lineTo(Math.round(-18 * s), 3 * s);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    default:
+      break;
+  }
+  ctx.globalAlpha = clamp(0.95 * fade, 0, 1);
+}
+
 export function drawMuzzleFlashAdditive(
   ctx: CanvasRenderingContext2D,
   flash: Readonly<MuzzleFlash>,
@@ -1357,6 +1503,9 @@ export function drawMuzzleFlashAdditive(
       ctx.fillRect(0, -1, Math.max(4, (reach * 0.55) | 0), 2);
     }
   }
+
+  // Spec 007 · C: hình phụ riêng theo súng (nón dài, quạt, vòng, sao, phun, điện, xả ngược)
+  drawMuzzleAccent(ctx, flash, fade, frameIdx);
 
   // Tier 2-4 evolved pixel star-flare accents at muzzle origin
   if (tier >= 2 && frameIdx <= 1) {
@@ -2751,6 +2900,9 @@ export class BansungVfxController {
         scale: 1,
         weaponTier: 1,
         seed: 0,
+        accent: 'none',
+        tint: '#ffd166',
+        core: '#ffffff',
       });
     }
     for (let i = 0; i < MAX_BEAMS; i++) {
@@ -2919,6 +3071,7 @@ export class BansungVfxController {
     style: MuzzleFlashStyle = 'kinetic',
     scale = 1,
     weaponTier = 1,
+    profile?: WeaponFxProfile,
   ): void {
     const slot = this.flashes[this.flashHead];
     this.flashHead = (this.flashHead + 1) % MAX_FLASHES;
@@ -2931,27 +3084,36 @@ export class BansungVfxController {
     slot.angle = angleRad;
     slot.style = style;
     slot.ageMs = 0;
-    slot.ttlMs = (style === 'shotgun' || style === 'laser' ? 115 : 95) + (tier - 1) * 10;
+    slot.ttlMs =
+      (style === 'shotgun' || style === 'laser' ? 115 : 95) + (tier - 1) * 10 + (profile?.ttlBonusMs ?? 0);
     slot.scale = scale * tierSpec.muzzleScale;
     slot.weaponTier = tier;
     slot.seed = this.allocSeed();
+    slot.accent = profile?.accent ?? 'none';
+    slot.tint = profile?.tint ?? '#ffd166';
+    slot.core = profile?.core ?? '#ffffff';
 
+    // Tia lửa: màu/số lượng theo hồ sơ súng; cấp Mk cao đổi sang màu tiến hoá
     const sparkColor =
-      tier === 3
+      tier >= 3
         ? FxColor.Violet
         : tier === 2
           ? FxColor.ElectricCore
-          : style === 'plasma' || style === 'laser' || style === 'emp'
-            ? FxColor.ElectricCore
-            : FxColor.HotGold;
+          : profile
+            ? profile.sparkColor
+            : style === 'plasma' || style === 'laser' || style === 'emp'
+              ? FxColor.ElectricCore
+              : FxColor.HotGold;
     const cos = Math.cos(angleRad);
     const sin = Math.sin(angleRad);
-    const sparkCount = 2 + (tier - 1);
+    const sparkCount = Math.min(10, (profile ? profile.sparkCount : 2) + Math.min(3, tier - 1));
+    const baseSpeed = profile && profile.sparkSpeed > 0 ? profile.sparkSpeed : 140;
+    const spreadBase = profile ? profile.sparkSpread : 0.28;
     for (let i = 0; i < sparkCount; i++) {
       const side = i % 2 === 0 ? -1 : 1;
-      const spread = side * (0.28 + (i >> 1) * 0.16) + (Math.random() - 0.5) * 0.22;
+      const spread = side * (spreadBase * 0.6 + (i >> 1) * spreadBase * 0.35) + (Math.random() - 0.5) * 0.22;
       const a = angleRad + spread;
-      const spd = (140 + Math.random() * 110) * (1 + (tier - 1) * 0.12);
+      const spd = (baseSpeed + Math.random() * 110) * (1 + Math.min(4, tier - 1) * 0.08);
       emitParticle(
         FxKind.Spark,
         FxLayer.Additive,
@@ -3682,6 +3844,7 @@ export class BansungVfxController {
       let scale = 1;
       let emitCasing = false;
       let isShotgun = false;
+      let profile: WeaponFxProfile | undefined;
       const isTurret = ownerActorId >= 2000;
 
       if (isTurret) {
@@ -3694,31 +3857,37 @@ export class BansungVfxController {
         const w = getWeaponByIdx(weaponOrKindId);
         if (w) {
           if (w.category === 'melee') return;
-          if (w.id === 'shotgun') {
-            style = 'shotgun';
-            scale = 1.25;
-            emitCasing = true;
-            isShotgun = true;
-          } else if (w.category === 'energy') {
-            style =
-              w.id === 'railgun' || w.id === 'laser_cannon'
-                ? 'laser'
-                : w.id === 'arcane_book' || w.id === 'flamethrower'
-                  ? 'flame'
-                  : 'plasma';
-            scale = w.id === 'railgun' || w.id === 'laser_cannon' ? 1.3 : 1.05;
-          } else if (w.category === 'explosive') {
-            style = w.id === 'stun_launcher' ? 'emp' : 'flame';
-            scale = 1.2;
-          } else {
-            emitCasing = true;
-            scale = w.id === 'rifle' || w.id === 'minigun' ? 1.15 : 1.0;
-          }
+          // Spec 007 · C: mỗi khẩu có hồ sơ chớp nòng / vỏ đạn / khói riêng
+          profile = getWeaponFxProfile(w.id);
+          style = profile.style;
+          scale = profile.scale;
+          emitCasing = profile.casing !== 'none';
+          isShotgun = profile.casing === 'shell' || profile.casing === 'heavy';
         }
       }
 
       const muzzleY = isTurret ? y : y - HERO_BARREL_LIFT_Y;
-      this.spawnMuzzleFlash(x, muzzleY, aim, style, scale, isTurret ? 1 : weaponTier);
+      this.spawnMuzzleFlash(x, muzzleY, aim, style, scale, isTurret ? 1 : weaponTier, profile);
+      if (profile && profile.smoke > 0) {
+        const mcos = Math.cos(aim);
+        const msin = Math.sin(aim);
+        for (let i = 0; i < profile.smoke; i++) {
+          const sa = aim + (Math.random() - 0.5) * 0.9;
+          const sp = 18 + Math.random() * 26;
+          emitParticle(
+            FxKind.Smoke,
+            FxLayer.World,
+            FxPrio.Low,
+            x + mcos * (10 + i * 3),
+            muzzleY + msin * (10 + i * 3),
+            Math.cos(sa) * sp,
+            Math.sin(sa) * sp - 12,
+            380 + Math.random() * 260,
+            3 + Math.random() * 2,
+            FxColor.Smoke,
+          );
+        }
+      }
       if (!isTurret) {
         const playerId =
           ownerActorId >= 1000 && ownerActorId < 2000 ? ownerActorId - 1000 : ownerActorId;
@@ -3734,6 +3903,10 @@ export class BansungVfxController {
       }
       if (emitCasing) {
         spawnWeaponCasing(x, muzzleY, aim, isShotgun);
+        if (profile && profile.casing === 'heavy') {
+          // Vỏ đạn nặng: thêm một vỏ đồng + bụi nhỏ khi rơi
+          spawnWeaponCasing(x, muzzleY, aim + 0.25, false);
+        }
       }
       return;
     }
@@ -3925,15 +4098,22 @@ export class BansungVfxController {
       const isFlesh = impactKind === BANSUNG_FX_IMPACT_FLESH;
       const isEnergy = impactKind === BANSUNG_FX_IMPACT_SPARK;
       const isSlash = impactKind === BANSUNG_FX_IMPACT_SLASH || impactKind === BANSUNG_FX_IMPACT_SLICE;
-      const count = isSlash ? 6 : 4;
-      const col = isEnergy
-        ? FxColor.ElectricCore
-        : isFlesh
-          ? FxColor.Blood
-          : isSlash
-            ? FxColor.HotGold
-            : FxColor.White;
-      const layer = isFlesh ? FxLayer.World : FxLayer.Additive;
+      // Spec 007 · C: tia va chạm mang màu của loại đạn (evt.e = kindId) — máu do gore.ts lo.
+      const impactCfg = !isSlash && evt.e > 0 ? getProjectileConfigByKindId(evt.e | 0) : null;
+      const kindCol = impactCfg ? PROJECTILE_IMPACT_COLOR[impactCfg.kind] : undefined;
+      const kindCount = impactCfg ? PROJECTILE_IMPACT_COUNT[impactCfg.kind] : undefined;
+      const count = isSlash ? 6 : kindCount ?? 4;
+      const col =
+        kindCol !== undefined
+          ? kindCol
+          : isEnergy
+            ? FxColor.ElectricCore
+            : isFlesh
+              ? FxColor.Blood
+              : isSlash
+                ? FxColor.HotGold
+                : FxColor.White;
+      const layer = isFlesh && kindCol === undefined ? FxLayer.World : FxLayer.Additive;
       for (let i = 0; i < count; i++) {
         const a = aim + Math.PI + (Math.random() - 0.5) * 1.4;
         const spd = 40 + Math.random() * 90;

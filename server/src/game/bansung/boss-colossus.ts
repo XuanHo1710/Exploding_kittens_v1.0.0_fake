@@ -78,6 +78,13 @@ import {
   type SpatialActor,
 } from './spatial';
 import type { DanmakuMotionSpec } from './danmaku';
+import {
+  bulletAngleSpeed,
+  createZombieSkillState,
+  splitDanmakuMotion,
+  stepZombieBossSkills,
+  type ZombieSkillState,
+} from './boss-zombie-skills';
 
 // ============================================================================
 // 1. Constants & State Enums (d38)
@@ -321,6 +328,8 @@ export interface DreadColossusState extends BansungCombatTarget, SpatialActor {
   rngState: number;
   nextSeqId: number;
   deathEmitted: boolean;
+  /** Đêm Zombie v2: skill mới Rivet Bloom / Furnace Beam (xem boss-zombie-skills.ts). */
+  zombieSkills?: ZombieSkillState;
 }
 
 export interface CreateDreadColossusOptions {
@@ -1377,6 +1386,7 @@ export function createDreadColossus(
     rngState: (opts.seed ?? 0x9e3779b9) | 0,
     nextSeqId: id * 100 + 1,
     deathEmitted: false,
+    zombieSkills: createZombieSkillState(difficulty),
   };
 }
 
@@ -1643,6 +1653,60 @@ export function stepDreadColossus(
         ? DREAD_COLOSSUS_CFG.stunTicksP2
         : DREAD_COLOSSUS_CFG.stunTicksP1;
     enterOverheatStun(boss, stunTicks, 'heat', ctx, outFx, events);
+  }
+
+  // Đêm Zombie v2: skill mới (Rivet Bloom / Furnace Beam) chạy song song khi boss đang hành quân.
+  // Chỉ bắt đầu sau 20 s giao tranh → không ảnh hưởng các test đếm đạn từng chiêu gốc.
+  if (!boss.zombieSkills) boss.zombieSkills = createZombieSkillState();
+  const zombieSkillActive = stepZombieBossSkills(boss.zombieSkills, {
+    bossId: boss.id,
+    kind: 'boss_colossus',
+    x: boss.x,
+    y: boss.y,
+    radius: boss.radius,
+    phase: boss.phase,
+    roaming: boss.state === COLOSSUS_STATE.MARCH && boss.drones.length === 0 && boss.heat < 100,
+    players: ctx.players,
+    emit: (b) => {
+      const { angle, speed } = bulletAngleSpeed(b);
+      const proj: ColossusProjectileSpawn = {
+        ownerId: boss.id,
+        kind: 'thunderball',
+        x: b.x,
+        y: b.y,
+        vx: b.vx,
+        vy: b.vy,
+        angleRad: angle,
+        speed,
+        radius: b.radius,
+        damage: b.damage,
+        ttlTicks: b.ttlTicks,
+        fromDrone: false,
+        danmaku: splitDanmakuMotion(b),
+      };
+      outProj.push(proj);
+      ctx.onProjectile?.(proj, boss);
+    },
+    onBeamHit: (p, dmg) => {
+      applyBansungDamage(p, { baseDmg: dmg, dmgKind: 'energy', attackerId: boss.idStr }, ctx.damageCtx);
+    },
+    fx: ctx.damageCtx?.fx ?? outFx,
+    telegraphsOut: boss.telegraphs,
+    onSfx: (key, x, y) =>
+      emitSfx(
+        outSfx,
+        ctx,
+        boss,
+        key === 'sfx_wpn_tesla' ? 'boss_bolt' : key.startsWith('sfx_laser') ? 'boss_overheat_hiss' : 'boss_charge_horn',
+        x,
+        y,
+      ),
+  });
+  if (zombieSkillActive) {
+    // Giữ các đòn gốc trong lúc skill mới đang chạy để không chồng chiêu
+    if (boss.cleaveCd < 2) boss.cleaveCd = 2;
+    if (boss.dashCd < 2) boss.dashCd = 2;
+    if (boss.mortarCd < 2) boss.mortarCd = 2;
   }
 
   // Advance active FSM state

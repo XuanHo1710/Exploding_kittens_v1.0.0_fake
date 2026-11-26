@@ -33,6 +33,7 @@ import {
 import { applyBansungDamage, type BansungCombatTarget, type BansungDamageContext } from './damage';
 import {
   emitDnaHelixPair,
+  emitFlowerSpinRing,
   type BossDanmakuSpawnInput,
   type DanmakuMotionSpec,
 } from './danmaku';
@@ -716,6 +717,22 @@ export function stepLeviathanBoss(boss: LeviathanBossState, ctx: LeviathanStepCo
             angVel: (k % 2 === 0 ? 1 : -1) * dir * 1.02,
           });
         }
+      }
+
+      // Đêm Zombie: Drowned Maw phun "bông hoa xoáy nước" 2 vòng xoay ngược chiều, chừa khe thoát
+      if (boss.stateTick === 20 || (boss.stateTick === 36 && (isDevour || boss.phase === 2))) {
+        emitFlowerSpinRing((b) => emitLeviathanDanmaku(boss, ctx, b), {
+          x: boss.x,
+          y: boss.y,
+          count: boss.phase === 2 ? 20 : 16,
+          rotRad: boss.ringBaseAng + boss.stateTick * 0.05,
+          speed: 200,
+          curl: 0.74,
+          damage: baseDmg,
+          outerPalette: BANSUNG_DANMAKU_PALETTE.EMERALD,
+          innerPalette: BANSUNG_DANMAKU_PALETTE.CYAN,
+          gapEvery: 5,
+        });
       }
 
       if (boss.stateTick >= 44) {

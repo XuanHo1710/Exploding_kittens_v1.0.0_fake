@@ -994,7 +994,7 @@
 .ui-loot small { font: 1.4cqh var(--sans); color: var(--r); text-transform: uppercase; letter-spacing: .06em; }
 .ui-loot b { display: flex; align-items: center; gap: .8cqh; font-size: 2.4cqh; font-weight: 500; color: var(--r); }
 .ui-loot b .exp-charm-icon { width: 3cqh; height: 3cqh; }
-.ui-loot span { font: 600 1.7cqh var(--sans); }
+.ui-loot > span { font: 600 1.7cqh var(--sans); }
 .ui-loot em { font: 1.4cqh var(--sans); font-style: normal; color: var(--paper-dim); }
 .ui-loot.charm { --r: var(--gold-hi); }
 .exp-root .ui-stage .ui-result-next { margin-top: 1cqh; }
@@ -1189,19 +1189,16 @@
 .exp-enhance { background: linear-gradient(#fff3c4, #ffc94a); color: #1a0f05; border: 0; font-weight: 700; }
 .exp-enhance:disabled { filter: grayscale(.8) brightness(.7); }
 
-/* banner vũ khí trấn: chia bậc, Thần Thoại viền đỏ phát sáng */
+/* Banner vũ khí trấn */
 .exp-weapon-tier { margin-bottom: 10px; }
 .exp-weapon-tier h4 { margin: 4px 0 6px; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
 .exp-weapon-tier h4 small { opacity: .75; font-weight: 400; margin-left: 6px; }
 .exp-weapon-entry small { display: block; font-size: 11px; opacity: .7; }
 .exp-weapon-entry.r-mythic {
-  border-width: 2px; background: radial-gradient(ellipse at 50% 30%, rgba(255, 59, 59, .28), rgba(20, 8, 10, .9) 75%);
-  box-shadow: 0 0 0 1px #ff3b3b, 0 0 18px rgba(255, 59, 59, .55), inset 0 0 18px rgba(255, 59, 59, .25);
-  animation: mythic-pulse 2.4s ease-in-out infinite;
+  border-width: 2px;
+  background: radial-gradient(ellipse at 50% 30%, #532033, #180e1d 78%);
 }
 .exp-weapon-tier.t-mythic h4 { text-shadow: 0 0 10px rgba(255, 59, 59, .7); }
-@keyframes mythic-pulse { 50% { box-shadow: 0 0 0 1px #ff6a6a, 0 0 28px rgba(255, 59, 59, .8), inset 0 0 24px rgba(255, 59, 59, .35); } }
-@media (prefers-reduced-motion: reduce) { .exp-weapon-entry.r-mythic { animation: none; } }
 
 /* ---------------------------------------------------------------- thanh máu Trùm / Gác Cổng kiểu mảnh: thanh đỏ dài, hoa văn hai đầu, tên dưới thanh */
 .exp-root .ui-stage .ui-bosses.n1 .ui-boss.boss-bar { width: 92cqh; }
@@ -1343,15 +1340,102 @@
 .exp-root .ui-stage .ui-bench button.r-SR { box-shadow: inset 0 0 0 1px #a882dc; }
 .exp-root .ui-stage .ui-bench button.r-R { box-shadow: inset 0 0 0 1px #6aa6d8; }
 
-/* ---- SSS: thẻ gradient cam → vàng (hạng cao nhất, riêng Jung) */
-.rar-tag.r-SSS {
-  --rc: #ffb347; color: #2a1200; text-shadow: 0 1px 0 rgba(255, 240, 200, .6);
-  background: linear-gradient(100deg, #ff6a1a 0%, #ff9a2e 35%, #ffd76a 70%, #fff1b0 100%);
-  background-size: 200% 100%; animation: sss-flow 3.2s linear infinite;
-  box-shadow: 0 0 0 1px #ffcf73, 0 0 0 2px #3a1400, 0 0 .7em rgba(255, 140, 40, .55);
+/* SSS và vũ khí Thần Thoại */
+.exp-foil-sss, .rar-tag.r-SSS {
+  --foil-base: #ff9c55;
+  --foil-mid: #ffda76;
+  --foil-light: #fff8d5;
+  --foil-glow: #ff9b40;
 }
-@keyframes sss-flow { to { background-position: -200% 0; } }
-@media (prefers-reduced-motion: reduce) { .rar-tag.r-SSS { animation: none; } }
+.exp-foil-mythic {
+  --foil-base: #ff8ea3;
+  --foil-mid: #ffbd87;
+  --foil-light: #fff0cd;
+  --foil-glow: #ff5779;
+}
+.rar-tag.r-SSS, .exp-foil-surface {
+  --foil-gradient: linear-gradient(105deg, var(--foil-base) 8%, var(--foil-mid) 35%, var(--foil-light) 50%, var(--foil-mid) 65%, var(--foil-base) 92%);
+  isolation: isolate;
+}
+:where(.rar-tag.r-SSS, .exp-foil-surface) { position: relative; }
+.rar-tag.r-SSS {
+  color: #301405;
+  font-weight: 900;
+  background: var(--foil-gradient) 18% center / 200% 100%;
+  box-shadow: inset 0 0 0 1px #fff0bf;
+  animation: exp-foil-colour 3.8s ease-in-out infinite alternate;
+}
+.exp-foil-surface:is(.exp-foil-sss, .exp-foil-mythic) {
+  box-shadow: inset 0 0 0 1px var(--foil-glow), inset 0 0 18px color-mix(in srgb, var(--foil-glow) 26%, transparent),
+    0 0 14px color-mix(in srgb, var(--foil-glow) 38%, transparent);
+}
+.exp-foil-surface::before, .exp-foil-surface::after, .rar-tag.r-SSS::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.exp-foil-surface::before {
+  background: linear-gradient(120deg, transparent 42%, color-mix(in srgb, var(--foil-light) 24%, transparent) 50%, transparent 58%)
+    94% center / 290% 100% no-repeat;
+  animation: exp-foil-sweep 4.8s ease-in-out infinite;
+}
+.exp-foil-surface::after {
+  background:
+    radial-gradient(ellipse 2px 9px at 88% 17%, var(--foil-light) 20%, transparent 94%),
+    radial-gradient(ellipse 8px 2px at 88% 17%, var(--foil-light) 20%, transparent 94%),
+    radial-gradient(ellipse 1.5px 6px at 13% 67%, var(--foil-mid) 24%, transparent 92%),
+    radial-gradient(ellipse 5px 1.5px at 13% 67%, var(--foil-mid) 24%, transparent 92%),
+    radial-gradient(circle 2px at 77% 31%, var(--foil-light), transparent);
+  opacity: .55;
+  animation: exp-foil-stars 3.1s ease-in-out infinite alternate;
+}
+.rar-tag.r-SSS::after {
+  z-index: -1;
+  background: radial-gradient(ellipse 1px 4px at 87% 32%, #fff 24%, transparent 96%),
+    radial-gradient(ellipse 4px 1px at 87% 32%, #fff 24%, transparent 96%);
+  animation: exp-foil-stars 2.8s ease-in-out infinite alternate;
+}
+.exp-banner-portraits .exp-foil-sss {
+  outline: 1px solid var(--foil-glow);
+  outline-offset: -1px;
+}
+.exp-weapon-icon.exp-foil-mythic, .exp-weapon-entry.exp-foil-mythic img {
+  filter: drop-shadow(0 0 5px var(--foil-glow));
+}
+:is(.exp-foil-text, .exp-foil-sss > figcaption > span, .exp-summon-card.exp-foil-sss > b,
+  .exp-weapon-entry.exp-foil-mythic > b, .sc-face.exp-foil-surface > :is(small, h3)) {
+  color: var(--foil-mid);
+}
+@supports (background-clip: text) {
+  @media (forced-colors: none) {
+    :is(.exp-foil-text, .exp-foil-sss > figcaption > span, .exp-summon-card.exp-foil-sss > b,
+      .exp-weapon-entry.exp-foil-mythic > b, .sc-face.exp-foil-surface > :is(small, h3)) {
+      background: linear-gradient(105deg, var(--foil-base) 4%, var(--foil-mid) 37%, var(--foil-light) 50%, var(--foil-base) 92%) 18% center / 200% 100%;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: none;
+      animation: exp-foil-colour 4.8s ease-in-out infinite alternate;
+    }
+    .ui-plate:is(.on, :hover:not(:disabled)) .exp-foil-text {
+      -webkit-text-fill-color: #881435;
+    }
+  }
+}
+@keyframes exp-foil-colour { to { background-position: 82% center; } }
+@keyframes exp-foil-sweep {
+  0%, 100% { background-position: 94% center; opacity: 0; }
+  24% { opacity: 1; }
+  54%, 99% { background-position: 6% center; opacity: 0; }
+}
+@keyframes exp-foil-stars { from { opacity: .25; } to { opacity: .9; } }
+@media (prefers-reduced-motion: reduce) {
+  :is(.rar-tag.r-SSS, .exp-foil-text, .exp-foil-sss > figcaption > span, .exp-summon-card.exp-foil-sss > b,
+    .exp-weapon-entry.exp-foil-mythic > b, .sc-face.exp-foil-surface > :is(small, h3)),
+  .exp-foil-surface::before, .exp-foil-surface::after, .rar-tag.r-SSS::after { animation: none; }
+}
 .exp-root .ui-stage .ui-switch button.ui-switch-hero.r-SSS { box-shadow: 0 0 0 .22cqh #ff9a2e, 0 0 0 .44cqh #ffd76a55, 0 0 1.2cqh rgba(255, 140, 40, .6); }
 .ui-nameplate.r-SSS { box-shadow: inset .5cqh 0 0 #ff9a2e, inset 0 0 0 1px rgba(255, 170, 70, .7); }
 .exp-root .ui-stage .ui-bench button.r-SSS { box-shadow: inset 0 0 0 1px #ff9a2e, 0 0 1cqh rgba(255, 140, 40, .35); }

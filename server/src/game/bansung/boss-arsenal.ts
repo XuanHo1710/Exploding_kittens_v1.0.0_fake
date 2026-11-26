@@ -35,6 +35,7 @@ import {
   type BansungDamageKind,
 } from './damage';
 import {
+  emitChickenSpiralVolley,
   emitClusterSplitOrb,
   emitSakuyaPauseLanceRing,
   type BossDanmakuSpawnInput,
@@ -661,6 +662,35 @@ export function stepArsenalBoss(boss: ArsenalBossState, ctx: ArsenalStepContext)
 
     case 'ring_fire': {
       const maxWaves = boss.phase === 2 ? 3 : 2;
+      // Đêm Zombie: Gunner xoay súng máy 360° bắn "vòi xoắn" 2 cánh kiểu Chicken Invaders (phase 2)
+      if (boss.phase === 2 && boss.stateTick > 2 && boss.stateTick % 3 === 0 && boss.stateTick <= maxWaves * 15) {
+        emitChickenSpiralVolley(
+          (spec) =>
+            ctx.onSpawnBullet({
+              x: spec.x,
+              y: spec.y,
+              vx: spec.vx,
+              vy: spec.vy,
+              radius: spec.radius,
+              dmg: spec.damage,
+              dmgKind: spec.dmgKind,
+              ttlTicks: spec.ttlTicks,
+              kind: 1,
+              danmaku: spec,
+            }),
+          {
+            x: boss.x,
+            y: boss.y,
+            arms: 2,
+            rotRad: boss.ringBaseAng + boss.stateTick * 0.12,
+            speed: 240,
+            curl: 0.3,
+            damage: Math.max(1, Math.round(BOSS_ARSENAL_CFG.ringDmg * 0.7 * ctx.dmgMult)),
+            dmgKind: 'kinetic',
+            palette: BANSUNG_DANMAKU_PALETTE.GOLD,
+          },
+        );
+      }
       if (boss.stateTick === 1 || (boss.stateTick % 15 === 1 && boss.ringWave < maxWaves)) {
         const emitViaBoss = (spec: BossDanmakuSpawnInput): void => {
           ctx.onSpawnBullet({

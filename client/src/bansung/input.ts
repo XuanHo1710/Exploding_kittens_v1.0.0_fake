@@ -1156,13 +1156,21 @@ export class BansungInputController {
       return;
     }
 
-    if (e.button === 1) {
+    // Alt + chuột trái = ping (spec 007 · C: chuột giữa dành cho skill súng)
+    if (e.button === 0 && e.altKey) {
       e.preventDefault();
       this.emitPing(undefined, this.state.aimWorldX, this.state.aimWorldY);
       return;
     }
 
     if (this.downed) return;
+
+    // Chuột giữa = skill súng đang cầm
+    if (e.button === 1) {
+      e.preventDefault();
+      this.castWeaponSkillAtCursor();
+      return;
+    }
 
     if (e.button === 0) {
       if (this.canvas) this.trySetCapture(this.canvas, e.pointerId);
@@ -1174,6 +1182,19 @@ export class BansungInputController {
       this.latchedEdges |= BANSUNG_BTN_DASH;
       this.syncStateVectorAndMask();
     }
+  }
+
+  /** Gửi lệnh skill súng (chuột giữa / nút HUD) tới vị trí con trỏ hiện tại. */
+  castWeaponSkillAtCursor(): void {
+    if (!this.alive || this.downed) return;
+    const { mapW, mapH } = this.getArenaBounds();
+    const fx = Number.isFinite(this.state.aimWorldX) ? clamp(this.state.aimWorldX, 0, mapW) : undefined;
+    const fy = Number.isFinite(this.state.aimWorldY) ? clamp(this.state.aimWorldY, 0, mapH) : undefined;
+    if (fx === undefined || fy === undefined) {
+      this.dispatchCommand({ t: 'wskill' });
+      return;
+    }
+    this.dispatchCommand({ t: 'wskill', x: Math.round(fx), y: Math.round(fy) });
   }
 
   private handleCanvasPointerMove(e: PointerEvent): void {

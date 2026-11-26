@@ -3,7 +3,7 @@ import { BookOpen } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 import { DEFAULT_ROOM_RULES, MK_EVT_FRAME, type AccountInfo, type AntsFrame, type BansungFrame, type ChatMessage, type Emote, type GameFx, type Identity, type LinkState, type MkFrame, type PrivateNotice, type RoomView, type ThapFrame, type TwFrame } from '../../shared/src';
 import { RoomPlayerCountContext, RoomRulesContext } from './roomRulesContext';
-import { clearIdentity, loadIdentity, updateIdentity } from './identity';
+import { clearIdentity, clearSession, loadIdentity, updateIdentity } from './identity';
 import { logoutAccount } from './api';
 import { SettingsContext, useSettingsState } from './settings';
 import Dock, { Brand } from './components/Dock';
@@ -27,6 +27,7 @@ import LotoBoard from './components/LotoBoard';
 import BansungBoard from './components/BansungBoard';
 import { bansungStore } from './bansung/store';
 import MkBoard from './components/MkBoard';
+import MkCampaignBoard from './components/MkCampaignBoard';
 import ExpeditionBoard from './components/ExpeditionBoard';
 import { mkStore } from './mk/store';
 import { stopMkBgm, syncMkMute } from './mk/sound';
@@ -45,6 +46,8 @@ type ProfileUpdateAck =
 export default function App() {
   const [settings, updateSettings] = useSettingsState();
   const [identity, setIdentity] = useState<Identity | null>(loadIdentity);
+  const [authRecovery, setAuthRecovery] = useState<{ message: string; registered: boolean }>();
+  const [solo, setSolo] = useState<'astral_expedition' | 'mighty_knight' | null>(null);
   const [account, setAccount] = useState<AccountInfo | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -130,12 +133,35 @@ export default function App() {
   }, [settings.sound]);
 
   // Server chỉ nhận socket có token tài khoản: chưa đăng nhập bằng PIN thì chưa kết nối
-  const hasToken = !!identity?.token;
+  const token = identity?.token;
+  const playerId = identity?.playerId;
   useEffect(() => {
-    if (!identity?.token) return;
+    if (!playerId || !token) return;
     const auth = (cb: (data: object) => void) => cb(identityRef.current ?? {});
-    const s = SERVER_URL ? io(SERVER_URL, { auth }) : io({ auth });
+    const options = { auth, autoConnect: false };
+    const s = SERVER_URL ? io(SERVER_URL, options) : io(options);
+    const expire = ({ message, registered }: { message: string; registered: boolean }) => {
+      const current = identityRef.current;
+      if (!current || current.playerId !== playerId || current.token !== token) return;
+      const next = clearSession(current);
+      identityRef.current = next;
+      setAuthRecovery({ message, registered });
+      setIdentity(next);
+      setOnline(false);
+      setAccount(null);
+      setView(null);
+      setChat([]);
+      setTyping({});
+      setSolo(null);
+      setProfileOpen(false);
+    };
     s.on('connect', () => setOnline(true));
+    s.on('connect_error', (error) => {
+      setOnline(false);
+      if (error.data?.code === 'AUTH_REQUIRED') expire({ message: error.message, registered: error.data.registered === true });
+      else if (!s.active) showToast(error.message);
+    });
+    s.on('account:session-expired', expire);
     s.on('disconnect', () => setOnline(false));
     s.on('state', (v: RoomView | null) => {
       setView(v);
@@ -179,19 +205,14 @@ export default function App() {
       }
     });
     setSocket(s);
+    s.connect();
     return () => {
+      s.removeAllListeners();
       s.disconnect();
-      setSocket(null);
+      setSocket((previous) => previous === s ? null : previous);
+      setOnline(false);
     };
-  }, [identity?.playerId, hasToken]);
-
-  // Vừa tạo tài khoản / đăng nhập (có token mới, cùng playerId): kết nối lại để server xác thực
-  const lastToken = useRef(identity?.token);
-  useEffect(() => {
-    if (identity?.token === lastToken.current) return;
-    lastToken.current = identity?.token;
-    socket?.disconnect().connect();
-  }, [identity?.token, socket]);
+  }, [playerId, token]);
 
   const socketRef = useRef<Socket | null>(null);
   socketRef.current = socket;
@@ -232,8 +253,16 @@ export default function App() {
   // Chỉ vào được khi đã có tài khoản PIN (người chơi cũ được giữ id + tên, chỉ cần đặt PIN)
   const loggedIn = !!identity?.token;
   const inGame = loggedIn && !!view && view.phase !== 'lobby';
-  const [solo, setSolo] = useState<'astral_expedition' | null>(null);
   const expeditionOpen = loggedIn && (view ? view.gameMode === 'astral_expedition' : solo === 'astral_expedition');
+  const campaignOpen = loggedIn && !view && solo === 'mighty_knight';
+  const launchMkCampaign = async () => {
+    try {
+      if (view) await emitConfirmed('room:leave', {});
+      setSolo('mighty_knight');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Chưa mở được Chiến dịch.');
+    }
+  };
   const dock = (
     <Dock
       settings={settings}
@@ -251,26 +280,33 @@ export default function App() {
       <RoomRulesContext.Provider value={view?.rules ?? DEFAULT_ROOM_RULES}>
       <RoomPlayerCountContext.Provider value={view?.players.length}>
       <div className="app">
-        {!inGame && !expeditionOpen && (
+        {!inGame && !expeditionOpen && !campaignOpen && (
           <div className="floating-top">
             <Brand code={view?.code} />
             {dock}
           </div>
         )}
 
-        {!loggedIn && <Login identity={identity} onAuth={setIdentity} />}
+        {!loggedIn && <Login identity={identity} recovery={authRecovery} onAuth={(next) => {
+          setAuthRecovery(undefined);
+          setIdentity(next);
+        }} />}
         {loggedIn && !view && !solo && (
           <Home
             onCreate={(rules, gameMode) => emitConfirmed('room:create', { rules, gameMode })}
+            onCreateError={showToast}
             onJoin={(code) => emit('room:join', { code })}
             onWatch={(code) => emit('room:watch', { code })}
-            onSolo={(gameMode) => { if (gameMode === 'astral_expedition') setSolo('astral_expedition'); }}
+            onSolo={(gameMode) => {
+              if (gameMode === 'astral_expedition' || gameMode === 'mighty_knight') setSolo(gameMode);
+            }}
           />
         )}
         {/* Astral Expedition: chơi đơn trên server chung, không tạo phòng / không có ?roomid. (Co-op online sẽ đi qua phòng sau.) */}
         {loggedIn && !view && solo === 'astral_expedition' && (
           <ExpeditionBoard socket={socket} onLeave={() => setSolo(null)} />
         )}
+        {campaignOpen && <MkCampaignBoard socket={socket} onLeave={() => setSolo(null)} />}
         {loggedIn && view?.phase === 'lobby' && view.gameMode === 'astral_expedition' && (
           // Game một người: server tự bắt đầu ngay khi tạo phòng, màn này chỉ hiện trong tích tắc (hoặc khi bắt đầu lỗi).
           <div className="exp-boot">
@@ -282,7 +318,7 @@ export default function App() {
           </div>
         )}
         {loggedIn && view?.phase === 'lobby' && view.gameMode !== 'astral_expedition' && <Lobby view={view} meId={identity.playerId} emit={emit} chat={chatProps} account={account}
-          onSaveRules={(rules) => emitConfirmed('room:rules', { rules })} />}
+          onSaveRules={(rules) => emitConfirmed('room:rules', { rules })} onMkCampaign={() => void launchMkCampaign()} />}
         {inGame && identity && view && (
           view.gameMode === 'ant_empire' && view.ants ? (
             <AntsBoard view={view} meId={identity.playerId} emit={emit} chat={chatProps} dock={dock} />

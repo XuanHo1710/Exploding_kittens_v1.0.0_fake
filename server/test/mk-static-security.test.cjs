@@ -73,7 +73,14 @@ describe('Mighty Knight 2.5D Pixel — Static & Input Security', () => {
     fs.writeFileSync(path.join(tmpRoot, '.env'), 'SECRET=1');
     fs.writeFileSync(path.join(tmpRoot, 'sprites', 'heroes', 'knight.png'), Buffer.from([0x89, 0x50, 0x4e, 0x47]));
     fs.writeFileSync(path.join(outsideDir, 'escape.png'), Buffer.from([0x89, 0x50, 0x4e, 0x47]));
-    fs.symlinkSync(path.join(outsideDir, 'escape.png'), path.join(tmpRoot, 'sprites', 'heroes', 'link.png'));
+    let escapeRequest = '/database-mighty-knight-pixel/sprites/heroes/link.png';
+    try {
+      fs.symlinkSync(path.join(outsideDir, 'escape.png'), path.join(tmpRoot, 'sprites', 'heroes', 'link.png'));
+    } catch (error) {
+      if (process.platform !== 'win32' || error.code !== 'EPERM') throw error;
+      fs.symlinkSync(outsideDir, path.join(tmpRoot, 'sprites', 'heroes', 'outside'), 'junction');
+      escapeRequest = '/database-mighty-knight-pixel/sprites/heroes/outside/escape.png';
+    }
 
     // Valid GET / HEAD
     const okPng = await runGuard({ method: 'GET', originalUrl: '/database-mighty-knight-pixel/sprites/heroes/knight.png' }, tmpRoot);
@@ -94,7 +101,7 @@ describe('Mighty Knight 2.5D Pixel — Static & Input Security', () => {
       '/database-mighty-knight-pixel/sprites/heroes/knight.png%00.txt',
       '/database-mighty-knight-pixel/.env',
       '/database-mighty-knight-pixel/secret.json',
-      '/database-mighty-knight-pixel/sprites/heroes/link.png',
+      escapeRequest,
     ]) {
       const r = await runGuard({ method: 'GET', originalUrl: badUrl }, tmpRoot);
       assert.equal(r.calledNext, false, `Expected block for ${badUrl}`);

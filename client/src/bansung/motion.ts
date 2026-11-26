@@ -678,7 +678,7 @@ export function sampleHeroMotionTransform(
     res.sy = dashSample.sy;
     res.hopY = dashSample.hopY;
     res.leanRad = dashSample.leanRad;
-    res.rollStepRad = Math.round(u * 4) * (Math.PI * 0.5) * dirSign;
+    res.rollStepRad = 0; // không lộn vòng sprite (gây chớp/xoay giật) — dash 6 frame vẽ sẵn
     res.shadowScale = dashSample.shadowScale;
     if (input.isIframe) {
       res.alpha = 0.82 + 0.12 * Math.sin(u * 28);
@@ -699,16 +699,15 @@ export function sampleHeroMotionTransform(
       res.stepSfx = step.stepSfx;
     }
   } else if (state === 'stunned') {
-    res.dx = Math.floor(visualTimeMs / 50) % 2 === 0 ? -2 : 2;
-    res.sx = 0.96;
-    res.sy = 1.04;
-    res.frameIdx = Math.floor(visualTimeMs / 100) % 2;
+    // Lảo đảo đã vẽ trong sprite 4 frame → chỉ rung nhẹ 1 px (tránh giật mạnh), không co giãn
+    res.dx = Math.floor(visualTimeMs / 90) % 2 === 0 ? -1 : 1;
+    res.frameIdx = Math.floor(visualTimeMs / 125) % 4;
   } else if (state === 'downed') {
     res.alpha = 0.78 + 0.14 * Math.sin(visualTimeMs / 220);
-    res.frameIdx = 2;
+    res.frameIdx = 3; // nằm khuỵu (dải dead 6 frame: 0 đứng → 5 nằm hẳn)
   } else if (state === 'dead') {
     res.alpha = 0.55;
-    res.frameIdx = 3;
+    res.frameIdx = 5;
   }
 
   // Run-and-gun / stationary shoot kick overlay (d18 §4.5)
@@ -722,10 +721,8 @@ export function sampleHeroMotionTransform(
     state !== 'dead'
   ) {
     const kick = 1 - shootAgeMs / MOTION_CFG.SHOOT_KICK_MS;
-    res.dx += -aimSign * 3 * kick;
-    res.leanRad += -aimSign * 0.08 * kick;
-    res.sx *= 1 + 0.08 * kick;
-    res.sy *= 1 - 0.07 * kick;
+    // Giật lùi theo pixel nguyên (không xoay/co giãn thân → không răng cưa). Sprite shoot đã có tư thế ngả.
+    res.dx += -aimSign * Math.round(2 * kick);
   }
 
   if (input.isIframe) {

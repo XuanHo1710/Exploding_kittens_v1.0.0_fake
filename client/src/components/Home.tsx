@@ -200,11 +200,13 @@ function GameCard3D({
   active,
   onSelect,
   onLaunch,
+  onCampaign,
 }: {
   mode: GameMode;
   active: boolean;
   onSelect: () => void;
   onLaunch: () => void;
+  onCampaign?: () => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const info = GAME_MODES[mode];
@@ -273,6 +275,10 @@ function GameCard3D({
         </div>
 
         <div className="gcard-foot">
+          {onCampaign && <button type="button" className="gcard-play secondary" onClick={(event) => {
+            event.stopPropagation();
+            onCampaign();
+          }}>Chơi chiến dịch <ArrowRight size={14} /></button>}
           <button
             type="button"
             className={active ? 'gcard-play primary' : 'gcard-play secondary'}
@@ -302,11 +308,13 @@ const SOLO_MODES: readonly GameMode[] = ['astral_expedition'];
 
 export default function Home({
   onCreate,
+  onCreateError,
   onJoin,
   onWatch,
   onSolo,
 }: {
   onCreate: (rules: RoomRules, gameMode: GameMode) => void | Promise<void>;
+  onCreateError: (message: string) => void;
   onJoin: (code: string) => void;
   onWatch: (code: string) => void;
   onSolo?: (gameMode: GameMode) => void;
@@ -317,6 +325,16 @@ export default function Home({
   const ready = code.trim().length === 4;
   const activeMeta = HUB_META[gameMode];
   const activeInfo = GAME_MODES[gameMode];
+
+  const createRoom = async (rules: RoomRules, mode: GameMode) => {
+    try {
+      await onCreate(rules, mode);
+      return true;
+    } catch (error) {
+      onCreateError(error instanceof Error ? error.message : 'Chưa tạo được phòng. Vui lòng thử lại.');
+      return false;
+    }
+  };
 
   const handleQuickCreate = async (mode: GameMode, openRulesModal = false) => {
     setGameMode(mode);
@@ -329,7 +347,7 @@ export default function Home({
       return;
     }
     const base = getSavedRoomRules();
-    await onCreate(
+    await createRoom(
       {
         ...base,
         maxPlayers:
@@ -400,6 +418,7 @@ export default function Home({
               active={gameMode === m}
               onSelect={() => setGameMode(m)}
               onLaunch={() => void handleQuickCreate(m)}
+              onCampaign={m === 'mighty_knight' && onSolo ? () => onSolo(m) : undefined}
             />
           ))}
         </section>
@@ -416,6 +435,11 @@ export default function Home({
           </div>
 
           <div className="hub-launch-actions">
+            {gameMode === 'mighty_knight' && onSolo && (
+              <button type="button" className="secondary" onClick={() => onSolo('mighty_knight')}>
+                Chiến dịch · Quần đảo Chuông Gió
+              </button>
+            )}
             {gameMode === 'exploding_kittens' && (
               <button type="button" className="secondary" onClick={() => setSettingsOpen(true)}>
                 <Sliders size={15} /> Chỉnh luật
@@ -433,8 +457,7 @@ export default function Home({
           initialRules={getSavedRoomRules()}
           onClose={() => setSettingsOpen(false)}
           onConfirm={async (rules) => {
-            await onCreate(rules, 'exploding_kittens');
-            setSettingsOpen(false);
+            if (await createRoom(rules, 'exploding_kittens')) setSettingsOpen(false);
           }}
         />
       )}

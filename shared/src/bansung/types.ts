@@ -1,3 +1,4 @@
+import type { BansungWeaponSkillHud } from './weapon-skills/types';
 /**
  * Bắn Súng Co-op (Soul & Steel) – shared constants, canonical IDs, quantized
  * 30Hz snapshot/command protocol, room view, post-game scoreboard, and registry.
@@ -207,6 +208,8 @@ export interface BansungConfig {
   reviveMode: BansungReviveMode;
   endless?: boolean;
   gameMode?: BansungGameMode;
+  /** Chế độ Đêm Zombie (đèn pin theo chuột, quái ẩn trong bóng tối). Mặc định bật. */
+  nightMode?: boolean;
 }
 
 export const DEFAULT_BANSUNG_CONFIG: BansungConfig = {
@@ -215,6 +218,7 @@ export const DEFAULT_BANSUNG_CONFIG: BansungConfig = {
   bots: 1,
   botLevel: 'normal',
   reviveMode: 'coop',
+  nightMode: true,
 };
 
 function pickEnum<T extends string>(raw: unknown, allowed: readonly T[], fallback: T): T {
@@ -251,6 +255,8 @@ export function normalizeBansungConfig(raw: unknown, humans = 1): BansungConfig 
   if (r.gameMode !== undefined) {
     config.gameMode = pickEnum(r.gameMode, BANSUNG_GAME_MODES, 'survival');
   }
+  // Night mode bật mặc định; chỉ tắt khi chủ phòng gửi đúng `false`.
+  config.nightMode = r.nightMode === false || r.nightMode === 'false' ? false : true;
   return config;
 }
 
@@ -846,6 +852,8 @@ export interface BansungPrivate {
   skillMaxMs?: number;
   skillActiveMs?: number;
   skillName?: string;
+  /** Weapon Skill of the held weapon (spec 007 · C) — omitted when unavailable */
+  wsk?: BansungWeaponSkillHud;
 }
 
 export interface BansungFrame {
@@ -895,6 +903,8 @@ export type BansungCommand =
   | { t: 'gadget'; x?: number; y?: number }
   /** Hero Signature Active Skill ([F] / HUD Skill button) */
   | { t: 'skill'; x?: number; y?: number }
+  /** Weapon Skill of the held weapon ([Middle mouse] / HUD button) — spec 007 · C */
+  | { t: 'wskill'; x?: number; y?: number }
   /** Pick up weapon pedestal / interact */
   | { t: 'use' }
   /** Choose wave-clear perk */

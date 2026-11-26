@@ -138,6 +138,11 @@ export const HERO_PIXEL_SCALE = BANSUNG_HERO_PIXEL_SCALE;
 export const HERO_SHOOT_KICK_MS = MOTION_CFG.SHOOT_KICK_MS;
 /** Co-op downed transition duration before holding on dead frame 2 with pulse. */
 export const HERO_DOWNED_HOLD_MS = 300;
+/** Thời gian ngã gục hẳn (6 frame dead) khi chết hẳn — chậm hơn để ngã có trọng lượng. */
+export const HERO_DEAD_FALL_MS = 520;
+/** Hysteresis chuyển sang dải nhìn xuống/lên: vào khi |sin(aim)| > ENTER, ra khi < EXIT. */
+export const HERO_VIEW_DIR_ENTER = 0.8;
+export const HERO_VIEW_DIR_EXIT = 0.55;
 /** Hit-flash overlay decay duration in ms (d18 §8). */
 export const HERO_HIT_FLASH_MS = 90;
 /** Minimum world displacement in px within a frame to count as moving. */
@@ -353,7 +358,12 @@ export interface HeroAnimEntityState {
   meleeComboDir: 1 | -1;
   lastStepFrame: number;
   lastDashFrame: number;
+  /** Hướng nhìn đang dùng (atlas 4 hướng) — giữ có trễ (hysteresis) để không nháy qua lại. */
+  viewDir: HeroViewDir;
 }
+
+/** `null` = dải nghiêng trái/phải; `'down'`/`'up'` = dải nhìn thẳng / sau lưng. */
+export type HeroViewDir = 'down' | 'up' | null;
 
 export interface HeroAnimPose {
   readonly heroId: BansungHeroId;
@@ -416,6 +426,10 @@ export interface HeroBodyDrawOpts {
   readonly hitFlashAlpha?: number;
   readonly tint?: TintMode;
   readonly clipKey?: string;
+  /** Góc ngắm (rad) — chọn dải nhìn xuống/nhìn lên (`hero_<id>_{idle,walk}_{down,up}`). */
+  readonly aimTheta?: number;
+  /** Hướng nhìn đã có hysteresis từ tracker; ưu tiên hơn `aimTheta` khi được truyền (kể cả `null`). */
+  readonly viewDir?: HeroViewDir;
   readonly motion?: Partial<
     Pick<HeroMotionTransform, 'dx' | 'dy' | 'hopY' | 'sx' | 'sy' | 'leanRad' | 'alpha'>
   >;
@@ -459,6 +473,8 @@ export interface DrawHeroWithWeaponOpts {
   readonly hideWeaponWhenDowned?: boolean;
   readonly drawFrontHand?: boolean;
   readonly visualTimeMs?: number;
+  /** Hướng nhìn có hysteresis (xem `HeroViewDir`). */
+  readonly viewDir?: HeroViewDir;
 }
 
 export interface HeroHeadAnchor {
@@ -643,6 +659,7 @@ function createHeroAnimState(entityId: number, heroId: BansungHeroId): HeroAnimE
     meleeComboDir: 1,
     lastStepFrame: -1,
     lastDashFrame: -1,
+    viewDir: null,
   };
 }
 
@@ -799,7 +816,7 @@ export function resolveHeroAnim(
   }
 
   // Downed/dead progression
-  let downedAgeMs = HERO_DOWNED_HOLD_MS;
+  let downedAgeMs = HERO_DEAD_FALL_MS;
   if (tracker) {
     if (isDowned || isDead) {
       tracker.downedAgeMs = tracker.wasDownedOrDead ? tracker.downedAgeMs + dtMs : 0;
@@ -853,15 +870,17 @@ export function resolveHeroAnim(
     rawFrameIdx = Math.floor(animTimeSec * spec.fps) % spec.frames;
   } else if (animState === 'dead') {
     if (isDowned) {
-      rawFrameIdx =
-        downedAgeMs < HERO_DOWNED_HOLD_MS
-          ? Math.min(2, Math.floor((downedAgeMs / HERO_DOWNED_HOLD_MS) * 3))
-          : 2;
-    } else {
+      // Gục (chờ đồng đội cứu): khuỵu xuống tới frame 3 rồi giữ
       rawFrameIdx =
         downedAgeMs < HERO_DOWNED_HOLD_MS
           ? Math.min(3, Math.floor((downedAgeMs / HERO_DOWNED_HOLD_MS) * 4))
           : 3;
+    } else {
+      // Chết hẳn: ngã đủ 6 frame
+      rawFrameIdx =
+        downedAgeMs < HERO_DEAD_FALL_MS
+          ? Math.min(5, Math.floor((downedAgeMs / HERO_DEAD_FALL_MS) * 6))
+          : 5;
     }
   } else {
     rawFrameIdx = Math.floor(animTimeSec * spec.fps) % spec.frames;
@@ -888,7 +907,7 @@ export function resolveHeroAnim(
   let frameIdx = motion.frameIdx;
   if (isDowned && downedAgeMs < HERO_DOWNED_HOLD_MS) {
     frameIdx = rawFrameIdx;
-  } else if (isDead && downedAgeMs < HERO_DOWNED_HOLD_MS) {
+  } else if (isDead && downedAgeMs < HERO_DEAD_FALL_MS) {
     frameIdx = rawFrameIdx;
   }
 
@@ -922,8 +941,8 @@ export function resolveHeroAnim(
   }
   const dashDust =
     animState === 'dash' &&
-    frameIdx === 3 &&
-    (tracker ? tracker.lastDashFrame !== 3 : true);
+    frameIdx === 4 &&
+    (tracker ? tracker.lastDashFrame !== 4 : true);
 
   // Melee swing arc & weapon strip frame
   const meleeAgeMs = input.meleeSwingAgeMs ?? (tracker ? tracker.meleeSwingAgeMs : -1);
@@ -1033,11 +1052,62 @@ export function drawHeroShadow(ctx: CanvasRenderingContext2D, opts: HeroShadowDr
  * Draw the upright hero body layer (`48x48` custom sheet, Tier-2 Miragine fallback, or Tier-3 silhouette).
  * Body sprites NEVER spin 360°; only subtle kickback/dash `leanRad` around foot pivot is applied.
  */
+/**
+ * Đêm Zombie (spec 007): chọn clip hướng NHÌN XUỐNG / NHÌN LÊN từ atlas 6×8
+ * (`hero_<id>_{idle,walk}_{down,up}`) khi người chơi ngắm gần thẳng đứng.
+ * Hướng trái/phải vẫn dùng dải nghiêng (khớp rig súng xoay 360°).
+ */
+const DIRECTIONAL_SIN_THRESHOLD = HERO_VIEW_DIR_ENTER;
+
+/** Cập nhật hướng nhìn có hysteresis: vào ở |sin| > ENTER, chỉ thoát khi |sin| < EXIT. */
+export function stepHeroViewDir(prev: HeroViewDir, aimTheta: number): HeroViewDir {
+  if (!Number.isFinite(aimTheta)) return prev;
+  const sv = Math.sin(aimTheta);
+  if (prev === 'down' && sv > HERO_VIEW_DIR_EXIT) return 'down';
+  if (prev === 'up' && sv < -HERO_VIEW_DIR_EXIT) return 'up';
+  if (sv > HERO_VIEW_DIR_ENTER) return 'down';
+  if (sv < -HERO_VIEW_DIR_ENTER) return 'up';
+  return null;
+}
+
+export function resolveDirectionalHeroClip(
+  heroId: BansungHeroId,
+  animState: BansungHeroAnimState,
+  aimTheta: number | undefined,
+  viewDir?: HeroViewDir,
+): string | null {
+  // Chỉ idle / chạy / bắn mới dùng dải 4 hướng; dash, choáng, gục, chết luôn dùng dải nghiêng.
+  const stateKey =
+    animState === 'run' ? 'walk' : animState === 'idle' || animState === 'shoot' ? 'idle' : null;
+  if (!stateKey) return null;
+  let dir: HeroViewDir;
+  if (viewDir !== undefined) {
+    dir = viewDir;
+  } else {
+    if (aimTheta === undefined || !Number.isFinite(aimTheta)) return null;
+    const sv = Math.sin(aimTheta);
+    dir = sv > DIRECTIONAL_SIN_THRESHOLD ? 'down' : sv < -DIRECTIONAL_SIN_THRESHOLD ? 'up' : null;
+  }
+  if (!dir) return null;
+  const key = `hero_${heroId}_${stateKey}_${dir}`;
+  const meta = getClipMeta(key);
+  if (!meta || !getSpriteImage(meta.url)) return null;
+  return key;
+}
+
 export function drawHeroBodyLayer(ctx: CanvasRenderingContext2D, opts: HeroBodyDrawOpts): boolean {
   if (!ctx || !Number.isFinite(opts.x) || !Number.isFinite(opts.y)) return false;
 
   const hero = getBansungHero(opts.heroId);
-  const clipKey = opts.clipKey ?? resolveHeroClipKey(opts.heroId, opts.animState);
+  const directionalKey = resolveDirectionalHeroClip(
+    opts.heroId,
+    opts.animState,
+    opts.aimTheta,
+    opts.viewDir,
+  );
+  // Đang bắn trong dải nhìn thẳng/sau lưng: dùng nhịp thở idle theo thời gian (dải shoot chỉ có ở hướng nghiêng)
+  const bodyFrameIdx = directionalKey && opts.animState === 'shoot' ? undefined : opts.frameIdx;
+  const clipKey = directionalKey ?? opts.clipKey ?? resolveHeroClipKey(opts.heroId, opts.animState);
   const meta = getClipMeta(clipKey);
   const isMiragineSheet = meta?.nativeFacing === 'left' || clipKey.startsWith('miragine_');
   const baseScale = opts.heroScale ?? (isMiragineSheet ? 1 : hero.pixelScale);
@@ -1057,7 +1127,7 @@ export function drawHeroBodyLayer(ctx: CanvasRenderingContext2D, opts: HeroBodyD
     x: drawX,
     y: drawY,
     animTimeSec: opts.animTimeSec ?? 0,
-    frameIdx: opts.frameIdx,
+    frameIdx: bodyFrameIdx,
     facingRight: opts.facingRight,
     scale: baseScale,
     scaleX: sx,
@@ -1374,6 +1444,54 @@ function drawWeaponEvolutionAccents(
   ctx.restore();
 }
 
+/** Màu tay áo + găng của tay cầm súng (khớp art `tools/bansung/night_art/heroes.py`). */
+const HERO_ARM_OUTLINE = '#1b1726';
+const HERO_ARM_COLORS: Readonly<
+  Record<BansungHeroId, { readonly sleeve: string; readonly sleeveLight: string; readonly glove: string; readonly gloveLight: string }>
+> = {
+  ranger: { sleeve: '#2b3a55', sleeveLight: '#4a5c7a', glove: '#1f2937', gloveLight: '#22d3ee' },
+  knight: { sleeve: '#3b5bdb', sleeveLight: '#7b93f0', glove: '#8b98ad', gloveLight: '#e9ecef' },
+  pyro: { sleeve: '#a61e1e', sleeveLight: '#d9534a', glove: '#3b2a24', gloveLight: '#ff922b' },
+  laser: { sleeve: '#e9ecef', sleeveLight: '#ffffff', glove: '#343a40', gloveLight: '#e64980' },
+  mascot: { sleeve: '#f1f3f5', sleeveLight: '#ffffff', glove: '#1f2a44', gloveLight: '#22b8cf' },
+};
+
+/**
+ * Tay cầm súng vẽ bằng pixel nguyên từ vai → báng súng (zero-alloc, không anti-alias),
+ * để súng luôn "dính" vào người ở mọi góc 360° thay vì lơ lửng trước bụng.
+ */
+function drawGunArm(
+  ctx: CanvasRenderingContext2D,
+  rig: BansungAimRigResult,
+  heroId: BansungHeroId,
+  alpha: number,
+): void {
+  if (!Number.isFinite(rig.shoulderX) || !Number.isFinite(rig.shoulderY)) return;
+  const arm = HERO_ARM_COLORS[heroId] ?? HERO_ARM_COLORS.mascot;
+  const x0 = Math.round(rig.shoulderX);
+  const y0 = Math.round(rig.shoulderY);
+  const x1 = Math.round(rig.gripX);
+  const y1 = Math.round(rig.gripY);
+  const steps = Math.max(1, Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)));
+  const prevAlpha = ctx.globalAlpha;
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = HERO_ARM_OUTLINE;
+  for (let k = 0; k <= steps; k++) {
+    const x = Math.round(x0 + ((x1 - x0) * k) / steps);
+    const y = Math.round(y0 + ((y1 - y0) * k) / steps);
+    ctx.fillRect(x - 2, y - 2, 5, 5);
+  }
+  ctx.fillStyle = arm.sleeve;
+  for (let k = 0; k <= steps; k++) {
+    const x = Math.round(x0 + ((x1 - x0) * k) / steps);
+    const y = Math.round(y0 + ((y1 - y0) * k) / steps);
+    ctx.fillRect(x - 1, y - 1, 3, 3);
+  }
+  ctx.fillStyle = arm.sleeveLight;
+  ctx.fillRect(x0 - 1, y0 - 1, 2, 1);
+  ctx.globalAlpha = prevAlpha;
+}
+
 /**
  * Draw the shoulder-pivoted weapon layer (`d19 §4`):
  * - Uses hysteresis-coupled `rig.gunFlipY` instead of `cos(aim) < 0` (`flipAimY: false`)
@@ -1403,6 +1521,9 @@ export function drawWeaponLayer(ctx: CanvasRenderingContext2D, opts: WeaponLayer
 
   ctx.save();
   ctx.imageSmoothingEnabled = false;
+  if (opts.drawFrontHand !== false) {
+    drawGunArm(ctx, rig, opts.heroId ?? 'mascot', alpha);
+  }
   if (evo.tier > 1) {
     drawWeaponEvolutionAccents(ctx, rig, weaponRig, evo, theta, scale, alpha, tSec, 'back');
   }
@@ -1429,14 +1550,16 @@ export function drawWeaponLayer(ctx: CanvasRenderingContext2D, opts: WeaponLayer
   }
 
   if (opts.drawFrontHand !== false && rig.zOrder === 'front') {
-    const hero = getBansungHero(opts.heroId ?? 'mascot');
+    const arm = HERO_ARM_COLORS[opts.heroId ?? 'mascot'] ?? HERO_ARM_COLORS.mascot;
     const handX = Math.round(rig.gripX);
     const handY = Math.round(rig.gripY);
-    ctx.globalAlpha *= alpha;
-    ctx.fillStyle = hero.outlineHex;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = HERO_ARM_OUTLINE;
     ctx.fillRect(handX - 2, handY - 2, 5, 5);
-    ctx.fillStyle = hero.primaryHex;
+    ctx.fillStyle = arm.glove;
     ctx.fillRect(handX - 1, handY - 1, 3, 3);
+    ctx.fillStyle = arm.gloveLight;
+    ctx.fillRect(handX - 1, handY - 1, 2, 1);
   }
 
   ctx.restore();
@@ -1487,6 +1610,8 @@ export function drawHeroWithWeapon(
     hitFlashAlpha,
     tint: opts.tint,
     clipKey: pose.clipKey,
+    aimTheta: rig.aimTheta,
+    viewDir: opts.viewDir,
     motion: pose.motion,
   };
 
@@ -1616,7 +1741,12 @@ export class BansungHeroAnimManager {
       readonly dtMs?: number;
       readonly visualTimeMs?: number;
     },
-  ): { readonly pose: HeroAnimPose; readonly rig: BansungAimRigResult; readonly snapAngle: number } {
+  ): {
+    readonly pose: HeroAnimPose;
+    readonly rig: BansungAimRigResult;
+    readonly snapAngle: number;
+    readonly viewDir: HeroViewDir;
+  } {
     const heroId = BANSUNG_HERO_IDS[player.heroIdx] ?? 'mascot';
     const weaponId = resolveWeaponId(player.weaponIdx);
     const visualTimeMs = opts?.visualTimeMs ?? defaultVisualTimeMs();
@@ -1662,8 +1792,9 @@ export class BansungHeroAnimManager {
 
     // Keep hysteresis facing aligned with the final solved rig
     tracker.facingRight = rig.facingRight;
+    tracker.viewDir = stepHeroViewDir(tracker.viewDir, rig.aimTheta);
 
-    return { pose, rig, snapAngle: recoil.snapAngle };
+    return { pose, rig, snapAngle: recoil.snapAngle, viewDir: tracker.viewDir };
   }
 
   /** Evaluate and draw an interpolated `InterpPlayer` in one call. */
@@ -1672,7 +1803,7 @@ export class BansungHeroAnimManager {
     player: InterpPlayer,
     opts?: DrawInterpPlayerOpts,
   ): { readonly pose: HeroAnimPose; readonly rig: BansungAimRigResult } {
-    const { pose, rig, snapAngle } = this.evaluatePlayer(player, opts);
+    const { pose, rig, snapAngle, viewDir } = this.evaluatePlayer(player, opts);
     const playerTier = (player as InterpPlayer & { readonly weaponTier?: number }).weaponTier;
     drawHeroWithWeapon(ctx, {
       x: player.x,
@@ -1688,6 +1819,7 @@ export class BansungHeroAnimManager {
       drawShadow: opts?.drawShadow,
       teamRingColor: opts?.teamRingColor,
       visualTimeMs: opts?.visualTimeMs,
+      viewDir,
     });
     return { pose, rig };
   }

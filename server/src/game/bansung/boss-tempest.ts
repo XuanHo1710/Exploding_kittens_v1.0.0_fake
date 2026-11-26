@@ -33,6 +33,8 @@ import {
 } from '../../../../shared/src';
 import { applyBansungDamage, type BansungCombatTarget, type BansungDamageContext } from './damage';
 import {
+  emitChickenSpiralVolley,
+  emitForkedBoltVolley,
   emitRosePetalRing,
   emitSakuyaPauseLanceRing,
   type BossDanmakuSpawnInput,
@@ -554,6 +556,21 @@ export function stepTempestBoss(boss: TempestBossState, ctx: TempestStepContext)
         ctx.onSfx?.('sfx_wpn_tesla', boss.x, boss.y);
         boss.ringWave += 1;
       }
+      // Đêm Zombie: Storm Wraith xoay "thiên hà sét" kiểu Chicken Invaders giữa các vòng (phase 2)
+      if (boss.phase === 2 && boss.stateTick > 3 && boss.stateTick % 2 === 0 && boss.stateTick <= maxWaves * 12) {
+        emitChickenSpiralVolley((b) => emitTempestDanmaku(boss, ctx, b), {
+          x: boss.x,
+          y: boss.y,
+          arms: hasDouble ? 4 : 3,
+          rotRad: boss.ringBaseAng + boss.stateTick * 0.09,
+          speed: 205,
+          curl: 0.35,
+          damage: Math.max(1, Math.round(BOSS_TEMPEST_CFG.cycloneDmg * 0.7 * ctx.dmgMult)),
+          palette: BANSUNG_DANMAKU_PALETTE.CYAN,
+          counterArms: hasDouble ? 2 : 0,
+          counterPalette: BANSUNG_DANMAKU_PALETTE.GOLD,
+        });
+      }
       if (boss.ringWave >= maxWaves && boss.stateTick >= maxWaves * 12 + 8) {
         boss.state = 'patrol';
         boss.stateTick = 0;
@@ -606,6 +623,22 @@ export function stepTempestBoss(boss: TempestBossState, ctx: TempestStepContext)
             angVel: spinDir * 0.65,
           });
         }
+      }
+      // Đêm Zombie: phóng tia sét chẻ nhánh thẳng vào người chơi gần nhất trong lúc laser xoay
+      if ((boss.stateTick === 12 || boss.stateTick === 26) && target) {
+        emitForkedBoltVolley((b) => emitTempestDanmaku(boss, ctx, b), {
+          x: boss.x,
+          y: boss.y,
+          aimRad: Math.atan2(target.y - boss.y, target.x - boss.x),
+          bolts: isSuper ? 5 : 3,
+          spreadRad: 0.6,
+          speed: 640,
+          forkAfterTicks: 11,
+          damage: Math.max(1, Math.round(BOSS_TEMPEST_CFG.cycloneDmg * 0.8 * ctx.dmgMult)),
+          palette: BANSUNG_DANMAKU_PALETTE.CYAN,
+          forkPalette: BANSUNG_DANMAKU_PALETTE.GOLD,
+        });
+        ctx.onSfx?.('sfx_wpn_tesla', boss.x, boss.y);
       }
       const rotStep = spinDir * (isSuper ? 0.024 : 0.021);
       for (let i = 0; i < boss.beamAngles.length; i++) {

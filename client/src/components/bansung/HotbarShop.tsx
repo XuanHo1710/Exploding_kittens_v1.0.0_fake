@@ -70,6 +70,10 @@ import {
   type BansungWeaponSpec,
   type BansungWeaponTier,
 } from '../../../../shared/src/bansung/weapons';
+import {
+  getWeaponSkillSpec,
+  type BansungWeaponSkillHud,
+} from '../../../../shared/src/bansung/weapon-skills/index';
 import type { BansungInputController } from '../../bansung/input';
 import {
   bansungStore,
@@ -1957,6 +1961,70 @@ function HeroSkillChip({
   );
 }
 
+interface WeaponSkillChipProps {
+  wsk?: BansungWeaponSkillHud;
+  playerEnergy: number;
+  onTrigger: () => void;
+}
+
+/** Ô skill súng đang cầm (chuột giữa / chạm) — spec 007 · C. */
+function WeaponSkillChip({ wsk, playerEnergy, onTrigger }: WeaponSkillChipProps) {
+  if (!wsk) return null;
+  const spec = getWeaponSkillSpec(wsk.weaponId);
+  const color = spec.color || '#38bdf8';
+  const activeMs = wsk.activeMs ?? 0;
+  const active = activeMs > 0;
+  const cooling = !active && wsk.cdMs > 0;
+  const lowEnergy = !active && !cooling && wsk.energyCost > 0 && playerEnergy < wsk.energyCost;
+  const cdRatio = cooling ? clamp(wsk.cdMs / Math.max(1, wsk.maxMs), 0, 1) : 0;
+  const title = `[Chuột giữa] ${spec.name} — ${spec.vnName}: ${spec.desc}${
+    wsk.energyCost > 0 ? ` (${wsk.energyCost} năng lượng)` : ''
+  }\nNội tại · ${spec.passive.name}: ${spec.passive.desc}`;
+
+  return (
+    <button
+      type="button"
+      tabIndex={-1}
+      className="bs-hotbar-slot bs-wskill-slot"
+      title={title}
+      aria-label={title}
+      onMouseDown={preventFocusOnMouseDown}
+      onPointerDown={stopPointerPropagation}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.currentTarget.blur();
+        onTrigger();
+      }}
+      style={{
+        borderColor: active ? color : cooling || lowEnergy ? '#334155' : color,
+        boxShadow: active ? `0 0 12px ${color}aa` : !cooling && !lowEnergy ? `0 0 8px ${color}55` : undefined,
+        opacity: lowEnergy ? 0.65 : 1,
+      }}
+    >
+      <span className="bs-slot-key">M3</span>
+      <Zap size={19} color={active ? '#ffffff' : cooling || lowEnergy ? '#94a3b8' : color} aria-hidden="true" />
+      {cdRatio > 0 && <div className="bs-cd-curtain" style={{ height: `${Math.round(cdRatio * 100)}%` }} />}
+      {active ? (
+        <span className="bs-slot-charges" style={{ color }}>
+          {(activeMs / 1000).toFixed(1)}s
+        </span>
+      ) : cooling ? (
+        <span className="bs-cd-label">{formatCdSeconds(wsk.cdMs)}</span>
+      ) : (
+        <span className="bs-slot-charges" style={{ color: lowEnergy ? '#94a3b8' : color }}>
+          {spec.name.length > 9 ? spec.name.slice(0, 9) : spec.name}
+        </span>
+      )}
+      {typeof wsk.stacks === 'number' && wsk.stacks > 0 && (
+        <span className="bs-slot-charges" style={{ top: 2, bottom: 'auto', right: 3, color: '#fde68a' }}>
+          x{wsk.stacks}
+        </span>
+      )}
+      <span className="bs-slot-rarity-bar" style={{ background: color }} />
+    </button>
+  );
+}
+
 interface DashChipProps {
   dashCdMs: number;
   dashMaxMs: number;
@@ -2669,15 +2737,21 @@ function GachaDraftCard({
         }}
       >
         <div
+          title={shortTitle}
           style={{
             width: '100%',
-            fontSize: 11,
+            fontSize: 10.5,
             fontWeight: 900,
             color: '#f8fafc',
-            lineHeight: 1.15,
-            whiteSpace: 'nowrap',
+            lineHeight: 1.2,
+            minHeight: '2.4em',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
             overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            textShadow: '0 1px 0 #05070d',
           }}
         >
           {shortTitle}
@@ -3262,6 +3336,14 @@ export function HotbarShop({
     emitCommand({ t: 'skill' });
   }, [input, emitCommand]);
 
+  const handleTriggerWeaponSkill = useCallback(() => {
+    if (input && typeof (input as BansungInputController & { castWeaponSkillAtCursor?: () => void }).castWeaponSkillAtCursor === 'function') {
+      (input as BansungInputController & { castWeaponSkillAtCursor: () => void }).castWeaponSkillAtCursor();
+      return;
+    }
+    emitCommand({ t: 'wskill' });
+  }, [input, emitCommand]);
+
   const handleTriggerDash = useCallback(() => {
     if (onTriggerDash) {
       onTriggerDash();
@@ -3418,6 +3500,8 @@ export function HotbarShop({
             skillName={me.skillName}
             onTrigger={handleTriggerHeroSkill}
           />
+
+          <WeaponSkillChip wsk={me.wsk} playerEnergy={me.energy} onTrigger={handleTriggerWeaponSkill} />
 
           {consumable && <SupplyHotbarSlot consumable={consumable} />}
 

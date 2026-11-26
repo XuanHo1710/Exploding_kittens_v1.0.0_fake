@@ -15,6 +15,12 @@
 
 import { audioCtx, isMuted, setMuted as setSharedMuted } from '../sfx';
 import {
+  BANSUNG_FX_STATUS_WSKILL_CAST,
+  BANSUNG_FX_STATUS_WSKILL_END,
+  BANSUNG_FX_STATUS_WSKILL_IMPACT,
+  BANSUNG_FX_STATUS_WSKILL_PASSIVE,
+} from '../../../shared/src/bansung/weapon-skills/types';
+import {
   BANSUNG_DMG_ARMOR,
   BANSUNG_DMG_CRIT,
   BANSUNG_DMG_HEAL,
@@ -2086,6 +2092,39 @@ export function consumeFrameAudioEvents(
             break;
           case BANSUNG_FX_STATUS_HERO_SKILL:
             playBansungSfx('hero_skill_activate', { local, x: evt.d, y: evt.e });
+            break;
+          // Spec 007 · C — skill súng [5, playerIdx, 18..21, weaponIdx, x, y]
+          case BANSUNG_FX_STATUS_WSKILL_CAST: {
+            const ww = getWeaponByIdx(evt.c);
+            const cat = ww?.category;
+            playBansungSfx('hero_skill_activate', { local, x: evt.d, y: evt.e, vol: 0.85 });
+            if (cat === 'energy') playBansungSfx('fx_plasma_spark', { local, x: evt.d, y: evt.e, vol: 0.7 });
+            else if (cat === 'melee') playBansungSfx('melee_slash', { local, x: evt.d, y: evt.e, vol: 0.8 });
+            else if (cat === 'explosive') playBansungSfx('sniper_lock', { local, x: evt.d, y: evt.e, vol: 0.6 });
+            else playBansungSfx('reload_active_hit', { local, x: evt.d, y: evt.e, vol: 0.7 });
+            break;
+          }
+          case BANSUNG_FX_STATUS_WSKILL_IMPACT: {
+            const ww = getWeaponByIdx(evt.c);
+            const id = ww?.id ?? '';
+            if (ww?.category === 'explosive' || id === 'void_cannon' || id === 'magma_spitter') {
+              playBansungSfx('explosion_sm', { x: evt.d, y: evt.e, vol: 0.8 });
+            } else if (id === 'lightning_staff' || id === 'tesla_coil' || id === 'electric_gun' || id === 'shock_baton') {
+              playBansungSfx('sfx_shock_zap', { x: evt.d, y: evt.e, vol: 0.8 });
+            } else if (id === 'railgun' || id === 'laser_cannon' || id === 'ion_beam') {
+              playBansungSfx('wpn_rail_fire', { x: evt.d, y: evt.e, vol: 0.7 });
+            } else if (ww?.category === 'melee') {
+              playBansungSfx('melee_slash', { x: evt.d, y: evt.e, vol: 0.75 });
+            } else {
+              playBansungSfx('hit_crit', { x: evt.d, y: evt.e, vol: 0.6 });
+            }
+            break;
+          }
+          case BANSUNG_FX_STATUS_WSKILL_END:
+            if (local) playBansungSfx('reload_start', { local, x: evt.d, y: evt.e, vol: 0.4 });
+            break;
+          case BANSUNG_FX_STATUS_WSKILL_PASSIVE:
+            if (local) playBansungSfx('perk_pick', { local, x: evt.d, y: evt.e, vol: 0.35 });
             break;
           case BANSUNG_FX_STATUS_BOSS_PART_BREAK:
             playBansungSfx('boss_part_break', { x: evt.d, y: evt.e, vol: 1.0 });

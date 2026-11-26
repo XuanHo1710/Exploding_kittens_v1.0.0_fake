@@ -424,7 +424,8 @@ function HeroIdleSprite({
 }) {
   const [broken, setBroken] = useState(false);
   const [frames, setFrames] = useState(4);
-  const spriteSrc = `${BANSUNG_STATIC_ROOT}/sprites/heroes/${hero.id}_idle.png`;
+  // Spec 007 v2: dải idle nhìn thẳng 6 frame vẽ mới (số frame tự đo trong onLoad)
+  const spriteSrc = `${BANSUNG_STATIC_ROOT}/normalized/heroes/hero_${hero.id}_idle_down.png`;
 
   useEffect(() => {
     setBroken(false);

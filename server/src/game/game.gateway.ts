@@ -1,4 +1,4 @@
-import { HttpException, Logger } from '@nestjs/common';
+import { HttpException, Logger, Optional } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -64,6 +64,8 @@ import {
 import { RoomsService } from './rooms.service';
 import { AccountsService } from '../store/accounts.service';
 import { ExpeditionService } from './expedition/expedition.service';
+import { CampaignService } from './mk/campaign.service';
+import { CAMPAIGN_EVT, CAMPAIGN_FRAME_EVT, CAMPAIGN_INPUT_EVT, CAMPAIGN_RESULT_EVT } from '../../../shared/src/mk/campaign';
 
 class SilentRejectError extends Error {}
 
@@ -109,6 +111,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private readonly rooms: RoomsService,
     private readonly accounts: AccountsService,
     private readonly expedition: ExpeditionService,
+    @Optional() private readonly campaign?: CampaignService,
   ) {}
 
   private disconnectClient(client: Socket | undefined) {
@@ -123,25 +126,49 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   afterInit(server: Server) {
     this.rooms.bind(server);
+    server.use((client, next) => {
+      try {
+        const auth = this.authenticateSocket(client.handshake.auth);
+        if (!auth.ok) {
+          next(Object.assign(new Error(auth.message), { data: { code: 'AUTH_REQUIRED', registered: auth.registered } }));
+          return;
+        }
+        client.data = auth.identity;
+        next();
+      } catch (error) {
+        this.logger.error('Chưa xác thực được kết nối Socket.IO', error);
+        next(new Error('Máy chủ tài khoản đang bận. Vui lòng thử lại.'));
+      }
+    });
+  }
+
+  private authenticateSocket(raw: unknown):
+    { ok: true; identity: SocketData } | { ok: false; message: string; registered: boolean } {
+    const id = parseIdentity(raw);
+    if (!id) return { ok: false, message: 'Vui lòng đăng nhập bằng PIN.', registered: false };
+    const acc = this.accounts.verify(id.playerId, id.token);
+    if (!acc) {
+      const registered = Boolean(this.accounts.get(id.playerId));
+      return {
+        ok: false, registered,
+        message: registered ? 'Phiên đăng nhập đã hết hạn. Hãy nhập lại PIN.' : 'Tài khoản chưa có trên máy chủ này. Hãy tạo tài khoản hoặc đăng nhập.',
+      };
+    }
+    return { ok: true, identity: { ...id, name: acc.name, avatar: acc.avatar } };
   }
 
   handleConnection(client: Socket) {
-    const id = parseIdentity(client.handshake.auth);
-    if (!id) {
-      client.emit('toast', 'Thiếu tên hoặc ID người chơi.');
-      this.disconnectClient(client);
-      return;
+    let id = client.data as SocketData | undefined;
+    if (!id?.playerId) {
+      const auth = this.authenticateSocket(client.handshake.auth);
+      if (!auth.ok) {
+        client.emit('toast', auth.message);
+        this.disconnectClient(client);
+        return;
+      }
+      id = auth.identity;
+      client.data = id;
     }
-    // Chỉ nhận socket có token tài khoản đúng: không ai mạo danh được playerId (công khai trong phòng) của người khác
-    const acc = this.accounts.verify(id.playerId, id.token);
-    if (!acc) {
-      client.emit('toast', this.accounts.get(id.playerId) ? 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại bằng PIN.' : 'Đăng nhập bằng PIN để vào chơi nhé.');
-      this.disconnectClient(client);
-      return;
-    }
-    id.name = acc.name;
-    id.avatar = acc.avatar;
-    client.data = id;
     client.join(`p:${id.playerId}`);
     this.rooms.setVerified(id.playerId, true);
     this.rooms.pushAccount(id.playerId);
@@ -156,6 +183,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async handleDisconnect(client: Socket) {
     const { playerId } = (client.data ?? {}) as Partial<SocketData>;
+    if (playerId) this.campaign?.disconnect(playerId, client.id);
     if (typeof client?.id === 'string' && client.id.length > 0) {
       this.bansungConfigLimiter.clearPlayer(client.id);
       this.bansungHeroLimiter.clearPlayer(client.id);
@@ -545,6 +573,23 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   // --- Mighty Knight Co-op Endless ---
+  @SubscribeMessage(CAMPAIGN_EVT)
+  mkCampaign(@ConnectedSocket() c: Socket, @MessageBody() body: unknown) {
+    return this.handle(c, (me) => {
+      if (!this.campaign) throw new GameError('Chiến dịch chưa sẵn sàng.');
+      return this.campaign.command(me.playerId, c.id, body, (event, state) => {
+        if (event === 'frame') c.volatile.emit(CAMPAIGN_FRAME_EVT, state);
+        else c.emit(CAMPAIGN_RESULT_EVT, state);
+      });
+    });
+  }
+
+  @SubscribeMessage(CAMPAIGN_INPUT_EVT)
+  mkCampaignInput(@ConnectedSocket() c: Socket, @MessageBody() body: unknown) {
+    const { playerId } = (c.data ?? {}) as Partial<SocketData>;
+    if (playerId) this.campaign?.input(playerId, c.id, body);
+  }
+
   @SubscribeMessage(MK_EVT_CMD)
   mkCmd(@ConnectedSocket() c: Socket, @MessageBody() body: unknown) {
     return this.handle(c, (me) => {
@@ -840,8 +885,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       if (!me?.playerId) throw new GameError('Thiếu thông tin người chơi.');
       if (!this.accounts.verify(me.playerId, me.token)) {
         const error = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại bằng PIN.';
-        client.emit('toast', error);
-        this.disconnectClient(client);
+        client.emit('account:session-expired', { message: error, registered: Boolean(this.accounts.get(me.playerId)) });
+        client.disconnect();
         return { ok: false, error };
       }
       return { ok: true, result: await fn(me) };

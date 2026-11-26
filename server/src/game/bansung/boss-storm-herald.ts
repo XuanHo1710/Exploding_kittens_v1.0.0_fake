@@ -11,6 +11,11 @@
  *  - `twin_storm_windup`: Synchronized alternating yellow + blue dual lightning storms
  * Enraged skills unlocked as destructible condensers & crown break:
  *  - `golden_tempest_overload`, `azure_storm_vortex`, `dual_storm_cataclysm`
+ * Đêm Zombie v2 (spec 007 · B4b) — vẫn KHÔNG bắn đạn, chỉ sét vàng/xanh:
+ *  - `thunder_lance_windup` (Thunder Lance): khoá 1–3 tia sét thẳng vào người chơi, giáng sét
+ *    dọc tia, sét nhảy chuỗi sang đồng đội đứng gần, để lại 2 vũng bão xanh dọc đường sét.
+ *  - `volt_carousel` (Volt Carousel, chỉ pha 2): 8 tia sét vàng/xanh xoay vòng tăng tốc kiểu
+ *    Chicken Invaders + sét giáng xuống vị trí người chơi.
  */
 import {
   BANSUNG_ENEMIES,
@@ -35,6 +40,7 @@ import {
   type BansungUnitState,
 } from '../../../../shared/src';
 import { applyBansungDamage, type BansungCombatTarget, type BansungDamageContext } from './damage';
+import { resolveZombieSkillTune, zombieFirstUseTicks, type ZombieSkillTune } from './boss-zombie-skills';
 
 function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;
@@ -48,6 +54,8 @@ export type StormHeraldBossFSMState =
   | 'yellow_storm_windup'
   | 'blue_storm_windup'
   | 'twin_storm_windup'
+  | 'thunder_lance_windup'
+  | 'volt_carousel'
   | 'dead';
 
 export interface PendingLightningStormStrike {
@@ -99,6 +107,12 @@ export interface StormLightningBeamRay {
   prog: number;
 }
 
+/** Đêm Zombie v2: tia sét thẳng (Thunder Lance) bắn từ boss vào người chơi. */
+export interface StormThunderLance {
+  angle: number;
+  len: number;
+}
+
 export interface StormHeraldBossState {
   id: number;
   idStr: string;
@@ -127,6 +141,11 @@ export interface StormHeraldBossState {
   strikes: PendingLightningStormStrike[];
   activeStorms: ActiveLightningStormHazard[];
   stormBeams?: StormLightningBeamRay[];
+  lances?: StormThunderLance[];
+  /** Spec 007 · B4c: hệ số độ khó cho skill mới (sát thương đã nhân sẵn qua ctx.dmgMult). */
+  skillTune: ZombieSkillTune;
+  /** Số tick giao tranh — Thunder Lance / Volt Carousel chỉ mở sau `zombieFirstUseTicks`. */
+  skillClockTicks: number;
   telegraphs: BansungTelegraph[];
   combatTarget: BansungCombatTarget;
 }
@@ -176,6 +195,22 @@ const TWO_PI = Math.PI * 2;
 const MAX_ACTIVE_STORMS = 8;
 const STORM_BEAM_LENGTH = 680;
 const STORM_BEAM_HALF_W = 16;
+const LANCE_WINDUP_TICKS = 20;
+const LANCE_TOTAL_TICKS = 32;
+const LANCE_HALF_W = 14;
+const LANCE_CHAIN_RANGE = 240;
+const CAROUSEL_WINDUP_TICKS = 16;
+const CAROUSEL_TOTAL_TICKS = 70;
+
+/** Độ dày skill theo độ khó, kẹp trong [min, max]. */
+function tunedCount(boss: StormHeraldBossState, base: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, Math.round(base * boss.skillTune.density)));
+}
+
+/** Telegraph Thunder Lance ngắn hơn ở độ khó cao (đạn/sét nhanh hơn), tối thiểu 14 tick (~0.47 s). */
+function lanceWindupTicks(boss: StormHeraldBossState): number {
+  return Math.max(14, Math.round(LANCE_WINDUP_TICKS / boss.skillTune.speed));
+}
 
 function distSqPointSegment(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
   const vx = x2 - x1;
@@ -239,6 +274,7 @@ export function createStormHeraldBoss(opts: {
   hpMult?: number;
   radiusScale?: number;
   arenaBounds: { minX: number; minY: number; maxX: number; maxY: number };
+  difficulty?: string;
 }): StormHeraldBossState {
   const spec = BANSUNG_ENEMIES.boss_storm_herald;
   const maxHp = Math.max(1200, Math.round(BOSS_STORM_HERALD_CFG.baseHp * (opts.hpMult ?? 1)));
@@ -289,6 +325,8 @@ export function createStormHeraldBoss(opts: {
     arenaBounds: { ...opts.arenaBounds },
     strikes: [],
     activeStorms: [],
+    skillTune: resolveZombieSkillTune(opts.difficulty),
+    skillClockTicks: 0,
     telegraphs: [],
     combatTarget,
   };
@@ -602,6 +640,93 @@ function stepStormLightningBeams(
   }
 }
 
+/** Thunder Lance: khoá tia sét thẳng vào tối đa 3 người chơi (hoặc quạt 3 tia quanh mục tiêu chính). */
+function lockThunderLances(
+  boss: StormHeraldBossState,
+  target: StormHeraldPlayerTarget | undefined,
+  ctx: StormHeraldStepContext,
+): void {
+  const alive = ctx.players.filter((p) => p.alive && !p.downed && p.hp > 0);
+  const lances: StormThunderLance[] = [];
+  const count = tunedCount(boss, boss.phase === 2 ? 3 : Math.min(3, Math.max(1, alive.length)), 1, 5);
+  for (let k = 0; k < count; k++) {
+    const p = alive[k];
+    let ang: number;
+    let dist: number;
+    if (p) {
+      ang = Math.atan2(p.y - boss.y, p.x - boss.x);
+      dist = Math.hypot(p.x - boss.x, p.y - boss.y);
+    } else {
+      const base = target ? Math.atan2(target.y - boss.y, target.x - boss.x) : boss.aimRad;
+      ang = base + (k - (count - 1) / 2) * 0.42;
+      dist = target ? Math.hypot(target.x - boss.x, target.y - boss.y) : 420;
+    }
+    lances.push({ angle: ang, len: clamp(dist + 140, 360, 780) });
+  }
+  boss.lances = lances;
+}
+
+function strikeThunderLances(boss: StormHeraldBossState, ctx: StormHeraldStepContext): void {
+  const lances = boss.lances;
+  if (!lances || lances.length === 0) return;
+  const yellow = STORM_VARIANT_STYLE.yellow;
+  const blue = STORM_VARIANT_STYLE.blue;
+  const baseDmg = Math.max(1, Math.round(BOSS_STORM_HERALD_CFG.yellowBurstDmg * 0.9 * ctx.dmgMult));
+  const chainDmg = Math.max(1, Math.round(baseDmg * 0.6));
+  const hit = new Set<string>();
+  ctx.onSfx?.('sfx_wpn_tesla', boss.x, boss.y);
+  for (const lance of lances) {
+    const x2 = boss.x + Math.cos(lance.angle) * lance.len;
+    const y2 = boss.y + Math.sin(lance.angle) * lance.len;
+    // 2 tia chồng nhau cho cảm giác sét dày + 1 tia xanh lệch nhẹ
+    ctx.fx?.push(FX_BEAM, Math.round(boss.x), Math.round(boss.y), Math.round(x2), Math.round(y2), yellow.beamKind);
+    ctx.fx?.push(FX_BEAM, Math.round(boss.x), Math.round(boss.y), Math.round(x2), Math.round(y2), yellow.beamKind);
+    ctx.fx?.push(FX_BLAST, yellow.blastKind, Math.round(x2), Math.round(y2), 46, boss.id);
+    for (const p of ctx.players) {
+      if (!p.alive || p.downed || p.hp <= 0 || hit.has(p.id)) continue;
+      const hitR = LANCE_HALF_W + (p.radius ?? 13);
+      if (distSqPointSegment(p.x, p.y, boss.x, boss.y, x2, y2) > hitR * hitR) continue;
+      hit.add(p.id);
+      applyBansungDamage(p, { baseDmg, dmgKind: 'energy', attackerId: boss.idStr }, ctx.damageCtx);
+      if (p.alive && !p.downed) {
+        p.slowPct = Math.max(p.slowPct ?? 0, yellow.slowPct);
+        p.slowMs = Math.max(p.slowMs ?? 0, yellow.slowMs);
+      }
+      // Sét nhảy chuỗi sang đồng đội đứng gần (≤ 240px)
+      let best: StormHeraldPlayerTarget | undefined;
+      let bestD2 = LANCE_CHAIN_RANGE * LANCE_CHAIN_RANGE;
+      for (const q of ctx.players) {
+        if (q === p || hit.has(q.id) || !q.alive || q.downed || q.hp <= 0) continue;
+        const d2 = (q.x - p.x) * (q.x - p.x) + (q.y - p.y) * (q.y - p.y);
+        if (d2 <= bestD2) {
+          bestD2 = d2;
+          best = q;
+        }
+      }
+      if (best) {
+        hit.add(best.id);
+        ctx.fx?.push(FX_BEAM, Math.round(p.x), Math.round(p.y), Math.round(best.x), Math.round(best.y), blue.beamKind);
+        applyBansungDamage(best, { baseDmg: chainDmg, dmgKind: 'energy', attackerId: boss.idStr }, ctx.damageCtx);
+        if (best.alive && !best.downed) {
+          best.slowPct = Math.max(best.slowPct ?? 0, blue.slowPct);
+          best.slowMs = Math.max(best.slowMs ?? 0, blue.slowMs);
+        }
+      }
+    }
+    // Đường sét để lại 2 vũng bão xanh nhỏ (có telegraph xanh như mọi bão khác)
+    for (const u of [0.45, 0.85]) {
+      queueStormCell(
+        boss,
+        'blue',
+        boss.x + Math.cos(lance.angle) * lance.len * u,
+        boss.y + Math.sin(lance.angle) * lance.len * u,
+        0,
+        0.7,
+      );
+    }
+  }
+}
+
 /** Advances `boss_storm_herald` for 1 authoritative tick (`1 / 30s`). */
 export function stepStormHeraldBoss(boss: StormHeraldBossState, ctx: StormHeraldStepContext): void {
   if (boss.combatTarget.hp < boss.hp) {
@@ -620,6 +745,7 @@ export function stepStormHeraldBoss(boss: StormHeraldBossState, ctx: StormHerald
   boss.combatTarget.y = boss.y;
   boss.combatTarget.hp = boss.hp;
   boss.combatTarget.maxHp = boss.maxHp;
+  boss.skillClockTicks += 1;
 
   if (boss.phase === 1 && boss.hp <= boss.maxHp * BOSS_STORM_HERALD_CFG.phase2Ratio) {
     boss.phase = 2;
@@ -642,6 +768,7 @@ export function stepStormHeraldBoss(boss: StormHeraldBossState, ctx: StormHerald
     boss.vx = 0;
     boss.vy = 0;
     boss.stormBeams = undefined;
+    boss.lances = undefined;
     boss.stateTick += 1;
     if (boss.stunTicks <= 0) {
       boss.combatTarget.stunMs = 0;
@@ -700,15 +827,23 @@ export function stepStormHeraldBoss(boss: StormHeraldBossState, ctx: StormHerald
         boss.actionCdTicks -= 1;
         break;
       }
-      const nextPattern = boss.patternIdx % 3;
+      // Đêm Zombie v2: thêm Thunder Lance (mọi pha) và Volt Carousel (pha 2) vào vòng xoay chiêu
+      const rawPattern = boss.patternIdx % (boss.phase === 2 ? 5 : 4);
+      // Skill mới chỉ mở sau thời điểm dùng lần đầu theo độ khó (Thường 20 s / Khó 15 s / Địa Ngục 10 s)
+      const newSkillsReady = boss.skillClockTicks >= zombieFirstUseTicks(boss.skillTune);
+      const nextPattern = rawPattern >= 3 && !newSkillsReady ? rawPattern % 3 : rawPattern;
       boss.patternIdx += 1;
       boss.stateTick = 0;
       if (nextPattern === 0) {
         boss.state = 'yellow_storm_windup';
       } else if (nextPattern === 1) {
         boss.state = 'blue_storm_windup';
-      } else {
+      } else if (nextPattern === 2) {
         boss.state = 'twin_storm_windup';
+      } else if (nextPattern === 3) {
+        boss.state = 'thunder_lance_windup';
+      } else {
+        boss.state = 'volt_carousel';
       }
       break;
     }
@@ -784,6 +919,65 @@ export function stepStormHeraldBoss(boss: StormHeraldBossState, ctx: StormHerald
       break;
     }
 
+    case 'thunder_lance_windup': {
+      if (boss.stateTick === 1) {
+        lockThunderLances(boss, target, ctx);
+        ctx.onSfx?.('sfx_wpn_laser', boss.x, boss.y);
+      }
+      const lanceWindup = lanceWindupTicks(boss);
+      if (boss.stateTick === lanceWindup) {
+        strikeThunderLances(boss, ctx);
+      }
+      if (boss.stateTick >= lanceWindup + (LANCE_TOTAL_TICKS - LANCE_WINDUP_TICKS)) {
+        boss.lances = undefined;
+        boss.state = 'patrol';
+        boss.stateTick = 0;
+        boss.actionCdTicks = Math.round((boss.phase === 2 ? 20 : 24) * boss.skillTune.cd);
+      }
+      break;
+    }
+
+    case 'volt_carousel': {
+      if (boss.stateTick === 1) {
+        const base = target ? Math.atan2(target.y - boss.y, target.x - boss.x) : boss.aimRad;
+        const dir = (boss.patternIdx & 1) === 0 ? 1 : -1;
+        // Số tia theo độ khó: Thường 8 · Khó 10 · Địa Ngục 12 (luôn chẵn để xen kẽ vàng/xanh)
+        const rayCount = 2 * tunedCount(boss, 4, 3, 6);
+        boss.stormBeams = [];
+        for (let k = 0; k < rayCount; k++) {
+          boss.stormBeams.push({
+            variant: (k & 1) === 0 ? 'yellow' : 'blue',
+            angle: base + (k / rayCount) * TWO_PI,
+            spinVel: dir * 0.012 * boss.skillTune.spin,
+            active: false,
+            prog: 0,
+          });
+        }
+      }
+      // Xoay tăng tốc dần như vòng đạn Chicken Invaders
+      if (boss.stormBeams && boss.stateTick > CAROUSEL_WINDUP_TICKS) {
+        const k = clamp((boss.stateTick - CAROUSEL_WINDUP_TICKS) / 50, 0, 1);
+        for (const ray of boss.stormBeams) {
+          const sign = ray.spinVel >= 0 ? 1 : -1;
+          ray.spinVel = sign * (0.012 + 0.03 * k) * boss.skillTune.spin;
+        }
+      }
+      if (boss.stateTick === 30 || boss.stateTick === 50 || (boss.stateTick === 40 && boss.skillTune.density >= 1.25)) {
+        for (const p of ctx.players) {
+          if (!p.alive || p.downed || p.hp <= 0) continue;
+          queueStormCell(boss, 'yellow', p.x + (p.vx ?? 0) * 0.3, p.y + (p.vy ?? 0) * 0.3, 0, 0.85);
+        }
+      }
+      stepStormLightningBeams(boss, CAROUSEL_WINDUP_TICKS, CAROUSEL_TOTAL_TICKS, ctx);
+      if (boss.stateTick >= CAROUSEL_TOTAL_TICKS) {
+        boss.stormBeams = undefined;
+        boss.state = 'patrol';
+        boss.stateTick = 0;
+        boss.actionCdTicks = Math.round(26 * boss.skillTune.cd);
+      }
+      break;
+    }
+
     default:
       break;
   }
@@ -813,6 +1007,31 @@ function rebuildStormHeraldTelegraphs(boss: StormHeraldBossState): void {
       r: s.r,
       danger: 1,
       sourceKind: 'boss_storm_herald',
+    });
+  }
+  if (boss.lances && boss.lances.length > 0 && boss.state === 'thunder_lance_windup') {
+    const lanceWindup = lanceWindupTicks(boss);
+    const locked = boss.stateTick >= lanceWindup;
+    const prog = locked ? 255 : clamp(Math.round((boss.stateTick / lanceWindup) * 255), 0, 255);
+    boss.lances.forEach((lance, idx) => {
+      outTel.push({
+        id: boss.id * 100 + 60 + idx,
+        kind: 0,
+        shape: 'line',
+        phase: prog >= 180 ? 1 : 0,
+        color: STORM_VARIANT_STYLE.yellow.telegraphColor,
+        prog,
+        x0: Math.round(boss.x),
+        y0: Math.round(boss.y),
+        x1: Math.round(boss.x + Math.cos(lance.angle) * lance.len),
+        y1: Math.round(boss.y + Math.sin(lance.angle) * lance.len),
+        r: LANCE_HALF_W,
+        halfW: LANCE_HALF_W,
+        active: locked,
+        danger: 1,
+        ...(idx === 0 ? { label: 'THUNDER LANCE' } : {}),
+        sourceKind: 'boss_storm_herald',
+      });
     });
   }
   if (boss.stormBeams && boss.stormBeams.length > 0) {
@@ -882,7 +1101,7 @@ export function toStormHeraldBossFrame(
         : 0,
     telegraphs: boss.telegraphs,
     unlockedSkills: boss.unlockedSkillList.length > 0 ? [...boss.unlockedSkillList] : undefined,
-    title: 'Lôi Thần Bão Sét',
+    title: 'Volt Twins',
     subtitle: 'BÃO SÉT VÀNG & BÃO SÉT XANH · ×8 THANH MÁU',
     tier: 4,
   };

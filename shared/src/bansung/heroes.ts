@@ -292,31 +292,40 @@ const makeHeroAnimSpec = (
 });
 
 export const BANSUNG_HERO_ANIM_SPECS: Readonly<Record<BansungHeroAnimState, BansungHeroAnimSpec>> = {
-  idle: makeHeroAnimSpec(4, 6, true),
-  run: makeHeroAnimSpec(6, 14, true),
-  shoot: makeHeroAnimSpec(3, 24, false),
-  dash: makeHeroAnimSpec(4, 14.3, false),
-  stunned: makeHeroAnimSpec(2, 10, true),
-  dead: makeHeroAnimSpec(4, 10, false),
+  // Đêm Zombie v2 (spec 007): số frame khớp `tools/bansung/night_art/heroes.py` FRAMES
+  idle: makeHeroAnimSpec(6, 7, true),
+  run: makeHeroAnimSpec(8, 14, true),
+  shoot: makeHeroAnimSpec(4, 24, false),
+  dash: makeHeroAnimSpec(6, 25, false),
+  stunned: makeHeroAnimSpec(4, 8, true),
+  dead: makeHeroAnimSpec(6, 12, false),
 };
 
+/**
+ * Nhịp chạy 8 frame. Bob & co giãn đã VẼ SẴN trong sprite (heroes.py RUN_BOB) → ở đây giữ
+ * sx/sy = 1, dy = 0 để không nhân đôi chuyển động và không làm méo pixel art (scale lẻ gây răng cưa).
+ * `stepSfx` đặt tại 2 frame chạm đất (0 và 4).
+ */
 export const BANSUNG_HERO_RUN_CADENCE = [
-  { dy: 0, sx: 1.04, sy: 0.96, stepSfx: true },
-  { dy: 1, sx: 1.06, sy: 0.94, stepSfx: false },
-  { dy: -2, sx: 0.95, sy: 1.05, stepSfx: false },
-  { dy: 0, sx: 1.04, sy: 0.96, stepSfx: true },
-  { dy: 1, sx: 1.06, sy: 0.94, stepSfx: false },
-  { dy: -2, sx: 0.95, sy: 1.05, stepSfx: false },
+  { dy: 0, sx: 1, sy: 1, stepSfx: true },
+  { dy: 0, sx: 1, sy: 1, stepSfx: false },
+  { dy: 0, sx: 1, sy: 1, stepSfx: false },
+  { dy: 0, sx: 1, sy: 1, stepSfx: false },
+  { dy: 0, sx: 1, sy: 1, stepSfx: true },
+  { dy: 0, sx: 1, sy: 1, stepSfx: false },
+  { dy: 0, sx: 1, sy: 1, stepSfx: false },
+  { dy: 0, sx: 1, sy: 1, stepSfx: false },
 ] as const;
 
 export const BANSUNG_HERO_DASH_CADENCE = [
-  { startMs: 0, endMs: 55, sx: 1.15, sy: 0.85, dy: 2, dust: false },
-  { startMs: 55, endMs: 155, sx: 1.26, sy: 0.78, dy: -2, dust: false },
-  { startMs: 155, endMs: 230, sx: 0.94, sy: 1.06, dy: -3, dust: false },
-  { startMs: 230, endMs: 280, sx: 1.08, sy: 0.92, dy: 0, dust: true },
+  { startMs: 0, endMs: 55, sx: 1.04, sy: 0.96, dy: 1, dust: false },
+  { startMs: 55, endMs: 155, sx: 1.06, sy: 0.95, dy: -2, dust: false },
+  { startMs: 155, endMs: 230, sx: 1.02, sy: 0.98, dy: -2, dust: false },
+  { startMs: 230, endMs: 280, sx: 1.03, sy: 0.97, dy: 0, dust: true },
 ] as const;
 
-const HERO_RUN_BOB_Y = [0, 1, -2, 0, 1, -2] as const;
+/** Bob vai khi chạy (px thế giới, + là xuống) = RUN_BOB của sprite × pixelScale 1.5. */
+const HERO_RUN_BOB_Y = [1.5, 0, -1.5, 0, 1.5, 0, -1.5, 0] as const;
 
 const makeDashSpec = (cooldownMs: number, ghostTint: string): BansungHeroDashSpec => ({
   durationMs: BANSUNG_DASH.DURATION_MS,
@@ -456,7 +465,7 @@ export const BANSUNG_HEROES: Readonly<Record<BansungHeroId, BansungHeroSpec>> = 
     starterWeapon: 'rifle',
     sidearmWeapon: 'pistol',
     pixelScale: BANSUNG_HERO_PIXEL_SCALE,
-    rig: makeHeroRig(4, -17, -40, MASCOT_WEAPON_RIG),
+    rig: makeHeroRig(4, -33, -58, MASCOT_WEAPON_RIG),
     defaultWeaponRig: MASCOT_WEAPON_RIG,
     dash: makeDashSpec(30, '#ffd43b'),
     activeSkill: {
@@ -500,7 +509,7 @@ export const BANSUNG_HEROES: Readonly<Record<BansungHeroId, BansungHeroSpec>> = 
     starterWeapon: 'smg',
     sidearmWeapon: 'pistol',
     pixelScale: BANSUNG_HERO_PIXEL_SCALE,
-    rig: makeHeroRig(5, -18, -41, RANGER_WEAPON_RIG),
+    rig: makeHeroRig(4, -33, -56, RANGER_WEAPON_RIG),
     defaultWeaponRig: RANGER_WEAPON_RIG,
     dash: makeDashSpec(30, '#4dabf7'),
     activeSkill: {
@@ -544,7 +553,7 @@ export const BANSUNG_HEROES: Readonly<Record<BansungHeroId, BansungHeroSpec>> = 
     starterWeapon: 'plasma_rifle',
     sidearmWeapon: 'pistol',
     pixelScale: BANSUNG_HERO_PIXEL_SCALE,
-    rig: makeHeroRig(4, -17, -41, PYRO_WEAPON_RIG),
+    rig: makeHeroRig(4, -33, -58, PYRO_WEAPON_RIG),
     defaultWeaponRig: PYRO_WEAPON_RIG,
     dash: makeDashSpec(30, '#ff922b'),
     activeSkill: {
@@ -588,7 +597,7 @@ export const BANSUNG_HEROES: Readonly<Record<BansungHeroId, BansungHeroSpec>> = 
     starterWeapon: 'shotgun',
     sidearmWeapon: 'pistol',
     pixelScale: BANSUNG_HERO_PIXEL_SCALE,
-    rig: makeHeroRig(5, -19, -43, KNIGHT_WEAPON_RIG),
+    rig: makeHeroRig(4, -33, -60, KNIGHT_WEAPON_RIG),
     defaultWeaponRig: KNIGHT_WEAPON_RIG,
     dash: makeDashSpec(30, '#a5d8ff'),
     activeSkill: {
@@ -632,7 +641,7 @@ export const BANSUNG_HEROES: Readonly<Record<BansungHeroId, BansungHeroSpec>> = 
     starterWeapon: 'laser_cannon',
     sidearmWeapon: 'pistol',
     pixelScale: BANSUNG_HERO_PIXEL_SCALE,
-    rig: makeHeroRig(5, -18, -42, LASER_WEAPON_RIG),
+    rig: makeHeroRig(4, -33, -60, LASER_WEAPON_RIG),
     defaultWeaponRig: LASER_WEAPON_RIG,
     dash: makeDashSpec(30, '#e879f9'),
     activeSkill: {
@@ -919,58 +928,47 @@ export function sampleDashVisualTransform(
   dirSign: 1 | -1,
   durationS = BANSUNG_DASH.DURATION_S,
 ): {
-  readonly frameIdx: 0 | 1 | 2 | 3;
+  readonly frameIdx: number;
   readonly sx: number;
   readonly sy: number;
   readonly hopY: number;
   readonly leanRad: number;
   readonly shadowScale: number;
 } {
+  // Đêm Zombie v2: 6 frame vẽ tay (hạ thấp → bật → lướt → tiếp đất), co giãn & nghiêng NHẸ
+  // để pixel art không bị méo / răng cưa khi xoay.
   const u = durationS > 0 ? Math.max(0, Math.min(1, elapsedS / durationS)) : 1;
-  const frameIdx: 0 | 1 | 2 | 3 =
-    u < 55 / 280 ? 0 : u < 155 / 280 ? 1 : u < 230 / 280 ? 2 : 3;
-
+  const frameIdx = Math.min(5, Math.floor(u * 6));
+  const arc = Math.sin(Math.PI * u);
   if (u < 0.14) {
     const t = u / 0.14;
     return {
       frameIdx,
-      sx: lerp(1.0, 1.24, t),
-      sy: lerp(1.0, 0.76, t),
+      sx: lerp(1.0, 1.05, t),
+      sy: lerp(1.0, 0.95, t),
       hopY: 0,
-      leanRad: lerp(0, 0.16, t) * dirSign,
+      leanRad: lerp(0, 0.05, t) * dirSign,
       shadowScale: 1.0,
     };
   }
-  const arc = Math.sin(Math.PI * u);
-  if (u < 0.55) {
-    const t = (u - 0.14) / 0.41;
-    return {
-      frameIdx,
-      sx: t < 0.5 ? lerp(1.24, 1.3, t * 2) : lerp(1.3, 1.16, (t - 0.5) * 2),
-      sy: lerp(0.76, 0.84, t),
-      hopY: -7 * arc,
-      leanRad: lerp(0.16, 0.28, t) * dirSign,
-      shadowScale: 1 - 0.18 * arc,
-    };
-  }
   if (u < 0.82) {
-    const t = (u - 0.55) / 0.27;
+    const t = (u - 0.14) / 0.68;
     return {
       frameIdx,
-      sx: lerp(1.16, 1.04, t),
-      sy: lerp(0.84, 0.96, t),
-      hopY: -7 * arc,
-      leanRad: lerp(0.24, 0.1, t) * dirSign,
-      shadowScale: 1 - 0.18 * arc,
+      sx: lerp(1.05, 1.0, t),
+      sy: lerp(0.95, 1.0, t),
+      hopY: -4 * arc,
+      leanRad: lerp(0.07, 0.03, t) * dirSign,
+      shadowScale: 1 - 0.14 * arc,
     };
   }
   const t = (u - 0.82) / 0.18;
   return {
     frameIdx,
-    sx: t < 0.5 ? lerp(1.04, 1.16, t * 2) : lerp(1.16, 1.0, (t - 0.5) * 2),
-    sy: t < 0.5 ? lerp(0.96, 0.85, t * 2) : lerp(0.85, 1.0, (t - 0.5) * 2),
+    sx: t < 0.5 ? lerp(1.0, 1.04, t * 2) : lerp(1.04, 1.0, (t - 0.5) * 2),
+    sy: t < 0.5 ? lerp(1.0, 0.96, t * 2) : lerp(0.96, 1.0, (t - 0.5) * 2),
     hopY: 0,
-    leanRad: lerp(0.1, 0, t) * dirSign,
+    leanRad: lerp(0.03, 0, t) * dirSign,
     shadowScale: 1.0,
   };
 }

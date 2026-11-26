@@ -33,6 +33,7 @@ import {
 import { applyBansungDamage, type BansungCombatTarget, type BansungDamageContext } from './damage';
 import {
   emitClusterSplitOrb,
+  emitFlowerSpinRing,
   emitRosePetalRing,
   emitSakuyaPauseLanceRing,
   type BossDanmakuSpawnInput,
@@ -521,6 +522,23 @@ export function stepFrostEmpressBoss(boss: FrostEmpressBossState, ctx: FrostEmpr
     case 'cyclone_fire': {
       const hasBlizz = boss.unlockedSkills.has('blizzard_ring');
       const maxWaves = (boss.phase === 2 ? 3 : 2) + (hasBlizz ? 1 : 0);
+      // Đêm Zombie: Frost Queen nở "bông tuyết xoay" 2 vòng ngược chiều làm chậm (phase 2 / blizzard)
+      if ((boss.phase === 2 || hasBlizz) && boss.stateTick === 7) {
+        emitFlowerSpinRing((b) => emitFrostDanmaku(boss, ctx, b), {
+          x: boss.x,
+          y: boss.y,
+          count: 18,
+          rotRad: boss.ringBaseAng + 0.17,
+          speed: 190,
+          curl: 0.66,
+          damage: Math.max(1, Math.round(BOSS_FROST_EMPRESS_CFG.cycloneDmg * 0.75 * ctx.dmgMult)),
+          outerPalette: BANSUNG_DANMAKU_PALETTE.CYAN,
+          innerPalette: BANSUNG_DANMAKU_PALETTE.SILVER,
+          gapEvery: 6,
+          slowPct: 0.22,
+          slowMs: 800,
+        });
+      }
       if (boss.stateTick === 1 || (boss.stateTick % 12 === 1 && boss.ringWave < maxWaves)) {
         const scaledDmg = Math.max(1, Math.round(BOSS_FROST_EMPRESS_CFG.cycloneDmg * ctx.dmgMult));
         if (boss.ringWave === 0) {

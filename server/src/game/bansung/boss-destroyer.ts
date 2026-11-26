@@ -32,6 +32,7 @@ import {
 } from '../../../../shared/src';
 import { applyBansungDamage, type BansungCombatTarget, type BansungDamageContext } from './damage';
 import {
+  emitChickenSpiralVolley,
   emitClusterSplitOrb,
   emitNierAlternatingCurtain,
   type BossDanmakuSpawnInput,
@@ -711,6 +712,21 @@ export function stepDestroyerBoss(boss: DestroyerBossState, ctx: DestroyerStepCo
         }
         ctx.onSfx?.('sfx_wpn_void_cannon', boss.x, boss.y);
         boss.ringWave += 1;
+      }
+      // Đêm Zombie: Butcher quay "lốc dao" xoắn ốc nhiều cánh kiểu Chicken Invaders (phase 2 / doomsday)
+      if ((boss.phase === 2 || isDoom) && boss.stateTick > 3 && boss.stateTick % 2 === 0 && boss.stateTick <= maxWaves * 12) {
+        emitChickenSpiralVolley((b) => emitDestroyerDanmaku(boss, ctx, b), {
+          x: boss.x,
+          y: boss.y,
+          arms: isDoom ? 5 : 4,
+          rotRad: boss.ringBaseAng + boss.stateTick * 0.09,
+          speed: 215,
+          curl: 0.35,
+          damage: Math.max(1, Math.round(BOSS_DESTROYER_CFG.ringDmg * 0.72 * ctx.dmgMult)),
+          palette: BANSUNG_DANMAKU_PALETTE.CRIMSON,
+          counterArms: isDoom ? 2 : 0,
+          counterPalette: BANSUNG_DANMAKU_PALETTE.VIOLET,
+        });
       }
       if (boss.ringWave >= maxWaves && boss.stateTick >= maxWaves * 12 + 8) {
         boss.state = 'patrol';

@@ -9,16 +9,17 @@ interface Props {
   /** Người chơi cũ chưa có PIN: giữ playerId + tên, chỉ cần đặt PIN */
   identity: Identity | null;
   onAuth: (identity: Identity) => void;
+  recovery?: { message: string; registered: boolean };
 }
 
-export default function Login({ identity, onAuth }: Props) {
-  const [mode, setMode] = useState<'create' | 'login'>('create');
+export default function Login({ identity, onAuth, recovery }: Props) {
+  const [mode, setMode] = useState<'create' | 'login'>(recovery?.registered ? 'login' : 'create');
   const [name, setName] = useState(identity?.name ?? '');
   const [pin, setPin] = useState('');
   const [showPin, setShowPin] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const legacy = !!identity && !identity.token;
+  const legacy = !recovery && !!identity && !identity.token;
   const ready = name.trim().length > 0 && /^\d{4,6}$/.test(pin);
 
   const submit = async () => {
@@ -63,6 +64,7 @@ export default function Login({ identity, onAuth }: Props) {
               ? 'Đặt mã PIN ngắn để giữ xu và đăng nhập ở máy khác.'
               : 'Chỉ cần tên + mã PIN 4–6 số. Tặng ngay 1.000 xu khởi đầu.'}
         </p>
+        {recovery && <p className="bad-text" role="status">{recovery.message}</p>}
 
         <label className="field">
           <span>Tên hiển thị</span>

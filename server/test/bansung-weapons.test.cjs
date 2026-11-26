@@ -2588,5 +2588,6 @@ test('T10.2 softened mob scaling, boosted special/laser drops across all 3 biome
   assert.equal(manifest.sprites.fx_light_sword.sourceId, 'crawl_tiles_cc0');
   assert.equal(manifest.sprites.fx_fire_orb.sourceId, 'crawl_tiles_cc0');
   assert.equal(manifest.sprites.fx_lightning_bolt_yellow.sourceId, 'crawl_tiles_cc0');
-  assert.equal(manifest.sprites.boss_storm_herald_idle.sourceId, 'crawl_tiles_cc0');
+  // Đêm Zombie v2: boss Volt Twins được vẽ lại bằng pipeline procedural (spec 007)
+  assert.equal(manifest.sprites.boss_storm_herald_idle.sourceId, 'generated_night_art');
 });

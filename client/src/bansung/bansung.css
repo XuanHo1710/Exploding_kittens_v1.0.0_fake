@@ -1286,3 +1286,22 @@
     gap: 5px;
   }
 }
+
+/* ── Đêm Zombie v2: thẻ Gacha dễ đọc hơn (không cắt chữ, viền pixel rõ, không nháy) ── */
+.bs-game .bs-gacha-card {
+  min-height: 166px;
+  image-rendering: pixelated;
+}
+.bs-game .bs-gacha-card img,
+.bs-game .bs-hud img {
+  image-rendering: pixelated;
+}
+.bs-game .bs-gacha-card:focus-visible {
+  outline: 2px solid #fde68a;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bs-game .bs-gacha-card--prismatic {
+    animation: none;
+  }
+}

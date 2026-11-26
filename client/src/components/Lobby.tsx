@@ -146,6 +146,7 @@ interface Props {
   chat?: RoomChat;
   account?: AccountInfo | null;
   onSaveRules?: (rules: RoomRules) => void | Promise<void>;
+  onMkCampaign?: () => void;
 }
 
 const NO_CHAT: RoomChat = { messages: [], typing: {}, send: () => {}, onTyping: () => {} };
@@ -280,7 +281,7 @@ function makeTwUnitFallbackSvg(glyph: string): string {
   return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="88" viewBox="0 0 64 88"><rect width="64" height="88" fill="%23dfd3b7"/><text x="32" y="50" text-anchor="middle" font-size="24">${safe}</text></svg>`;
 }
 
-export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSaveRules }: Props) {
+export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSaveRules, onMkCampaign }: Props) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [miragineGuideOpen, setMiragineGuideOpen] = useState(false);
   const [twGuideOpen, setTwGuideOpen] = useState(false);
@@ -662,7 +663,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                       <span className="thap-seat-team" style={{ borderColor: hero.accentHex }}>
                         <span
                           className="hero-sprite-icon xs"
-                          style={{ backgroundImage: `url("${BANSUNG_STATIC_ROOT}/normalized/heroes/hero_${heroId}_idle.png")` }}
+                          style={{ backgroundImage: `url("${BANSUNG_STATIC_ROOT}/normalized/heroes/hero_${heroId}_idle.png")`, backgroundSize: '600% 100%' }}
                           aria-hidden="true"
                         />
                         {hero.name}
@@ -1726,6 +1727,16 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                     ))}
                   </SelectField>
 
+                  <SelectField
+                    label="Thời gian"
+                    value={bansungCfg.nightMode === false ? 'day' : 'night'}
+                    disabled={!isHost}
+                    onChange={(v) => setBansung({ nightMode: v !== 'day' })}
+                  >
+                    <option value="night">🌙 Đêm Zombie (đèn pin)</option>
+                    <option value="day">☀️ Ban ngày</option>
+                  </SelectField>
+
                   {bansungMode === 'waves' && (
                     <SelectField
                       label="Sau Đợt 10"
@@ -1761,7 +1772,7 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
                         >
                           <span
                             className="hero-sprite-icon sm"
-                            style={{ backgroundImage: `url("${BANSUNG_STATIC_ROOT}/normalized/heroes/hero_${heroId}_idle.png")` }}
+                            style={{ backgroundImage: `url("${BANSUNG_STATIC_ROOT}/normalized/heroes/hero_${heroId}_idle.png")`, backgroundSize: '600% 100%' }}
                             aria-hidden="true"
                           />
                           <span>
@@ -1798,6 +1809,9 @@ export default function Lobby({ view, meId, emit, chat = NO_CHAT, account, onSav
               </>
             ) : isMk ? (
               <>
+                {onMkCampaign && <button type="button" className="secondary" onClick={onMkCampaign}>
+                  Chơi Chiến dịch Quần đảo Chuông Gió
+                </button>}
                 <div className="cfg-select-grid">
                   <SelectField
                     label="Chế độ 2.5D Pixel"

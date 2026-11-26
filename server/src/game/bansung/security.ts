@@ -345,6 +345,25 @@ export function validateBansungCommand(
       };
     }
 
+    case 'wskill': {
+      if (raw.x === undefined && raw.y === undefined) {
+        return { ok: true, cmd: { t: 'wskill' } };
+      }
+      const wx = finiteNumberOrNull(raw.x);
+      const wy = finiteNumberOrNull(raw.y);
+      if (wx === null || wy === null) {
+        return { ok: false, reason: 'non_finite_wskill' };
+      }
+      return {
+        ok: true,
+        cmd: {
+          t: 'wskill',
+          x: clamp(wx, 0, arenaW),
+          y: clamp(wy, 0, arenaH),
+        },
+      };
+    }
+
     case 'ping': {
       const kind = finiteNumberOrNull(raw.kind);
       const x = finiteNumberOrNull(raw.x);

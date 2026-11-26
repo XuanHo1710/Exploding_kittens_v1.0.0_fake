@@ -78,6 +78,16 @@ import {
   getWeaponSpec,
   getWeaponUpgradeCoinCost,
   getXpToNextLevel,
+  BANSUNG_EFLAG_HIT_FLASH,
+  BANSUNG_NIGHT,
+  getWeaponSkillSpec,
+  getWeaponSkillTierDmgMult,
+  getWeaponSkillTierDurationMult,
+  BANSUNG_WEATHER,
+  getBansungLightningFlash,
+  getBansungStormLevel,
+  isBansungNightEnabled,
+  isPointLitByAny,
   normalizeBansungConfig,
   normalizeBansungHero,
   packDanmakuBulletFlags,
@@ -85,6 +95,8 @@ import {
   resolveBansungGameMode,
   rollSurvivalGachaCards,
   type AggregatedPerkMods,
+  type BansungLightSource,
+  type BansungLightningStrike,
   type BansungBadgeId,
   type BansungBossFrame,
   type BansungCommand,
@@ -354,6 +366,23 @@ import {
   type SpatialActor,
 } from './spatial';
 import {
+  buildWeaponSkillHud,
+  cancelWeaponSkill,
+  createWeaponSkillApi,
+  createWeaponSkillRuntime,
+  getWeaponSkillMods,
+  notifyWeaponSkillHit,
+  notifyWeaponSkillKill,
+  notifyWeaponSkillShot,
+  stepWeaponSkills,
+  tickWeaponSkillTimers,
+  tryCastWeaponSkill,
+  weaponHasPassiveHook,
+  type WeaponSkillApi,
+  type WeaponSkillHero,
+  type WeaponSkillRuntime,
+} from './weapon-skills/index';
+import {
   BANSUNG_MAX_WEAPON_SLOTS,
   BansungBulletPool,
   applyReviveEnergyFloor,
@@ -499,6 +528,11 @@ export interface BansungRuntimePlayer extends BansungCombatTarget, PickupHeroSta
   skillCdMs: number;
   skillMaxMs: number;
   skillActiveMs: number;
+  /** Skill súng (chuột giữa) — spec 007 · C */
+  wsk: WeaponSkillRuntime;
+  /** Điểm trỏ chuột của lệnh skill súng gần nhất (toạ độ thế giới). */
+  wskTargetX?: number;
+  wskTargetY?: number;
   coins: number;
   kills: number;
   killHealProgress: number;
@@ -652,6 +686,15 @@ const VIEWPORT_HALF_H = 540;
 const FRAME_ENEMY_CAP = 64;
 const FRAME_BULLET_CAP = 192;
 const FRAME_FX_CAP = 56;
+/**
+ * Đêm Zombie (spec 007): loại quái luôn được gửi dù nằm trong bóng tối.
+ * Boss luôn hiển thị (có mắt phát sáng / telegraph), quái thường phải được đèn pin soi mới thấy.
+ */
+const NIGHT_ALWAYS_VISIBLE_KINDS: ReadonlySet<number> = new Set(
+  Object.entries(BANSUNG_ENEMY_INDEX)
+    .filter(([key]) => key.startsWith('boss_'))
+    .map(([, idx]) => idx as number),
+);
 const KNOCKBACK_DECAY_PER_S = 10;
 const STATIC_SHIELD_DMG_THRESHOLD = 1;
 const PORTAL_GATE_SPATIAL_BASE = 800_000;
@@ -991,6 +1034,10 @@ export class BansungWorld implements BotWorldView {
   private readonly bulletBuckets: ViewportBucketIndex<QuantizedBulletEntry>;
   private readonly tmpSpatialActors: SpatialActor[] = [];
   private readonly tmpEnemyBucketOut: QuantizedEnemyEntry[] = [];
+  /** Nguồn sáng (đèn pin + quầng sáng) của người chơi, tái sử dụng mỗi frame để không tạo rác. */
+  private readonly tmpNightLights: BansungLightSource[] = [];
+  /** Scratch cho lịch sét (spec 007 v2) — dùng chung công thức với client để chớp sáng khớp nhau. */
+  private readonly tmpLightning: BansungLightningStrike = { startMs: -1, preset: 0, boltSeed: 0, boltU: 0.5 };
   private readonly tmpBulletBucketOut: QuantizedBulletEntry[] = [];
 
   private timer?: NodeJS.Timeout;
@@ -1217,6 +1264,7 @@ export class BansungWorld implements BotWorldView {
           : undefined,
         specTargetIdx: idx,
         lastCactusHitTick: -999,
+        wsk: createWeaponSkillRuntime(),
 
         stats: {
           kills: 0,
@@ -1700,6 +1748,12 @@ export class BansungWorld implements BotWorldView {
         break;
       }
 
+      case 'wskill': {
+        if (player.life !== 'alive' || player.downed) return;
+        this.castWeaponSkill(player, cmd.x, cmd.y);
+        break;
+      }
+
       case 'use': {
         if (player.life !== 'alive') return;
         const ped = this.pickupMgr.findNearestInteractablePedestal(player);
@@ -1852,7 +1906,13 @@ export class BansungWorld implements BotWorldView {
       p.mods = aggregatePerkMods(p.perks);
       p.skillCdMs = Math.max(0, p.skillCdMs - DT_MS);
       p.skillActiveMs = Math.max(0, p.skillActiveMs - DT_MS);
+      tickWeaponSkillTimers(p.wsk, DT_MS);
       recomputeHeroStats(p);
+      {
+        // Skill / nội tại súng có thể tăng tốc chạy
+        const wskMove = getWeaponSkillMods(p.wsk, this.buildWeaponSkillHero(p)).moveSpeedMult ?? 1;
+        if (wskMove !== 1) p.mods.moveSpeedMul = (p.mods.moveSpeedMul ?? 1) * wskMove;
+      }
       if (p.heroId === 'mascot' && p.skillActiveMs > 0) {
         p.mods.fireRateMul *= 1.38;
         p.mods.moveSpeedMul *= 1.22;
@@ -1994,11 +2054,27 @@ export class BansungWorld implements BotWorldView {
       this.syncWeaponAndHeroState(p);
       const firing = p.life === 'alive' && (p.fireHeld || Boolean(p.fireQueuedPulse)) && !isDashing(p.dash);
       p.fireQueuedPulse = false;
-      tickHeroWeapons(
+      const wskHeroPre = this.buildWeaponSkillHero(p);
+      const wskInfinite = wskHeroPre ? Boolean(getWeaponSkillMods(p.wsk, wskHeroPre).infiniteAmmo) : false;
+      const wskSlot = p.weaponState.slots[p.weaponState.activeSlot];
+      const wskAmmoBefore = wskSlot ? wskSlot.ammoInMag : 0;
+      const wskTick = tickHeroWeapons(
         p.weaponState,
         { fireHeld: firing, moving: Math.hypot(p.vx, p.vy) > 5 },
         weaponCtx,
       );
+      if (wskInfinite && wskSlot && wskSlot === p.weaponState.slots[p.weaponState.activeSlot]) {
+        wskSlot.ammoInMag = Math.max(wskSlot.ammoInMag, wskAmmoBefore);
+        if (p.weaponState.reload && p.weaponState.reload.slot === p.weaponState.activeSlot) p.weaponState.reload = null;
+      }
+      // Skill súng: nội tại onShot + chạy skill đang hoạt động
+      const wskHero = this.buildWeaponSkillHero(p);
+      if (wskHero && p.life === 'alive' && !p.downed) {
+        const wskApi = this.buildWeaponSkillApi(p, wskHero, weaponCtx);
+        if (wskTick.fired) notifyWeaponSkillShot(p.wsk, wskHero, wskApi);
+        stepWeaponSkills(p.wsk, wskHero, wskApi, firing);
+        if (p.bot) this.maybeBotCastWeaponSkill(p, wskHero, wskApi);
+      }
       if (
         p.life === 'alive' &&
         !p.downed &&
@@ -3961,6 +4037,7 @@ export class BansungWorld implements BotWorldView {
         y: opts.y,
         hpMult: opts.hpMult,
         radiusScale: opts.scale,
+        difficulty: this.config.difficulty,
         arenaBounds: {
           minX: this.arena.playable.x0,
           minY: this.arena.playable.y0,
@@ -4219,6 +4296,37 @@ export class BansungWorld implements BotWorldView {
       };
     } else if (dirEnergyCostMult !== 1) {
       p.weaponState.gachaMods = { energyCostMult: dirEnergyCostMult };
+    } else {
+      p.weaponState.gachaMods = undefined;
+    }
+    // Spec 007 · C: buff skill súng + nội tại nhân dồn vào chỉ số súng
+    if (p.wsk && (p.wsk.buffs.length > 0 || p.weaponState.slots[p.weaponState.activeSlot])) {
+      const wm = getWeaponSkillMods(p.wsk, this.buildWeaponSkillHero(p));
+      const isNeutral =
+        wm.dmgMult === 1 &&
+        wm.fireRateMult === 1 &&
+        !wm.extraMultishot &&
+        !wm.critChanceAdd &&
+        wm.critDmgMult === 1 &&
+        !wm.extraPierce &&
+        wm.blastRadiusMult === 1 &&
+        wm.reloadSpeedMul === 1 &&
+        wm.energyCostMult === 1;
+      if (!isNeutral) {
+        const g = p.weaponState.gachaMods ?? {};
+        p.weaponState.gachaMods = {
+          ...g,
+          dmgMult: (g.dmgMult ?? 1) * (wm.dmgMult ?? 1),
+          fireRateMult: (g.fireRateMult ?? 1) * (wm.fireRateMult ?? 1),
+          extraMultishot: (g.extraMultishot ?? 0) + (wm.extraMultishot ?? 0),
+          critChanceAdd: (g.critChanceAdd ?? 0) + (wm.critChanceAdd ?? 0),
+          critDmgMult: (g.critDmgMult ?? 1) * (wm.critDmgMult ?? 1),
+          extraPierce: (g.extraPierce ?? 0) + (wm.extraPierce ?? 0),
+          blastRadiusMult: (g.blastRadiusMult ?? 1) * (wm.blastRadiusMult ?? 1),
+          reloadSpeedMul: (g.reloadSpeedMul ?? 1) * (wm.reloadSpeedMul ?? 1),
+          energyCostMult: (g.energyCostMult ?? 1) * (wm.energyCostMult ?? 1),
+        };
+      }
     }
     p.weaponState.hasQuickHands =
       (p.mods.reloadSpeedMul ?? 1) > 1 || (p.gachaMods?.reloadSpeedMult ?? 1) > 1;
@@ -4476,6 +4584,13 @@ export class BansungWorld implements BotWorldView {
         if (aux?.kind === 'sand_boss' && res.totalDmg > 0) {
           aux.lastDamagedBy = attackerId;
         }
+        // Spec 007 · C: nội tại onHit của súng đang cầm
+        if (owner && !res.blocked && res.totalDmg > 0 && owner.life === 'alive' && !owner.downed) {
+          const wh = this.buildWeaponSkillHero(owner);
+          if (wh && weaponHasPassiveHook(wh.weaponId, 'onHit') && owner.wsk.procDepth === 0) {
+            notifyWeaponSkillHit(owner.wsk, wh, this.buildWeaponSkillApi(owner, wh), target, res);
+          }
+        }
       },
       onEnemyStunned: (attackerId) => {
         const owner = this.playerById.get(attackerId);
@@ -4485,6 +4600,13 @@ export class BansungWorld implements BotWorldView {
         const mob = this.mobMgr.mobByNumId.get(Number(target.id));
         if (mob) {
           this.recordMobDeath(mob, attackerId);
+        }
+        const killer = this.playerById.get(attackerId);
+        if (killer && killer.life === 'alive' && !killer.downed) {
+          const wh = this.buildWeaponSkillHero(killer);
+          if (wh && weaponHasPassiveHook(wh.weaponId, 'onKill')) {
+            notifyWeaponSkillKill(killer.wsk, wh, this.buildWeaponSkillApi(killer, wh), target);
+          }
         }
       },
       grantEnergy: (heroId, amount) => {
@@ -4801,6 +4923,132 @@ export class BansungWorld implements BotWorldView {
     }
   }
 
+  // ==========================================================================
+  // Skill súng (spec 007 · C) — chuột giữa / nút HUD
+  // ==========================================================================
+
+  /** Ảnh chụp người chơi + súng đang cầm cho khung skill súng (null nếu tay không). */
+  private buildWeaponSkillHero(p: BansungRuntimePlayer): WeaponSkillHero | null {
+    const ws = p.weaponState;
+    const slot = ws.slots[ws.activeSlot];
+    if (!slot) return null;
+    const tier = Math.max(1, Math.min(10, Math.round(slot.tier ?? 1)));
+    const dmgScale =
+      getWeaponSkillTierDmgMult(tier) *
+      (p.mods.dmgMul ?? 1) *
+      (1 + (p.mods.coopAuraDmg ?? 0)) *
+      (p.gachaMods?.dmgMult ?? 1);
+    return {
+      id: p.id,
+      idx: p.idx,
+      actorId: p.actorId,
+      team: ws.team,
+      x: p.x,
+      y: p.y,
+      radius: p.radius,
+      aimRad: p.aimRad,
+      targetX: p.wskTargetX ?? p.x + Math.cos(p.aimRad) * 260,
+      targetY: p.wskTargetY ?? p.y + Math.sin(p.aimRad) * 260,
+      weaponId: slot.weaponId,
+      tier,
+      spec: getWeaponSkillSpec(slot.weaponId),
+      weaponState: ws,
+      slot,
+      hp: p.hp,
+      maxHp: p.maxHp,
+      shield: p.shield,
+      maxShield: p.maxShield,
+      energy: p.energy,
+      maxEnergy: p.maxEnergy,
+      dmgScale,
+      durationScale: getWeaponSkillTierDurationMult(tier),
+      isBot: Boolean(p.bot),
+    };
+  }
+
+  private buildWeaponSkillApi(
+    p: BansungRuntimePlayer,
+    hero: WeaponSkillHero,
+    weaponCtx: BansungWeaponWorldContext = this.buildWeaponWorldContext(),
+  ): WeaponSkillApi {
+    return createWeaponSkillApi({
+      tickNo: this.tickNo,
+      dtMs: DT_MS,
+      rng: this.rng,
+      fx: this.fx,
+      weaponCtx,
+      damageCtx: this.buildDamageContext(),
+      obsGrid: this.arena.obsGrid,
+      hero,
+      runtime: p.wsk,
+      moveHero: (dx, dy) => {
+        const body: CircleBody = { x: p.x, y: p.y, radius: p.radius };
+        moveCircleWithSlide(body, dx, dy, this.arena.obsGrid, this.W, this.H);
+        const c = clampPointToPlayable(this.arena, body.x, body.y, p.radius);
+        p.x = c[0];
+        p.y = c[1];
+        p.weaponState.x = p.x;
+        p.weaponState.y = p.y;
+        return { x: p.x, y: p.y };
+      },
+      setInvuln: (ms) => {
+        p.invulnTimer = Math.max(p.invulnTimer, Math.max(0, ms) / 1000);
+      },
+      heal: (hp) => {
+        const before = p.hp;
+        p.hp = Math.min(p.maxHp, p.hp + Math.max(0, hp));
+        return p.hp - before;
+      },
+      addShield: (amount) => {
+        const before = p.shield;
+        p.shield = Math.min(p.maxShield, p.shield + Math.max(0, amount));
+        p.armor = p.shield;
+        return p.shield - before;
+      },
+      grantEnergy: (amount) => {
+        const gained = Math.min(p.maxEnergy - p.energy, Math.max(0, Math.round(amount)));
+        p.energy += gained;
+        p.weaponState.energy = p.energy;
+        return gained;
+      },
+    });
+  }
+
+  private castWeaponSkill(p: BansungRuntimePlayer, cmdX?: number, cmdY?: number): void {
+    if (cmdX !== undefined && cmdY !== undefined) {
+      p.wskTargetX = cmdX;
+      p.wskTargetY = cmdY;
+      p.aimRad = Math.atan2(cmdY - p.y, cmdX - p.x);
+      p.aimCos = Math.cos(p.aimRad);
+    } else {
+      p.wskTargetX = undefined;
+      p.wskTargetY = undefined;
+    }
+    this.syncWeaponAndHeroState(p);
+    const hero = this.buildWeaponSkillHero(p);
+    if (!hero) return;
+    const res = tryCastWeaponSkill(p.wsk, hero, this.buildWeaponSkillApi(p, hero), (cost) =>
+      this.spendPlayerEnergy(p, cost),
+    );
+    if (res === 'ok') {
+      this.syncWeaponAndHeroState(p);
+    }
+  }
+
+  /** Bot dùng skill súng khi sẵn sàng và có kẻ địch trong tầm (~1 lần / 1.5 s xét). */
+  private maybeBotCastWeaponSkill(p: BansungRuntimePlayer, hero: WeaponSkillHero, api: WeaponSkillApi): void {
+    if (p.wsk.active || (p.wsk.cdMs[hero.weaponId] ?? 0) > 0) return;
+    if ((this.tickNo + p.idx * 7) % 45 !== 0) return;
+    if (hero.spec.energyCost > 0 && p.energy < hero.spec.energyCost + 20) return;
+    const range = Math.max(220, Math.min(560, hero.spec.rangePx || 420));
+    const near = api.queryEnemies(p.x, p.y, range);
+    if (near.length === 0) return;
+    const strong = near.some((t) => t.isBoss || t.target.tier === 'elite');
+    if (!strong && near.length < 3) return;
+    const t = near[0];
+    this.castWeaponSkill(p, t.x, t.y);
+  }
+
   private executeHeroActiveSkill(p: BansungRuntimePlayer, cmdX?: number, cmdY?: number): void {
     const heroSpec = getBansungHero(p.heroId);
     const skill = heroSpec.activeSkill;
@@ -5095,6 +5343,8 @@ export class BansungWorld implements BotWorldView {
     cancelHeroDash(p.dash);
     cancelHeroWeaponActions(p.weaponState);
     p.weaponState.reload = null;
+    cancelWeaponSkill(p.wsk, null, null);
+    p.wsk.buffs.length = 0;
     enterDownedState(p, this.config.reviveMode, this.fx);
     p.life = 'downed';
     p.downed = true;
@@ -5260,6 +5510,8 @@ export class BansungWorld implements BotWorldView {
   }
 
   private spawnBossProjectile(opts: BossDanmakuSpawnInput): void {
+    // Trần đạn boss toàn cục: các pattern xoắn ốc mới (spec 007 v2) có thể bắn ~120 viên/đợt
+    if (this.bossProjectiles.length >= 520) return;
     const id = 700_000 + (this.nextBossProjId++ % 250_000);
     this.bossProjectiles.push(
       initBossDanmakuProjectile(
@@ -6033,6 +6285,10 @@ export class BansungWorld implements BotWorldView {
       skillMaxMs: Math.round(p.skillMaxMs),
       ...(p.skillActiveMs > 0 ? { skillActiveMs: Math.round(p.skillActiveMs) } : {}),
       ...(isInitial ? { skillName: getBansungHero(p.heroId).activeSkill.vnName } : {}),
+      ...(() => {
+        const wslot = p.weaponState.slots[p.weaponState.activeSlot];
+        return wslot ? { wsk: buildWeaponSkillHud(p.wsk, wslot.weaponId, wslot.tier) } : {};
+      })(),
       reloadMs: reload ? Math.max(1, Math.round((reload.durationTicks - reload.progressTicks) * DT_MS)) : 0,
       reloadTotalMs: reload ? Math.round(reload.durationTicks * DT_MS) : 0,
       ...(reload
@@ -6137,6 +6393,47 @@ export class BansungWorld implements BotWorldView {
     const y1 = cy + VIEWPORT_HALF_H;
 
     this.enemyBuckets.queryRect(x0, y0, x1, y1, this.tmpEnemyBucketOut);
+
+    // ── Đêm Zombie: chỉ gửi quái nằm trong vùng sáng của ít nhất 1 người chơi ──
+    // (chống wallhack: client không thể biết quái trong bóng tối + giảm băng thông snapshot)
+    // Spec 007 v2: khi sét đánh, cả map sáng lên → tạm thời gửi toàn bộ quái trong viewport.
+    const survClk =
+      resolveBansungGameMode(this.config) === 'survival' ? this.director.getSurvivalClock() : undefined;
+    const stormLevel = getBansungStormLevel(this.director.wave, survClk?.cycle, survClk?.stageIdx);
+    const lightningFlash =
+      stormLevel >= BANSUNG_WEATHER.LIGHTNING_START_LEVEL
+        ? getBansungLightningFlash(this.arenaSeed | 0, Math.round(this.elapsedMs), stormLevel, this.tmpLightning)
+        : 0;
+    if (
+      isBansungNightEnabled(this.config) &&
+      lightningFlash < BANSUNG_WEATHER.LIGHTNING_REVEAL_THRESHOLD
+    ) {
+      const lights = this.tmpNightLights;
+      lights.length = 0;
+      for (let i = 0; i < this.players.length; i++) {
+        const lp = this.players[i];
+        if (lp.left || lp.life === 'dead') continue;
+        lights.push({ x: lp.x, y: lp.y, aim: lp.aimRad, power: lp.downed ? BANSUNG_NIGHT.DOWNED_RANGE_MULT : 1 });
+      }
+      if (lights.length > 0) {
+        const arr = this.tmpEnemyBucketOut;
+        let keep = 0;
+        for (let i = 0; i < arr.length; i++) {
+          const it = arr[i];
+          const kindIdx = it.tuple[1];
+          const justHit = (it.tuple[7] & BANSUNG_EFLAG_HIT_FLASH) !== 0;
+          if (
+            NIGHT_ALWAYS_VISIBLE_KINDS.has(kindIdx) ||
+            justHit ||
+            isPointLitByAny(lights, it.x, it.y, BANSUNG_NIGHT.SERVER_REVEAL_PAD)
+          ) {
+            arr[keep++] = it;
+          }
+        }
+        arr.length = keep;
+      }
+    }
+
     if (this.tmpEnemyBucketOut.length > FRAME_ENEMY_CAP) {
       this.tmpEnemyBucketOut.sort((a, b) => {
         const ka = a.tuple[1];

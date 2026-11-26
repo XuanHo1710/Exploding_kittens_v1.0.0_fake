@@ -1,0 +1,81 @@
+.app:has(> .mk-campaign) {
+  min-height: 100dvh;
+  background: radial-gradient(ellipse at 50% -22%, #473342, transparent 55%), #17141d;
+}
+.mk-campaign {
+  --mkc-bg: #191620;
+  --mkc-panel: #26212d;
+  --mkc-outline: #514353;
+  --mkc-gold: #f1cb8c;
+  width: min(100%, 1100px);
+  margin: 0 auto;
+  padding: 24px 18px 54px;
+  color: #f4e8d7;
+}
+.mk-campaign h1, .mk-campaign h2, .mk-campaign h3 { margin: 0; font-family: Cambria, "Times New Roman", serif; }
+.mk-campaign h1 { font-size: clamp(1.9rem, 5vw, 3.5rem); color: var(--mkc-gold); }
+.mk-campaign h2 { font-size: clamp(1.3rem, 3vw, 1.85rem); }
+.mk-campaign h3 { margin: .9rem 0 .45rem; }
+.mk-campaign p { margin: .5rem 0; color: #d1c2b7; }
+.mkc-header, .mkc-strip { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.mkc-header { margin: 0 0 17px; }
+.mkc-header p { margin: 0; color: #d0ad7e; text-transform: uppercase; font-size: .76rem; letter-spacing: .14em; }
+.mkc-actions, .mkc-map nav, .mkc-battle-controls { display: flex; flex-wrap: wrap; gap: 6px; }
+.mk-campaign button, .mk-campaign select {
+  min-height: 38px;
+  background: #342a3a;
+  color: #faebd5;
+  border: 1px solid var(--mkc-outline);
+  border-radius: 5px;
+  padding: 5px 9px;
+  font: inherit;
+}
+.mk-campaign button:hover:enabled, .mk-campaign button[aria-pressed="true"] { border-color: var(--mkc-gold); background: #463541; }
+.mk-campaign button:focus-visible, .mk-campaign select:focus-visible, .mk-campaign input:focus-visible { outline: 2px solid #9af0da; outline-offset: 2px; }
+.mk-campaign button:disabled { opacity: .52; cursor: default; }
+.mk-campaign .mkc-main { width: 100%; margin-top: 12px; font-weight: 700; color: #271a20; background: var(--mkc-gold); }
+.mk-campaign .mkc-main:hover:enabled { background: #ffe2a3; }
+.mkc-alert, .mkc-result, .mkc-panel, .mkc-battle { padding: 14px; border: 1px solid var(--mkc-outline); border-radius: 7px; background: var(--mkc-panel); }
+.mk-campaign .mkc-alert { color: #ffe2ad; }
+.mkc-result { border-color: #a78055; margin: 0 0 12px; }
+.mkc-result h2, .mkc-panel .mkc-strip strong { color: var(--mkc-gold); }
+.mkc-map { min-height: 230px; isolation: isolate; position: relative; overflow: hidden; border: 1px solid var(--mkc-outline); border-radius: 7px; display: flex; align-items: end; margin-bottom: 12px; }
+.mkc-map img { position: absolute; width: 100%; height: 100%; object-fit: cover; object-position: center 43%; inset: 0; z-index: -2; }
+.mkc-map::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(transparent 12%, #1b151ee0 84%); }
+.mkc-map > div { width: 100%; padding: 14px; }
+.mkc-camp { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mkc-panel { min-width: 0; }
+.mkc-panel nav { margin-top: 8px; }
+.mkc-roster { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.mkc-roster button { display: flex; align-items: center; text-align: left; width: 100%; min-height: 54px; padding: 3px; }
+.mkc-roster i { width: 39px; height: 39px; flex: none; background-size: 1500% 100%; background-repeat: no-repeat; image-rendering: pixelated; }
+.mkc-roster small, .mkc-skill small { display: block; color: #dccbbe; }
+.mkc-roster label { font-size: .8rem; display: flex; align-items: center; gap: 4px; margin-left: 4px; }
+.mkc-leader { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; }
+.mkc-skill, .mkc-xp { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--mkc-outline); }
+.mkc-skill button { min-width: 120px; }
+.mk-campaign progress { accent-color: #80dbaa; height: .68rem; }
+.mkc-xp progress, .mkc-allies progress, .mkc-boss progress { width: 100%; }
+.mkc-xp small { white-space: nowrap; }
+.mkc-battle { padding: 10px; }
+.mkc-scene { position: relative; aspect-ratio: 16/9; margin: 8px 0; overflow: hidden; background: var(--mkc-bg); border: 1px solid var(--mkc-outline); border-radius: 4px; }
+.mkc-scene canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+.mkc-stamp, .mkc-boss { position: absolute; left: 50%; transform: translateX(-50%); padding: 7px 13px; background: #201823eb; border: 1px solid #927052; border-radius: 5px; text-align: center; }
+.mkc-stamp { top: 37%; min-width: 170px; color: var(--mkc-gold); font-size: clamp(1.05rem, 4vw, 2rem); }
+.mkc-boss { top: 8px; width: min(88%, 480px); }
+.mkc-boss progress { display: block; accent-color: #e36a70; margin: 4px 0; }
+.mkc-boss span, .mkc-allies small { font-size: .8rem; }
+.mkc-allies { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; margin-bottom: 8px; }
+.mkc-allies > div { display: grid; padding: 5px 8px; border: 1px solid var(--mkc-outline); border-radius: 4px; }
+.mkc-allies .selected { border-color: var(--mkc-gold); }
+.mkc-help { font-size: .88rem; }
+.mkc-touch { display: flex; gap: 3px; touch-action: none; }
+.mkc-touch button { padding: 3px 8px; }
+@media (max-width: 710px) {
+  .mk-campaign { padding: 12px 8px 30px; }
+  .mkc-camp { grid-template-columns: 1fr; }
+  .mkc-roster i { width: 31px; height: 31px; }
+  .mkc-boss { font-size: .78rem; }
+  .mkc-allies { grid-template-columns: repeat(auto-fit,minmax(89px,1fr)); }
+  .mkc-battle-controls button { font-size: .82rem; }
+}

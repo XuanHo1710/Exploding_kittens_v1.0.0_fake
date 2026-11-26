@@ -130,70 +130,70 @@
     "blight_bomber_attack": {
       "path": "normalized/enemies/blight_bomber_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "blight_bomber_dead": {
       "path": "normalized/enemies/blight_bomber_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "blight_bomber_idle": {
       "path": "normalized/enemies/blight_bomber_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "blight_bomber_run": {
-      "path": "normalized/enemies/blight_bomber_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "blight_bomber_run": {
+      "path": "normalized/enemies/blight_bomber_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "blizzard_carbine": {
       "path": "normalized/weapons/gun_blizzard_carbine.png",
@@ -221,291 +221,291 @@
     "bomb_goblin_dead": {
       "path": "normalized/enemies/bomb_goblin_dead.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "bomb_goblin_fuse_run": {
       "path": "normalized/enemies/bomb_goblin_fuse_run.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 16,
+      "fps": 16.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "bomb_goblin_idle": {
       "path": "normalized/enemies/bomb_goblin_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 5,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "bomb_goblin_run": {
       "path": "normalized/enemies/bomb_goblin_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "bomb_goblin_spark": {
       "path": "normalized/enemies/bomb_goblin_spark.png",
       "category": "enemy",
-      "frames": 2,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 18,
+      "fps": 14.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "boss_abyssal_leviathan": {
       "path": "normalized/bosses/boss_abyssal_leviathan_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_abyssal_leviathan_attack": {
       "path": "normalized/bosses/boss_abyssal_leviathan_attack.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 12,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 14,
-      "loop": false,
+      "fps": 14.0,
+      "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_abyssal_leviathan_dead": {
       "path": "normalized/bosses/boss_abyssal_leviathan_dead.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_abyssal_leviathan_idle": {
       "path": "normalized/bosses/boss_abyssal_leviathan_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_abyssal_leviathan_run": {
       "path": "normalized/bosses/boss_abyssal_leviathan_run.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 12,
+      "fps": 10.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_arsenal_attack": {
       "path": "normalized/bosses/boss_arsenal_attack.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 12,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 12,
-      "loop": false,
+      "fps": 16.0,
+      "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_arsenal_dead": {
       "path": "normalized/bosses/boss_arsenal_dead.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
+      "fps": 10.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_arsenal_idle": {
       "path": "normalized/bosses/boss_arsenal_idle.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_arsenal_run": {
       "path": "normalized/bosses/boss_arsenal_run.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_beholder": {
       "path": "normalized/bosses/boss_beholder_idle.png",
-      "category": "boss",
-      "frames": 4,
-      "cellW": 96,
-      "cellH": 96,
-      "offX": -48,
-      "offY": -94,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#e43b44",
-        "accent": "#feae34"
-      },
-      "sourceId": "crawl_tiles_cc0"
-    },
-    "boss_beholder_beam_windup": {
-      "path": "normalized/bosses/boss_beholder_beam_windup.png",
-      "category": "boss",
-      "frames": 4,
-      "cellW": 96,
-      "cellH": 96,
-      "offX": -48,
-      "offY": -94,
-      "fps": 6,
-      "loop": false,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#e43b44",
-        "accent": "#feae34"
-      },
-      "sourceId": "crawl_tiles_cc0"
-    },
-    "boss_beholder_dead": {
-      "path": "normalized/bosses/boss_beholder_dead.png",
       "category": "boss",
       "frames": 6,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 6.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e43b44",
+        "accent": "#feae34"
+      },
+      "sourceId": "generated_night_art"
+    },
+    "boss_beholder_beam_windup": {
+      "path": "normalized/bosses/boss_beholder_beam_windup.png",
+      "category": "boss",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 8.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e43b44",
+        "accent": "#feae34"
+      },
+      "sourceId": "generated_night_art"
+    },
+    "boss_beholder_dead": {
+      "path": "normalized/bosses/boss_beholder_dead.png",
+      "category": "boss",
+      "frames": 8,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 8.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_beholder_enrage_roar": {
       "path": "normalized/bosses/boss_beholder_enrage_roar.png",
@@ -515,31 +515,31 @@
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
-      "loop": false,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#e43b44",
-        "accent": "#feae34"
-      },
-      "sourceId": "crawl_tiles_cc0"
-    },
-    "boss_beholder_idle": {
-      "path": "normalized/bosses/boss_beholder_idle.png",
-      "category": "boss",
-      "frames": 4,
-      "cellW": 96,
-      "cellH": 96,
-      "offX": -48,
-      "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
+    },
+    "boss_beholder_idle": {
+      "path": "normalized/bosses/boss_beholder_idle.png",
+      "category": "boss",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 6.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e43b44",
+        "accent": "#feae34"
+      },
+      "sourceId": "generated_night_art"
     },
     "boss_beholder_move": {
       "path": "normalized/bosses/boss_beholder_move.png",
@@ -549,14 +549,14 @@
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_beholder_slam_leap": {
       "path": "normalized/bosses/boss_beholder_slam_leap.png",
@@ -566,609 +566,609 @@
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
-      "loop": false,
+      "fps": 9.0,
+      "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_beholder_stagger": {
       "path": "normalized/bosses/boss_beholder_stagger.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 4,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 5,
-      "loop": false,
+      "fps": 6.0,
+      "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_beholder_volley_cast": {
       "path": "normalized/bosses/boss_beholder_volley_cast.png",
       "category": "boss",
-      "frames": 5,
+      "frames": 6,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
-      "loop": false,
+      "fps": 10.0,
+      "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_colossus": {
       "path": "normalized/bosses/boss_colossus_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_colossus_attack": {
       "path": "normalized/bosses/boss_colossus_attack.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 12,
-      "loop": false,
+      "fps": 12.0,
+      "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_colossus_dead": {
       "path": "normalized/bosses/boss_colossus_dead.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
+      "fps": 10.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_colossus_idle": {
       "path": "normalized/bosses/boss_colossus_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_colossus_overheat_stun": {
       "path": "normalized/bosses/boss_colossus_overheat_stun.png",
       "category": "boss",
-      "frames": 2,
+      "frames": 6,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_colossus_run": {
       "path": "normalized/bosses/boss_colossus_run.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_destroyer": {
       "path": "normalized/bosses/boss_destroyer_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_destroyer_attack": {
       "path": "normalized/bosses/boss_destroyer_attack.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 12,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 14,
-      "loop": false,
+      "fps": 14.0,
+      "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_destroyer_dead": {
       "path": "normalized/bosses/boss_destroyer_dead.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_destroyer_idle": {
       "path": "normalized/bosses/boss_destroyer_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_destroyer_run": {
       "path": "normalized/bosses/boss_destroyer_run.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 12,
+      "fps": 10.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_dread_colossus_attack": {
       "path": "normalized/bosses/boss_colossus_attack.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 12,
-      "loop": false,
+      "fps": 12.0,
+      "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_dread_colossus_charge": {
       "path": "normalized/bosses/boss_colossus_run.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_dread_colossus_dead": {
       "path": "normalized/bosses/boss_colossus_dead.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
+      "fps": 10.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_dread_colossus_idle": {
       "path": "normalized/bosses/boss_colossus_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_dread_colossus_overheat_stun": {
       "path": "normalized/bosses/boss_colossus_overheat_stun.png",
       "category": "boss",
-      "frames": 2,
+      "frames": 6,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_dread_colossus_run": {
       "path": "normalized/bosses/boss_colossus_run.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_frost_empress": {
       "path": "normalized/bosses/boss_frost_empress_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_frost_empress_attack": {
       "path": "normalized/bosses/boss_frost_empress_attack.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 12,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 14,
-      "loop": false,
+      "fps": 14.0,
+      "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_frost_empress_dead": {
       "path": "normalized/bosses/boss_frost_empress_dead.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_frost_empress_idle": {
       "path": "normalized/bosses/boss_frost_empress_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_frost_empress_run": {
       "path": "normalized/bosses/boss_frost_empress_run.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 12,
+      "fps": 10.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_overlord": {
       "path": "normalized/bosses/boss_overlord_idle.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_overlord_charge": {
       "path": "normalized/bosses/boss_overlord_charge.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_overlord_core_dead": {
       "path": "normalized/bosses/boss_overlord_dead.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_overlord_core_idle": {
       "path": "normalized/bosses/boss_overlord_idle.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_overlord_core_laser": {
-      "path": "normalized/bosses/boss_overlord_charge.png",
+      "path": "normalized/bosses/boss_overlord_laser.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 12,
+      "fps": 14.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_overlord_core_stun": {
       "path": "normalized/bosses/boss_overlord_stun.png",
       "category": "boss",
-      "frames": 2,
+      "frames": 6,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_overlord_dead": {
       "path": "normalized/bosses/boss_overlord_dead.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_overlord_idle": {
       "path": "normalized/bosses/boss_overlord_idle.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_overlord_stun": {
       "path": "normalized/bosses/boss_overlord_stun.png",
-      "category": "boss",
-      "frames": 2,
-      "cellW": 96,
-      "cellH": 96,
-      "offX": -48,
-      "offY": -94,
-      "fps": 10,
-      "loop": true,
-      "fallback": {
-        "shape": "rect",
-        "color": "#2ce8f5",
-        "accent": "#124e89"
-      },
-      "sourceId": "crawl_tiles_cc0"
-    },
-    "boss_sand_beholder_beam_windup": {
-      "path": "normalized/bosses/boss_beholder_beam_windup.png",
-      "category": "boss",
-      "frames": 4,
-      "cellW": 96,
-      "cellH": 96,
-      "offX": -48,
-      "offY": -94,
-      "fps": 6,
-      "loop": false,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#e43b44",
-        "accent": "#feae34"
-      },
-      "sourceId": "crawl_tiles_cc0"
-    },
-    "boss_sand_beholder_dead": {
-      "path": "normalized/bosses/boss_beholder_dead.png",
       "category": "boss",
       "frames": 6,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 10.0,
+      "loop": true,
+      "fallback": {
+        "shape": "rect",
+        "color": "#2ce8f5",
+        "accent": "#124e89"
+      },
+      "sourceId": "generated_night_art"
+    },
+    "boss_sand_beholder_beam_windup": {
+      "path": "normalized/bosses/boss_beholder_beam_windup.png",
+      "category": "boss",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 8.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e43b44",
+        "accent": "#feae34"
+      },
+      "sourceId": "generated_night_art"
+    },
+    "boss_sand_beholder_dead": {
+      "path": "normalized/bosses/boss_beholder_dead.png",
+      "category": "boss",
+      "frames": 8,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 8.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_sand_beholder_enrage_roar": {
       "path": "normalized/bosses/boss_beholder_enrage_roar.png",
@@ -1178,31 +1178,31 @@
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
-      "loop": false,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#e43b44",
-        "accent": "#feae34"
-      },
-      "sourceId": "crawl_tiles_cc0"
-    },
-    "boss_sand_beholder_idle": {
-      "path": "normalized/bosses/boss_beholder_idle.png",
-      "category": "boss",
-      "frames": 4,
-      "cellW": 96,
-      "cellH": 96,
-      "offX": -48,
-      "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
+    },
+    "boss_sand_beholder_idle": {
+      "path": "normalized/bosses/boss_beholder_idle.png",
+      "category": "boss",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 6.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e43b44",
+        "accent": "#feae34"
+      },
+      "sourceId": "generated_night_art"
     },
     "boss_sand_beholder_move": {
       "path": "normalized/bosses/boss_beholder_move.png",
@@ -1212,14 +1212,14 @@
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_sand_beholder_slam_leap": {
       "path": "normalized/bosses/boss_beholder_slam_leap.png",
@@ -1229,218 +1229,218 @@
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
-      "loop": false,
+      "fps": 9.0,
+      "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_sand_beholder_stagger": {
       "path": "normalized/bosses/boss_beholder_stagger.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 4,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 5,
-      "loop": false,
+      "fps": 6.0,
+      "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_sand_beholder_volley_cast": {
       "path": "normalized/bosses/boss_beholder_volley_cast.png",
       "category": "boss",
-      "frames": 5,
+      "frames": 6,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
-      "loop": false,
+      "fps": 10.0,
+      "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_storm_herald": {
       "path": "normalized/bosses/boss_storm_herald_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_storm_herald_attack": {
       "path": "normalized/bosses/boss_storm_herald_attack.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 12,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 14,
-      "loop": false,
+      "fps": 14.0,
+      "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_storm_herald_dead": {
       "path": "normalized/bosses/boss_storm_herald_dead.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_storm_herald_idle": {
       "path": "normalized/bosses/boss_storm_herald_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_storm_herald_run": {
       "path": "normalized/bosses/boss_storm_herald_run.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 12,
+      "fps": 10.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_tempest": {
       "path": "normalized/bosses/boss_tempest_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_tempest_attack": {
       "path": "normalized/bosses/boss_tempest_attack.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 12,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 14,
-      "loop": false,
+      "fps": 14.0,
+      "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_tempest_dead": {
       "path": "normalized/bosses/boss_tempest_dead.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_tempest_idle": {
       "path": "normalized/bosses/boss_tempest_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 6,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "boss_tempest_run": {
       "path": "normalized/bosses/boss_tempest_run.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 12,
+      "fps": 10.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "bullet_enemy_orb": {
       "path": "normalized/projectiles/bullet_enemy_orb.png",
@@ -1530,155 +1530,155 @@
     "cactus_brute_attack": {
       "path": "normalized/enemies/cactus_brute_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 12,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "cactus_brute_dead": {
       "path": "normalized/enemies/cactus_brute_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 8,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "cactus_brute_idle": {
       "path": "normalized/enemies/cactus_brute_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 4,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "cactus_brute_run": {
       "path": "normalized/enemies/cactus_brute_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 8,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "cactus_brute_slam": {
       "path": "normalized/enemies/cactus_brute_slam.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 12,
+      "fps": 14.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "cactus_spitter_attack": {
       "path": "normalized/enemies/cactus_spitter_attack.png",
       "category": "enemy",
-      "frames": 5,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 15,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "cactus_spitter_dead": {
       "path": "normalized/enemies/cactus_spitter_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "cactus_spitter_idle": {
       "path": "normalized/enemies/cactus_spitter_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 5,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#3e8948",
-        "accent": "#a7f070"
-      },
-      "sourceId": "generated_synth"
-    },
-    "cactus_spitter_run": {
-      "path": "normalized/enemies/cactus_spitter_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "cactus_spitter_run": {
+      "path": "normalized/enemies/cactus_spitter_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3e8948",
+        "accent": "#a7f070"
+      },
+      "sourceId": "generated_night_art"
     },
     "casing_brass": {
       "path": "normalized/vfx/casing_brass.png",
@@ -1717,70 +1717,70 @@
     "chrono_mage_attack": {
       "path": "normalized/enemies/chrono_mage_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "chrono_mage_dead": {
       "path": "normalized/enemies/chrono_mage_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "chrono_mage_idle": {
       "path": "normalized/enemies/chrono_mage_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "chrono_mage_run": {
-      "path": "normalized/enemies/chrono_mage_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "chrono_mage_run": {
+      "path": "normalized/enemies/chrono_mage_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "chronos_rifle": {
       "path": "normalized/weapons/gun_chronos_rifle.png",
@@ -1894,70 +1894,70 @@
     "crimson_lancer_attack": {
       "path": "normalized/enemies/crimson_lancer_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "crimson_lancer_dead": {
       "path": "normalized/enemies/crimson_lancer_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "crimson_lancer_idle": {
       "path": "normalized/enemies/crimson_lancer_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#e43b44",
-        "accent": "#feae34"
-      },
-      "sourceId": "generated_synth"
-    },
-    "crimson_lancer_run": {
-      "path": "normalized/enemies/crimson_lancer_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "crimson_lancer_run": {
+      "path": "normalized/enemies/crimson_lancer_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e43b44",
+        "accent": "#feae34"
+      },
+      "sourceId": "generated_night_art"
     },
     "cryo_shard": {
       "path": "normalized/projectiles/cryo_shard.png",
@@ -2342,36 +2342,36 @@
     "emp_pylon": {
       "path": "normalized/bosses/emp_pylon_idle.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 8,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "emp_pylon_idle": {
       "path": "normalized/bosses/emp_pylon_idle.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 8,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "fireball": {
       "path": "normalized/projectiles/proj_fireball.png",
@@ -2410,70 +2410,70 @@
     "frost_mage_attack": {
       "path": "normalized/enemies/frost_mage_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "frost_mage_dead": {
       "path": "normalized/enemies/frost_mage_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "frost_mage_idle": {
       "path": "normalized/enemies/frost_mage_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "frost_mage_run": {
-      "path": "normalized/enemies/frost_mage_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "frost_mage_run": {
+      "path": "normalized/enemies/frost_mage_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "fx_blast_he": {
       "path": "normalized/vfx/fx_explosion_he.png",
@@ -3750,87 +3750,87 @@
     "healing_priest_attack": {
       "path": "normalized/enemies/healing_priest_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "healing_priest_dead": {
       "path": "normalized/enemies/healing_priest_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "healing_priest_idle": {
       "path": "normalized/enemies/healing_priest_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#3e8948",
-        "accent": "#a7f070"
-      },
-      "sourceId": "generated_synth"
-    },
-    "healing_priest_run": {
-      "path": "normalized/enemies/healing_priest_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "healing_priest_run": {
+      "path": "normalized/enemies/healing_priest_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3e8948",
+        "accent": "#a7f070"
+      },
+      "sourceId": "generated_night_art"
     },
     "hero_cyber_ranger_dash": {
       "path": "normalized/heroes/hero_ranger_dash.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14.3,
+      "fps": 25.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#1e293b",
         "accent": "#22d3ee"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -3839,19 +3839,19 @@
     "hero_cyber_ranger_dead": {
       "path": "normalized/heroes/hero_ranger_dead.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#1e293b",
         "accent": "#22d3ee"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -3860,19 +3860,19 @@
     "hero_cyber_ranger_idle": {
       "path": "normalized/heroes/hero_ranger_idle.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 6,
+      "fps": 7.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#1e293b",
         "accent": "#22d3ee"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -3881,19 +3881,19 @@
     "hero_cyber_ranger_run": {
       "path": "normalized/heroes/hero_ranger_run.png",
       "category": "hero",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14,
+      "fps": 14.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#1e293b",
         "accent": "#22d3ee"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -3902,19 +3902,19 @@
     "hero_cyber_ranger_shoot": {
       "path": "normalized/heroes/hero_ranger_shoot.png",
       "category": "hero",
-      "frames": 3,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 24,
+      "fps": 24.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#1e293b",
         "accent": "#22d3ee"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -3923,19 +3923,19 @@
     "hero_cyber_ranger_stunned": {
       "path": "normalized/heroes/hero_ranger_stunned.png",
       "category": "hero",
-      "frames": 2,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#1e293b",
         "accent": "#22d3ee"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -3944,19 +3944,19 @@
     "hero_gunner_dash": {
       "path": "normalized/heroes/hero_mascot_dash.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14.3,
+      "fps": 25.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -3965,19 +3965,19 @@
     "hero_gunner_dead": {
       "path": "normalized/heroes/hero_mascot_dead.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -3986,19 +3986,19 @@
     "hero_gunner_idle": {
       "path": "normalized/heroes/hero_mascot_idle.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 6,
+      "fps": 7.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4007,19 +4007,19 @@
     "hero_gunner_run": {
       "path": "normalized/heroes/hero_mascot_run.png",
       "category": "hero",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14,
+      "fps": 14.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4028,19 +4028,19 @@
     "hero_gunner_shoot": {
       "path": "normalized/heroes/hero_mascot_shoot.png",
       "category": "hero",
-      "frames": 3,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 24,
+      "fps": 24.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4049,19 +4049,19 @@
     "hero_gunner_stunned": {
       "path": "normalized/heroes/hero_mascot_stunned.png",
       "category": "hero",
-      "frames": 2,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4070,19 +4070,19 @@
     "hero_knight_dash": {
       "path": "normalized/heroes/hero_knight_dash.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14.3,
+      "fps": 25.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3b5bdb",
         "accent": "#fcc419"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4091,19 +4091,19 @@
     "hero_knight_dead": {
       "path": "normalized/heroes/hero_knight_dead.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3b5bdb",
         "accent": "#fcc419"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4112,19 +4112,19 @@
     "hero_knight_idle": {
       "path": "normalized/heroes/hero_knight_idle.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 6,
+      "fps": 7.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3b5bdb",
         "accent": "#fcc419"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4133,19 +4133,19 @@
     "hero_knight_run": {
       "path": "normalized/heroes/hero_knight_run.png",
       "category": "hero",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14,
+      "fps": 14.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3b5bdb",
         "accent": "#fcc419"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4154,19 +4154,19 @@
     "hero_knight_shoot": {
       "path": "normalized/heroes/hero_knight_shoot.png",
       "category": "hero",
-      "frames": 3,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 24,
+      "fps": 24.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3b5bdb",
         "accent": "#fcc419"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4175,19 +4175,19 @@
     "hero_knight_stunned": {
       "path": "normalized/heroes/hero_knight_stunned.png",
       "category": "hero",
-      "frames": 2,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3b5bdb",
         "accent": "#fcc419"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4196,19 +4196,19 @@
     "hero_laser_dash": {
       "path": "normalized/heroes/hero_laser_dash.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14.3,
+      "fps": 25.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e6eef8",
         "accent": "#ff9ee2"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4217,19 +4217,19 @@
     "hero_laser_dead": {
       "path": "normalized/heroes/hero_laser_dead.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e6eef8",
         "accent": "#ff9ee2"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4238,19 +4238,19 @@
     "hero_laser_idle": {
       "path": "normalized/heroes/hero_laser_idle.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 6,
+      "fps": 7.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e6eef8",
         "accent": "#ff9ee2"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4259,19 +4259,19 @@
     "hero_laser_run": {
       "path": "normalized/heroes/hero_laser_run.png",
       "category": "hero",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14,
+      "fps": 14.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e6eef8",
         "accent": "#ff9ee2"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4280,19 +4280,19 @@
     "hero_laser_shoot": {
       "path": "normalized/heroes/hero_laser_shoot.png",
       "category": "hero",
-      "frames": 3,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 24,
+      "fps": 24.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e6eef8",
         "accent": "#ff9ee2"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4301,19 +4301,19 @@
     "hero_laser_stunned": {
       "path": "normalized/heroes/hero_laser_stunned.png",
       "category": "hero",
-      "frames": 2,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e6eef8",
         "accent": "#ff9ee2"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4322,19 +4322,19 @@
     "hero_laser_vanguard_dash": {
       "path": "normalized/heroes/hero_laser_dash.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14.3,
+      "fps": 25.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e6eef8",
         "accent": "#ff9ee2"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4343,19 +4343,19 @@
     "hero_laser_vanguard_dead": {
       "path": "normalized/heroes/hero_laser_dead.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e6eef8",
         "accent": "#ff9ee2"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4364,19 +4364,19 @@
     "hero_laser_vanguard_idle": {
       "path": "normalized/heroes/hero_laser_idle.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 6,
+      "fps": 7.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e6eef8",
         "accent": "#ff9ee2"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4385,19 +4385,19 @@
     "hero_laser_vanguard_run": {
       "path": "normalized/heroes/hero_laser_run.png",
       "category": "hero",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14,
+      "fps": 14.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e6eef8",
         "accent": "#ff9ee2"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4406,19 +4406,19 @@
     "hero_laser_vanguard_shoot": {
       "path": "normalized/heroes/hero_laser_shoot.png",
       "category": "hero",
-      "frames": 3,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 24,
+      "fps": 24.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e6eef8",
         "accent": "#ff9ee2"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4427,19 +4427,19 @@
     "hero_laser_vanguard_stunned": {
       "path": "normalized/heroes/hero_laser_stunned.png",
       "category": "hero",
-      "frames": 2,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e6eef8",
         "accent": "#ff9ee2"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4448,19 +4448,19 @@
     "hero_mascot_dash": {
       "path": "normalized/heroes/hero_mascot_dash.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14.3,
+      "fps": 25.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4469,19 +4469,19 @@
     "hero_mascot_dead": {
       "path": "normalized/heroes/hero_mascot_dead.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4490,19 +4490,19 @@
     "hero_mascot_gunner_dash": {
       "path": "normalized/heroes/hero_mascot_dash.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14.3,
+      "fps": 25.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4511,19 +4511,19 @@
     "hero_mascot_gunner_dead": {
       "path": "normalized/heroes/hero_mascot_dead.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4532,19 +4532,19 @@
     "hero_mascot_gunner_idle": {
       "path": "normalized/heroes/hero_mascot_idle.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 6,
+      "fps": 7.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4553,19 +4553,19 @@
     "hero_mascot_gunner_run": {
       "path": "normalized/heroes/hero_mascot_run.png",
       "category": "hero",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14,
+      "fps": 14.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4574,19 +4574,19 @@
     "hero_mascot_gunner_shoot": {
       "path": "normalized/heroes/hero_mascot_shoot.png",
       "category": "hero",
-      "frames": 3,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 24,
+      "fps": 24.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4595,19 +4595,19 @@
     "hero_mascot_gunner_stunned": {
       "path": "normalized/heroes/hero_mascot_stunned.png",
       "category": "hero",
-      "frames": 2,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4616,19 +4616,19 @@
     "hero_mascot_idle": {
       "path": "normalized/heroes/hero_mascot_idle.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 6,
+      "fps": 7.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4637,19 +4637,19 @@
     "hero_mascot_run": {
       "path": "normalized/heroes/hero_mascot_run.png",
       "category": "hero",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14,
+      "fps": 14.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4658,19 +4658,19 @@
     "hero_mascot_shoot": {
       "path": "normalized/heroes/hero_mascot_shoot.png",
       "category": "hero",
-      "frames": 3,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 24,
+      "fps": 24.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4679,19 +4679,19 @@
     "hero_mascot_stunned": {
       "path": "normalized/heroes/hero_mascot_stunned.png",
       "category": "hero",
-      "frames": 2,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#f8f9fa",
         "accent": "#4dabf7"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4700,19 +4700,19 @@
     "hero_pyro_dash": {
       "path": "normalized/heroes/hero_pyro_dash.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14.3,
+      "fps": 25.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c92a2a",
         "accent": "#ff922b"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4721,19 +4721,19 @@
     "hero_pyro_dead": {
       "path": "normalized/heroes/hero_pyro_dead.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c92a2a",
         "accent": "#ff922b"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4742,19 +4742,19 @@
     "hero_pyro_idle": {
       "path": "normalized/heroes/hero_pyro_idle.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 6,
+      "fps": 7.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c92a2a",
         "accent": "#ff922b"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4763,19 +4763,19 @@
     "hero_pyro_run": {
       "path": "normalized/heroes/hero_pyro_run.png",
       "category": "hero",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14,
+      "fps": 14.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c92a2a",
         "accent": "#ff922b"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4784,19 +4784,19 @@
     "hero_pyro_shoot": {
       "path": "normalized/heroes/hero_pyro_shoot.png",
       "category": "hero",
-      "frames": 3,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 24,
+      "fps": 24.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c92a2a",
         "accent": "#ff922b"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4805,19 +4805,19 @@
     "hero_pyro_stunned": {
       "path": "normalized/heroes/hero_pyro_stunned.png",
       "category": "hero",
-      "frames": 2,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c92a2a",
         "accent": "#ff922b"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4826,19 +4826,19 @@
     "hero_pyromancer_dash": {
       "path": "normalized/heroes/hero_pyro_dash.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14.3,
+      "fps": 25.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c92a2a",
         "accent": "#ff922b"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4847,19 +4847,19 @@
     "hero_pyromancer_dead": {
       "path": "normalized/heroes/hero_pyro_dead.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c92a2a",
         "accent": "#ff922b"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4868,19 +4868,19 @@
     "hero_pyromancer_idle": {
       "path": "normalized/heroes/hero_pyro_idle.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 6,
+      "fps": 7.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c92a2a",
         "accent": "#ff922b"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4889,19 +4889,19 @@
     "hero_pyromancer_run": {
       "path": "normalized/heroes/hero_pyro_run.png",
       "category": "hero",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14,
+      "fps": 14.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c92a2a",
         "accent": "#ff922b"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4910,19 +4910,19 @@
     "hero_pyromancer_shoot": {
       "path": "normalized/heroes/hero_pyro_shoot.png",
       "category": "hero",
-      "frames": 3,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 24,
+      "fps": 24.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c92a2a",
         "accent": "#ff922b"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4931,19 +4931,19 @@
     "hero_pyromancer_stunned": {
       "path": "normalized/heroes/hero_pyro_stunned.png",
       "category": "hero",
-      "frames": 2,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c92a2a",
         "accent": "#ff922b"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4952,19 +4952,19 @@
     "hero_ranger_dash": {
       "path": "normalized/heroes/hero_ranger_dash.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14.3,
+      "fps": 25.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#1e293b",
         "accent": "#22d3ee"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4973,19 +4973,19 @@
     "hero_ranger_dead": {
       "path": "normalized/heroes/hero_ranger_dead.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#1e293b",
         "accent": "#22d3ee"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -4994,19 +4994,19 @@
     "hero_ranger_idle": {
       "path": "normalized/heroes/hero_ranger_idle.png",
       "category": "hero",
-      "frames": 4,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 6,
+      "fps": 7.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#1e293b",
         "accent": "#22d3ee"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -5015,19 +5015,19 @@
     "hero_ranger_run": {
       "path": "normalized/heroes/hero_ranger_run.png",
       "category": "hero",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 14,
+      "fps": 14.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#1e293b",
         "accent": "#22d3ee"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -5036,19 +5036,19 @@
     "hero_ranger_shoot": {
       "path": "normalized/heroes/hero_ranger_shoot.png",
       "category": "hero",
-      "frames": 3,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 24,
+      "fps": 24.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#1e293b",
         "accent": "#22d3ee"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -5057,19 +5057,19 @@
     "hero_ranger_stunned": {
       "path": "normalized/heroes/hero_ranger_stunned.png",
       "category": "hero",
-      "frames": 2,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -44,
-      "fps": 10,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#1e293b",
         "accent": "#22d3ee"
       },
-      "sourceId": "generated_synth",
+      "sourceId": "generated_night_art",
       "pivot": {
         "anchorX": 24,
         "anchorY": 44
@@ -5135,138 +5135,138 @@
     "iron_drone_attack": {
       "path": "normalized/enemies/iron_drone_attack.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "iron_drone_dead": {
       "path": "normalized/enemies/iron_drone_dead.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "iron_drone_idle": {
       "path": "normalized/enemies/iron_drone_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 8,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "iron_drone_run": {
       "path": "normalized/enemies/iron_drone_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "laser_sniper_attack": {
       "path": "normalized/enemies/laser_sniper_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "laser_sniper_dead": {
       "path": "normalized/enemies/laser_sniper_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "laser_sniper_idle": {
       "path": "normalized/enemies/laser_sniper_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 5,
-      "loop": true,
-      "fallback": {
-        "shape": "rect",
-        "color": "#2ce8f5",
-        "accent": "#124e89"
-      },
-      "sourceId": "generated_synth"
-    },
-    "laser_sniper_run": {
-      "path": "normalized/enemies/laser_sniper_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "laser_sniper_run": {
+      "path": "normalized/enemies/laser_sniper_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "rect",
+        "color": "#2ce8f5",
+        "accent": "#124e89"
+      },
+      "sourceId": "generated_night_art"
     },
     "lightning_staff": {
       "path": "normalized/weapons/lightning_staff.png",
@@ -5294,70 +5294,70 @@
     "magma_brute_attack": {
       "path": "normalized/enemies/magma_brute_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "magma_brute_dead": {
       "path": "normalized/enemies/magma_brute_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "magma_brute_idle": {
       "path": "normalized/enemies/magma_brute_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "magma_brute_run": {
-      "path": "normalized/enemies/magma_brute_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "magma_brute_run": {
+      "path": "normalized/enemies/magma_brute_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "magma_spitter": {
       "path": "normalized/weapons/gun_magma_spitter.png",
@@ -5385,70 +5385,70 @@
     "magnet_drone_attack": {
       "path": "normalized/enemies/magnet_drone_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "magnet_drone_dead": {
       "path": "normalized/enemies/magnet_drone_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "magnet_drone_idle": {
       "path": "normalized/enemies/magnet_drone_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "magnet_drone_run": {
-      "path": "normalized/enemies/magnet_drone_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "magnet_drone_run": {
+      "path": "normalized/enemies/magnet_drone_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "mine_gun": {
       "path": "normalized/weapons/w_mine_gun.png",
@@ -5952,937 +5952,937 @@
     "mirror_knight_attack": {
       "path": "normalized/enemies/mirror_knight_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mirror_knight_dead": {
       "path": "normalized/enemies/mirror_knight_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mirror_knight_idle": {
       "path": "normalized/enemies/mirror_knight_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 6,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mirror_knight_run": {
       "path": "normalized/enemies/mirror_knight_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_bomb_goblin_dead": {
       "path": "normalized/enemies/bomb_goblin_dead.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_bomb_goblin_fuse_run": {
       "path": "normalized/enemies/bomb_goblin_fuse_run.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 16,
+      "fps": 16.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_bomb_goblin_idle": {
       "path": "normalized/enemies/bomb_goblin_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 5,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_bomb_goblin_run": {
       "path": "normalized/enemies/bomb_goblin_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_bomb_goblin_spark": {
       "path": "normalized/enemies/bomb_goblin_spark.png",
       "category": "enemy",
-      "frames": 2,
+      "frames": 4,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 18,
+      "fps": 14.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_bomber_dead": {
       "path": "normalized/enemies/bomb_goblin_dead.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_bomber_idle": {
       "path": "normalized/enemies/bomb_goblin_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 5,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_bomber_run": {
       "path": "normalized/enemies/bomb_goblin_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_brute_attack": {
       "path": "normalized/enemies/cactus_brute_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 12,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_brute_dead": {
       "path": "normalized/enemies/cactus_brute_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 8,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_brute_idle": {
       "path": "normalized/enemies/cactus_brute_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 4,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_brute_run": {
       "path": "normalized/enemies/cactus_brute_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 8,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_cactus_brute_attack": {
       "path": "normalized/enemies/cactus_brute_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 12,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_cactus_brute_dead": {
       "path": "normalized/enemies/cactus_brute_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 8,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_cactus_brute_idle": {
       "path": "normalized/enemies/cactus_brute_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 4,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_cactus_brute_run": {
       "path": "normalized/enemies/cactus_brute_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 8,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_cactus_brute_slam": {
       "path": "normalized/enemies/cactus_brute_slam.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -58,
-      "fps": 12,
+      "fps": 14.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_cactus_spitter_attack": {
       "path": "normalized/enemies/cactus_spitter_attack.png",
       "category": "enemy",
-      "frames": 5,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 15,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_cactus_spitter_dead": {
       "path": "normalized/enemies/cactus_spitter_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_cactus_spitter_idle": {
       "path": "normalized/enemies/cactus_spitter_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 5,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_cactus_spitter_run": {
       "path": "normalized/enemies/cactus_spitter_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_goblin_bomber_attack": {
       "path": "normalized/enemies/bomb_goblin_fuse_run.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 16,
+      "fps": 16.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_iron_drone_attack": {
       "path": "normalized/enemies/iron_drone_attack.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_iron_drone_dead": {
       "path": "normalized/enemies/iron_drone_dead.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_iron_drone_idle": {
       "path": "normalized/enemies/iron_drone_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 8,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_iron_drone_run": {
       "path": "normalized/enemies/iron_drone_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#5a6988",
         "accent": "#c0cbdc"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_laser_sniper_attack": {
       "path": "normalized/enemies/laser_sniper_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_laser_sniper_dead": {
       "path": "normalized/enemies/laser_sniper_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_laser_sniper_idle": {
       "path": "normalized/enemies/laser_sniper_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 5,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_laser_sniper_run": {
       "path": "normalized/enemies/laser_sniper_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_pyro_shaman_attack": {
       "path": "normalized/enemies/pyro_shaman_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_pyro_shaman_dead": {
       "path": "normalized/enemies/pyro_shaman_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_pyro_shaman_idle": {
       "path": "normalized/enemies/pyro_shaman_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 6,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_pyro_shaman_run": {
       "path": "normalized/enemies/pyro_shaman_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_scarab_attack": {
       "path": "normalized/enemies/scarab_attack.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 32,
       "cellH": 32,
       "offX": -16,
       "offY": -28,
-      "fps": 16,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "kenney_desert_shooter"
+      "sourceId": "generated_night_art"
     },
     "mob_scarab_dead": {
       "path": "normalized/enemies/scarab_dead.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 8,
       "cellW": 32,
       "cellH": 32,
       "offX": -16,
       "offY": -28,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "kenney_desert_shooter"
+      "sourceId": "generated_night_art"
     },
     "mob_scarab_idle": {
       "path": "normalized/enemies/scarab_idle.png",
       "category": "enemy",
-      "frames": 2,
+      "frames": 6,
       "cellW": 32,
       "cellH": 32,
       "offX": -16,
       "offY": -28,
-      "fps": 4,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "kenney_desert_shooter"
+      "sourceId": "generated_night_art"
     },
     "mob_scarab_run": {
       "path": "normalized/enemies/scarab_run.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 32,
       "cellH": 32,
       "offX": -16,
       "offY": -28,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "kenney_desert_shooter"
+      "sourceId": "generated_night_art"
     },
     "mob_skirmisher_attack": {
       "path": "normalized/enemies/skirmisher_attack.png",
       "category": "enemy",
-      "frames": 5,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 15,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "oga_skeletons_rework"
+      "sourceId": "generated_night_art"
     },
     "mob_skirmisher_dead": {
       "path": "normalized/enemies/skirmisher_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "oga_skeletons_rework"
+      "sourceId": "generated_night_art"
     },
     "mob_skirmisher_idle": {
       "path": "normalized/enemies/skirmisher_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 5,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "oga_skeletons_rework"
+      "sourceId": "generated_night_art"
     },
     "mob_skirmisher_lunge": {
       "path": "normalized/enemies/skirmisher_lunge.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 14.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "oga_skeletons_rework"
+      "sourceId": "generated_night_art"
     },
     "mob_skirmisher_run": {
       "path": "normalized/enemies/skirmisher_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "oga_skeletons_rework"
+      "sourceId": "generated_night_art"
     },
     "mob_thunder_mage_attack": {
       "path": "normalized/enemies/thunder_mage_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_thunder_mage_dead": {
       "path": "normalized/enemies/thunder_mage_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_thunder_mage_idle": {
       "path": "normalized/enemies/thunder_mage_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 6,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mob_thunder_mage_run": {
       "path": "normalized/enemies/thunder_mage_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mortar_beetle_attack": {
       "path": "normalized/enemies/mortar_beetle_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mortar_beetle_dead": {
       "path": "normalized/enemies/mortar_beetle_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "mortar_beetle_idle": {
       "path": "normalized/enemies/mortar_beetle_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "mortar_beetle_run": {
-      "path": "normalized/enemies/mortar_beetle_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "mortar_beetle_run": {
+      "path": "normalized/enemies/mortar_beetle_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "muzzle_flash": {
       "path": "normalized/vfx/muzzle_flash.png",
@@ -6961,104 +6961,104 @@
     "overlord_hull_charge": {
       "path": "normalized/bosses/boss_overlord_charge.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "overlord_hull_dead": {
       "path": "normalized/bosses/boss_overlord_dead.png",
       "category": "boss",
-      "frames": 6,
+      "frames": 10,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "overlord_hull_idle": {
       "path": "normalized/bosses/boss_overlord_idle.png",
       "category": "boss",
-      "frames": 4,
+      "frames": 8,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 8,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "overlord_hull_stun": {
       "path": "normalized/bosses/boss_overlord_stun.png",
       "category": "boss",
-      "frames": 2,
+      "frames": 6,
       "cellW": 96,
       "cellH": 96,
       "offX": -48,
       "offY": -94,
-      "fps": 10,
+      "fps": 10.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "overlord_weakpoint": {
       "path": "normalized/bosses/overlord_weakpoint_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 6,
       "cellW": 32,
       "cellH": 32,
       "offX": -16,
       "offY": -16,
-      "fps": 8,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "overlord_weakpoint_idle": {
       "path": "normalized/bosses/overlord_weakpoint_idle.png",
       "category": "boss",
-      "frames": 3,
+      "frames": 6,
       "cellW": 32,
       "cellH": 32,
       "offX": -16,
       "offY": -16,
-      "fps": 8,
+      "fps": 8.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "crawl_tiles_cc0"
+      "sourceId": "generated_night_art"
     },
     "p_frag_grenade": {
       "path": "normalized/projectiles/p_frag_grenade.png",
@@ -7771,70 +7771,70 @@
     "plague_bearer_attack": {
       "path": "normalized/enemies/plague_bearer_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "plague_bearer_dead": {
       "path": "normalized/enemies/plague_bearer_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "plague_bearer_idle": {
       "path": "normalized/enemies/plague_bearer_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "plague_bearer_run": {
-      "path": "normalized/enemies/plague_bearer_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "plague_bearer_run": {
+      "path": "normalized/enemies/plague_bearer_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "plasma_bolt": {
       "path": "normalized/projectiles/plasma_bolt.png",
@@ -7856,70 +7856,70 @@
     "plasma_golem_attack": {
       "path": "normalized/enemies/plasma_golem_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -62,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "plasma_golem_dead": {
       "path": "normalized/enemies/plasma_golem_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -62,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "plasma_golem_idle": {
       "path": "normalized/enemies/plasma_golem_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 64,
-      "cellH": 64,
-      "offX": -32,
-      "offY": -62,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "rect",
-        "color": "#2ce8f5",
-        "accent": "#124e89"
-      },
-      "sourceId": "generated_synth"
-    },
-    "plasma_golem_run": {
-      "path": "normalized/enemies/plasma_golem_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -62,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "plasma_golem_run": {
+      "path": "normalized/enemies/plasma_golem_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 64,
+      "cellH": 64,
+      "offX": -32,
+      "offY": -62,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "rect",
+        "color": "#2ce8f5",
+        "accent": "#124e89"
+      },
+      "sourceId": "generated_night_art"
     },
     "plasma_rifle": {
       "path": "normalized/weapons/plasma_rifle.png",
@@ -8530,70 +8530,70 @@
     "pyro_shaman_attack": {
       "path": "normalized/enemies/pyro_shaman_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "pyro_shaman_dead": {
       "path": "normalized/enemies/pyro_shaman_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "pyro_shaman_idle": {
       "path": "normalized/enemies/pyro_shaman_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#e43b44",
-        "accent": "#feae34"
-      },
-      "sourceId": "generated_synth"
-    },
-    "pyro_shaman_run": {
-      "path": "normalized/enemies/pyro_shaman_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#e43b44",
         "accent": "#feae34"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "pyro_shaman_run": {
+      "path": "normalized/enemies/pyro_shaman_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e43b44",
+        "accent": "#feae34"
+      },
+      "sourceId": "generated_night_art"
     },
     "rail_beam": {
       "path": "normalized/projectiles/rail_beam.png",
@@ -8747,70 +8747,70 @@
     "saw_berserker_attack": {
       "path": "normalized/enemies/saw_berserker_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "saw_berserker_dead": {
       "path": "normalized/enemies/saw_berserker_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "saw_berserker_idle": {
       "path": "normalized/enemies/saw_berserker_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "saw_berserker_run": {
-      "path": "normalized/enemies/saw_berserker_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "saw_berserker_run": {
+      "path": "normalized/enemies/saw_berserker_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "saw_disc": {
       "path": "normalized/projectiles/saw_disc.png",
@@ -8832,70 +8832,70 @@
     "scarab_attack": {
       "path": "normalized/enemies/scarab_attack.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 32,
       "cellH": 32,
       "offX": -16,
       "offY": -28,
-      "fps": 16,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "kenney_desert_shooter"
+      "sourceId": "generated_night_art"
     },
     "scarab_dead": {
       "path": "normalized/enemies/scarab_dead.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 8,
       "cellW": 32,
       "cellH": 32,
       "offX": -16,
       "offY": -28,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "kenney_desert_shooter"
+      "sourceId": "generated_night_art"
     },
     "scarab_idle": {
       "path": "normalized/enemies/scarab_idle.png",
       "category": "enemy",
-      "frames": 2,
+      "frames": 6,
       "cellW": 32,
       "cellH": 32,
       "offX": -16,
       "offY": -28,
-      "fps": 4,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "kenney_desert_shooter"
+      "sourceId": "generated_night_art"
     },
     "scarab_run": {
       "path": "normalized/enemies/scarab_run.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 32,
       "cellH": 32,
       "offX": -16,
       "offY": -28,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#3e8948",
         "accent": "#a7f070"
       },
-      "sourceId": "kenney_desert_shooter"
+      "sourceId": "generated_night_art"
     },
     "server": {
       "path": "normalized/props/prop_server.png",
@@ -8933,70 +8933,70 @@
     "shield_warden_attack": {
       "path": "normalized/enemies/shield_warden_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -62,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "shield_warden_dead": {
       "path": "normalized/enemies/shield_warden_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -62,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "shield_warden_idle": {
       "path": "normalized/enemies/shield_warden_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 64,
-      "cellH": 64,
-      "offX": -32,
-      "offY": -62,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "rect",
-        "color": "#2ce8f5",
-        "accent": "#124e89"
-      },
-      "sourceId": "generated_synth"
-    },
-    "shield_warden_run": {
-      "path": "normalized/enemies/shield_warden_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 64,
       "cellH": 64,
       "offX": -32,
       "offY": -62,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "shield_warden_run": {
+      "path": "normalized/enemies/shield_warden_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 64,
+      "cellH": 64,
+      "offX": -32,
+      "offY": -62,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "rect",
+        "color": "#2ce8f5",
+        "accent": "#124e89"
+      },
+      "sourceId": "generated_night_art"
     },
     "shock_baton": {
       "path": "normalized/weapons/wpn_shock_baton.png",
@@ -9024,70 +9024,70 @@
     "shock_drone_mk2_attack": {
       "path": "normalized/enemies/shock_drone_mk2_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "shock_drone_mk2_dead": {
       "path": "normalized/enemies/shock_drone_mk2_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "shock_drone_mk2_idle": {
       "path": "normalized/enemies/shock_drone_mk2_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "shock_drone_mk2_run": {
-      "path": "normalized/enemies/shock_drone_mk2_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "shock_drone_mk2_run": {
+      "path": "normalized/enemies/shock_drone_mk2_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "shotgun": {
       "path": "normalized/weapons/gun_shotgun.png",
@@ -9115,87 +9115,87 @@
     "skirmisher_attack": {
       "path": "normalized/enemies/skirmisher_attack.png",
       "category": "enemy",
-      "frames": 5,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 15,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "oga_skeletons_rework"
+      "sourceId": "generated_night_art"
     },
     "skirmisher_dead": {
       "path": "normalized/enemies/skirmisher_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "oga_skeletons_rework"
+      "sourceId": "generated_night_art"
     },
     "skirmisher_idle": {
       "path": "normalized/enemies/skirmisher_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 5,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "oga_skeletons_rework"
-    },
-    "skirmisher_lunge": {
-      "path": "normalized/enemies/skirmisher_lunge.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 14,
-      "loop": false,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "oga_skeletons_rework"
-    },
-    "skirmisher_run": {
-      "path": "normalized/enemies/skirmisher_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "oga_skeletons_rework"
+      "sourceId": "generated_night_art"
+    },
+    "skirmisher_lunge": {
+      "path": "normalized/enemies/skirmisher_lunge.png",
+      "category": "enemy",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 14.0,
+      "loop": false,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
+    },
+    "skirmisher_run": {
+      "path": "normalized/enemies/skirmisher_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "smg": {
       "path": "normalized/weapons/gun_smg.png",
@@ -9223,70 +9223,70 @@
     "sniper_mech_attack": {
       "path": "normalized/enemies/sniper_mech_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "sniper_mech_dead": {
       "path": "normalized/enemies/sniper_mech_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "sniper_mech_idle": {
       "path": "normalized/enemies/sniper_mech_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "sniper_mech_run": {
-      "path": "normalized/enemies/sniper_mech_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "sniper_mech_run": {
+      "path": "normalized/enemies/sniper_mech_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "sniper_slug": {
       "path": "normalized/projectiles/sniper_slug.png",
@@ -9308,70 +9308,70 @@
     "solar_priest_attack": {
       "path": "normalized/enemies/solar_priest_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "solar_priest_dead": {
       "path": "normalized/enemies/solar_priest_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "solar_priest_idle": {
       "path": "normalized/enemies/solar_priest_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "solar_priest_run": {
-      "path": "normalized/enemies/solar_priest_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "solar_priest_run": {
+      "path": "normalized/enemies/solar_priest_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "storm": {
       "path": "normalized/vfx/vfx_storm.png",
@@ -9462,70 +9462,70 @@
     "thunder_mage_attack": {
       "path": "normalized/enemies/thunder_mage_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "thunder_mage_dead": {
       "path": "normalized/enemies/thunder_mage_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "thunder_mage_idle": {
       "path": "normalized/enemies/thunder_mage_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "rect",
-        "color": "#2ce8f5",
-        "accent": "#124e89"
-      },
-      "sourceId": "generated_synth"
-    },
-    "thunder_mage_run": {
-      "path": "normalized/enemies/thunder_mage_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#124e89"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "thunder_mage_run": {
+      "path": "normalized/enemies/thunder_mage_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "rect",
+        "color": "#2ce8f5",
+        "accent": "#124e89"
+      },
+      "sourceId": "generated_night_art"
     },
     "thunderball": {
       "path": "normalized/projectiles/proj_thunderball.png",
@@ -9837,7 +9837,7 @@
         "color": "#feae34",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "ui_portrait_knight": {
       "path": "normalized/ui/ui_portrait_knight.png",
@@ -9847,14 +9847,14 @@
       "cellH": 32,
       "offX": -16,
       "offY": -16,
-      "fps": 0,
+      "fps": 0.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#8b9bb4",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "ui_portrait_laser": {
       "path": "normalized/ui/ui_portrait_laser.png",
@@ -9864,14 +9864,14 @@
       "cellH": 32,
       "offX": -16,
       "offY": -16,
-      "fps": 0,
+      "fps": 0.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#ff9ee2",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "ui_portrait_mascot": {
       "path": "normalized/ui/ui_portrait_mascot.png",
@@ -9881,14 +9881,14 @@
       "cellH": 32,
       "offX": -16,
       "offY": -16,
-      "fps": 0,
+      "fps": 0.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#feae34",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "ui_portrait_pyro": {
       "path": "normalized/ui/ui_portrait_pyro.png",
@@ -9898,14 +9898,14 @@
       "cellH": 32,
       "offX": -16,
       "offY": -16,
-      "fps": 0,
+      "fps": 0.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#e43b44",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "ui_portrait_ranger": {
       "path": "normalized/ui/ui_portrait_ranger.png",
@@ -9915,14 +9915,14 @@
       "cellH": 32,
       "offX": -16,
       "offY": -16,
-      "fps": 0,
+      "fps": 0.0,
       "loop": false,
       "fallback": {
         "shape": "rect",
         "color": "#2ce8f5",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "ui_shadow_unit": {
       "path": "normalized/ui/ui_shadow_unit.png",
@@ -9960,70 +9960,70 @@
     "venom_stalker_attack": {
       "path": "normalized/enemies/venom_stalker_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "venom_stalker_dead": {
       "path": "normalized/enemies/venom_stalker_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "venom_stalker_idle": {
       "path": "normalized/enemies/venom_stalker_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "venom_stalker_run": {
-      "path": "normalized/enemies/venom_stalker_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "venom_stalker_run": {
+      "path": "normalized/enemies/venom_stalker_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "vfx_dash_dust": {
       "path": "normalized/vfx/fx_dash_dust.png",
@@ -10164,70 +10164,70 @@
     "void_acolyte_attack": {
       "path": "normalized/enemies/void_acolyte_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "void_acolyte_dead": {
       "path": "normalized/enemies/void_acolyte_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "void_acolyte_idle": {
       "path": "normalized/enemies/void_acolyte_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "void_acolyte_run": {
-      "path": "normalized/enemies/void_acolyte_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "void_acolyte_run": {
+      "path": "normalized/enemies/void_acolyte_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "void_cannon": {
       "path": "normalized/weapons/gun_void_cannon.png",
@@ -10255,138 +10255,138 @@
     "void_reaper_attack": {
       "path": "normalized/enemies/void_reaper_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "void_reaper_dead": {
       "path": "normalized/enemies/void_reaper_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "void_reaper_idle": {
       "path": "normalized/enemies/void_reaper_idle.png",
       "category": "enemy",
-      "frames": 3,
+      "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 6,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "void_reaper_run": {
       "path": "normalized/enemies/void_reaper_run.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 12.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "volt_stalker_attack": {
       "path": "normalized/enemies/volt_stalker_attack.png",
       "category": "enemy",
-      "frames": 6,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 14,
+      "fps": 16.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "volt_stalker_dead": {
       "path": "normalized/enemies/volt_stalker_dead.png",
       "category": "enemy",
-      "frames": 4,
+      "frames": 8,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 10,
+      "fps": 12.0,
       "loop": false,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
     },
     "volt_stalker_idle": {
       "path": "normalized/enemies/volt_stalker_idle.png",
-      "category": "enemy",
-      "frames": 3,
-      "cellW": 48,
-      "cellH": 48,
-      "offX": -24,
-      "offY": -46,
-      "fps": 6,
-      "loop": true,
-      "fallback": {
-        "shape": "capsule",
-        "color": "#c0cbdc",
-        "accent": "#262b44"
-      },
-      "sourceId": "generated_synth"
-    },
-    "volt_stalker_run": {
-      "path": "normalized/enemies/volt_stalker_run.png",
       "category": "enemy",
       "frames": 6,
       "cellW": 48,
       "cellH": 48,
       "offX": -24,
       "offY": -46,
-      "fps": 12,
+      "fps": 6.0,
       "loop": true,
       "fallback": {
         "shape": "capsule",
         "color": "#c0cbdc",
         "accent": "#262b44"
       },
-      "sourceId": "generated_synth"
+      "sourceId": "generated_night_art"
+    },
+    "volt_stalker_run": {
+      "path": "normalized/enemies/volt_stalker_run.png",
+      "category": "enemy",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -46,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "sourceId": "generated_night_art"
     },
     "w_frag_launcher": {
       "path": "normalized/weapons/w_frag_launcher.png",
@@ -11277,6 +11277,931 @@
         "accent": "#2ce8f5"
       },
       "sourceId": "generated_synth"
+    },
+    "hero_ranger_idle_down": {
+      "path": "normalized/heroes/hero_ranger_idle_down.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_ranger_idle_left": {
+      "path": "normalized/heroes/hero_ranger_idle_left.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_ranger_idle_right": {
+      "path": "normalized/heroes/hero_ranger_idle_right.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_ranger_idle_up": {
+      "path": "normalized/heroes/hero_ranger_idle_up.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_ranger_walk_down": {
+      "path": "normalized/heroes/hero_ranger_walk_down.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_ranger_walk_left": {
+      "path": "normalized/heroes/hero_ranger_walk_left.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_ranger_walk_right": {
+      "path": "normalized/heroes/hero_ranger_walk_right.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_ranger_walk_up": {
+      "path": "normalized/heroes/hero_ranger_walk_up.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#1e293b",
+        "accent": "#22d3ee"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_knight_idle_down": {
+      "path": "normalized/heroes/hero_knight_idle_down.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_knight_idle_left": {
+      "path": "normalized/heroes/hero_knight_idle_left.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_knight_idle_right": {
+      "path": "normalized/heroes/hero_knight_idle_right.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_knight_idle_up": {
+      "path": "normalized/heroes/hero_knight_idle_up.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_knight_walk_down": {
+      "path": "normalized/heroes/hero_knight_walk_down.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_knight_walk_left": {
+      "path": "normalized/heroes/hero_knight_walk_left.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_knight_walk_right": {
+      "path": "normalized/heroes/hero_knight_walk_right.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_knight_walk_up": {
+      "path": "normalized/heroes/hero_knight_walk_up.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#3b5bdb",
+        "accent": "#fcc419"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_pyro_idle_down": {
+      "path": "normalized/heroes/hero_pyro_idle_down.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_pyro_idle_left": {
+      "path": "normalized/heroes/hero_pyro_idle_left.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_pyro_idle_right": {
+      "path": "normalized/heroes/hero_pyro_idle_right.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_pyro_idle_up": {
+      "path": "normalized/heroes/hero_pyro_idle_up.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_pyro_walk_down": {
+      "path": "normalized/heroes/hero_pyro_walk_down.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_pyro_walk_left": {
+      "path": "normalized/heroes/hero_pyro_walk_left.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_pyro_walk_right": {
+      "path": "normalized/heroes/hero_pyro_walk_right.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_pyro_walk_up": {
+      "path": "normalized/heroes/hero_pyro_walk_up.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c92a2a",
+        "accent": "#ff922b"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_idle_down": {
+      "path": "normalized/heroes/hero_laser_idle_down.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_idle_left": {
+      "path": "normalized/heroes/hero_laser_idle_left.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_idle_right": {
+      "path": "normalized/heroes/hero_laser_idle_right.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_idle_up": {
+      "path": "normalized/heroes/hero_laser_idle_up.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_walk_down": {
+      "path": "normalized/heroes/hero_laser_walk_down.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_walk_left": {
+      "path": "normalized/heroes/hero_laser_walk_left.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_walk_right": {
+      "path": "normalized/heroes/hero_laser_walk_right.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_laser_walk_up": {
+      "path": "normalized/heroes/hero_laser_walk_up.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#e6eef8",
+        "accent": "#ff9ee2"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_mascot_idle_down": {
+      "path": "normalized/heroes/hero_mascot_idle_down.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_mascot_idle_left": {
+      "path": "normalized/heroes/hero_mascot_idle_left.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_mascot_idle_right": {
+      "path": "normalized/heroes/hero_mascot_idle_right.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_mascot_idle_up": {
+      "path": "normalized/heroes/hero_mascot_idle_up.png",
+      "category": "hero",
+      "frames": 6,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 7.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_mascot_walk_down": {
+      "path": "normalized/heroes/hero_mascot_walk_down.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_mascot_walk_left": {
+      "path": "normalized/heroes/hero_mascot_walk_left.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_mascot_walk_right": {
+      "path": "normalized/heroes/hero_mascot_walk_right.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "hero_mascot_walk_up": {
+      "path": "normalized/heroes/hero_mascot_walk_up.png",
+      "category": "hero",
+      "frames": 8,
+      "cellW": 48,
+      "cellH": 48,
+      "offX": -24,
+      "offY": -44,
+      "fps": 12.0,
+      "loop": true,
+      "fallback": {
+        "shape": "capsule",
+        "color": "#f8f9fa",
+        "accent": "#4dabf7"
+      },
+      "sourceId": "generated_night_art",
+      "pivot": {
+        "anchorX": 24,
+        "anchorY": 44
+      }
+    },
+    "boss_tempest_stun": {
+      "fallback": {
+        "shape": "rect",
+        "color": "#2ce8f5",
+        "accent": "#124e89"
+      },
+      "path": "normalized/bosses/boss_tempest_stun.png",
+      "category": "boss",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 10.0,
+      "loop": true,
+      "sourceId": "generated_night_art"
+    },
+    "boss_destroyer_stun": {
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "path": "normalized/bosses/boss_destroyer_stun.png",
+      "category": "boss",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 10.0,
+      "loop": true,
+      "sourceId": "generated_night_art"
+    },
+    "boss_frost_empress_stun": {
+      "fallback": {
+        "shape": "rect",
+        "color": "#2ce8f5",
+        "accent": "#124e89"
+      },
+      "path": "normalized/bosses/boss_frost_empress_stun.png",
+      "category": "boss",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 10.0,
+      "loop": true,
+      "sourceId": "generated_night_art"
+    },
+    "boss_abyssal_leviathan_stun": {
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "path": "normalized/bosses/boss_abyssal_leviathan_stun.png",
+      "category": "boss",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 10.0,
+      "loop": true,
+      "sourceId": "generated_night_art"
+    },
+    "boss_storm_herald_stun": {
+      "fallback": {
+        "shape": "capsule",
+        "color": "#c0cbdc",
+        "accent": "#262b44"
+      },
+      "path": "normalized/bosses/boss_storm_herald_stun.png",
+      "category": "boss",
+      "frames": 6,
+      "cellW": 96,
+      "cellH": 96,
+      "offX": -48,
+      "offY": -94,
+      "fps": 10.0,
+      "loop": true,
+      "sourceId": "generated_night_art"
     }
   },
   "audio": {

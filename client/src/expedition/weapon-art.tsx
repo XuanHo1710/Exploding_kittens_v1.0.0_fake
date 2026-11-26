@@ -1,4 +1,4 @@
-import type { ItemInstance } from './shared';
+import { ITEM_RARITY_COLORS, type ItemInstance } from './shared';
 import { expeditionAssetUrl } from './store';
 
 const weaponFamilies: Readonly<Record<string, string>> = {
@@ -15,6 +15,10 @@ const ordinaryBlade: Record<ItemInstance['rarity'], string> = {
 
 export const signatureArtUrl = (heroId: string) => expeditionAssetUrl(`ui/weapons/${heroId}.png`);
 
+export function isMythicWeapon(item: Pick<ItemInstance, 'slot' | 'rarity'> | undefined): boolean {
+  return item?.slot === 'weapon' && item.rarity === 'mythic';
+}
+
 export function weaponArtUrl(item: ItemInstance): string | undefined {
   if (item.slot !== 'weapon') return undefined;
   const family = Object.entries(weaponFamilies).find(([name]) => item.nameVi.endsWith(name))?.[1];
@@ -24,5 +28,13 @@ export function weaponArtUrl(item: ItemInstance): string | undefined {
 
 export function WeaponIcon({ item }: { item: ItemInstance }) {
   const src = weaponArtUrl(item);
-  return src ? <img className="exp-weapon-icon" src={src} alt="" draggable={false} /> : null;
+  const className = isMythicWeapon(item) ? 'exp-weapon-icon exp-foil-mythic' : 'exp-weapon-icon';
+  return src ? <img className={className} src={src} alt="" draggable={false} /> : null;
+}
+
+export function EquipmentName({ item, className }: { item: ItemInstance; className?: string }) {
+  if (isMythicWeapon(item)) {
+    return <span className={['exp-foil-text', 'exp-foil-mythic', className].filter(Boolean).join(' ')}>{item.nameVi}</span>;
+  }
+  return <span className={className} style={{ color: ITEM_RARITY_COLORS[item.rarity] }}>{item.nameVi}</span>;
 }

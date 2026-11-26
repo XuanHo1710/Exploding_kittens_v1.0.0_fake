@@ -103,7 +103,7 @@ import { SummonCinematic } from '../expedition/summon-cinematic';
 import { ChapterTipModal } from '../expedition/chapter-tips';
 import { OwnerTag } from '../expedition/owner-tag';
 import { MaterialChip } from '../expedition/enhance-panel';
-import { signatureArtUrl, WeaponIcon } from '../expedition/weapon-art';
+import { EquipmentName, isMythicWeapon, signatureArtUrl, WeaponIcon } from '../expedition/weapon-art';
 import { HERO_CHOREO } from '../expedition/hero-choreo';
 import '../expedition/expedition.css';
 import '../expedition/ui.css';
@@ -824,7 +824,8 @@ export default function ExpeditionBoard({ socket, onLeave }: Props) {
   useEffect(() => {
     let raf = 0;
     let last = performance.now();
-    let hintKey = '';
+    // Lần chạy đầu phải đồng bộ HUD cả khi ô tương tác đã trống.
+    let hintKey: string | null | undefined;
     const loop = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
@@ -857,10 +858,11 @@ export default function ExpeditionBoard({ socket, onLeave }: Props) {
           mini.fillRect(Math.round((owRef.current.px+.5) / tmj.width * 156) - 2,
             Math.round((owRef.current.py+.5) / tmj.height * 84) - 2, 5, 5);
         }
-        const hk = owRef.current.promptHint ? owRef.current.promptHint.kind + owRef.current.promptHint.targetId : '';
-        if (hk !== hintKey) {
-          hintKey = hk;
-          setHint(owRef.current.promptHint ? { ...owRef.current.promptHint } : null);
+        const nextHint = owRef.current.promptHint;
+        const nextHintKey = nextHint ? `${nextHint.kind}:${nextHint.targetId}:${nextHint.labelVi}` : null;
+        if (nextHintKey !== hintKey) {
+          hintKey = nextHintKey;
+          setHint(nextHint);
         }
       }
       raf = requestAnimationFrame(loop);
@@ -1092,9 +1094,10 @@ function RealmProgress({ profile }: { profile: ExpeditionProfile }) {
 type RunFn = <T>(fn: () => Promise<T>, onOk?: (r: T) => void) => Promise<void>;
 
 function ItemCard({ item, level = 1 }: { item: ItemInstance; level?: number }) {
+  const mythicWeapon = isMythicWeapon(item);
   return (
-    <div className="exp-item" style={{ borderColor: ITEM_RARITY_COLORS[item.rarity] }}>
-      <b style={{ color: ITEM_RARITY_COLORS[item.rarity] }}><WeaponIcon item={item} />{item.nameVi}{item.enhance ? <span className="enh-lv"> +{item.enhance}</span> : null}</b>
+    <div className={mythicWeapon ? 'exp-item exp-foil-surface exp-foil-mythic' : 'exp-item'} style={{ borderColor: ITEM_RARITY_COLORS[item.rarity] }}>
+      <b><WeaponIcon item={item} /><EquipmentName item={item} />{item.enhance ? <span className="enh-lv"> +{item.enhance}</span> : null}</b>
       <small>
         {ITEM_RARITY_LABELS_VI[item.rarity]} · {item.signatureId ? `${EXPEDITION_HEROES_BY_ID[item.signatureId]?.nameVi} · T${item.refineRank ?? 1}/5` : item.kind === 'elixir' ? 'Thuốc chỉ số' : `${EQUIP_SLOT_LABELS_VI[item.slot!]} · i${item.ilvl}`}
       </small>
@@ -1236,9 +1239,9 @@ function SummonView(props: {
           <div className="exp-banner-pity"><span className="pity-sss" title={`Bảo hiểm Jung (SSS): mỗi ${SSS_PITY.every} lượt chạm mốc. Nấc 1: 1/3 · nấc 2: 1/2 · nấc 3: chắc chắn. Tỉ lệ gốc mỗi lượt ${pct(SSS_PITY.baseRate)}.`}>SSS <b>{profile.pity.sssPityCount ?? 0}/{SSS_PITY.every}</b> <small>mốc {['1/3', '1/2', '100%'][Math.min(2, profile.pity.sssStage ?? 0)]}</small></span><span title="Bảo hiểm SSR">SSR <b>{profile.pity.ssrPityCount}/{hg.hardPitySsr}</b></span><span title="Bảo hiểm SR trở lên">SR+ <b>{profile.pity.srPityCount}/{hg.guaranteedSrEvery}</b></span></div>
         </div>
         <div className="exp-banner-portraits">
-          {EXPEDITION_HEROES.filter((hero) => hero.rarity === 'SSS' || hero.rarity === 'SSR').map((hero) => <figure key={hero.heroId} className={`r-${hero.rarity}`}>
+          {EXPEDITION_HEROES.filter((hero) => hero.rarity === 'SSS' || hero.rarity === 'SSR').map((hero) => <figure key={hero.heroId} className={hero.rarity === 'SSS' ? 'r-SSS exp-foil-surface exp-foil-sss' : `r-${hero.rarity}`}>
             <img src={portraitUrl(hero.heroId)} alt="" />
-            <figcaption>{hero.nameVi}</figcaption>
+            <figcaption><span>{hero.nameVi}</span></figcaption>
           </figure>)}
         </div>
         <div className="exp-row">
@@ -1265,7 +1268,7 @@ function SummonView(props: {
             </h4>
             <div className="exp-weapon-pool">
               {SIGNATURE_WEAPONS.filter((w) => w.rarity === tier).map((w) => (
-                <article key={w.heroId} className={`exp-weapon-entry r-${w.rarity}`} style={{ borderColor: ITEM_RARITY_COLORS[w.rarity] }} title={`${w.nameVi} · ${ITEM_RARITY_LABELS_VI[w.rarity]}`}>
+                <article key={w.heroId} className={`exp-weapon-entry r-${w.rarity}${w.rarity === 'mythic' ? ' exp-foil-surface exp-foil-mythic' : ''}`} style={{ borderColor: ITEM_RARITY_COLORS[w.rarity] }} title={`${w.nameVi} · ${ITEM_RARITY_LABELS_VI[w.rarity]}`}>
                   <img src={signatureArtUrl(w.heroId)} alt={w.nameVi} loading="lazy" />
                   <b style={{ color: ITEM_RARITY_COLORS[w.rarity] }}>{w.nameVi}</b>
                   <small>{EXPEDITION_HEROES_BY_ID[w.heroId]?.nameVi}</small>
@@ -1447,7 +1450,7 @@ function SummonResultModal({ res, onClose }: { res: { heroes?: SummonResultItem[
         {res.heroes && (
           <div className="exp-summon-grid">
             {res.heroes.map((h, i) => (
-              <div key={i} className={`exp-summon-card r-${h.rarity}`}>
+              <div key={i} className={`exp-summon-card r-${h.rarity}${h.rarity === 'SSS' ? ' exp-foil-surface exp-foil-sss' : ''}`}>
                 <img src={portraitUrl(h.heroId)} alt="" />
                 <b>{h.nameVi}</b>
                 <small>

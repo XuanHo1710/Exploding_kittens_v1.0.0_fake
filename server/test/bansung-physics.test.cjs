@@ -219,8 +219,10 @@ test('T01.1: shared mode/config normalization, aim quantization & 3-biome arena 
     bots: Math.min(BANSUNG_MAX_BOTS, BANSUNG_MAX_PLAYERS - 2),
     botLevel: 'normal',
     reviveMode: 'coop',
+    nightMode: true,
   });
   assert.equal(normalizeBansungConfig({ bots: -5 }, 1).bots, 0);
+  assert.equal(normalizeBansungConfig({ nightMode: false }, 1).nightMode, false);
   assert.equal(normalizeBansungConfig({ biome: 'cyber', difficulty: 'hell', bots: 3, endless: 1 }, 4).bots, 3);
   assert.equal(normalizeBansungConfig({ gameMode: 'waves' }, 1).gameMode, 'waves');
 

@@ -1,0 +1,26 @@
+# Redis cho Bắn Súng Co-op "Đêm Zombie" (spec 007 / d06).
+# Chạy:  docker compose -f docker-compose.bansung.yml up -d
+# Rồi đặt trong server/.env:  BANSUNG_REDIS_URL=redis://127.0.0.1:6380
+# Không bật Redis thì game vẫn chạy bình thường (fallback bộ nhớ).
+services:
+  bansung-redis:
+    image: redis:7-alpine
+    container_name: bansung-night-redis
+    ports:
+      - "127.0.0.1:6380:6379"
+    command:
+      - "redis-server"
+      - "--appendonly"
+      - "yes"            # giữ bảng xếp hạng qua lần khởi động lại
+      - "--maxmemory"
+      - "256mb"
+      - "--maxmemory-policy"
+      - "volatile-lru"   # chỉ đẩy key có TTL (session/checkpoint), KHÔNG đẩy leaderboard
+      - "--save"
+      - "60 100"
+    volumes:
+      - bansung-redis-data:/data
+    restart: unless-stopped
+
+volumes:
+  bansung-redis-data:

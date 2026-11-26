@@ -70,6 +70,13 @@ import {
   type SpatialActor,
 } from './spatial';
 import type { DanmakuMotionSpec } from './danmaku';
+import {
+  bulletAngleSpeed,
+  createZombieSkillState,
+  splitDanmakuMotion,
+  stepZombieBossSkills,
+  type ZombieSkillState,
+} from './boss-zombie-skills';
 
 // ============================================================================
 // 1. Constants & Config
@@ -377,6 +384,9 @@ export interface OverlordBossState extends BansungCombatTarget, SpatialActor {
   rngState: number;
   nextLocalId: number;
   pendingBacklashes: OverlordPylon[];
+  /** Đêm Zombie v2: skill mới Plague Galaxy / Toxic Bloom (xem boss-zombie-skills.ts). */
+  zombieSkills?: ZombieSkillState;
+  zombieTelegraphs?: BansungTelegraph[];
 }
 
 // ============================================================================
@@ -708,6 +718,8 @@ export function createOverlordBoss(opts: OverlordSpawnOptions = {}): OverlordBos
     rngState: (opts.seed ?? 0x51a7b055) >>> 0,
     nextLocalId: id * 100 + 1,
     pendingBacklashes: [],
+    zombieSkills: createZombieSkillState(opts.difficulty ?? 'normal'),
+    zombieTelegraphs: [],
   };
 }
 
@@ -1752,6 +1764,53 @@ export function stepOverlordBoss(
     }
   }
 
+  // Đêm Zombie v2: Plague Galaxy (thiên hà xoắn ốc nhiều cánh) / Toxic Bloom (vòng hoa độc).
+  // Chạy trong khoảng nghỉ của patrol_spiral, chỉ sau 20 s giao tranh; tôn trọng trần 160 đạn.
+  if (!boss.zombieSkills) boss.zombieSkills = createZombieSkillState();
+  if (!boss.zombieTelegraphs) boss.zombieTelegraphs = [];
+  boss.zombieTelegraphs.length = 0;
+  const zombieActive = stepZombieBossSkills(boss.zombieSkills, {
+    bossId: boss.id,
+    kind: 'boss_overlord',
+    x: boss.x,
+    y: boss.y,
+    radius: boss.radius,
+    phase: boss.phase,
+    roaming: boss.state === 'patrol_spiral' && boss.stateTick <= 0,
+    players: ctx.players,
+    projectileBudget:
+      OVERLORD_STATS.maxActiveProjectiles - (ctx.activeBossProjectiles ?? 0) - res.projectiles.length,
+    emit: (b) => {
+      const { angle, speed } = bulletAngleSpeed(b);
+      const proj: OverlordProjectileSpawn = {
+        bossId: boss.id,
+        kind: 'plasma_orb',
+        x: b.x,
+        y: b.y,
+        vx: b.vx,
+        vy: b.vy,
+        angle,
+        speed,
+        radius: b.radius,
+        dmg: b.damage,
+        dmgKind: b.dmgKind,
+        ttlTicks: b.ttlTicks,
+        team: 1,
+        armored: false,
+        danmaku: splitDanmakuMotion(b),
+      };
+      ctx.spawnProjectile?.(proj);
+      res.projectiles.push(proj);
+    },
+    fx: ctx.fx,
+    telegraphsOut: boss.zombieTelegraphs,
+    onSfx: (key, x, y) => emitSfx(key, x, y, ctx, res),
+  });
+  if (zombieActive) {
+    // Giữ boss trong khoảng nghỉ (không chọn đòn gốc) cho tới khi skill mới kết thúc
+    boss.recoveryTicks = Math.max(boss.recoveryTicks, 2);
+  }
+
   switch (boss.state) {
     case 'enter': {
       boss.vx = 0;
@@ -2474,6 +2533,11 @@ export function getOverlordTelegraphs(boss: OverlordBossState): BansungTelegraph
         sourceKind: 'boss_overlord',
       });
     }
+  }
+
+  // Đêm Zombie v2: telegraph của Plague Galaxy / Toxic Bloom
+  if (boss.zombieTelegraphs) {
+    for (let i = 0; i < boss.zombieTelegraphs.length; i++) out.push(boss.zombieTelegraphs[i]);
   }
 
   return out;

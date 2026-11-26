@@ -562,7 +562,7 @@ function isCombatTargetShape(actor: SpatialActor): actor is SpatialActor & Bansu
   );
 }
 
-function resolveActorTarget(
+export function resolveActorTarget(
   actor: SpatialActor,
   ctx: BansungWeaponWorldContext,
 ): BansungCombatTarget | undefined {
@@ -614,7 +614,7 @@ function buildDamageContext(ctx: BansungWeaponWorldContext): BansungDamageContex
   };
 }
 
-function applyCombatHitAndEvents(
+export function applyCombatHitAndEvents(
   target: BansungCombatTarget,
   attackerId: string,
   hit: Parameters<typeof applyBansungDamage>[1],
@@ -1459,7 +1459,7 @@ export class BansungBulletPool {
 // 7. Firing, Burst Queue, Railgun Charge & Melee Sweeping Arc
 // ============================================================================
 
-function computeGroundMuzzle(
+export function computeGroundMuzzle(
   hero: BansungHeroWeaponState,
   spec: BansungWeaponSpec,
 ): { x: number; y: number } {
@@ -1493,7 +1493,7 @@ function emitDryFire(
   ctx.onDryFire?.(hero, reason);
 }
 
-function getTargetLayerMaskForTeam(team: number): number {
+export function getTargetLayerMaskForTeam(team: number): number {
   return team === 0 ? LAYER_ENEMY | LAYER_PET : LAYER_PLAYER | LAYER_PET;
 }
 

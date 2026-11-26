@@ -124,6 +124,7 @@ import {
 import { AntWorld } from './ants/world';
 import { ThapWorld, type ThapInit } from './thap/world';
 import { BansungWorld, type BansungInit } from './bansung/world';
+import { bansungRedis } from './bansung/bansung-redis';
 import { validateBansungConfig, validateBansungHero } from './bansung/security';
 import { MkWorld, type MkFighterInit } from './mk/world';
 import { validateMkConfig, validateMkHero } from './mk/security';
@@ -1885,6 +1886,7 @@ export class Game {
       cur.botLevel === next.botLevel &&
       cur.reviveMode === next.reviveMode &&
       Boolean(cur.endless) === Boolean(next.endless) &&
+      (cur.nightMode !== false) === (next.nightMode !== false) &&
       resolveBansungGameMode(cur) === resolveBansungGameMode(next)
     ) {
       return;
@@ -1990,11 +1992,25 @@ export class Game {
       });
     }
     this.bansung = new BansungWorld(inits, cfg, {
-      tick: () => this.sendBansungFrames(),
+      tick: () => {
+        this.sendBansungFrames();
+        // Redis checkpoint (tự throttle 2 s, fire-and-forget — không chặn tick 30 Hz)
+        const bw = this.bansung;
+        if (bw && bansungRedis.enabled) {
+          bansungRedis.checkpointRoom(this.code, {
+            mode: resolveBansungGameMode(cfg),
+            difficulty: cfg.difficulty,
+            night: cfg.nightMode !== false,
+            wave: bw.waveHud().wave,
+            players: bw.players.map((wp) => ({ id: wp.id, hero: wp.heroId, bot: wp.bot, life: wp.life })),
+          });
+        }
+      },
       changed: () => this.safe(() => this.run(() => this.syncBansung())),
     });
     this.phase = 'playing';
     this.bansungEndFramePending = false;
+    for (const p of this.players) bansungRedis.rememberSession(p.id, this.code);
     this.addLog(`🔫 Bắn Súng Co-op bắt đầu! ${this.players.length} người + ${cfg.bots} bot đồng minh!`);
     this.bansung.start();
     this.sendBansungFrames();
@@ -2071,6 +2087,25 @@ export class Game {
             : 0;
       }
       this.bansungEndFramePending = true;
+      // Redis: bảng xếp hạng + thống kê, dọn session/checkpoint (fire-and-forget)
+      const endCfg = this.bansungConfig;
+      const endResult = w.result;
+      bansungRedis.recordMatch({
+        mode: endResult.mode ?? resolveBansungGameMode(endCfg),
+        difficulty: endCfg.difficulty,
+        victory: endResult.victory,
+        wave: endResult.wave ?? endResult.wavesCleared,
+        elapsedMs: endResult.durationMs,
+        players: endResult.players.map((st) => ({
+          id: st.id,
+          name: st.name,
+          score: st.score,
+          kills: st.kills,
+          bot: st.bot,
+        })),
+      });
+      bansungRedis.clearRoom(this.code);
+      for (const p of this.players) bansungRedis.forgetSession(p.id);
       queueMicrotask(() => {
         if (this.bansungEndFramePending && this.bansung === w) {
           this.sendBansungFrames();

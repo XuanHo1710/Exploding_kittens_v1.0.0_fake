@@ -20,7 +20,7 @@ import {
 } from './shared';
 import { STAT_SHORT_VI, portraitUrl } from './menu-ui';
 import { CharmIcon } from './progression-ui';
-import { WeaponIcon } from './weapon-art';
+import { EquipmentName, isMythicWeapon, WeaponIcon } from './weapon-art';
 import './reward-fx.css';
 import { MaterialChip } from './enhance-panel';
 import type { MaterialId } from './shared';
@@ -158,9 +158,10 @@ export function BattleResultScreen({ result, onClose }: { result: BattleResultDa
           )}
           <div>
             {result.drops.map((d, i) => (
-              <article key={d.uid} className="ui-loot" style={{ ['--r' as string]: ITEM_RARITY_COLORS[d.rarity], animationDelay: `${i * 110}ms` }}>
+              <article key={d.uid} className={isMythicWeapon(d) ? 'ui-loot exp-foil-surface exp-foil-mythic' : 'ui-loot'}
+                style={{ ['--r' as string]: ITEM_RARITY_COLORS[d.rarity], animationDelay: `${i * 110}ms` }}>
                 <small>{ITEM_RARITY_LABELS_VI[d.rarity]} · {d.kind === 'elixir' ? 'Thuốc chỉ số' : `${EQUIP_SLOT_LABELS_VI[d.slot!]} · i${d.ilvl}`}</small>
-                <b><WeaponIcon item={d} />{d.nameVi}</b>
+                <b><WeaponIcon item={d} /><EquipmentName item={d} /></b>
                 {d.main && <span>{STAT_SHORT_VI[d.main.stat]} +{formatStatValue(d.main.stat, d.main.value)}</span>}
                 {d.elixir && <span>Vĩnh viễn {STAT_SHORT_VI[d.elixir.stat]} +{formatStatValue(d.elixir.stat, d.elixir.value)}</span>}
                 {d.subs.length > 0 && <em>+{d.subs.length} chỉ số phụ</em>}

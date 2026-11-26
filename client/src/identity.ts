@@ -53,6 +53,11 @@ export function saveAccountIdentity(acc: { playerId: string; name: string; avata
   return persist({ playerId: acc.playerId, name: acc.name, avatar: acc.avatar, token });
 }
 
+export function clearSession(identity: Identity): Identity {
+  const { playerId, name, avatar } = identity;
+  return persist({ playerId, name, avatar });
+}
+
 /** Đăng xuất: xoá thông tin trên trình duyệt này */
 export function clearIdentity() {
   try {

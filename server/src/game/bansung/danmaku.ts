@@ -634,3 +634,213 @@ export function emitNierAlternatingCurtain(
     });
   }
 }
+
+// ============================================================================
+// Đêm Zombie (spec 007 / ws4): Chicken-Invaders Spirals, Flower Spin Rings,
+// Forked Lightning Bolts & Sweeping-Laser hit helper
+// ============================================================================
+
+/**
+ * Chicken-Invaders style rotating multi-arm spiral.
+ * Call once every 2-3 ticks while incrementing `rotRad` (e.g. +0.21 rad per call):
+ * each arm emits one bullet, and the per-bullet `curl` (angVel) bends the arms into
+ * a sweeping galaxy so the spiral visibly "rotates" on screen. `counterArms` adds a
+ * second set of arms spinning the opposite way (phase 2 / enraged).
+ */
+export function emitChickenSpiralVolley(
+  emit: (b: BossDanmakuSpawnInput) => void,
+  opts: {
+    x: number;
+    y: number;
+    arms: number;
+    rotRad: number;
+    speed: number;
+    curl?: number;
+    accel?: number;
+    damage: number;
+    dmgKind?: BansungDamageKind;
+    palette: BansungDanmakuPaletteId;
+    counterArms?: number;
+    counterPalette?: BansungDanmakuPaletteId;
+    kind?: DanmakuSilhouetteKind;
+    ttlTicks?: number;
+  },
+): void {
+  const arms = Math.max(1, Math.min(12, Math.round(opts.arms)));
+  const curl = opts.curl ?? 0.35;
+  const ttl = opts.ttlTicks ?? 105;
+  for (let k = 0; k < arms; k++) {
+    const ang = opts.rotRad + (k / arms) * TWO_PI;
+    emit({
+      danmakuKind: opts.kind ?? 'danmaku_orb',
+      palette: opts.palette,
+      scaleTier: 0,
+      x: opts.x + Math.cos(ang) * 30,
+      y: opts.y + Math.sin(ang) * 30,
+      vx: Math.cos(ang) * opts.speed,
+      vy: Math.sin(ang) * opts.speed,
+      radius: 6,
+      damage: opts.damage,
+      dmgKind: opts.dmgKind ?? 'energy',
+      ttlTicks: ttl,
+      angVel: curl,
+      accel: opts.accel ?? 18,
+      maxSpeed: opts.speed * 1.6,
+    });
+  }
+  const counter = Math.max(0, Math.min(12, Math.round(opts.counterArms ?? 0)));
+  for (let k = 0; k < counter; k++) {
+    const ang = -opts.rotRad * 1.2 + (k / counter) * TWO_PI + Math.PI / counter;
+    emit({
+      danmakuKind: 'danmaku_crescent',
+      palette: opts.counterPalette ?? opts.palette,
+      scaleTier: 0,
+      x: opts.x + Math.cos(ang) * 30,
+      y: opts.y + Math.sin(ang) * 30,
+      vx: Math.cos(ang) * opts.speed * 0.9,
+      vy: Math.sin(ang) * opts.speed * 0.9,
+      radius: 6,
+      damage: opts.damage,
+      dmgKind: opts.dmgKind ?? 'energy',
+      ttlTicks: ttl,
+      angVel: -curl,
+      accel: opts.accel ?? 18,
+      maxSpeed: opts.speed * 1.5,
+    });
+  }
+}
+
+/**
+ * Flower Spin Ring: two concentric rings with opposite curl → bông hoa xoay tròn
+ * (vòng ngoài xoay thuận, vòng trong xoay nghịch), chừa `gapEvery` khe thoát.
+ */
+export function emitFlowerSpinRing(
+  emit: (b: BossDanmakuSpawnInput) => void,
+  opts: {
+    x: number;
+    y: number;
+    count: number;
+    rotRad: number;
+    speed: number;
+    curl?: number;
+    damage: number;
+    dmgKind?: BansungDamageKind;
+    outerPalette: BansungDanmakuPaletteId;
+    innerPalette: BansungDanmakuPaletteId;
+    gapEvery?: number;
+    slowPct?: number;
+    slowMs?: number;
+  },
+): void {
+  const count = Math.max(6, Math.min(40, Math.round(opts.count)));
+  const curl = opts.curl ?? 0.7;
+  const gap = Math.max(0, Math.round(opts.gapEvery ?? 0));
+  for (let ring = 0; ring < 2; ring++) {
+    const inner = ring === 1;
+    for (let k = 0; k < count; k++) {
+      if (gap > 0 && k % gap === 0) continue;
+      const ang = opts.rotRad + (k / count) * TWO_PI + (inner ? Math.PI / count : 0);
+      const spd = inner ? opts.speed * 0.72 : opts.speed;
+      emit({
+        danmakuKind: inner ? 'danmaku_star' : 'danmaku_orb',
+        palette: inner ? opts.innerPalette : opts.outerPalette,
+        scaleTier: inner ? 3 : 0,
+        x: opts.x + Math.cos(ang) * 28,
+        y: opts.y + Math.sin(ang) * 28,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd,
+        radius: inner ? 5 : 6,
+        damage: opts.damage,
+        dmgKind: opts.dmgKind ?? 'energy',
+        ttlTicks: 100,
+        angVel: inner ? -curl : curl,
+        slowPct: opts.slowPct,
+        slowMs: opts.slowMs,
+      });
+    }
+  }
+}
+
+/**
+ * Forked Lightning Bolt Volley: tia sét bắn thẳng từ boss — đạn `danmaku_lance` siêu tốc
+ * rung zig-zag tần số cao (waveFreq ~36) rồi tách thành 3 nhánh sét (aimed_fan) sau
+ * `forkAfterTicks`. Server-authoritative như mọi đạn danmaku khác.
+ */
+export function emitForkedBoltVolley(
+  emit: (b: BossDanmakuSpawnInput) => void,
+  opts: {
+    x: number;
+    y: number;
+    aimRad: number;
+    bolts: number;
+    spreadRad?: number;
+    speed?: number;
+    forkAfterTicks?: number;
+    forkCount?: number;
+    damage: number;
+    palette: BansungDanmakuPaletteId;
+    forkPalette?: BansungDanmakuPaletteId;
+    slowPct?: number;
+    slowMs?: number;
+  },
+): void {
+  const n = Math.max(1, Math.min(9, Math.round(opts.bolts)));
+  const spread = opts.spreadRad ?? 0.5;
+  const spd = opts.speed ?? 620;
+  for (let k = 0; k < n; k++) {
+    const u = n === 1 ? 0 : k / (n - 1) - 0.5;
+    const ang = opts.aimRad + u * spread;
+    emit({
+      danmakuKind: 'danmaku_lance',
+      palette: opts.palette,
+      scaleTier: 1,
+      x: opts.x + Math.cos(ang) * 34,
+      y: opts.y + Math.sin(ang) * 34,
+      vx: Math.cos(ang) * spd,
+      vy: Math.sin(ang) * spd,
+      radius: 6,
+      damage: opts.damage,
+      dmgKind: 'energy',
+      ttlTicks: (opts.forkAfterTicks ?? 12) + 2,
+      waveAmp: 7,
+      waveFreq: 36,
+      wavePhase: k * 1.3,
+      splitAfterTicks: opts.forkAfterTicks ?? 12,
+      splitMode: 'aimed_fan',
+      splitCount: Math.max(3, opts.forkCount ?? 3),
+      splitSpeed: spd * 0.82,
+      splitChildKind: 'danmaku_lance',
+      splitChildPalette: opts.forkPalette ?? opts.palette,
+      splitChildDamage: Math.max(4, Math.round(opts.damage * 0.7)),
+      slowPct: opts.slowPct,
+      slowMs: opts.slowMs,
+    });
+  }
+}
+
+/**
+ * Hit-test helper cho laser quét/xoay: trả về true nếu hình tròn (cx, cy, r) chạm
+ * đoạn tia từ (x0, y0) theo góc `angRad`, dài `len`, nửa bề rộng `halfW`.
+ */
+export function sweepBeamHitsCircle(
+  x0: number,
+  y0: number,
+  angRad: number,
+  len: number,
+  halfW: number,
+  cx: number,
+  cy: number,
+  r: number,
+): boolean {
+  const dx = Math.cos(angRad);
+  const dy = Math.sin(angRad);
+  const px = cx - x0;
+  const py = cy - y0;
+  const t = px * dx + py * dy;
+  if (t < -r || t > len + r) return false;
+  const tc = t < 0 ? 0 : t > len ? len : t;
+  const ox = px - dx * tc;
+  const oy = py - dy * tc;
+  const rr = halfW + r;
+  return ox * ox + oy * oy <= rr * rr;
+}

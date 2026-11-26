@@ -23,7 +23,6 @@ import {
   EXP_BALANCE,
   BATTLE_SUPPLIES,
   ITEM_RARITIES,
-  ITEM_RARITY_COLORS,
   ITEM_RARITY_LABELS_VI,
   ROLE_LABELS_VI,
   STAT_KEYS,
@@ -56,7 +55,7 @@ import { expeditionApi } from './rpc';
 import { expeditionAssetUrl, outfitPortraitOf, type HeroOutfit } from './store';
 import { CharmIcon, charmSummary } from './progression-ui';
 import { SkillTreeGraph } from './skill-tree-ui';
-import { WeaponIcon } from './weapon-art';
+import { EquipmentName, isMythicWeapon, WeaponIcon } from './weapon-art';
 import { OwnerTag } from './owner-tag';
 import { EnhancePanel } from './enhance-panel';
 
@@ -453,7 +452,7 @@ function Overview(props: SubProps) {
             <button key={slot} type="button" className="ui-plate wide" onClick={() => go(heroId, 'gear')}>
               <span className="lbl">{EQUIP_SLOT_LABELS_VI[slot]}</span>
               {item && <WeaponIcon item={item} />}
-              <span className="val" style={item ? { color: ITEM_RARITY_COLORS[item.rarity] } : undefined}>{item ? item.nameVi : '—'}</span>
+              {item ? <EquipmentName item={item} className="val" /> : <span className="val">—</span>}
               {item && <span className="num">i{item.ilvl}</span>}
             </button>
           );
@@ -825,7 +824,7 @@ function GearSub({ profile, heroId, socket, run, setProfile, busy }: SubProps) {
             <button key={s} type="button" className={`ui-plate wide ${slot === s ? 'on' : ''}`} onClick={() => setSlot(s)}>
               <span className="lbl">{EQUIP_SLOT_LABELS_VI[s]}</span>
               {it && <WeaponIcon item={it} />}
-              <span className="val" style={it ? { color: ITEM_RARITY_COLORS[it.rarity] } : undefined}>{it ? it.nameVi : '—'}</span>
+              {it ? <EquipmentName item={it} className="val" /> : <span className="val">—</span>}
             </button>
           );
         })}
@@ -838,18 +837,18 @@ function GearSub({ profile, heroId, socket, run, setProfile, busy }: SubProps) {
               onMouseEnter={() => setHover(it.uid)} onMouseLeave={() => setHover(undefined)}
               onClick={() => void run(() => expeditionApi.equipItem(socket, heroId, slot, it.uid), setProfile)}>
               <WeaponIcon item={it} />
-              <span className="val" style={{ color: ITEM_RARITY_COLORS[it.rarity] }}>{it.nameVi}</span>
+              <EquipmentName item={it} className="val" />
               <span className="num">{it.equippedBy ? <OwnerTag heroId={it.equippedBy} self={it.equippedBy === heroId} /> : `i${it.ilvl}`}</span>
             </button>
           ))}
           {!options.length && <p className="ui-empty">Không có {EQUIP_SLOT_LABELS_VI[slot].toLowerCase()} nào khác. Đánh Gác Cổng, Đại Trùm hoặc mở Rương Thiên Văn.</p>}
         </div>
       </section>
-      <aside className="ui-gear-detail ui-in-right">
+      <aside className={`ui-gear-detail ui-in-right${isMythicWeapon(shown) ? ' exp-foil-surface exp-foil-mythic' : ''}`}>
         {shown ? (
           <>
             <small className="kind">{shown === equipped ? 'Đang trang bị' : 'Xem trước'} · {ITEM_RARITY_LABELS_VI[shown.rarity]} · i{shown.ilvl}</small>
-            <h2 style={{ color: ITEM_RARITY_COLORS[shown.rarity] }}><WeaponIcon item={shown} />{shown.nameVi}{shown.enhance ? <span className="enh-lv"> +{shown.enhance}</span> : null}</h2>
+            <h2><WeaponIcon item={shown} /><EquipmentName item={shown} />{shown.enhance ? <span className="enh-lv"> +{shown.enhance}</span> : null}</h2>
             <ItemStats item={shown} level={inst.level} />
             {shown.signatureId && <small>Trấn · Tinh luyện {shown.refineRank ?? 1}/5 · {shown.weaponShards ?? 0} mảnh</small>}
             {refineCost && (

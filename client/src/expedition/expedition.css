@@ -278,9 +278,6 @@
 .exp-charm-slot select { width: 100%; margin-top: 6px; }
 .exp-roster-card.r-SSS { border-left: 4px solid #ff9a2e !important; box-shadow: inset 3px 0 12px rgba(255, 140, 40, .25); }
 .exp-history .r-SSS { background: linear-gradient(90deg, #ff6a1a, #ffd76a); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 800; }
-.exp-summon-card.r-SSS { border-color: #ff9a2e; box-shadow: 0 0 18px #ff8a1f99; }
-.exp-banner-portraits figure.r-SSS { position: relative; }
-.exp-banner-portraits figure.r-SSS img { box-shadow: 0 0 0 2px #ff9a2e, 0 0 16px rgba(255, 140, 40, .7); }
-.exp-banner-portraits figure.r-SSS figcaption { background: linear-gradient(90deg, #ff6a1a, #ffd76a); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 800; }
+.exp-summon-card.r-SSS { border-color: #ff9a2e; }
 .exp-banner-pity .pity-sss b { background: linear-gradient(90deg, #ff7a1a, #ffd76a); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .exp-banner-pity .pity-sss small { opacity: .75; margin-left: .25em; }

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quần đảo Chuông Gió</title>
+<link rel="stylesheet" href="preview.css">
+<script defer src="preview-data.js"></script>
+<script defer src="preview.js"></script>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">Mighty Knight Pixel · Bản duyệt thiết kế</p>
+    <h1>Quần đảo <em>Chuông Gió</em></h1>
+    <p>Năm đấu trường pixel. Ở đảo Đồng cỏ, mỗi wave bổ sung một đối thủ mới và chiêu mộ thêm một tướng.</p>
+  </header>
+  <section aria-labelledby="maps-title">
+    <div class="heading"><h2 id="maps-title">Đấu trường</h2><label><input type="checkbox" id="show-layout"> Hiện sơ đồ sân</label></div>
+    <nav id="maps" aria-label="Chọn đảo"></nav>
+    <figure class="arena">
+      <div class="stage">
+        <img id="map-art" width="640" height="360" alt="">
+        <div id="layout" class="overlay" hidden></div>
+      </div>
+      <figcaption id="map-caption" aria-live="polite"></figcaption>
+    </figure>
+  </section>
+  <section aria-labelledby="chapter-title">
+    <div class="heading"><h2 id="chapter-title">Đảo Đồng cỏ</h2><span id="crest" class="badge" aria-live="polite"></span></div>
+    <nav id="waves" aria-label="Xem kịch bản wave"></nav>
+    <div class="columns">
+      <article id="wave-detail" class="panel" aria-live="polite"></article>
+      <article class="panel">
+        <h3>Trại tuyển quân</h3>
+        <p id="status" aria-live="polite"></p>
+        <form id="upgrade-form">
+          <label for="upgrade-hero">Tướng</label>
+          <select id="upgrade-hero"></select>
+          <label for="branch">Nhánh</label>
+          <select id="branch"></select>
+          <p id="upgrade-benefit"></p>
+          <button id="upgrade" type="submit">Nâng cấp</button>
+        </form>
+        <p id="roster"></p>
+        <fieldset id="party"><legend>Đội ra trận</legend><div id="party-slots"></div></fieldset>
+        <label for="leader">Điều khiển</label>
+        <select id="leader"></select>
+        <button id="reset" class="quiet" type="button">Đặt lại bản duyệt</button>
+      </article>
+    </div>
+  </section>
+  <section aria-labelledby="actors-title">
+    <div class="heading"><h2 id="actors-title">Tướng và quái</h2><label><input type="checkbox" id="animate"> Phát chuyển động</label></div>
+    <div class="columns">
+      <div class="panel">
+        <label for="actor">Nhân vật</label>
+        <select id="actor"></select>
+        <label for="pose">Tư thế</label>
+        <select id="pose"></select>
+        <div class="sprite-stage" aria-label="Sprite và hiệu ứng đang xem">
+          <canvas id="sprite" width="128" height="88"></canvas>
+        </div>
+      </div>
+      <article class="panel" id="actor-detail" aria-live="polite"></article>
+    </div>
+  </section>
+</main>
+</body>
+</html>

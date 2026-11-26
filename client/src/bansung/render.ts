@@ -54,6 +54,12 @@ import {
   BANSUNG_STATE_DASH,
   BANSUNG_STATE_DEAD,
   BANSUNG_STATE_DOWNED,
+  BANSUNG_NIGHT,
+  BANSUNG_WEATHER,
+  getBansungLightningFlash,
+  getBansungLightningStrike,
+  getBansungRainIntensity,
+  getBansungStormLevel,
   BANSUNG_STATE_RUN,
   BANSUNG_STATE_STUN,
   BANSUNG_FX_STATUS_CRATE,
@@ -64,6 +70,8 @@ import {
   BANSUNG_FX_STATUS_RESTOCK,
   BANSUNG_FX_STATUS_REVIVED,
   BANSUNG_FX_STATUS_RELOAD_PERFECT,
+  BANSUNG_FX_IMPACT_FLESH,
+  BANSUNG_FX_IMPACT_SLASH,
   BANSUNG_TILE_SIZE,
   BANSUNG_WEAPON_TIERS,
   BANSUNG_EFLAG_ARMORED,
@@ -96,6 +104,7 @@ import {
   type BansungHazardWire,
   type BansungHeroId,
   type BansungLaserLane,
+  type BansungLightningStrike,
   type BansungPetFrame,
   type BansungPetKind,
   type BansungPetNetTuple,
@@ -126,7 +135,7 @@ import {
   DecalKind,
   bansungFx,
 } from './particles';
-import { consumeFrameAudioEvents } from './sound';
+import { consumeFrameAudioEvents, hasBansungAudioKey, playBansungSfx } from './sound';
 import {
   drawBansungSprite,
   getClipMeta,
@@ -163,6 +172,32 @@ import {
   resolveStunPose,
   type PetVisualState,
 } from './vfx';
+import {
+  clearGore,
+  drawGoreAir,
+  drawGoreGlow,
+  drawGoreGround,
+  goreSizeForEnemyKind,
+  setGoreIntensity,
+  spawnBloodHit,
+  spawnZombieDeathGore,
+  stepGore,
+} from './gore';
+import { bansungBossFx } from './boss-fx';
+import {
+  drawWeaponSkillFxAdditive,
+  drawWeaponSkillFxGround,
+  drawWeaponSkillFxOverNight,
+  drawWeaponSkillFxWorld,
+  onWeaponSkillFxEvent,
+  resetWeaponSkillFx,
+  stepWeaponSkillFx,
+  type WeaponSkillFxView,
+} from './weapon-skill-fx';
+import {
+  BANSUNG_FX_STATUS_WSKILL_CAST,
+  BANSUNG_FX_STATUS_WSKILL_PASSIVE,
+} from '../../../shared/src/bansung/weapon-skills/types';
 
 // ============================================================================
 // 1. Spec Constants & Exported Contracts (d41, d47)
@@ -218,6 +253,16 @@ export interface RenderOpts {
   skipStoreStep?: boolean;
   /** Skip routing drained FX events to `consumeFrameAudioEvents`. */
   skipAudio?: boolean;
+  /**
+   * Đêm Zombie (spec 007): phủ bóng tối toàn map, chỉ đèn pin theo hướng chuột,
+   * quầng sáng quanh người chơi và ánh lửa đầu nòng/vụ nổ mới soi được quái.
+   */
+  night?: boolean;
+  /**
+   * Thời tiết theo wave (mưa nặng dần + sấm chớp ở wave cuối). Mặc định bật;
+   * truyền `false` để tắt hoàn toàn (ví dụ màn hình xem trước).
+   */
+  weather?: boolean;
 }
 
 export interface RadarOpts {
@@ -919,6 +964,31 @@ function drawSpriteOrFallback(
   });
 }
 
+/**
+ * Clip chết (loop=false) phải chạy từ frame 0 lúc quái/boss vừa chết, không theo đồng hồ toàn cục
+ * (trước đây luôn nhảy thẳng tới frame cuối). Lưu thời điểm chết theo entity id.
+ */
+const mobDeathStartSec = new Map<number, number>();
+const bossDeathStartSec = new Map<number, number>();
+function resolveDeathAnimTime(
+  table: Map<number, number>,
+  id: number,
+  isDead: boolean,
+  nowSec: number,
+): number {
+  if (!isDead) {
+    if (table.size > 0) table.delete(id);
+    return nowSec;
+  }
+  let start = table.get(id);
+  if (start === undefined) {
+    if (table.size > 512) table.clear();
+    start = nowSec;
+    table.set(id, start);
+  }
+  return Math.max(0, nowSec - start);
+}
+
 function drawFirstAvailableClip(
   ctx: CanvasRenderingContext2D,
   candidates: readonly string[],
@@ -948,6 +1018,12 @@ function drawFirstAvailableClip(
   return false;
 }
 
+interface RayHit {
+  ex: number;
+  ey: number;
+  dist: number;
+}
+
 function raycastObstacles(
   x0: number,
   y0: number,
@@ -956,7 +1032,8 @@ function raycastObstacles(
   obstacles: readonly StaticObstacleBox[],
   mapW: number,
   mapH: number,
-): { ex: number; ey: number; dist: number } {
+  out?: RayHit,
+): RayHit {
   const dx = Math.cos(angle);
   const dy = Math.sin(angle);
   let bestT = maxDist;
@@ -1021,6 +1098,12 @@ function raycastObstacles(
   }
 
   bestT = Math.max(8, bestT);
+  if (out) {
+    out.ex = x0 + dx * bestT;
+    out.ey = y0 + dy * bestT;
+    out.dist = bestT;
+    return out;
+  }
   return {
     ex: x0 + dx * bestT,
     ey: y0 + dy * bestT,
@@ -1163,6 +1246,254 @@ function drawTerrainDecorTile(
       }
     }
   }
+}
+
+// ----------------------------------------------------------------------------
+// 4b. Đêm Zombie — lớp chi tiết mặt đất bake 1 lần / chunk (spec 007 §4.2)
+//     vết nứt, vũng nước, mảnh vụn, cỏ khô / rêu, vết máu cũ, loang màu phá lặp tile.
+//     Xác định theo (seed, ô thế giới) nên liền mạch giữa các chunk.
+// ----------------------------------------------------------------------------
+
+const GRIME_CELL = 64;
+const GRIME_MOTTLE_CELL = 160;
+
+interface GrimeRng {
+  s: number;
+}
+const grimeRng: GrimeRng = { s: 1 };
+
+function grimeSeed(col: number, row: number, seed: number, salt: number): void {
+  grimeRng.s = (hash2i(col, row, (seed ^ salt) | 0) >>> 0) || 1;
+}
+
+/** LCG 0..1 (chỉ dùng lúc bake chunk). */
+function grimeRand(): number {
+  grimeRng.s = (Math.imul(grimeRng.s, 1664525) + 1013904223) >>> 0;
+  return grimeRng.s / 4294967296;
+}
+
+/** Elip pixel sắc nét bằng các hàng fillRect (không anti-alias). */
+function fillPixelEllipse(
+  c: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+): void {
+  const iry = Math.max(1, Math.round(ry));
+  for (let yy = -iry; yy <= iry; yy++) {
+    const k = 1 - (yy * yy) / (iry * iry);
+    if (k <= 0) continue;
+    const half = Math.round(rx * Math.sqrt(k));
+    if (half <= 0) continue;
+    c.fillRect(Math.round(cx - half), Math.round(cy + yy), half * 2, 1);
+  }
+}
+
+function bakeTerrainGrime(
+  c: CanvasRenderingContext2D,
+  biome: BansungBiome,
+  seed: number,
+  worldX0: number,
+  worldY0: number,
+  size: number,
+  minPlayX: number,
+  minPlayY: number,
+  maxPlayX: number,
+  maxPlayY: number,
+): void {
+  c.save();
+  // Chỉ vẽ trong sân chơi (không bẩn lên tường viền)
+  const clipX0 = Math.max(0, minPlayX - worldX0);
+  const clipY0 = Math.max(0, minPlayY - worldY0);
+  const clipX1 = Math.min(size, maxPlayX - worldX0);
+  const clipY1 = Math.min(size, maxPlayY - worldY0);
+  if (clipX1 <= clipX0 || clipY1 <= clipY0) {
+    c.restore();
+    return;
+  }
+  c.beginPath();
+  c.rect(clipX0, clipY0, clipX1 - clipX0, clipY1 - clipY0);
+  c.clip();
+
+  const dark = biome === 'cyber' ? '#05070d' : biome === 'crypt' ? '#0b0a10' : '#2a1f14';
+  const light = biome === 'cyber' ? '#5b6b85' : biome === 'crypt' ? '#7a7486' : '#d8c08f';
+
+  // 1) Loang màu lớn — phá cảm giác lặp tile
+  const m0x = Math.floor(worldX0 / GRIME_MOTTLE_CELL) - 1;
+  const m0y = Math.floor(worldY0 / GRIME_MOTTLE_CELL) - 1;
+  const m1x = Math.floor((worldX0 + size) / GRIME_MOTTLE_CELL) + 1;
+  const m1y = Math.floor((worldY0 + size) / GRIME_MOTTLE_CELL) + 1;
+  for (let my = m0y; my <= m1y; my++) {
+    for (let mx = m0x; mx <= m1x; mx++) {
+      grimeSeed(mx, my, seed, 0x51a7);
+      const cx = mx * GRIME_MOTTLE_CELL + grimeRand() * GRIME_MOTTLE_CELL - worldX0;
+      const cy = my * GRIME_MOTTLE_CELL + grimeRand() * GRIME_MOTTLE_CELL - worldY0;
+      const r = 46 + grimeRand() * 70;
+      c.globalAlpha = 0.05 + grimeRand() * 0.07;
+      c.fillStyle = grimeRand() < 0.62 ? dark : light;
+      fillPixelEllipse(c, cx, cy, r, r * (0.55 + grimeRand() * 0.35));
+    }
+  }
+
+  // 2) Chi tiết theo ô 64 px
+  const c0x = Math.floor(worldX0 / GRIME_CELL) - 1;
+  const c0y = Math.floor(worldY0 / GRIME_CELL) - 1;
+  const c1x = Math.floor((worldX0 + size) / GRIME_CELL) + 1;
+  const c1y = Math.floor((worldY0 + size) / GRIME_CELL) + 1;
+  for (let gy = c0y; gy <= c1y; gy++) {
+    for (let gx = c0x; gx <= c1x; gx++) {
+      grimeSeed(gx, gy, seed, 0x2c9f);
+      const bx = gx * GRIME_CELL - worldX0;
+      const by = gy * GRIME_CELL - worldY0;
+      const roll = grimeRand();
+
+      // Vết nứt (random walk 4-8 đoạn, viền sáng 1px phía dưới-phải tạo độ sâu)
+      if (roll < 0.2) {
+        let x = bx + 8 + grimeRand() * 48;
+        let y = by + 8 + grimeRand() * 48;
+        let ang = grimeRand() * TWO_PI;
+        const segs = 4 + Math.floor(grimeRand() * 5);
+        for (let s = 0; s < segs; s++) {
+          ang += (grimeRand() - 0.5) * 1.3;
+          const len = 3 + grimeRand() * 6;
+          const nx = x + Math.cos(ang) * len;
+          const ny = y + Math.sin(ang) * len;
+          const steps = Math.max(1, Math.round(len));
+          for (let k = 0; k <= steps; k++) {
+            const px = Math.round(x + ((nx - x) * k) / steps);
+            const py = Math.round(y + ((ny - y) * k) / steps);
+            c.globalAlpha = 0.6;
+            c.fillStyle = dark;
+            c.fillRect(px, py, 1, 1);
+            c.globalAlpha = 0.16;
+            c.fillStyle = light;
+            c.fillRect(px + 1, py + 1, 1, 1);
+          }
+          // nhánh nứt nhỏ
+          if (grimeRand() < 0.25) {
+            const ba = ang + (grimeRand() < 0.5 ? 1 : -1) * (0.6 + grimeRand() * 0.6);
+            c.globalAlpha = 0.45;
+            c.fillStyle = dark;
+            for (let k = 1; k <= 3; k++) c.fillRect(Math.round(nx + Math.cos(ba) * k), Math.round(ny + Math.sin(ba) * k), 1, 1);
+          }
+          x = nx;
+          y = ny;
+        }
+      }
+
+      // Vũng nước (đọng mưa): lòng tối, viền ướt, mép sáng phản chiếu trăng
+      if (roll > 0.94) {
+        const cx = bx + 18 + grimeRand() * 28;
+        const cy = by + 18 + grimeRand() * 28;
+        const rx = 12 + grimeRand() * 18;
+        const ry = rx * (0.42 + grimeRand() * 0.18);
+        c.globalAlpha = 0.28;
+        c.fillStyle = '#0d1422';
+        fillPixelEllipse(c, cx, cy, rx + 2, ry + 1.5);
+        c.globalAlpha = 0.48;
+        c.fillStyle = biome === 'desert' ? '#1d2733' : '#141d2c';
+        fillPixelEllipse(c, cx, cy, rx, ry);
+        c.globalAlpha = 0.28;
+        c.fillStyle = '#7f9cc4';
+        fillPixelEllipse(c, cx - rx * 0.25, cy - ry * 0.35, rx * 0.45, Math.max(1, ry * 0.22));
+        c.globalAlpha = 0.5;
+        c.fillStyle = '#a9c1e6';
+        c.fillRect(Math.round(cx - rx * 0.55), Math.round(cy - ry * 0.55), Math.max(2, Math.round(rx * 0.35)), 1);
+      }
+
+      // Mảnh vụn: sỏi, giấy rách, vỏ đạn cũ, mảnh kính
+      if (roll > 0.2 && roll < 0.52) {
+        const n = 2 + Math.floor(grimeRand() * 4);
+        for (let k = 0; k < n; k++) {
+          const px = Math.round(bx + grimeRand() * 60);
+          const py = Math.round(by + grimeRand() * 60);
+          const t = grimeRand();
+          if (t < 0.5) {
+            c.globalAlpha = 0.85;
+            c.fillStyle = dark;
+            c.fillRect(px, py + 1, 3, 1);
+            c.fillStyle = biome === 'cyber' ? '#4b5566' : biome === 'crypt' ? '#5d5866' : '#9c8058';
+            c.fillRect(px, py, 2, 1);
+            c.fillStyle = light;
+            c.globalAlpha = 0.5;
+            c.fillRect(px, py, 1, 1);
+          } else if (t < 0.72) {
+            c.globalAlpha = 0.55;
+            c.fillStyle = '#cfc6b0';
+            c.fillRect(px, py, 4, 3);
+            c.fillStyle = '#8f8778';
+            c.fillRect(px + 1, py + 2, 3, 1);
+          } else if (t < 0.88) {
+            c.globalAlpha = 0.8;
+            c.fillStyle = '#b08a2e';
+            c.fillRect(px, py, 2, 1);
+            c.fillStyle = '#e8c45a';
+            c.fillRect(px, py, 1, 1);
+          } else {
+            c.globalAlpha = 0.5;
+            c.fillStyle = '#9ec5d8';
+            c.fillRect(px, py, 1, 2);
+            c.fillRect(px + 2, py + 1, 1, 1);
+          }
+        }
+      }
+
+      // Cỏ khô / rêu / vệt dầu
+      if (roll > 0.52 && roll < 0.68) {
+        const px = Math.round(bx + 6 + grimeRand() * 50);
+        const py = Math.round(by + 10 + grimeRand() * 46);
+        if (biome === 'cyber') {
+          c.globalAlpha = 0.4;
+          c.fillStyle = '#05060a';
+          fillPixelEllipse(c, px, py, 7 + grimeRand() * 6, 3 + grimeRand() * 2);
+          c.globalAlpha = 0.18;
+          c.fillStyle = '#6e5aa8';
+          c.fillRect(px - 3, py - 1, 3, 1);
+        } else {
+          const blades = 4 + Math.floor(grimeRand() * 5);
+          const base = biome === 'crypt' ? '#2f4a3a' : '#5f6b2e';
+          const tip = biome === 'crypt' ? '#4f7a5c' : '#a29a52';
+          for (let k = 0; k < blades; k++) {
+            const hx = px + k - (blades >> 1);
+            const hh = 2 + Math.floor(grimeRand() * 4);
+            c.globalAlpha = 0.9;
+            c.fillStyle = base;
+            c.fillRect(hx, py - hh, 1, hh);
+            c.fillStyle = tip;
+            c.fillRect(hx + (grimeRand() < 0.5 ? 0 : 1), py - hh, 1, 1);
+          }
+          c.globalAlpha = 0.35;
+          c.fillStyle = dark;
+          c.fillRect(px - (blades >> 1) - 1, py, blades + 2, 1);
+        }
+      }
+
+      // Vết máu cũ khô + vệt kéo lê (zombie đã đi qua)
+      if (roll > 0.68 && roll < 0.71) {
+        const cx = bx + 16 + grimeRand() * 32;
+        const cy = by + 16 + grimeRand() * 32;
+        c.globalAlpha = 0.55;
+        c.fillStyle = '#3b0b10';
+        fillPixelEllipse(c, cx, cy, 6 + grimeRand() * 7, 3 + grimeRand() * 3);
+        c.globalAlpha = 0.45;
+        c.fillStyle = '#5c1219';
+        fillPixelEllipse(c, cx - 1, cy - 1, 3 + grimeRand() * 3, 2);
+        const dir = grimeRand() * TWO_PI;
+        const len = 10 + grimeRand() * 22;
+        c.globalAlpha = 0.3;
+        c.fillStyle = '#3b0b10';
+        for (let k = 0; k < len; k += 2) {
+          c.fillRect(Math.round(cx + Math.cos(dir) * k), Math.round(cy + Math.sin(dir) * k), 2, 1);
+        }
+        for (let k = 0; k < 5; k++) {
+          c.fillRect(Math.round(cx + (grimeRand() - 0.5) * 26), Math.round(cy + (grimeRand() - 0.5) * 16), 1, 1);
+        }
+      }
+    }
+  }
+  c.globalAlpha = 1;
+  c.restore();
 }
 
 function getOrBakeTerrainChunk(
@@ -1312,6 +1643,9 @@ function getOrBakeTerrainChunk(
       drawTerrainDecorTile(cctx, biome, lx, ly, col, row, seed);
     }
   }
+
+  // Đêm Zombie: lớp chi tiết mặt đất (nứt, vũng nước, mảnh vụn, cỏ/rêu, máu khô) — bake cùng chunk
+  bakeTerrainGrime(cctx, biome, seed, worldX0, worldY0, size, minPlayX, minPlayY, maxPlayX, maxPlayY);
 
   // Center Boss Arena Pad emblem
   const padCx = (mapW === BANSUNG_MAP_W ? BANSUNG_ARENA_CX : mapW * 0.5) - worldX0;
@@ -1490,42 +1824,48 @@ function drawStaticObstacle25D(
     }
   }
 
-  // Crisp 2.5D extruded pixel block (top face shifted upward + front vertical facade)
-  const facadeH = Math.min(20, Math.max(12, Math.round(rh * 0.34)));
+  // Crisp 2.5D extruded pixel block — bake chi tiết 1 lần (AO, mặt trên, mặt đứng, nứt, rêu/gỉ)
+  const facadeH = Math.min(22, Math.max(12, Math.round(rh * 0.36)));
   const topY = ry - facadeH;
+  const baked = getOrBakeObstacleBlock(obs, biome, rw, rh, facadeH);
+  if (baked) {
+    ctx.drawImage(baked, rx - OBST_BAKE_PAD, topY - OBST_BAKE_PAD);
+  } else {
+    ctx.fillStyle = OUTLINE_INK;
+    ctx.fillRect(rx - 1, topY - 1, rw + 2, rh + facadeH + 2);
+    ctx.fillStyle = pal.wallTop;
+    ctx.fillRect(rx, topY, rw, rh);
+    ctx.fillStyle = pal.wallFace;
+    ctx.fillRect(rx, by - facadeH, rw, facadeH);
+  }
 
-  ctx.fillStyle = OUTLINE_INK;
-  ctx.fillRect(rx - 1, topY - 1, rw + 2, rh + facadeH + 2);
-
-  // Top surface
-  ctx.fillStyle = pal.wallTop;
-  ctx.fillRect(rx, topY, rw, rh);
-
-  // Inner bevel highlight
-  ctx.fillStyle = pal.wallTrim;
-  ctx.fillRect(rx + 2, topY + 2, rw - 4, 3);
-  ctx.fillRect(rx + 2, topY + 2, 2, rh - 4);
-
-  // Front vertical face
-  ctx.fillStyle = pal.wallFace;
-  ctx.fillRect(rx, by - facadeH, rw, facadeH);
-  ctx.fillStyle = pal.floorAccent;
-  ctx.fillRect(rx, by - facadeH, rw, 2);
-
-  if (biome === 'desert') {
-    // Sandstone block courses
-    ctx.fillStyle = pal.floorAccent;
-    for (let sx = rx + 16; sx < rx + rw - 8; sx += 24) {
-      ctx.fillRect(sx, by - facadeH + 2, 2, facadeH - 2);
+  // Mặt trên ướt dưới mưa: vệt phản chiếu chạy chậm + giọt nước chảy trên mặt đứng
+  if (weatherRainNow > 0.05) {
+    const wet = weatherRainNow;
+    ctx.save();
+    ctx.globalAlpha = 0.1 + 0.14 * wet;
+    ctx.fillStyle = '#a9c4ea';
+    const shift = Math.floor(nowSec * 9 + (rx & 31)) % 12;
+    for (let sy = topY + 3 + (shift % 4); sy < topY + rh - 3; sy += 7) {
+      ctx.fillRect(rx + 3, sy, Math.max(2, Math.round(rw * 0.45)), 1);
     }
-  } else if (biome === 'crypt') {
+    ctx.globalAlpha = 0.35 * wet;
+    for (let k = 0; k < 3; k++) {
+      const dx = rx + 4 + ((k * 37 + (ry & 63)) % Math.max(6, rw - 8));
+      const dy = by - facadeH + ((Math.floor(nowSec * 22) + k * 7) % Math.max(4, facadeH));
+      ctx.fillRect(dx, dy, 1, 2);
+    }
+    ctx.restore();
+  }
+
+  if (biome === 'crypt') {
     // Runic carved sigil slit
     ctx.fillStyle = pal.wallTrim;
     ctx.globalAlpha = 0.6;
     ctx.fillRect(cx - 4, by - facadeH + 6, 8, 3);
     ctx.globalAlpha = 1;
     queueGlow('violet', cx, by - facadeH + 8, 20, 0.2);
-  } else {
+  } else if (biome === 'cyber') {
     // Cyber server rack LEDs
     const blink = ((Math.floor(nowSec * 3) + (rx ^ ry)) & 3) === 0;
     ctx.fillStyle = blink ? '#22d3ee' : '#38bdf8';
@@ -1534,7 +1874,185 @@ function drawStaticObstacle25D(
     ctx.fillRect(rx + 14, by - facadeH + 5, 4, 3);
     queueGlow('cyan', rx + 8, by - facadeH + 6, 18, 0.28);
   }
-  drawCallsLastFrame += 4;
+  drawCallsLastFrame += 2;
+}
+
+// ----------------------------------------------------------------------------
+// 5b. Bake chi tiết khối chướng ngại 2.5D (spec 007 §4.2) — cache theo object, không cấp phát/frame.
+// ----------------------------------------------------------------------------
+
+const OBST_BAKE_PAD = 4;
+interface ObstacleBakeEntry {
+  canvas: HTMLCanvasElement;
+  biome: BansungBiome;
+  rw: number;
+  rh: number;
+}
+const obstacleBakeCache = new WeakMap<StaticObstacleBox, ObstacleBakeEntry>();
+
+/** Cường độ mưa hiện tại (0..1) — cập nhật mỗi frame bởi hệ thời tiết, dùng cho mặt ướt. */
+let weatherRainNow = 0;
+
+function getOrBakeObstacleBlock(
+  obs: StaticObstacleBox,
+  biome: BansungBiome,
+  rw: number,
+  rh: number,
+  facadeH: number,
+): HTMLCanvasElement | null {
+  const hit = obstacleBakeCache.get(obs);
+  if (hit && hit.biome === biome && hit.rw === rw && hit.rh === rh) return hit.canvas;
+  const P = OBST_BAKE_PAD;
+  const cw = rw + P * 2 + 6;
+  const ch = rh + facadeH + P * 2 + 6;
+  const canvas = makeOffscreenCanvas(cw, ch);
+  if (!canvas) return null;
+  const c = canvas.getContext('2d');
+  if (!c) return null;
+  c.imageSmoothingEnabled = false;
+  const pal = BANSUNG_BIOME_PALETTES[biome] ?? BANSUNG_BIOME_PALETTES.desert;
+  const x0 = P;
+  const y0 = P; // đỉnh mặt trên
+  const faceY = y0 + rh; // mép trên mặt đứng
+  const baseY = faceY + facadeH; // chân khối
+  grimeSeed(Math.round(obs.x), Math.round(obs.y), 0x0b57, rw * 131 + rh);
+
+  // Ambient occlusion dưới chân (2 lớp: đậm sát chân, nhạt loang ra phải-dưới theo hướng trăng)
+  c.fillStyle = '#000000';
+  c.globalAlpha = 0.2;
+  c.fillRect(x0 + 1, baseY - 1, rw + 5, 6);
+  c.globalAlpha = 0.32;
+  c.fillRect(x0, baseY - 1, rw + 3, 3);
+  c.globalAlpha = 1;
+
+  // Viền mực
+  c.fillStyle = OUTLINE_INK;
+  c.fillRect(x0 - 1, y0 - 1, rw + 2, rh + facadeH + 2);
+
+  // Mặt trên + nhiễu hạt
+  c.fillStyle = pal.wallTop;
+  c.fillRect(x0, y0, rw, rh);
+  for (let yy = y0; yy < y0 + rh; yy += 2) {
+    for (let xx = x0; xx < x0 + rw; xx += 2) {
+      const r = grimeRand();
+      if (r < 0.14) {
+        c.globalAlpha = 0.16;
+        c.fillStyle = '#000000';
+        c.fillRect(xx, yy, 1, 1);
+      } else if (r > 0.9) {
+        c.globalAlpha = 0.12;
+        c.fillStyle = '#ffffff';
+        c.fillRect(xx, yy, 1, 1);
+      }
+    }
+  }
+  // Ghép tấm đá trên mặt
+  c.globalAlpha = 0.28;
+  c.fillStyle = '#000000';
+  for (let xx = x0 + 15; xx < x0 + rw - 4; xx += 16) c.fillRect(xx, y0 + 2, 1, rh - 4);
+  if (rh > 24) for (let yy = y0 + 14; yy < y0 + rh - 4; yy += 14) c.fillRect(x0 + 2, yy, rw - 4, 1);
+  // Viền sáng trên-trái (ánh trăng) & bóng trong phải-dưới
+  c.globalAlpha = 0.85;
+  c.fillStyle = pal.wallTrim;
+  c.fillRect(x0 + 1, y0 + 1, rw - 2, 1);
+  c.fillRect(x0 + 1, y0 + 1, 1, rh - 2);
+  c.globalAlpha = 0.35;
+  c.fillStyle = '#b8c8ea';
+  c.fillRect(x0, y0, rw, 1);
+  c.globalAlpha = 0.3;
+  c.fillStyle = '#000000';
+  c.fillRect(x0 + rw - 2, y0 + 2, 2, rh - 2);
+  c.fillRect(x0 + 2, y0 + rh - 2, rw - 2, 2);
+
+  // Mặt đứng: 3 dải sáng→tối, hàng gạch so le, cạnh tối hai bên
+  c.globalAlpha = 1;
+  c.fillStyle = pal.wallFace;
+  c.fillRect(x0, faceY, rw, facadeH);
+  c.globalAlpha = 0.1;
+  c.fillStyle = '#ffffff';
+  c.fillRect(x0, faceY, rw, Math.max(2, Math.round(facadeH * 0.3)));
+  c.globalAlpha = 0.24;
+  c.fillStyle = '#000000';
+  c.fillRect(x0, baseY - Math.max(3, Math.round(facadeH * 0.3)), rw, Math.max(3, Math.round(facadeH * 0.3)));
+  c.globalAlpha = 1;
+  c.fillStyle = pal.floorAccent;
+  c.fillRect(x0, faceY, rw, 2);
+  c.globalAlpha = 0.3;
+  c.fillStyle = '#000000';
+  let course = 0;
+  for (let yy = faceY + 6; yy < baseY - 1; yy += 5) {
+    c.fillRect(x0 + 1, yy, rw - 2, 1);
+    const off = (course & 1) === 0 ? 6 : 12;
+    for (let xx = x0 + off; xx < x0 + rw - 2; xx += 12) c.fillRect(xx, yy - 4, 1, 4);
+    course++;
+  }
+  c.globalAlpha = 0.4;
+  c.fillRect(x0, faceY + 2, 1, facadeH - 2);
+  c.fillRect(x0 + rw - 1, faceY + 2, 1, facadeH - 2);
+
+  // Vết nứt trên mặt đứng
+  const cracks = 1 + Math.floor(grimeRand() * 2);
+  for (let k = 0; k < cracks; k++) {
+    let px = x0 + 4 + grimeRand() * (rw - 8);
+    let py = faceY + 3;
+    c.globalAlpha = 0.65;
+    c.fillStyle = '#000000';
+    while (py < baseY - 2) {
+      c.fillRect(Math.round(px), Math.round(py), 1, 1);
+      px += (grimeRand() - 0.5) * 2.2;
+      py += 1;
+    }
+  }
+
+  // Chi tiết theo biome
+  if (biome === 'desert') {
+    // cát dồn chân tường + sứt mẻ cạnh trên
+    c.globalAlpha = 0.85;
+    c.fillStyle = pal.floorA;
+    for (let xx = x0 - 2; xx < x0 + rw + 2; xx++) {
+      const hh = 1 + Math.round(1.6 + Math.sin((xx - x0) * 0.35 + grimeRand()) * 1.4);
+      c.fillRect(xx, baseY - hh, 1, hh + 1);
+    }
+    c.fillStyle = OUTLINE_INK;
+    for (let k = 0; k < 3; k++) c.fillRect(x0 + Math.floor(grimeRand() * (rw - 4)), y0 - 1, 3, 2);
+  } else if (biome === 'crypt') {
+    // rêu xanh rủ từ mép trên và mọc ở chân
+    for (let xx = x0; xx < x0 + rw; xx++) {
+      if (grimeRand() < 0.4) {
+        const len = 1 + Math.floor(grimeRand() * 4);
+        c.globalAlpha = 0.85;
+        c.fillStyle = grimeRand() < 0.5 ? '#3f6b4c' : '#2c4a38';
+        c.fillRect(xx, faceY + 1, 1, len);
+      }
+      if (grimeRand() < 0.3) {
+        c.globalAlpha = 0.75;
+        c.fillStyle = '#35573f';
+        c.fillRect(xx, baseY - 1 - Math.floor(grimeRand() * 3), 1, 2);
+      }
+    }
+  } else {
+    // panel kim loại: đinh tán + vệt gỉ chảy từ mép trên
+    c.globalAlpha = 0.55;
+    c.fillStyle = '#cbd5e1';
+    for (let xx = x0 + 3; xx < x0 + rw - 2; xx += 10) {
+      c.fillRect(xx, faceY + 3, 1, 1);
+      c.fillRect(xx, baseY - 3, 1, 1);
+    }
+    for (let k = 0; k < Math.max(2, Math.floor(rw / 14)); k++) {
+      const xx = x0 + 2 + Math.floor(grimeRand() * (rw - 4));
+      const len = 3 + Math.floor(grimeRand() * (facadeH - 3));
+      c.globalAlpha = 0.5;
+      c.fillStyle = '#7c4a22';
+      c.fillRect(xx, faceY + 2, 1, len);
+      c.globalAlpha = 0.35;
+      c.fillStyle = '#b4652b';
+      c.fillRect(xx, faceY + 2, 1, Math.max(1, len >> 1));
+    }
+  }
+  c.globalAlpha = 1;
+
+  obstacleBakeCache.set(obs, { canvas, biome, rw, rh });
+  return canvas;
 }
 
 function drawSnapProp(
@@ -2244,7 +2762,8 @@ function drawMobEntity(
     `mob_${e.enemyId}_idle`,
   ];
 
-  const drawn = drawFirstAvailableClip(ctx, candidates, drawX, drawY, nowSec, {
+  const mobAnimSec = resolveDeathAnimTime(mobDeathStartSec, e.id, e.state === BANSUNG_STATE_DEAD, nowSec);
+  const drawn = drawFirstAvailableClip(ctx, candidates, drawX, drawY, mobAnimSec, {
     flipX: isLeft,
     scale,
     alpha: e.spawnAlpha,
@@ -2405,7 +2924,9 @@ function resolveBossClips(boss: ExtendedBossView): string[] {
           ? 'stun'
           : boss.state === BANSUNG_STATE_ATK
             ? 'attack'
-            : 'idle';
+            : boss.state === BANSUNG_STATE_RUN || boss.state === BANSUNG_STATE_DASH
+              ? 'run'
+              : 'idle';
     return [`boss_tempest_${act}`, 'boss_tempest_idle', 'boss_tempest'];
   }
 
@@ -2417,7 +2938,9 @@ function resolveBossClips(boss: ExtendedBossView): string[] {
           ? 'stun'
           : boss.state === BANSUNG_STATE_ATK
             ? 'attack'
-            : 'idle';
+            : boss.state === BANSUNG_STATE_RUN || boss.state === BANSUNG_STATE_DASH
+              ? 'run'
+              : 'idle';
     return [`boss_destroyer_${act}`, 'boss_destroyer_idle', 'boss_destroyer'];
   }
 
@@ -2429,7 +2952,9 @@ function resolveBossClips(boss: ExtendedBossView): string[] {
           ? 'stun'
           : boss.state === BANSUNG_STATE_ATK
             ? 'attack'
-            : 'idle';
+            : boss.state === BANSUNG_STATE_RUN || boss.state === BANSUNG_STATE_DASH
+              ? 'run'
+              : 'idle';
     return [`boss_frost_empress_${act}`, 'boss_frost_empress_idle', 'boss_frost_empress'];
   }
 
@@ -2441,7 +2966,9 @@ function resolveBossClips(boss: ExtendedBossView): string[] {
           ? 'stun'
           : boss.state === BANSUNG_STATE_ATK
             ? 'attack'
-            : 'idle';
+            : boss.state === BANSUNG_STATE_RUN || boss.state === BANSUNG_STATE_DASH
+              ? 'run'
+              : 'idle';
     return [`boss_storm_herald_${act}`, 'boss_storm_herald_idle', 'boss_storm_herald'];
   }
 
@@ -2453,7 +2980,9 @@ function resolveBossClips(boss: ExtendedBossView): string[] {
           ? 'stun'
           : boss.state === BANSUNG_STATE_ATK
             ? 'attack'
-            : 'idle';
+            : boss.state === BANSUNG_STATE_RUN || boss.state === BANSUNG_STATE_DASH
+              ? 'run'
+              : 'idle';
     return [`boss_abyssal_leviathan_${act}`, 'boss_abyssal_leviathan_idle', 'boss_abyssal_leviathan'];
   }
 
@@ -2753,7 +3282,8 @@ function drawBossEntity(
                 : 1.65;
   const bossScale = baseBossScale * scaleMult;
   const clips = resolveBossClips(boss);
-  const drawn = drawFirstAvailableClip(ctx, clips, drawX, drawY, nowSec, {
+  const bossAnimSec = resolveDeathAnimTime(bossDeathStartSec, boss.id, boss.state === BANSUNG_STATE_DEAD, nowSec);
+  const drawn = drawFirstAvailableClip(ctx, clips, drawX, drawY, bossAnimSec, {
     flipX: boss.facingLeft,
     category: 'boss',
     scale: bossScale,
@@ -4670,6 +5200,7 @@ export function processBansungFxEvents(
         ? resolveFxActorWeaponTier(store, evt.a, opts?.myPlayerId)
         : 1;
     bansungVfx.consumeFxEvent(evt, viewerPos, Boolean(opts?.reducedFlash), nowMs, weaponTier);
+    bansungBossFx.onFxEvent(evt.type, evt.a, evt.b, evt.c, evt.d, evt.e);
 
     if (evt.type === FX_DMG) {
       // [1, x, y, amount, dmgFlags, targetId]
@@ -4710,6 +5241,10 @@ export function processBansungFxEvents(
 
     if (evt.type === FX_IMPACT) {
       // [3, impactKind, x, y, aimQ, matOrWeaponIdx]
+      if (evt.a === BANSUNG_FX_IMPACT_FLESH || evt.a === BANSUNG_FX_IMPACT_SLASH) {
+        // Đêm Zombie v2: máu bắn ra theo hướng viên đạn / nhát chém
+        spawnBloodHit(evt.b, evt.c, dequantizeAim(evt.d), evt.a === BANSUNG_FX_IMPACT_FLESH ? 1 : 2, -1);
+      }
       if (evt.a === 2) {
         const wIdx = evt.e >>> 1;
         const dir: 1 | -1 = (evt.e & 1) === 1 ? 1 : -1;
@@ -4726,18 +5261,15 @@ export function processBansungFxEvents(
       // [4, kindIdx, x, y, tier, killerIdx]
       const x = evt.b;
       const y = evt.c;
-      const isMechanical =
-        evt.a === 5 || evt.a === 8 || evt.a === 9 || evt.a === 10 || evt.a === 11;
-      bansungFx.spawnDecal(
-        isMechanical ? DecalKind.SplatOil : DecalKind.SplatBlood,
-        x,
-        y,
-        (evt.a * 1.3 + x * 0.05) % TWO_PI,
-        0,
-      );
-      bansungFx.spawnBurst(isMechanical ? 'sparks' : 'blood', x, y - 8, 0, 1.1, {
-        colorIdx: isMechanical ? FxColor.Cyan : FxColor.Blood,
-      });
+      // Đêm Zombie v2: mọi quái là zombie → máu phun theo hướng từ người giết tới xác
+      let goreDir = Math.atan2(y - viewerPos.y, x - viewerPos.x);
+      for (const kp of store.players.values()) {
+        if (kp.idx === evt.e) {
+          goreDir = Math.atan2(y - kp.y, x - kp.x);
+          break;
+        }
+      }
+      spawnZombieDeathGore(x, y, goreDir, goreSizeForEnemyKind(evt.a) * (evt.d >= 3 ? 1.3 : 1), evt.a);
       if (evt.d >= 3 || evt.a >= 8) {
         if (!opts?.reducedFlash) {
           triggerScreenFlash(0.28, '#ffd43b');
@@ -4746,6 +5278,16 @@ export function processBansungFxEvents(
           strength: 1.5,
         });
       }
+      continue;
+    }
+
+    if (
+      evt.type === FX_STATUS &&
+      evt.b >= BANSUNG_FX_STATUS_WSKILL_CAST &&
+      evt.b <= BANSUNG_FX_STATUS_WSKILL_PASSIVE
+    ) {
+      // Skill súng (spec 007 · C): [5, playerIdx, 18..21, weaponIdx, x, y]
+      onWeaponSkillFxEvent(evt, { store, nowMs, viewerPos, reducedFlash: Boolean(opts?.reducedFlash) });
       continue;
     }
 
@@ -5247,6 +5789,830 @@ function assignBossView(
         : 0);
 }
 
+// ============================================================================
+// 10b. Night Zombie Lighting — đèn pin xoay theo chuột (spec 007 / d03)
+// ============================================================================
+//
+// Kỹ thuật (zero createRadialGradient mỗi frame):
+//  1. Canvas phụ kích thước màn hình (pixel thật) được phủ màu đêm DARKNESS_ALPHA.
+//  2. `destination-out` khoét: quầng sáng quanh từng người chơi, nón đèn pin
+//     (đa giác visibility raycast vào chướng ngại → tường đổ bóng thật),
+//     ánh lửa đầu nòng / vụ nổ (tái dùng glowQueue), hào quang Boss.
+//  3. Ghép canvas đêm lên màn hình, rồi cộng 1 lớp ánh vàng ấm ('lighter') trong nón
+//     của người chơi local để tạo cảm giác đèn pin thật.
+
+let nightCanvas: HTMLCanvasElement | null = null;
+let nightCtx: CanvasRenderingContext2D | null = null;
+/** Stamp tròn mềm (alpha) — quầng sáng quanh người, ánh lửa động, hào quang boss. */
+let nightLightStamp: HTMLCanvasElement | null = null;
+/** Stamp nón đèn pin (alpha) đã bake: falloff theo khoảng cách + viền góc mềm + hotspot. */
+let nightConeCutStamp: HTMLCanvasElement | null = null;
+/** Stamp màu ấm của nón (additive): lõi trắng ấm, viền hơi lạnh. */
+let nightConeWarmStamp: HTMLCanvasElement | null = null;
+let nightConeHalfH = 0;
+const NIGHT_CONE_STAMP_LEN = 512;
+const NIGHT_MAX_RAYS = 160;
+const NIGHT_MAX_WARM_CONES = 8;
+const NIGHT_CONE_STRIDE = NIGHT_MAX_RAYS + 2;
+const nightRayX = new Float32Array(NIGHT_CONE_STRIDE);
+const nightRayY = new Float32Array(NIGHT_CONE_STRIDE);
+const nightRayHit: RayHit = { ex: 0, ey: 0, dist: 0 };
+/** Đa giác nón (đã đổ bóng tường) của tối đa 8 người chơi để vẽ lớp ánh ấm / mưa sáng / bụi. */
+const warmConeX = new Float32Array(NIGHT_CONE_STRIDE * NIGHT_MAX_WARM_CONES);
+const warmConeY = new Float32Array(NIGHT_CONE_STRIDE * NIGHT_MAX_WARM_CONES);
+const warmConeCount = new Int32Array(NIGHT_MAX_WARM_CONES);
+const warmConeOx = new Float32Array(NIGHT_MAX_WARM_CONES);
+const warmConeOy = new Float32Array(NIGHT_MAX_WARM_CONES);
+const warmConeAim = new Float32Array(NIGHT_MAX_WARM_CONES);
+const warmConeRange = new Float32Array(NIGHT_MAX_WARM_CONES);
+const warmConeLocal = new Uint8Array(NIGHT_MAX_WARM_CONES);
+let warmConeUsed = 0;
+let localConeSlot = -1;
+const NIGHT_DARK_FILL = `rgb(${BANSUNG_NIGHT.DARKNESS_RGB[0]},${BANSUNG_NIGHT.DARKNESS_RGB[1]},${BANSUNG_NIGHT.DARKNESS_RGB[2]})`;
+
+// Bụi lơ lửng trong luồng sáng (vị trí giả ngẫu nhiên cố định, trôi theo thời gian)
+const DUST_MOTE_COUNT = 64;
+const dustU = new Float32Array(DUST_MOTE_COUNT);
+const dustV = new Float32Array(DUST_MOTE_COUNT);
+const dustSpd = new Float32Array(DUST_MOTE_COUNT);
+const dustPh = new Float32Array(DUST_MOTE_COUNT);
+for (let i = 0; i < DUST_MOTE_COUNT; i++) {
+  const a = Math.sin(i * 12.9898 + 1.3) * 43758.5453;
+  const b = Math.sin(i * 78.233 + 4.1) * 12543.1234;
+  const c = Math.sin(i * 39.425 + 2.7) * 23421.631;
+  dustU[i] = a - Math.floor(a);
+  dustV[i] = b - Math.floor(b);
+  dustSpd[i] = 6 + (c - Math.floor(c)) * 14;
+  dustPh[i] = (a * 7.1) % TWO_PI;
+}
+
+function smoothstep01(e0: number, e1: number, x: number): number {
+  const t = clamp((x - e0) / (e1 - e0), 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+/** Bake nón đèn pin (1 lần): alpha theo khoảng cách & góc, hotspot sáng ở 1/3 tầm. */
+function bakeConeStamp(warm: boolean): HTMLCanvasElement | null {
+  const len = NIGHT_CONE_STAMP_LEN;
+  const half = BANSUNG_NIGHT.CONE_HALF_ANGLE;
+  const soft = BANSUNG_NIGHT.CONE_SOFT_EDGE;
+  const maxAng = half + soft + 0.02;
+  const halfH = Math.ceil(Math.tan(maxAng) * len) + 2;
+  const canvas = makeOffscreenCanvas(len, halfH * 2);
+  if (!canvas) return null;
+  const c = canvas.getContext('2d');
+  if (!c) return null;
+  const img = c.createImageData(len, halfH * 2);
+  const d = img.data;
+  const innerAng = half * 0.55;
+  for (let y = 0; y < halfH * 2; y++) {
+    for (let x = 0; x < len; x++) {
+      const dx = x + 0.5;
+      const dy = y + 0.5 - halfH;
+      const dist = Math.sqrt(dx * dx + dy * dy) / len;
+      const o = (y * len + x) * 4;
+      if (dist >= 1) {
+        d[o + 3] = 0;
+        continue;
+      }
+      const ang = Math.abs(Math.atan2(dy, dx));
+      let angular = 0;
+      if (ang <= innerAng) angular = 1;
+      else if (ang < half + soft) angular = Math.pow(1 - (ang - innerAng) / (half + soft - innerAng), 1.5);
+      const radial = Math.pow(1 - smoothstep01(0.22, 1, dist), 1.2);
+      const hot =
+        Math.exp(-((dist - 0.3) * (dist - 0.3)) / (0.2 * 0.2)) * Math.exp(-(ang * ang) / (half * 0.42 * (half * 0.42)));
+      if (!warm) {
+        d[o] = 0;
+        d[o + 1] = 0;
+        d[o + 2] = 0;
+        d[o + 3] = Math.round(255 * clamp(radial * angular * (0.84 + 0.16 * hot), 0, 1));
+      } else {
+        // trắng ấm ở lõi → hơi lạnh ở viền (cân bằng ấm/lạnh kiểu đèn LED)
+        const edge = clamp(ang / (half + soft), 0, 1);
+        d[o] = Math.round(255 - 30 * edge);
+        d[o + 1] = Math.round(236 - 8 * edge);
+        d[o + 2] = Math.round(196 + 50 * edge);
+        d[o + 3] = Math.round(255 * clamp((0.07 * radial + 0.2 * hot) * angular, 0, 1));
+      }
+    }
+  }
+  c.putImageData(img, 0, 0);
+  nightConeHalfH = halfH;
+  return canvas;
+}
+
+/** Stamp tròn trắng → trong suốt (bake 1 lần) dùng để khoét bóng tối. */
+function ensureNightStamps(): boolean {
+  if (nightLightStamp && nightConeCutStamp && nightConeWarmStamp) return true;
+  const size = 256;
+  const light = makeOffscreenCanvas(size, size);
+  if (!light) return false;
+  const lc = light.getContext('2d');
+  if (!lc) return false;
+  const g = lc.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  g.addColorStop(0, 'rgba(0,0,0,1)');
+  g.addColorStop(0.35, 'rgba(0,0,0,0.9)');
+  g.addColorStop(0.7, 'rgba(0,0,0,0.42)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  lc.fillStyle = g;
+  lc.fillRect(0, 0, size, size);
+  nightLightStamp = light;
+  nightConeCutStamp = bakeConeStamp(false);
+  nightConeWarmStamp = bakeConeStamp(true);
+  return Boolean(nightConeCutStamp && nightConeWarmStamp);
+}
+
+function ensureNightCanvas(pw: number, ph: number): CanvasRenderingContext2D | null {
+  if (!nightCanvas || nightCanvas.width !== pw || nightCanvas.height !== ph) {
+    nightCanvas = makeOffscreenCanvas(pw, ph);
+    nightCtx = nightCanvas ? nightCanvas.getContext('2d') : null;
+  }
+  return nightCtx;
+}
+
+/** Rung nhẹ của đèn pin (pin yếu / tay cầm) — tránh nhấp nháy mạnh (Art Bible §flash). */
+function flashlightFlicker(seed: number, nowSec: number): number {
+  const n =
+    Math.sin(nowSec * 13.1 + seed * 1.7) * 0.5 +
+    Math.sin(nowSec * 29.7 + seed * 3.1) * 0.3 +
+    Math.sin(nowSec * 3.3 + seed) * 0.2;
+  return 0.975 + n * 0.025;
+}
+
+/** Khoét nón đèn pin có đổ bóng tường + quầng sáng quanh người; ghi đa giác vào slot ánh ấm. */
+function cutPlayerLight(
+  lctx: CanvasRenderingContext2D,
+  px: number,
+  py: number,
+  aim: number,
+  power: number,
+  rays: number,
+  obstacles: readonly StaticObstacleBox[],
+  mapW: number,
+  mapH: number,
+  flicker: number,
+  slot: number,
+  isLocal: boolean,
+): void {
+  const stamp = nightConeCutStamp;
+  const round = nightLightStamp;
+  if (!stamp || !round) return;
+  const eyeY = py - 8;
+  const range = BANSUNG_NIGHT.CONE_RANGE * power * flicker;
+  const spread = BANSUNG_NIGHT.CONE_HALF_ANGLE + BANSUNG_NIGHT.CONE_SOFT_EDGE;
+  const bleed = BANSUNG_NIGHT.OBSTACLE_FACE_BLEED;
+  const n = Math.max(6, Math.min(NIGHT_MAX_RAYS, rays));
+
+  // Đa giác visibility (tia xuyên nhẹ vào mặt tường để mặt trước khối được rọi sáng)
+  nightRayX[0] = px;
+  nightRayY[0] = eyeY;
+  for (let i = 0; i <= n; i++) {
+    const a = aim - spread + (2 * spread * i) / n;
+    const hit = raycastObstacles(px, eyeY, a, range, obstacles, mapW, mapH, nightRayHit);
+    const dist = hit.dist < range - 1 ? Math.min(range, hit.dist + bleed) : hit.dist;
+    nightRayX[i + 1] = px + Math.cos(a) * dist;
+    nightRayY[i + 1] = eyeY + Math.sin(a) * dist;
+  }
+  const count = n + 2;
+
+  lctx.save();
+  lctx.beginPath();
+  lctx.moveTo(nightRayX[0], nightRayY[0]);
+  for (let i = 1; i < count; i++) lctx.lineTo(nightRayX[i], nightRayY[i]);
+  lctx.closePath();
+  lctx.clip();
+  lctx.translate(px, eyeY);
+  lctx.rotate(aim);
+  const s = range / NIGHT_CONE_STAMP_LEN;
+  lctx.scale(s, s);
+  lctx.globalAlpha = 0.97;
+  lctx.drawImage(stamp, 0, -nightConeHalfH);
+  lctx.restore();
+
+  if (slot >= 0 && slot < NIGHT_MAX_WARM_CONES) {
+    const base = slot * NIGHT_CONE_STRIDE;
+    for (let i = 0; i < count; i++) {
+      warmConeX[base + i] = nightRayX[i];
+      warmConeY[base + i] = nightRayY[i];
+    }
+    warmConeCount[slot] = count;
+    warmConeOx[slot] = px;
+    warmConeOy[slot] = eyeY;
+    warmConeAim[slot] = aim;
+    warmConeRange[slot] = range;
+    warmConeLocal[slot] = isLocal ? 1 : 0;
+  }
+
+  // Quầng sáng môi trường quanh người chơi (thấy được zombie áp sát sau lưng)
+  const ar = BANSUNG_NIGHT.AMBIENT_RADIUS * (0.6 + 0.4 * power);
+  lctx.globalAlpha = 0.9;
+  lctx.drawImage(round, px - ar, py - 14 - ar, ar * 2, ar * 2);
+  lctx.globalAlpha = 1;
+}
+
+function traceWarmCone(ctx: CanvasRenderingContext2D, slot: number): void {
+  const base = slot * NIGHT_CONE_STRIDE;
+  const cnt = warmConeCount[slot];
+  ctx.beginPath();
+  ctx.moveTo(warmConeX[base], warmConeY[base]);
+  for (let i = 1; i < cnt; i++) ctx.lineTo(warmConeX[base + i], warmConeY[base + i]);
+  ctx.closePath();
+}
+
+/** VFX skill boss mới (spec 007 v2 · WS4): laze quét, sét bắn ra, vệt sáng đạn xoắn ốc + overlay telegraph. */
+const bossFxViewScratch = { x0: 0, y0: 0, x1: 0, y1: 0 };
+/** Khung nhìn tái sử dụng cho hiệu ứng skill súng (spec 007 · C). */
+const wskillFxView: WeaponSkillFxView = { x0: 0, y0: 0, x1: 0, y1: 0 };
+function drawBossFxPass(
+  ctx: CanvasRenderingContext2D,
+  telegraphs: readonly BansungTelegraphWire[] | undefined,
+  vx0: number,
+  vy0: number,
+  vx1: number,
+  vy1: number,
+  nowMs: number,
+): void {
+  bossFxViewScratch.x0 = vx0;
+  bossFxViewScratch.y0 = vy0;
+  bossFxViewScratch.x1 = vx1;
+  bossFxViewScratch.y1 = vy1;
+  bansungBossFx.drawAdditive(ctx, bossFxViewScratch, nowMs);
+  if (telegraphs) {
+    for (let i = 0; i < telegraphs.length; i++) {
+      bansungBossFx.drawTelegraphOverlay(ctx, telegraphs[i], nowMs);
+    }
+  }
+}
+
+function drawNightLighting(
+  ctx: CanvasRenderingContext2D,
+  store: BansungStore,
+  localPlayer: InterpPlayer | null,
+  w: number,
+  h: number,
+  dpr: number,
+  zoom: number,
+  tx: number,
+  ty: number,
+  obstacles: readonly StaticObstacleBox[],
+  mapW: number,
+  mapH: number,
+  nowSec: number,
+): void {
+  if (!ensureNightStamps()) return;
+  const pw = Math.max(1, Math.round(w * dpr));
+  const ph = Math.max(1, Math.round(h * dpr));
+  const lctx = ensureNightCanvas(pw, ph);
+  if (!lctx || !nightCanvas || !nightLightStamp) return;
+
+  // 1) Phủ bóng đêm (xanh đêm, trăng mờ)
+  lctx.setTransform(1, 0, 0, 1, 0, 0);
+  lctx.globalCompositeOperation = 'source-over';
+  lctx.globalAlpha = BANSUNG_NIGHT.DARKNESS_ALPHA;
+  lctx.clearRect(0, 0, pw, ph);
+  lctx.fillStyle = NIGHT_DARK_FILL;
+  lctx.fillRect(0, 0, pw, ph);
+  lctx.globalAlpha = 1;
+
+  // 2) Khoét ánh sáng trong toạ độ thế giới
+  lctx.globalCompositeOperation = 'destination-out';
+  lctx.setTransform(dpr * zoom, 0, 0, dpr * zoom, tx * dpr, ty * dpr);
+  warmConeUsed = 0;
+  localConeSlot = -1;
+
+  for (const p of store.players.values()) {
+    if (p.state === BANSUNG_STATE_DEAD) continue;
+    const isLocal = p === localPlayer;
+    const px = isLocal ? store.localDrawX : p.x;
+    const py = isLocal ? store.localDrawY : p.y;
+    const aim = isLocal ? store.localAimRad : p.aim;
+    const power = p.state === BANSUNG_STATE_DOWNED ? BANSUNG_NIGHT.DOWNED_RANGE_MULT : 1;
+    const slot = warmConeUsed < NIGHT_MAX_WARM_CONES ? warmConeUsed++ : -1;
+    if (isLocal) localConeSlot = slot;
+    cutPlayerLight(
+      lctx,
+      px,
+      py,
+      aim,
+      power,
+      isLocal ? BANSUNG_NIGHT.RAYS_LOCAL : BANSUNG_NIGHT.RAYS_REMOTE,
+      obstacles,
+      mapW,
+      mapH,
+      flashlightFlicker(p.id, nowSec),
+      slot,
+      isLocal,
+    );
+  }
+
+  // Ánh lửa đầu nòng, đạn năng lượng, vụ nổ — chiếu sáng tạm thời
+  const dynScale = BANSUNG_NIGHT.DYNAMIC_LIGHT_SCALE;
+  const dynCount = Math.min(glowQueueCount, 96);
+  for (let i = 0; i < dynCount; i++) {
+    const g = glowQueue[i];
+    const r = g.radius * dynScale;
+    lctx.globalAlpha = clamp(g.alpha * 1.8, 0, 1);
+    lctx.drawImage(nightLightStamp, g.x - r, g.y - r, r * 2, r * 2);
+  }
+
+  // Boss luôn lộ diện mờ (mắt phát sáng / áp lực) để người chơi đọc được telegraph
+  for (let bi = 0; bi < activeBossCount; bi++) {
+    const bv = bossRenderViews[bi];
+    if (!bv.id && !bv.maxHp) continue;
+    const r = 150;
+    lctx.globalAlpha = 0.62;
+    lctx.drawImage(nightLightStamp, bv.x - r, bv.y - 40 - r, r * 2, r * 2);
+  }
+
+  // Sấm chớp: nâng toàn bộ bóng tối trong vài trăm ms (sáng toàn map rồi tự tắt)
+  if (weatherFlashNow > 0.01) {
+    lctx.setTransform(1, 0, 0, 1, 0, 0);
+    lctx.globalAlpha = clamp(weatherFlashNow * 0.92, 0, 0.92);
+    lctx.fillStyle = '#000000';
+    lctx.fillRect(0, 0, pw, ph);
+  }
+  lctx.globalAlpha = 1;
+  lctx.globalCompositeOperation = 'source-over';
+
+  // 3) Ghép lớp đêm lên màn hình (screen space)
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = 1;
+  ctx.drawImage(nightCanvas, 0, 0);
+  ctx.restore();
+  drawCallsLastFrame++;
+
+  // 4) Ánh ấm của nón đèn (additive, clip theo nón có đổ bóng) + bụi lơ lửng + mặt đất ướt lấp lánh
+  const warmStamp = nightConeWarmStamp;
+  if (!warmStamp) return;
+  for (let slot = 0; slot < warmConeUsed; slot++) {
+    if (warmConeCount[slot] < 3) continue;
+    const isLocal = warmConeLocal[slot] === 1;
+    const ox = warmConeOx[slot];
+    const oy = warmConeOy[slot];
+    const range = warmConeRange[slot];
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    traceWarmCone(ctx, slot);
+    ctx.clip();
+    ctx.save();
+    ctx.translate(ox, oy);
+    ctx.rotate(warmConeAim[slot]);
+    const s = range / NIGHT_CONE_STAMP_LEN;
+    ctx.scale(s, s);
+    ctx.globalAlpha = isLocal ? 1 : 0.6;
+    ctx.drawImage(warmStamp, 0, -nightConeHalfH);
+    ctx.restore();
+
+    if (isLocal) {
+      // Bụi lơ lửng (ít dần khi mưa to — mưa "rửa" bụi)
+      const motes = Math.round(DUST_MOTE_COUNT * (1 - 0.6 * weatherRainNow));
+      const box = range * 1.6;
+      ctx.fillStyle = '#ffe7c2';
+      for (let i = 0; i < motes; i++) {
+        const u = (dustU[i] * box + nowSec * dustSpd[i]) % box;
+        const v = (dustV[i] * box + nowSec * dustSpd[i] * 0.45) % box;
+        const mx = ox - box * 0.5 + u;
+        const my = oy - box * 0.5 + v + Math.sin(nowSec * 0.9 + dustPh[i]) * 3;
+        const ddx = mx - ox;
+        const ddy = my - oy;
+        const dd = Math.sqrt(ddx * ddx + ddy * ddy) / range;
+        if (dd > 1) continue;
+        const tw = 0.5 + 0.5 * Math.sin(nowSec * 2.3 + dustPh[i] * 3);
+        ctx.globalAlpha = (0.16 + 0.34 * tw) * (1 - dd);
+        ctx.fillRect(Math.round(mx), Math.round(my), (i & 7) === 0 ? 2 : 1, 1);
+      }
+
+      // Mặt đất ướt: điểm phản chiếu lấp lánh trong luồng sáng khi mưa
+      if (weatherRainNow > 0.05) {
+        const cell = 40;
+        const gx0 = Math.floor((ox - range) / cell);
+        const gx1 = Math.floor((ox + range) / cell);
+        const gy0 = Math.floor((oy - range) / cell);
+        const gy1 = Math.floor((oy + range) / cell);
+        ctx.fillStyle = '#d6e4ff';
+        for (let gy = gy0; gy <= gy1; gy++) {
+          for (let gx = gx0; gx <= gx1; gx++) {
+            const hh = hash2i(gx, gy, 0x77a1) >>> 0;
+            if ((hh & 7) !== 0) continue;
+            const gxp = gx * cell + ((hh >>> 3) & 31);
+            const gyp = gy * cell + ((hh >>> 8) & 31);
+            const ddx = gxp - ox;
+            const ddy = gyp - oy;
+            const dd = Math.sqrt(ddx * ddx + ddy * ddy) / range;
+            if (dd > 1) continue;
+            const sh = 0.5 + 0.5 * Math.sin(nowSec * 4.2 + (hh & 255) * 0.1);
+            ctx.globalAlpha = weatherRainNow * 0.55 * (1 - dd) * sh;
+            ctx.fillRect(gxp, gyp, 2 + ((hh >>> 13) & 3), 1);
+          }
+        }
+      }
+    }
+    ctx.restore();
+    drawCallsLastFrame++;
+  }
+}
+
+// ============================================================================
+// 10c. Thời tiết theo wave — mưa nặng dần, sóng nước bắn, sấm chớp (spec 007 §3.4)
+// ============================================================================
+//
+// Lịch sét là hàm thuần trong shared/night.ts theo (arenaSeed, ms trận, mức bão) nên
+// client & server đồng bộ (server có thể tạm gửi quái trong tối khi chớp sáng).
+// Mọi bộ đệm đều cấp phát sẵn (Float32Array), không tạo rác mỗi frame.
+
+const RAIN_MAX = 1200;
+const rainX = new Float32Array(RAIN_MAX);
+const rainY = new Float32Array(RAIN_MAX);
+const rainZ = new Float32Array(RAIN_MAX);
+let rainSeededW = 0;
+let rainSeededH = 0;
+let rainRngState = 0x1234567;
+let weatherLastCamX = Number.NaN;
+let weatherLastCamY = Number.NaN;
+
+const SPLASH_MAX = 220;
+const splashX = new Float32Array(SPLASH_MAX);
+const splashY = new Float32Array(SPLASH_MAX);
+const splashAge = new Float32Array(SPLASH_MAX);
+const splashLife = new Float32Array(SPLASH_MAX);
+let splashHead = 0;
+let splashAcc = 0;
+
+let weatherLevelNow = 0;
+let weatherFlashNow = 0;
+let weatherLastStoreMs = -1;
+let weatherLastStoreLocal = 0;
+const weatherStrike: BansungLightningStrike = { startMs: -1, preset: 0, boltSeed: 0, boltU: 0.5 };
+const weatherFlashScratch: BansungLightningStrike = { startMs: -1, preset: 0, boltSeed: 0, boltU: 0.5 };
+let weatherBoltStartMs = -1;
+let weatherBoltLocalAt = -1;
+let weatherThunderAt = -1;
+let weatherThunderVol = 0.4;
+
+const BOLT_PTS = 33;
+const boltX = new Float32Array(BOLT_PTS);
+const boltY = new Float32Array(BOLT_PTS);
+const boltTmpX = new Float32Array(BOLT_PTS);
+const boltTmpY = new Float32Array(BOLT_PTS);
+const BRANCH_PTS = 10;
+const BRANCH_MAX = 3;
+const branchX = new Float32Array(BRANCH_PTS * BRANCH_MAX);
+const branchY = new Float32Array(BRANCH_PTS * BRANCH_MAX);
+let branchCount = 0;
+
+function rainRand(): number {
+  rainRngState = (Math.imul(rainRngState, 1664525) + 1013904223) >>> 0;
+  return rainRngState / 4294967296;
+}
+
+function seedRain(w: number, h: number): void {
+  for (let i = 0; i < RAIN_MAX; i++) {
+    rainX[i] = rainRand() * (w + 120) - 60;
+    rainY[i] = rainRand() * (h + 60) - 30;
+    rainZ[i] = 0.35 + rainRand() * 0.65;
+  }
+  rainSeededW = w;
+  rainSeededH = h;
+}
+
+/** Sinh hình tia sét (toạ độ chuẩn hoá 0..1 theo màn hình) bằng midpoint displacement. */
+function generateBolt(boltSeed: number, boltU: number): void {
+  let s = boltSeed >>> 0 || 1;
+  const rnd = (): number => {
+    s = (Math.imul(s, 1103515245) + 12345) >>> 0;
+    return s / 4294967296;
+  };
+  // 2 điểm → 33 điểm qua 5 lần chia đôi
+  boltX[0] = boltU + (rnd() - 0.5) * 0.12;
+  boltY[0] = -0.04;
+  boltX[1] = boltU + (rnd() - 0.5) * 0.2;
+  boltY[1] = 0.38 + rnd() * 0.3;
+  let count = 2;
+  let amp = 0.09;
+  while (count < BOLT_PTS) {
+    let k = 0;
+    for (let i = 0; i < count - 1; i++) {
+      boltTmpX[k] = boltX[i];
+      boltTmpY[k] = boltY[i];
+      k++;
+      boltTmpX[k] = (boltX[i] + boltX[i + 1]) * 0.5 + (rnd() - 0.5) * amp;
+      boltTmpY[k] = (boltY[i] + boltY[i + 1]) * 0.5 + (rnd() - 0.5) * amp * 0.25;
+      k++;
+    }
+    boltTmpX[k] = boltX[count - 1];
+    boltTmpY[k] = boltY[count - 1];
+    k++;
+    for (let i = 0; i < k; i++) {
+      boltX[i] = boltTmpX[i];
+      boltY[i] = boltTmpY[i];
+    }
+    count = k;
+    amp *= 0.55;
+  }
+  // Nhánh rẽ
+  branchCount = 1 + Math.floor(rnd() * BRANCH_MAX);
+  for (let b = 0; b < branchCount; b++) {
+    const from = 6 + Math.floor(rnd() * 20);
+    const dir = rnd() < 0.5 ? -1 : 1;
+    let bx = boltX[from];
+    let by = boltY[from];
+    for (let i = 0; i < BRANCH_PTS; i++) {
+      branchX[b * BRANCH_PTS + i] = bx;
+      branchY[b * BRANCH_PTS + i] = by;
+      bx += dir * (0.006 + rnd() * 0.014);
+      by += 0.008 + rnd() * 0.016;
+    }
+  }
+}
+
+function stepWeather(
+  store: BansungStore,
+  enabled: boolean,
+  nowMs: number,
+  dtMs: number,
+  w: number,
+  h: number,
+  camX: number,
+  camY: number,
+  zoom: number,
+  vx0: number,
+  vy0: number,
+  vx1: number,
+  vy1: number,
+  skipAudio: boolean,
+): void {
+  if (!enabled) {
+    weatherLevelNow = 0;
+    weatherRainNow = 0;
+    weatherFlashNow = 0;
+    return;
+  }
+  const surv = store.survival;
+  weatherLevelNow = getBansungStormLevel(store.wave, surv?.cycle, surv?.stageIdx);
+  weatherRainNow = getBansungRainIntensity(weatherLevelNow);
+
+  // Đồng hồ trận: ms server + nội suy cục bộ giữa 2 snapshot
+  if (store.elapsedMs !== weatherLastStoreMs) {
+    weatherLastStoreMs = store.elapsedMs;
+    weatherLastStoreLocal = nowMs;
+  }
+  const matchMs = store.elapsedMs + clamp(nowMs - weatherLastStoreLocal, 0, 150);
+  const seed = store.arenaSeed | 0;
+
+  weatherFlashNow =
+    weatherLevelNow >= BANSUNG_WEATHER.LIGHTNING_START_LEVEL
+      ? getBansungLightningFlash(seed, matchMs, weatherLevelNow, weatherFlashScratch)
+      : 0;
+  const strike = getBansungLightningStrike(seed, matchMs, weatherLevelNow, weatherStrike);
+  if (
+    strike.startMs >= 0 &&
+    strike.startMs !== weatherBoltStartMs &&
+    matchMs >= strike.startMs &&
+    matchMs - strike.startMs < 300
+  ) {
+    weatherBoltStartMs = strike.startMs;
+    weatherBoltLocalAt = nowMs - (matchMs - strike.startMs);
+    generateBolt(strike.boltSeed, strike.boltU);
+    // Tiếng sấm đến sau tia chớp (âm thanh chậm hơn ánh sáng)
+    weatherThunderAt = nowMs + 320 + (strike.boltSeed & 511);
+    weatherThunderVol = 0.32 + 0.3 * clamp((weatherLevelNow - BANSUNG_WEATHER.LIGHTNING_START_LEVEL) / 0.4, 0, 1);
+  }
+  if (weatherThunderAt > 0 && nowMs >= weatherThunderAt) {
+    weatherThunderAt = -1;
+    if (!skipAudio) {
+      const key = hasBansungAudioKey('expl_heavy') ? 'expl_heavy' : 'boss_slam';
+      playBansungSfx(key, { local: true, vol: weatherThunderVol, pitchMul: 0.5 });
+    }
+  }
+
+  // Giọt mưa (screen space, 3 lớp parallax theo độ sâu z)
+  const rain = weatherRainNow;
+  if (rain <= 0) {
+    weatherLastCamX = camX;
+    weatherLastCamY = camY;
+    return;
+  }
+  if (rainSeededW !== w || rainSeededH !== h) seedRain(w, h);
+  const dt = clamp(dtMs, 0, 50) * 0.001;
+  const camDx = Number.isFinite(weatherLastCamX) ? (camX - weatherLastCamX) * zoom : 0;
+  const camDy = Number.isFinite(weatherLastCamY) ? (camY - weatherLastCamY) * zoom : 0;
+  weatherLastCamX = camX;
+  weatherLastCamY = camY;
+  const active = Math.round(RAIN_MAX * rain);
+  const wind = 0.18 + 0.3 * rain;
+  const fall = 0.8 + 0.55 * rain;
+  for (let i = 0; i < active; i++) {
+    const z = rainZ[i];
+    const v = (560 + 640 * z) * fall * dt;
+    rainY[i] += v - camDy * z;
+    rainX[i] += v * wind - camDx * z;
+    if (rainY[i] > h + 30) {
+      rainY[i] -= h + 60;
+      rainX[i] = rainRand() * (w + 120) - 60;
+    } else if (rainY[i] < -40) {
+      rainY[i] += h + 60;
+    }
+    if (rainX[i] > w + 70) rainX[i] -= w + 140;
+    else if (rainX[i] < -70) rainX[i] += w + 140;
+  }
+
+  // Sóng nước bắn trên mặt đất (world space) — tỉ lệ theo cường độ mưa & diện tích nhìn thấy
+  const area = Math.max(1, (vx1 - vx0) * (vy1 - vy0));
+  splashAcc += rain * rain * 220 * (area / (1800 * 1000)) * dt;
+  while (splashAcc >= 1) {
+    splashAcc -= 1;
+    const k = splashHead;
+    splashHead = (splashHead + 1) % SPLASH_MAX;
+    splashX[k] = vx0 + rainRand() * (vx1 - vx0);
+    splashY[k] = vy0 + rainRand() * (vy1 - vy0);
+    splashAge[k] = 0;
+    splashLife[k] = 220 + rainRand() * 160;
+  }
+  for (let i = 0; i < SPLASH_MAX; i++) {
+    if (splashLife[i] > 0) {
+      splashAge[i] += dtMs;
+      if (splashAge[i] >= splashLife[i]) splashLife[i] = 0;
+    }
+  }
+}
+
+/** Gợn nước + giọt bắn trên mặt đất (gọi trong PASS 1, toạ độ thế giới). */
+function drawRainSplashes(ctx: CanvasRenderingContext2D): void {
+  if (weatherRainNow <= 0) return;
+  ctx.save();
+  ctx.strokeStyle = '#b4c8ec';
+  ctx.fillStyle = '#d4e2ff';
+  ctx.lineWidth = 1;
+  for (let pass = 0; pass < 2; pass++) {
+    ctx.globalAlpha = pass === 0 ? 0.5 : 0.22;
+    ctx.beginPath();
+    for (let i = 0; i < SPLASH_MAX; i++) {
+      if (splashLife[i] <= 0) continue;
+      const k = splashAge[i] / splashLife[i];
+      if ((pass === 0) !== k < 0.5) continue;
+      const r = 1.5 + k * 6;
+      const sx = Math.round(splashX[i]);
+      const sy = Math.round(splashY[i]);
+      ctx.moveTo(sx + r, sy);
+      ctx.ellipse(sx, sy, r, r * 0.42, 0, 0, TWO_PI);
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 0.7;
+  for (let i = 0; i < SPLASH_MAX; i++) {
+    if (splashLife[i] <= 0) continue;
+    const k = splashAge[i] / splashLife[i];
+    if (k > 0.4) continue;
+    const up = Math.sin((k / 0.4) * Math.PI) * 4;
+    const sx = Math.round(splashX[i]);
+    const sy = Math.round(splashY[i]);
+    ctx.fillRect(sx - 2, Math.round(sy - up), 1, 1);
+    ctx.fillRect(sx + 2, Math.round(sy - up * 0.8), 1, 1);
+  }
+  ctx.restore();
+}
+
+function strokeRainLayer(
+  ctx: CanvasRenderingContext2D,
+  active: number,
+  zMin: number,
+  zMax: number,
+  lenScale: number,
+  wind: number,
+): void {
+  ctx.beginPath();
+  for (let i = 0; i < active; i++) {
+    const z = rainZ[i];
+    if (z < zMin || z >= zMax) continue;
+    const len = (7 + 15 * z) * lenScale;
+    const x = rainX[i];
+    const y = rainY[i];
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - wind * len, y - len);
+  }
+  ctx.stroke();
+}
+
+/**
+ * Vẽ mưa (screen space). Trong bóng tối mưa chỉ mờ mờ; trong nón đèn pin mưa sáng rõ
+ * (clip theo đa giác nón ở toạ độ thế giới rồi vẽ lại ở toạ độ màn hình).
+ */
+function drawRainOverlay(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  dpr: number,
+  zoom: number,
+  tx: number,
+  ty: number,
+  nightOn: boolean,
+): void {
+  const rain = weatherRainNow;
+  if (rain <= 0) return;
+  const active = Math.round(RAIN_MAX * rain);
+  const wind = 0.18 + 0.3 * rain;
+  const lenScale = 0.75 + 0.6 * rain;
+  const flashBoost = weatherFlashNow * 0.45;
+  ctx.save();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  // Không khí ẩm: lớp sương mỏng lạnh phủ màn hình khi mưa to
+  ctx.globalAlpha = 0.05 + 0.09 * rain;
+  ctx.fillStyle = '#5d6f8f';
+  ctx.fillRect(0, 0, w, h);
+  ctx.lineCap = 'butt';
+  ctx.strokeStyle = '#9fb3d6';
+  const baseA = nightOn ? 0.1 : 0.2;
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = clamp(baseA * 0.8 + flashBoost, 0, 0.8);
+  strokeRainLayer(ctx, active, 0, 0.55, lenScale, wind);
+  ctx.globalAlpha = clamp(baseA * 1.2 + flashBoost, 0, 0.85);
+  strokeRainLayer(ctx, active, 0.55, 0.82, lenScale, wind);
+  ctx.lineWidth = 1.5;
+  ctx.globalAlpha = clamp(baseA * 1.7 + flashBoost, 0, 0.9);
+  strokeRainLayer(ctx, active, 0.82, 1.01, lenScale, wind);
+  ctx.restore();
+
+  // Mưa sáng rõ trong luồng đèn pin của mọi người chơi
+  if (nightOn && warmConeUsed > 0) {
+    for (let slot = 0; slot < warmConeUsed; slot++) {
+      if (warmConeCount[slot] < 3) continue;
+      ctx.save();
+      ctx.setTransform(dpr * zoom, 0, 0, dpr * zoom, tx * dpr, ty * dpr);
+      traceWarmCone(ctx, slot);
+      ctx.clip();
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.strokeStyle = '#eef3ff';
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = warmConeLocal[slot] === 1 ? 0.5 : 0.3;
+      strokeRainLayer(ctx, active, 0.45, 1.01, lenScale, wind);
+      ctx.restore();
+    }
+  }
+}
+
+/** Tia sét + chớp sáng toàn màn hình (screen space, sau vignette). */
+function drawLightningOverlay(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  dpr: number,
+  nowMs: number,
+  reducedFlash: boolean,
+  nightOn: boolean,
+): void {
+  const flash = weatherFlashNow;
+  const boltAge = weatherBoltLocalAt >= 0 ? nowMs - weatherBoltLocalAt : 1e9;
+  if (flash <= 0.005 && boltAge > 360) return;
+  ctx.save();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // Tia sét: hiện ~360 ms, nhấp theo nhịp chớp
+  if (boltAge <= 360) {
+    const a = clamp(Math.max(flash * 1.4, boltAge < 70 ? 1 : 0), 0, 1) * (1 - boltAge / 420);
+    if (a > 0.02) {
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.lineJoin = 'round';
+      for (let layer = 0; layer < 3; layer++) {
+        ctx.lineWidth = layer === 0 ? 7 : layer === 1 ? 3 : 1.4;
+        ctx.strokeStyle = layer === 0 ? '#5b7fd6' : layer === 1 ? '#a9c4ff' : '#ffffff';
+        ctx.globalAlpha = a * (layer === 0 ? 0.22 : layer === 1 ? 0.55 : 1);
+        ctx.beginPath();
+        ctx.moveTo(boltX[0] * w, boltY[0] * h);
+        for (let i = 1; i < BOLT_PTS; i++) ctx.lineTo(boltX[i] * w, boltY[i] * h);
+        for (let b = 0; b < branchCount; b++) {
+          const o = b * BRANCH_PTS;
+          ctx.moveTo(branchX[o] * w, branchY[o] * h);
+          for (let i = 1; i < BRANCH_PTS; i++) ctx.lineTo(branchX[o + i] * w, branchY[o + i] * h);
+        }
+        ctx.stroke();
+      }
+      // Điểm sét giáng: quầng sáng chói trên mặt đất
+      const stamps = ensureGlowStamps();
+      const impact = stamps ? stamps.white : null;
+      if (impact) {
+        const ix = boltX[BOLT_PTS - 1] * w;
+        const iy = boltY[BOLT_PTS - 1] * h;
+        const r = 70 + 50 * a;
+        ctx.globalAlpha = a * 0.8;
+        ctx.drawImage(impact, ix - r, iy - r, r * 2, r * 2);
+      }
+    }
+  }
+
+  // Chớp sáng toàn màn hình (có giới hạn cho chế độ giảm chớp)
+  if (flash > 0.005) {
+    const cap = reducedFlash ? 0.08 : RENDER_CFG.MAX_FLASH_ALPHA * 0.7;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = clamp(flash * (nightOn ? 0.36 : 0.28), 0, cap);
+    ctx.fillStyle = '#d3e0ff';
+    ctx.fillRect(0, 0, w, h);
+  }
+  ctx.restore();
+}
+
 export function renderBansungScene(
   ctx: CanvasRenderingContext2D,
   o: RenderOpts,
@@ -5277,6 +6643,11 @@ export function renderBansungScene(
   bansungFx.step(effDtMs);
   bansungVfx.step(effDtSec, visualNowMs);
   stepLocalPools(effDtMs);
+  stepGore(effDtMs);
+  setGoreIntensity(o.reducedFlash ? 0.6 : 1);
+  bansungBossFx.step(effDtMs, visualNowMs);
+  stepWeaponSkillFx(effDtMs, visualNowMs);
+  bansungBossFx.setReducedFlash(Boolean(o.reducedFlash));
 
   // Locate local player & viewer anchor
   let localPlayer: InterpPlayer | null = null;
@@ -5322,9 +6693,12 @@ export function renderBansungScene(
     bulletScratch.push(b);
   }
   bansungVfx.syncBullets(bulletScratch, effDtSec);
+  bansungBossFx.trackDanmaku(bulletScratch, visualNowMs);
   syncFramePetsIfPresent(store, effDtSec, visualNowMs);
 
   const biome = store.biome || 'desert';
+  const nightOn = o.night === true;
+  const weatherOn = o.weather !== false;
 
   // Sync hero dash trackers & drain dust ring puffs into bansungFx
   seenPlayerIds.clear();
@@ -5415,6 +6789,20 @@ export function renderBansungScene(
         drawCallsLastFrame++;
       }
     }
+  }
+
+  // Thời tiết theo wave: cập nhật mưa / sét (mưa nặng dần, sét ở wave cuối)
+  stepWeather(
+    store, weatherOn, nowMs, rawDtMs, w, h, totalCamX, totalCamY, zoom,
+    vx0, vy0, vx1, vy1, Boolean(o.skipAudio),
+  );
+  // Mặt đất ướt sẫm màu khi mưa (1 fillRect, màu cố định + globalAlpha → không tạo chuỗi mới)
+  if (weatherRainNow > 0) {
+    ctx.save();
+    ctx.globalAlpha = 0.07 + 0.13 * weatherRainNow;
+    ctx.fillStyle = '#0c162c';
+    ctx.fillRect(vx0, vy0, vx1 - vx0, vy1 - vy0);
+    ctx.restore();
   }
 
   // Gather viewport-culled obstacles, props, pickups & enemies once for Passes 1–4
@@ -5546,6 +6934,13 @@ export function renderBansungScene(
   renderedBossTelegraphCount = 0;
   activeBossBeamCount = 0;
   bansungFx.drawDecals(ctx, vx0, vy0, vx1, vy1);
+  drawGoreGround(ctx, vx0, vy0, vx1, vy1); // vết máu / vũng máu dưới đất (dưới mọi sprite)
+  wskillFxView.x0 = vx0;
+  wskillFxView.y0 = vy0;
+  wskillFxView.x1 = vx1;
+  wskillFxView.y1 = vy1;
+  drawWeaponSkillFxGround(ctx, wskillFxView, visualNowMs);
+  drawRainSplashes(ctx);
   bansungMotion.drawDustRings(ctx);
   bansungVfx.drawGroundPass(ctx, visualNowMs);
   if (activeHazards && activeHazards.length > 0) {
@@ -6291,9 +7686,11 @@ export function renderBansungScene(
   bansungFx.drawLayer(ctx, FxLayer.World, vx0, vy0, vx1, vy1, visualNowMs);
   drawMeleeSlashes(ctx, false);
   drawSpiritSwords(ctx, store.spiritSwords, nowSec);
+  drawGoreAir(ctx, vx0, vy0, vx1, vy1); // tia máu / giọt máu / mảnh thịt đang bay
+  drawWeaponSkillFxWorld(ctx, wskillFxView, visualNowMs);
   drawWorldMicroHud(ctx, store, localPlayer, visibleEnemiesScratch, visualNowMs);
 
-  if (o.showCrosshair !== false) {
+  if (o.showCrosshair !== false && !nightOn) {
     const iv = bansungInput.getViewState();
     drawAimReticle(
       ctx,
@@ -6319,6 +7716,13 @@ export function renderBansungScene(
 
   // Active Boss Master-Spark Lasers (all 9 bosses' active beams + Overlord active laserLanes)
   drawActiveBossMasterSparkBeams(ctx, nowSec);
+  // Ichor phát sáng của zombie nguyên tố (bị lớp đêm che nếu ngoài đèn — đúng thiết kế)
+  drawGoreGlow(ctx, vx0, vy0, vx1, vy1);
+  drawWeaponSkillFxAdditive(ctx, wskillFxView, visualNowMs);
+  // Ban ngày: VFX skill boss vẽ ngay trong pass additive. Ban đêm: vẽ sau lớp tối (PASS 5c).
+  if (!nightOn) {
+    drawBossFxPass(ctx, activeTelegraphs, vx0, vy0, vx1, vy1, visualNowMs);
+  }
 
   if (stamps && glowQueueCount > 0) {
     for (let i = 0; i < glowQueueCount; i++) {
@@ -6334,6 +7738,44 @@ export function renderBansungScene(
   }
   ctx.restore();
 
+  // ── PASS 5b: Đêm Zombie — bóng tối + đèn pin xoay theo chuột ──────────────────
+  if (nightOn) {
+    drawNightLighting(
+      ctx,
+      store,
+      localPlayer,
+      w,
+      h,
+      dpr,
+      zoom,
+      tx,
+      ty,
+      visibleObstaclesScratch,
+      mapW,
+      mapH,
+      nowSec,
+    );
+    // ── PASS 5c: VFX skill boss (laze, sét, đạn xoắn ốc) luôn sáng xuyên bóng tối ──
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.imageSmoothingEnabled = false;
+    drawBossFxPass(ctx, activeTelegraphs, vx0, vy0, vx1, vy1, visualNowMs);
+    drawWeaponSkillFxOverNight(ctx, wskillFxView, visualNowMs);
+    ctx.restore();
+    if (o.showCrosshair !== false) {
+      const iv = bansungInput.getViewState();
+      drawAimReticle(
+        ctx,
+        o.aimWorldX,
+        o.aimWorldY,
+        iv.autoAimTargetId,
+        iv.autoAimTargetX,
+        iv.autoAimTargetY,
+        nowSec,
+      );
+    }
+  }
+
   // ── PASS 7 (World Space): Outlined Floating Damage Numbers & Pooled FX Text ───
   drawOutlinedDamageNumbers(ctx, vx0, vy0, vx1, vy1);
   bansungFx.drawTexts(ctx, vx0, vy0, vx1, vy1);
@@ -6344,6 +7786,10 @@ export function renderBansungScene(
   // ── PASS 6: Screen-Space Low-HP Vignette & Capped Flash Overlay ────────────────
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.imageSmoothingEnabled = false;
+
+  // Mưa (3 lớp parallax, sáng rõ trong nón đèn) — sau lớp đêm để giọt mưa luôn đọc được
+  drawRainOverlay(ctx, w, h, dpr, zoom, tx, ty, nightOn);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   if (localPlayer) {
     const heroId = BANSUNG_HERO_IDS[localPlayer.heroIdx] ?? 'ranger';
@@ -6374,6 +7820,10 @@ export function renderBansungScene(
     ctx.fillRect(0, 0, w, h);
     ctx.restore();
   }
+
+  // Sấm chớp: tia sét + chớp sáng toàn màn hình (giới hạn khi bật giảm chớp)
+  drawLightningOverlay(ctx, w, h, dpr, nowMs, Boolean(o.reducedFlash), nightOn);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   // Combined flash overlay (camera flash + flashbang overlay + local trigger), capped at 0.65
   const vfxFlash = bansungVfx.getFlashOverlayState();
@@ -6642,6 +8092,17 @@ export function clearBansungRenderCaches(): void {
   screenFlashState.alpha = 0;
   glowQueueCount = 0;
   sortItemsLastFrame = 0;
+  for (let i = 0; i < SPLASH_MAX; i++) splashLife[i] = 0;
+  rainSeededW = 0;
+  rainSeededH = 0;
+  weatherBoltStartMs = -1;
+  weatherBoltLocalAt = -1;
+  weatherThunderAt = -1;
+  clearGore();
+  bansungBossFx.reset();
+  resetWeaponSkillFx();
+  mobDeathStartSec.clear();
+  bossDeathStartSec.clear();
 }
 
 export function getRenderDiagnostics(): {
@@ -6649,11 +8110,18 @@ export function getRenderDiagnostics(): {
   sortItemsLastFrame: number;
   drawCallsLastFrame: number;
   assetLoadBump: number;
+  /** Mức bão 0..1, cường độ mưa 0..1 và độ sáng chớp hiện tại 0..1 (telemetry). */
+  stormLevel: number;
+  rain: number;
+  lightning: number;
 } {
   return {
     chunksCached: terrainChunks.size,
     sortItemsLastFrame,
     drawCallsLastFrame,
     assetLoadBump,
+    stormLevel: weatherLevelNow,
+    rain: weatherRainNow,
+    lightning: weatherFlashNow,
   };
 }

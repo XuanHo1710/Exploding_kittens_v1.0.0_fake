@@ -1176,7 +1176,8 @@ function HeroPortrait({ heroId, state, flags }: HeroPortraitProps) {
     .filter(Boolean)
     .join(' ');
 
-  const src = `/database-ban-sung/sprites/heroes/${hero.id}_idle.png`;
+  // Spec 007 v2: chân dung vẽ mới (không còn dùng ảnh chibi gốc trong sprites/heroes)
+  const src = `/database-ban-sung/normalized/ui/ui_portrait_${hero.id}.png`;
   const showFallback = failedHero === hero.id;
 
   return (
@@ -1705,7 +1706,8 @@ export interface BossHudBarProps {
 
 function resolveCleanBossName(b: SnapBoss): string {
   const spec = BANSUNG_ENEMIES[b.kind];
-  const raw = b.title?.trim() || spec?.name || spec?.vnName || b.kind.replace(/^boss_/, '').replace(/_/g, ' ');
+  // Spec 007 v2: ưu tiên tên tiếng Anh ngắn (Brood Eye, Iron Hulk, Volt Twins…) thay vì tiêu đề dài
+  const raw = spec?.shortName || b.title?.trim() || spec?.name || spec?.vnName || b.kind.replace(/^boss_/, '').replace(/_/g, ' ');
   return raw.replace(/^\s*\[[^\]]+\]\s*/g, '').trim();
 }
 

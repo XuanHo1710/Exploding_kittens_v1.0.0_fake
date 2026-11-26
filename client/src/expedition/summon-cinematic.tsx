@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ITEM_RARITY_COLORS, ITEM_RARITY_LABELS_VI, type ItemInstance, type SummonResultItem } from './shared';
 import { portraitUrl } from './menu-ui';
-import { weaponArtUrl } from './weapon-art';
+import { isMythicWeapon, weaponArtUrl } from './weapon-art';
 import { playExpeditionSfx } from './sound';
 import './reward-fx.css';
 
@@ -17,15 +17,17 @@ const ITEM_TIER: Record<ItemInstance['rarity'], Tier> = { common: 'blue', rare: 
 const HERO_TIER: Record<SummonResultItem['rarity'], Tier> = { R: 'blue', SR: 'purple', SSR: 'gold', SSS: 'sss' };
 const TIER_RANK: Record<Tier, number> = { blue: 0, purple: 1, gold: 2, red: 3, sss: 4 };
 
-interface Card { key: string; tier: Tier; color: string; title: string; sub: string; badge?: string; img?: string }
+interface Card { key: string; tier: Tier; color: string; title: string; sub: string; badge?: string; img?: string; foil?: 'sss' | 'mythic' }
 
 function cardsOf(res: { heroes?: SummonResultItem[]; items?: ItemInstance[] }): Card[] {
   const heroes = (res.heroes ?? []).map((h, i): Card => ({
     key: `h${i}`, tier: HERO_TIER[h.rarity], color: TIER_COLOR[HERO_TIER[h.rarity]], title: h.nameVi,
+    foil: h.rarity === 'SSS' ? 'sss' : undefined,
     sub: h.rarity, badge: h.isNew ? 'MỚI!' : h.expGained ? `Mảnh dư → +${h.expGained} EXP` : `+${h.shardGained} mảnh · +${h.starlightGained}✦`, img: portraitUrl(h.heroId),
   }));
   const items = (res.items ?? []).map((it, i): Card => ({
     key: `i${i}`, tier: ITEM_TIER[it.rarity], color: ITEM_RARITY_COLORS[it.rarity], title: it.nameVi,
+    foil: isMythicWeapon(it) ? 'mythic' : undefined,
     sub: ITEM_RARITY_LABELS_VI[it.rarity], img: weaponArtUrl(it),
     badge: it.duplicateYield ? (it.duplicateYield.shards ? `+${it.duplicateYield.shards} mảnh` : `+${it.duplicateYield.starlight}✦`)
       : it.signatureId ? 'Vũ khí trấn' : it.kind === 'elixir' ? 'Thuốc chỉ số' : `i${it.ilvl}`,
@@ -134,7 +136,7 @@ export function SummonCinematic({ res, onDone, onClose }: {
           {cards.map((c, i) => (
             <div key={c.key} className={`sc-mini tier-${c.tier}`} style={{ ['--c' as string]: c.color, ['--d' as string]: `${i * 90}ms` }}>
               {TIER_RANK[c.tier] >= 2 && !still && <i className="sc-mini-burst" aria-hidden="true" />}
-              <div className="sc-face">
+              <div className={`sc-face${c.foil ? ` exp-foil-surface exp-foil-${c.foil}` : ''}`}>
                 {c.img ? <img src={c.img} alt="" /> : <div className="sc-item-glyph" aria-hidden="true">✦</div>}
                 <small>{c.sub}</small>
                 <h3>{c.title}</h3>
@@ -151,7 +153,7 @@ export function SummonCinematic({ res, onDone, onClose }: {
           {TIER_RANK[card.tier] >= 2 && !still && (
             <div className="sc-motes" aria-hidden="true">{Array.from({ length: 14 }, (_, i) => <i key={i} style={{ ['--i' as string]: i }} />)}</div>
           )}
-          <div className="sc-face">
+          <div className={`sc-face${card.foil ? ` exp-foil-surface exp-foil-${card.foil}` : ''}`}>
             {card.img ? <img src={card.img} alt="" /> : <div className="sc-item-glyph" aria-hidden="true">✦</div>}
             <small>{card.sub}</small>
             <h3>{card.title}</h3>

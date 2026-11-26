@@ -11,6 +11,7 @@ import { AccountsService } from './store/accounts.service';
 import { AccountController } from './store/account.controller';
 import { ExpeditionRedisService } from './game/expedition/expedition-redis.service';
 import { ExpeditionService } from './game/expedition/expedition.service';
+import { CampaignService } from './game/mk/campaign.service';
 
 const REPO_UP_CANDIDATES: readonly string[][] = [
   ['..', '..', '..', '..'],
@@ -344,6 +345,7 @@ const miragineDir = resolveRepoPath('database-miraginewar');
     AstralExpeditionStaticGuard,
     ExpeditionRedisService,
     ExpeditionService,
+    CampaignService,
   ],
 })
 export class AppModule implements NestModule, OnModuleInit {

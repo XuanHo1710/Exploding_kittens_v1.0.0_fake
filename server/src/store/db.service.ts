@@ -2,6 +2,8 @@ import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit, ServiceUnava
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { ACCOUNT_STORE, type AccountStore } from './json.store';
+import { validCampaignSave } from '../game/mk/campaign-progress';
+import type { CampaignProgress } from '../../../shared/src/mk/campaign';
 
 /** Tài khoản người chơi. PIN và token chỉ lưu dạng băm. */
 export interface Account {
@@ -16,6 +18,7 @@ export interface Account {
   games: number;
   wins: number;
   lastDaily?: string;
+  mkCampaign?: CampaignProgress;
   createdAt: number;
   updatedAt: number;
 }
@@ -62,7 +65,8 @@ export function parseDb(content: string): DbShape {
       !Array.isArray(acc.tokens) || acc.tokens.length > 5 || acc.tokens.some((t) => typeof t !== 'string' || !/^[a-f\d]{64}$/i.test(t)) ||
       [acc.coins, acc.games, acc.wins, acc.createdAt, acc.updatedAt].some((n) => !Number.isSafeInteger(n) || n < 0) ||
       (acc.avatar !== undefined && typeof acc.avatar !== 'string') ||
-      (acc.lastDaily !== undefined && (typeof acc.lastDaily !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(acc.lastDaily)))) {
+      (acc.lastDaily !== undefined && (typeof acc.lastDaily !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(acc.lastDaily))) ||
+      (acc.mkCampaign !== undefined && !validCampaignSave(acc.mkCampaign))) {
       throw new Error('JSON chứa tài khoản không hợp lệ; không ghi đè dữ liệu.');
     }
     names.add(acc.nameKey);
